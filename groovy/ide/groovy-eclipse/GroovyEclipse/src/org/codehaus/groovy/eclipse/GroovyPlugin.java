@@ -44,6 +44,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 public class GroovyPlugin extends AbstractUIPlugin {
 	//The shared instance.
 	private static GroovyPlugin plugin;
+	private static boolean  askAboutRunTime = true;
 	//Resource bundle.
 	public final static String GROOVY_PARTITIONING= "__groovy_partitioning";   //$NON-NLS-1$
 	
@@ -82,7 +83,10 @@ public class GroovyPlugin extends AbstractUIPlugin {
 						trace("GroovyFilesChangeListner new groovy file detected : " + resource.getName());
 						trace(delta.toString());
 						addGrovyExclusionFilter(resource.getProject());
-						groovyFileAdded(resource.getProject());
+						if(askAboutRunTime) {
+							groovyFileAdded(resource.getProject());
+							askAboutRunTime = false;
+						}
 					}
 					return true;
 				}
