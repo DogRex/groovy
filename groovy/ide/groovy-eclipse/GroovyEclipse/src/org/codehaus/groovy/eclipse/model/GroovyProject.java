@@ -80,6 +80,8 @@ public class GroovyProject{
 				}
 			} catch (CoreException e) {
 				plugin.logException("failed to add groovy support", e);
+			}finally{
+				plugin.listenToChanges();
 			}
 		}
 

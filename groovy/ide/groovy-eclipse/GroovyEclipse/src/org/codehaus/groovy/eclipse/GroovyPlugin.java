@@ -54,6 +54,8 @@ public class GroovyPlugin extends AbstractUIPlugin {
 
 	private static final String PLUGIN_ID = "org.codehaus.groovy.eclipse";
 
+	private GroovyFilesChangeListner groovyFilesChangeListner;
+
 	static {
 		String value = Platform
 				.getDebugOption("org.codehaus.groovy.eclipse/trace"); //$NON-NLS-1$
@@ -86,6 +88,7 @@ public class GroovyPlugin extends AbstractUIPlugin {
 								+ resource.getName());
 						trace(delta.toString());
 						try {
+							plugin.stopListeningToChanges();
 							GroovyModel.getModel().groovyFileAdded(resource);
 						} catch (CoreException e) {
 							logException("failed to add groovy runtime support",e);			
@@ -109,6 +112,7 @@ public class GroovyPlugin extends AbstractUIPlugin {
 	public GroovyPlugin() {
 		super();
 		plugin = this;
+		groovyFilesChangeListner = new GroovyFilesChangeListner();
 		try {
 			resourceBundle = ResourceBundle
 					.getBundle("org.codehaus.groovy.eclipse.TestNatureAndBuilderPluginResources");
@@ -116,6 +120,8 @@ public class GroovyPlugin extends AbstractUIPlugin {
 			resourceBundle = null;
 		}
 	}
+
+
 
 
 	/**
@@ -248,10 +254,8 @@ public class GroovyPlugin extends AbstractUIPlugin {
 	 */
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
-		getWorkspace()
-				.addResourceChangeListener(new GroovyFilesChangeListner());
+		listenToChanges();
 		GroovyModel.getModel().updateProjects();
-
 	}
 
 	/**
@@ -262,5 +266,21 @@ public class GroovyPlugin extends AbstractUIPlugin {
 			partitionScanner = new GroovyPartitionScanner();
 		}
 		return partitionScanner;
+	}
+
+	/**
+	 * 
+	 */
+	protected void stopListeningToChanges() {
+		trace("stopListenToChanges");
+		getWorkspace().removeResourceChangeListener(groovyFilesChangeListner);
+	}
+
+	/**
+	 * 
+	 */
+	public void listenToChanges() {
+		trace("listenToChanges");
+		getWorkspace().addResourceChangeListener(groovyFilesChangeListner);
 	}
 }
