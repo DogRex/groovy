@@ -34,6 +34,8 @@ public class GroovySupportLoader implements ApplicationComponent {
     }
 
     public void initComponent() {
+        System.setProperty("groovy.jsr", "true");
+
         ApplicationManager.getApplication().runWriteAction(new Runnable() {
             public void run() {
                 FileTypeManager.getInstance().registerFileType(GROOVY, new String[] { "groovy" });
@@ -41,5 +43,7 @@ public class GroovySupportLoader implements ApplicationComponent {
         });
     }
 
-    public void disposeComponent() { }
+    public void disposeComponent() {
+        System.getProperties().remove("groovy.jsr");
+    }
 }

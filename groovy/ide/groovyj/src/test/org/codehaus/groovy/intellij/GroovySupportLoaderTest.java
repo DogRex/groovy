@@ -29,21 +29,41 @@ public class GroovySupportLoaderTest extends MockObjectTestCase {
 
     private final GroovySupportLoader groovySupportLoader = new GroovySupportLoader();
 
+    protected void tearDown() {
+        System.getProperties().remove("groovy.jsr");
+    }
+
     public void testDefinesAComponentName() {
         assertEquals("component name", "groovy.integration", groovySupportLoader.getComponentName());
     }
 
-    public void testRegistersTheGroovyFileTypeWhenInitialisedByItsContainer() {
+    public void testRegistersTheGroovyFileTypeWhenInitialisedByIntellijIdea() {
+        setExpectationsForInitialisationByIntellijIdea();
+        groovySupportLoader.initComponent();
+
+        MockApplicationManager.getMockApplication().removeComponent(FileTypeManager.class);
+    }
+
+    public void testEnablesGroovyJsrWhenInitialisedByIntellijIdea() {
+        setExpectationsForInitialisationByIntellijIdea();
+        assertEquals("groovy.jsr", null, System.getProperty("groovy.jsr"));
+
+        groovySupportLoader.initComponent();
+        assertEquals("groovy.jsr", "true", System.getProperty("groovy.jsr"));
+
+        MockApplicationManager.getMockApplication().removeComponent(FileTypeManager.class);
+    }
+
+    private void setExpectationsForInitialisationByIntellijIdea() {
         MockApplicationManager.reset();
 
         Mock mockFileTypeManager = mock(FileTypeManager.class);
         MockApplicationManager.getMockApplication().registerComponent(FileTypeManager.class, mockFileTypeManager.proxy());
         mockFileTypeManager.expects(once()).method("registerFileType").with(same(GroovySupportLoader.GROOVY), eq(new String[] { "groovy" }));
-
-        groovySupportLoader.initComponent();
     }
 
-    public void testDoesNothingWhenDisposedByIntellijIdea() {
+    public void testRemovesTheGroovyJsrSystemPropertyWhenDisposedByIntellijIdea() {
         groovySupportLoader.disposeComponent();
+        assertEquals("groovy.jsr", null, System.getProperty("groovy.jsr"));
     }
 }
