@@ -116,7 +116,6 @@ public class GroovyASTContentProvider implements ITreeContentProvider {
 		compilationUnit = (CompileUnit) newInput;
 		if(listner != null && newInput == null){
 			GroovyModel.getModel().removeBuildListener(listner);
-			listner = null;
 		}
 	}
 

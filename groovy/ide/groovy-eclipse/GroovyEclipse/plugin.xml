@@ -14,22 +14,26 @@
    </runtime>
    <requires>
       <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.core.variables"/>
+      <import plugin="org.eclipse.jface"/>
       <import plugin="org.eclipse.ui"/>
-      <import plugin="org.eclipse.jdt.core"/>
-      <import plugin="org.eclipse.ui.ide"/>
+      <import plugin="org.eclipse.text"/>
       <import plugin="org.eclipse.jface.text"/>
       <import plugin="org.eclipse.ui.workbench.texteditor"/>
       <import plugin="org.eclipse.ui.editors"/>
-      <import plugin="org.eclipse.jdt.debug"/>
-      <import plugin="org.eclipse.debug.core"/>
-      <import plugin="org.eclipse.jdt.launching"/>
-      <import plugin="org.eclipse.debug.ui"/>
-      <import plugin="org.eclipse.jdt.debug.ui"/>
+      <import plugin="org.eclipse.ui.ide"/>
+      <import plugin="org.eclipse.search"/>
+      <import plugin="org.eclipse.jdt.core"/>
       <import plugin="org.eclipse.jdt.ui"/>
-      <import plugin="org.eclipse.jdt.junit.runtime"/>
+      <import plugin="org.eclipse.debug.core"/>
+      <import plugin="org.eclipse.debug.ui"/>
+      <import plugin="org.eclipse.jdt.debug"/>
+      <import plugin="org.eclipse.jdt.launching"/>
+      <import plugin="org.eclipse.jdt.debug.ui"/>
+      <import plugin="org.eclipse.core.runtime.compatibility"/>
       <import plugin="org.codehaus.groovy"/>
       <import plugin="org.eclipse.ui.views"/>
-      <import plugin="org.eclipse.core.runtime.compatibility"/>
+      <import plugin="org.eclipse.core.filebuffers"/>
    </requires>
 
 
@@ -62,7 +66,7 @@
       <launchConfigurationType
             name="Groovy"
             delegate="org.codehaus.groovy.eclipse.launchers.GroovyLaunchConfigurationDelegate"
-            modes="run"
+            modes="run,debug"
             id="org.codehaus.groovy.eclipse.groovyLaunchConfigurationType">
          <fileExtension
                default="true"
@@ -91,8 +95,8 @@
       <shortcut
             label="Groovy"
             icon="icons/run_groovy_class.gif"
-            class="org.codehaus.groovy.eclipse.launchers.GroovyLaunchShortcut"
             modes="run"
+            class="org.codehaus.groovy.eclipse.launchers.GroovyLaunchShortcut"
             id="org.eclipse.jdt.debug.ui.groovyShortcut">
          <perspective
                id="org.eclipse.jdt.ui.JavaPerspective">
@@ -123,12 +127,21 @@
          point="org.eclipse.ui.editors">
       <editor
             name="Groovy Editor"
-            extensions="groovy"
             icon="icons/groovy_file.gif"
-            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            extensions="groovy"
             class="org.codehaus.groovy.eclipse.editor.GroovyEditor"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
             id="org.codehaus.groovy.eclipse.editor.GroovyEditor">
       </editor>
+   </extension>
+   <extension
+         id="org.codehaus.groovy.eclipse.editor.GroovyDocumentSetupParticipant"
+         name="GroovyDocumentSetupParticipant"
+         point="org.eclipse.core.filebuffers.documentSetup">
+      <participant
+            extensions="groovy"
+            class="org.codehaus.groovy.eclipse.editor.GroovyDocumentSetupParticipant">
+      </participant>
    </extension>
    <extension
          point="org.eclipse.ui.newWizards">
@@ -158,6 +171,40 @@
             Create a new Groovy Class
          </description>
       </wizard>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editorActions">
+      <editorContribution
+            targetID="org.codehaus.groovy.eclipse.editor.GroovyEditor"
+            id="org.codehaus.groovy.eclipse.BreakpointRulerActions">
+         <action
+               label=""
+               class="org.codehaus.groovy.eclipse.actions.ToggleGroovyBreakpointRulerActionDelegate"
+               actionID="RulerDoubleClick"
+               id="org.codehaus.groovy.eclipse.actions.ToggleGroovyBreakpointAction">
+         </action>
+      </editorContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.ide.markerImageProviders">
+      <imageprovider
+            markertype="org.eclipse.jdt.debug.javaStratumLineBreakpointMarker"
+            icon="icons/full/obj16/brkp_obj.gif"
+            id="org.codehaus.groovy.eclipse.breakpointMarkerProvider">
+      </imageprovider>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.sourceLocators">
+      <sourceLocator
+            name="Groovy Source Locator"
+            class="org.codehaus.groovy.eclipse.launchers.GroovySourceLocator"
+            id="org.codehaus.groovy.eclipse.editor.groovySourceLocator">
+      </sourceLocator>
+      <sourceLocator
+            name="GroovyEclipse.sourceLocator1"
+            class="org.codehaus.groovy.eclipse.launchers.GroovySourceLocator"
+            id="GroovyEclipse.sourceLocator1">
+      </sourceLocator>
    </extension>
 
 </plugin>

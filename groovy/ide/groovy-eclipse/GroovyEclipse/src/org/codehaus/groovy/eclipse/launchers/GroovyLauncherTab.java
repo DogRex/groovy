@@ -8,6 +8,7 @@ package org.codehaus.groovy.eclipse.launchers;
 
 
 import org.codehaus.groovy.eclipse.model.GroovyModel;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.internal.ui.DefaultLabelProvider;
 import org.eclipse.jdt.core.IJavaProject;
@@ -89,4 +90,11 @@ public class GroovyLauncherTab extends JavaMainTab {
 		fStopInMainCheckButton.setVisible(false);
 	}
 
+    /* (non-Javadoc)
+     * @see org.eclipse.debug.ui.ILaunchConfigurationTab#setDefaults(org.eclipse.debug.core.ILaunchConfigurationWorkingCopy)
+     */
+    public void setDefaults(ILaunchConfigurationWorkingCopy config) {
+        super.setDefaults(config);
+        config.setAttribute(ILaunchConfiguration.ATTR_SOURCE_LOCATOR_ID, GroovySourceLocator.ID);
+    }
 }
