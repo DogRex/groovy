@@ -14,7 +14,7 @@
      <library name="lib/asm-1.4.3.jar">
          <export name="*"/>
       </library>
-	 <library name="lib/groovy-1.0-beta-7-SNAPSHOT.jar">
+	 <library name="lib/groovy-1.0-beta-8-SNAPSHOT.jar">
          <export name="*"/>
       </library>
       
@@ -29,7 +29,6 @@
       <import plugin="org.eclipse.ui.workbench.texteditor"/>
       <import plugin="org.eclipse.ui.editors"/>
       <import plugin="org.eclipse.ui.ide"/>
-      <import plugin="org.eclipse.search"/>
       <import plugin="org.eclipse.jdt.core"/>
       <import plugin="org.eclipse.jdt.ui"/>
       <import plugin="org.eclipse.debug.core"/>
@@ -40,6 +39,7 @@
       <import plugin="org.eclipse.core.runtime"/>
       <import plugin="org.eclipse.ui.views"/>
       <import plugin="org.eclipse.core.filebuffers"/>
+      <import plugin="org.codehaus.groovy"/>
    </requires>
 
 
