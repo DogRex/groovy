@@ -91,9 +91,13 @@ public class GroovyTagScanner extends RuleBasedScanner {
 				new TextAttribute(manager.getColor(IJavaColorConstants.JAVA_SINGLE_LINE_COMMENT)));
 		
 		rules[i++] = new EndOfLineRule("//", slcomment);
+
+		IToken plainCode =
+			new Token(
+					new TextAttribute(manager.getColor(IJavaColorConstants.JAVA_DEFAULT)));
 		
 		WordRule keywordsRule = new WordRule(new IWordDetector(){
-
+			
 			public boolean isWordStart(char c) {
 				return Character.isJavaIdentifierStart(c);
 			}
@@ -102,7 +106,7 @@ public class GroovyTagScanner extends RuleBasedScanner {
 				return Character.isJavaIdentifierPart(c);
 			}
 		
-		}); 
+		},plainCode); 
 		
 		IToken keywordToken =
 		new Token(
