@@ -95,8 +95,9 @@ public class GroovyControllerTest extends MockObjectTestCase {
 
     public void testDoesNothingWhenRunningAGroovyScriptFailsBecauseTheScriptCouldNotBeFound() {
         setExpectationsForRunningAFileAsAGroovyScript(FILE_NAME);
+
         mockGroovyShell.expects(once()).method("run").with(isA(InputStream.class), eq(FILE_NAME), isA(String[].class))
-                .will(throwException(new IOException("script not found")));
+                .will(throwException(new CompilationFailedException(Phases.INITIALIZATION, null, new IOException("script not found"))));
 
         groovyController.runAsGroovyScript((VirtualFile) mockVirtualFile.proxy());
     }
