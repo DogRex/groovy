@@ -1,7 +1,20 @@
-<!-- This build script requires Ant 1.6.2 or later. -->
-<project name="GroovyJ" default="build.deliverables" basedir=".">
+<project name="GroovyJ" default="build.all" basedir=".">
 
-    <target name="initialise.build">
+    <target name="check.ant.version">
+        <echo taskname="ant.version" message="${ant.version}"/>
+
+        <condition property="ant.version.ok">
+            <or>
+                <contains string="${ant.version}" substring="1.6.2" casesensitive="false"/>
+            </or>
+        </condition>
+    </target>
+
+    <target name="ant.version.pass" depends="check.ant.version" unless="ant.version.ok">
+        <fail>This build script requires Ant 1.6.2 or later!</fail>
+    </target>
+
+    <target name="initialise.build" depends="ant.version.pass">
         <!-- Project properties -->
         <property file="project.properties"/>
 
@@ -93,13 +106,13 @@
 
     <target name="check.irida.available" depends="initialise.build" >
         <available property="irida.available"
-                   classname="com.intellij.refactoring.MoveDestination"
+                   classname="com.intellij.lang.Language"
                    classpathref="irida.test.classpath"/>
     </target>
 
     <target name="irida.available" depends="check.irida.available" unless="irida.available">
         <fail>IntelliJ IDEA (Irida) is not available. Please either define 'irida.home' in project.properties or copy
-              $IDEA_HOME/lib/idea.jar, $IDEA_HOME/lib/extensions.jar, $IDEA_HOME/lib/openapi.jar,
+              $IDEA_HOME/lib/extensions.jar, $IDEA_HOME/lib/idea.jar, $IDEA_HOME/lib/openapi.jar,
               $IDEA_HOME/lib/picocontainer.jar and $IDEA_HOME/lib/trove4j.jar to ${irida.home}/lib.
         </fail>
     </target>
@@ -161,12 +174,12 @@
         <fail message="Tests failed! Check test reports." if="tests.failed"/>
     </target>
 
-    <target name="jar.irida" depends="test.reports.irida" description="Packages up the plugin as a jar file for IDEA Irida">
+    <target name="jar.irida" depends="test.reports.irida" description="Packages up the plug-in as a jar file for IDEA Irida">
         <copy todir="${irida.classes.dir}" overwrite="true" preservelastmodified="true">
             <fileset dir="${src.etc.dir}" excludes="styles/**/*, ${binary.extensions}"/>
             <filterset>
-                <filter token="PROJECT.TITLE" value="Groovy IDEA Integration"/>
-                <filter token="PROJECT.IDEA.SINCE-BUILD" value="2233"/>
+                <filter token="PROJECT.TITLE" value="Groovy Integration"/>
+                <filter token="PROJECT.IDEA.SINCE-BUILD" value="3214"/>
             </filterset>
             <filterset refid="project.variables"/>
             <filterset refid="timestamp.variables"/>
@@ -176,7 +189,7 @@
         <jar basedir="${irida.classes.dir}" compress="true" update="true" destfile="${dist.dir}/${distfile.name}-irida.jar"/>
     </target>
 
-    <target name="zip.irida" depends="jar.irida" description="Packages up the plugin as a deployable zip file for IDEA Irida">
+    <target name="zip.irida" depends="jar.irida" description="Packages up the plug-in as a deployable zip file for IDEA Irida">
         <zip compress="true" update="true" destfile="${dist.dir}/${distfile.name}-irida.zip">
             <zipfileset prefix="${project.name}/lib" file="${dist.dir}/${distfile.name}-irida.jar"/>
             <zipfileset prefix="${project.name}/lib" dir="${lib.runtime.dir}"/>
@@ -184,16 +197,18 @@
         <delete file="${dist.dir}/${distfile.name}-irida.jar"/>
     </target>
 
-    <target name="build.deliverables" depends="zip.irida" description="Creates all installable plugin distributions">
+    <target name="build.all" depends="zip.irida" description="Creates all installable plug-in distributions">
         <buildnumber/>
     </target>
 
-    <target name="deploy.irida" depends="zip.irida" description="Deploys the plugin into an IntelliJ IDEA installation">
+    <target name="deploy.irida" depends="zip.irida" description="Deploys the plug-in into an IntelliJ IDEA installation">
         <delete dir="${irida.plugins.dir}/${project.name}" failonerror="true"/>
         <unzip src="${dist.dir}/${distfile.name}-irida.zip" dest="${irida.plugins.dir}"/>
+
         <copy file="${src.etc.dir}/idea/Groovy Script Files.xml"
               todir="${irida.plugins.dir}/../filetypes/" overwrite="true"/>
-		<copy file="${src.etc.dir}/idea/GroovyJ Code Style.xml"
+
+        <copy file="${src.etc.dir}/idea/GroovyJ Code Style.xml"
               todir="${irida.plugins.dir}/../codestyles/" overwrite="true"/>
     </target>
 
