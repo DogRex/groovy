@@ -148,4 +148,12 @@ public class GroovyModel {
 		GroovyProject project = getGroovyProject(JavaCore.create(resource.getProject()));
 		project.groovyFileAdded(resource);
 	}
+
+	/**
+	 * @param project
+	 * @return
+	 */
+	public GroovyProject getProject(IProject project) {
+		return getGroovyProject(JavaCore.create(project));
+	}
 }
