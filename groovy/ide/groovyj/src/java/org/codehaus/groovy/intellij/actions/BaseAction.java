@@ -26,6 +26,8 @@ abstract class BaseAction extends AnAction {
     protected final ActionEvents actionEvents = ActionEvents.instance;
 
     public void update(AnActionEvent event) {
-        event.getPresentation().setEnabled(actionEvents.isGroovyFile(event));
+        boolean activate = actionEvents.isGroovyFile(event);
+        event.getPresentation().setEnabled(activate);
+        event.getPresentation().setVisible(activate);
     }
 }

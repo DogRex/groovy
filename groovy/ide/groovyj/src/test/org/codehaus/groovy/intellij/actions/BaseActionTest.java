@@ -62,11 +62,11 @@ public class BaseActionTest extends MockObjectTestCase {
         action.actionPerformed(createAnActionEvent(action));
     }
 
-    public void testIsEnabledIfEventOriginatedFromAGroovyFile() {
+    public void testIsBothEnabledAndVisibleIfEventOriginatedFromAGroovyFile() {
         assertActionEnabledIfEventOriginatedFromGroovFileInProject(createAction(), true);
     }
 
-    public void testIsNotEnabledIfEventDidNotOriginateFromAGroovyFile() {
+    public void testIsNeitherEnabledNorVisibleIfEventDidNotOriginateFromAGroovyFile() {
         assertActionEnabledIfEventOriginatedFromGroovFileInProject(createAction(), false);
     }
 
@@ -75,6 +75,7 @@ public class BaseActionTest extends MockObjectTestCase {
 
         action.update(createAnActionEvent(action));
         assertEquals("action enabled? ", isGroovyFile, action.getTemplatePresentation().isEnabled());
+        assertEquals("action visible? ", isGroovyFile, action.getTemplatePresentation().isVisible());
     }
 
     protected AnActionEvent createAnActionEvent(AnAction action) {
