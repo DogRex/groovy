@@ -1,5 +1,6 @@
 package org.codehaus.groovy.eclipse.editor;
 
+import org.eclipse.jdt.ui.text.IJavaColorConstants;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.TextAttribute;
@@ -34,23 +35,14 @@ public class GroovyConfiguration extends SourceViewerConfiguration {
 		return doubleClickStrategy;
 	}
 
-	protected GroovyScanner getXMLScanner() {
-		if (scanner == null) {
-			scanner = new GroovyScanner(colorManager);
-			scanner.setDefaultReturnToken(
-				new Token(
-					new TextAttribute(
-						colorManager.getColor(IGroovyColorConstants.DEFAULT))));
-		}
-		return scanner;
-	}
-	protected GroovyTagScanner getXMLTagScanner() {
+	
+	protected GroovyTagScanner getGroovyScanner() {
 		if (tagScanner == null) {
 			tagScanner = new GroovyTagScanner(colorManager);
 			tagScanner.setDefaultReturnToken(
 				new Token(
 					new TextAttribute(
-						colorManager.getColor(IGroovyColorConstants.DEFAULT))));
+						colorManager.getColor(IJavaColorConstants.JAVA_DEFAULT))));
 		}
 		return tagScanner;
 	}
@@ -58,21 +50,9 @@ public class GroovyConfiguration extends SourceViewerConfiguration {
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
 		PresentationReconciler reconciler = new PresentationReconciler();
 
-		DefaultDamagerRepairer dr =
-			new DefaultDamagerRepairer(getXMLTagScanner());
-		reconciler.setDamager(dr, GroovyPartitionScanner.XML_TAG);
-		reconciler.setRepairer(dr, GroovyPartitionScanner.XML_TAG);
-
-		dr = new DefaultDamagerRepairer(getXMLScanner());
+		DefaultDamagerRepairer dr = new DefaultDamagerRepairer(getGroovyScanner());
 		reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
 		reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
-
-//		NonRuleBasedDamagerRepairer ndr =
-//			new NonRuleBasedDamagerRepairer(
-//				new TextAttribute(
-//					colorManager.getColor(IGroovyColorConstants.XML_COMMENT)));
-//		reconciler.setDamager(ndr, GroovyPartitionScanner.XML_COMMENT);
-//		reconciler.setRepairer(ndr, GroovyPartitionScanner.XML_COMMENT);
 
 		return reconciler;
 	}

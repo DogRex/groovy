@@ -11,6 +11,8 @@ import java.util.Map;
 import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -114,6 +116,19 @@ public class GroovyModel {
 	public CompileUnit getCompilationUnit(IFile file) {
 		GroovyProject project = getGroovyProject(JavaCore.create(file.getProject()));
 		return project.getCompilationUnit(file);
+	}
+
+	/**
+	 * 
+	 */
+	public void updateProjects() throws CoreException {
+		IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+		for (int i = 0; i < projects.length; i++) {
+			IProject project = projects[i];
+			if(project.hasNature(GroovyPlugin.GROOVY_NATURE)){
+				getGroovyProject(JavaCore.create(project));
+			}
+		}
 	}
 	
 }

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
+import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.codehaus.groovy.eclipse.ui.GroovyDialogProvider;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -70,11 +71,13 @@ public class GroovyPlugin extends AbstractUIPlugin {
 						return true;
 					//only interested in content changes
 					IResource resource = delta.getResource();
-					//only interested in files with the "txt" extension
+
 					if (resource.getType() == IResource.FILE
 						&& "groovy".equalsIgnoreCase(resource.getFileExtension())) {
-						trace("GroovyFilesChangeListner new groovy file detected");
-						GroovyPlugin.getPlugin().groovyFileAdded(resource.getProject());
+						trace("GroovyFilesChangeListner new groovy file detected : " + resource.getName());
+						trace(delta.toString());
+						addGrovyExclusionFilter(resource.getProject());
+						groovyFileAdded(resource.getProject());
 					}
 					return true;
 				}
@@ -83,7 +86,7 @@ public class GroovyPlugin extends AbstractUIPlugin {
 			try {
 				event.getDelta().accept(visitor);
 			} catch (CoreException e) {
-				GroovyPlugin.getPlugin().logException("while respondoing to a resource change", e);
+				logException("while respondoing to a resource change", e);
 			}
 		}
 	}
@@ -104,37 +107,37 @@ public class GroovyPlugin extends AbstractUIPlugin {
 	class AddGroovySupport implements Runnable {
 		final IProject project;
 		public AddGroovySupport(IProject project) {
+			trace("AddGroovySupport.AddGroovySupport()");
 			this.project = project;
 		}
 
 		public void run() {
 			try {
-
 				trace("AddGroovySupport.run()");
-				synchronized (project) {
-					if (!project.exists() || project.hasNature(GROOVY_NATURE))
-						return;
+				if (!project.exists() || project.hasNature(GROOVY_NATURE))
+					return;
 
-					if (dialogProvider.doesUserWantGroovySupport()) {
-						addGroovyNature(project);
-						addGroovyRuntime(project);
-						// make sure .groovy files are not copied to the output
-						// dir
-						IJavaProject javaProject = JavaCore.create(project);
-						String excludedResources =
-							javaProject.getOption("org.eclipse.jdt.core.builder.resourceCopyExclusionFilter", true);
-						if (excludedResources.indexOf("*.groovy") == -1) {
-							excludedResources = excludedResources + ",*.groovy";
-							javaProject.setOption(
-								"org.eclipse.jdt.core.builder.resourceCopyExclusionFilter",
-								excludedResources);
-						}
-
-					}
+				if (dialogProvider.doesUserWantGroovySupport()) {
+					addGrovyExclusionFilter(project);
+					addGroovyNature(project);
+					addGroovyRuntime(project);
 				}
 			} catch (CoreException e) {
 				logException("failed to add groovy support", e);
 			}
+		}
+
+	}
+
+	public void addGrovyExclusionFilter(IProject project) {
+		// make sure .groovy files are not copied to the output
+		// dir
+		IJavaProject javaProject = JavaCore.create(project);
+		String excludedResources =
+			javaProject.getOption("org.eclipse.jdt.core.builder.resourceCopyExclusionFilter", true);
+		if (excludedResources.indexOf("*.groovy") == -1) {
+			excludedResources = excludedResources.length() == 0 ? "*.groovy" : excludedResources + ",*.groovy";
+			javaProject.setOption("org.eclipse.jdt.core.builder.resourceCopyExclusionFilter", excludedResources);
 		}
 	}
 
@@ -150,7 +153,7 @@ public class GroovyPlugin extends AbstractUIPlugin {
 	 *  
 	 */
 	public void addGroovyNature(IProject project) throws CoreException {
-
+		trace("GroovyPlugin.addGroovyNature()");
 		if (project.hasNature(GROOVY_NATURE))
 			return;
 
@@ -164,6 +167,7 @@ public class GroovyPlugin extends AbstractUIPlugin {
 	}
 
 	public void removeGroovyNature(IProject project) throws CoreException {
+		trace("GroovyPlugin.removeGroovyNature()");
 		IProjectDescription description = project.getDescription();
 		String[] ids = description.getNatureIds();
 		for (int i = 0; i < ids.length; ++i) {
@@ -216,6 +220,7 @@ public class GroovyPlugin extends AbstractUIPlugin {
 	 * @param project
 	 */
 	public void addGroovyRuntime(IProject project) {
+		trace("GroovyPlugin.addGroovyRuntime()");
 		List groovyRuntimeJars = GroovyRuntimePlugin.getPlugin().getGroovyRuntimeJars();
 		for (Iterator iter = groovyRuntimeJars.iterator(); iter.hasNext();) {
 			String jarName = (String) iter.next();
@@ -228,6 +233,7 @@ public class GroovyPlugin extends AbstractUIPlugin {
 	}
 
 	public void addJunitSupprt(IJavaProject project) throws MalformedURLException, JavaModelException, IOException {
+		trace("GroovyPlugin.addJunitSupprt()");
 		IClasspathEntry[] entries = project.getRawClasspath();
 		boolean found = false;
 		for (int i = 0; i < entries.length; i++) {
@@ -268,6 +274,7 @@ public class GroovyPlugin extends AbstractUIPlugin {
 	public void startup() throws CoreException {
 		super.startup();
 		getWorkspace().addResourceChangeListener(new GroovyFilesChangeListner());
+		GroovyModel.getModel().updateProjects();
 
 	}
 

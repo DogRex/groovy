@@ -4,9 +4,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.jdt.internal.ui.JavaPlugin;
+import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.jdt.ui.text.IColorManager;
+import org.eclipse.jdt.ui.text.JavaTextTools;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public class ColorManager {
 
@@ -17,12 +24,22 @@ public class ColorManager {
 		while (e.hasNext())
 			 ((Color) e.next()).dispose();
 	}
-	public Color getColor(RGB rgb) {
-		Color color = (Color) fColorTable.get(rgb);
-		if (color == null) {
-			color = new Color(Display.getCurrent(), rgb);
-			fColorTable.put(rgb, color);
-		}
-		return color;
+	public Color getColor(String key) {
+		return getColor(getPreferenceStore(),key);
 	}
+
+	private static Color getColor(IPreferenceStore store, String key, IColorManager manager) {
+		RGB rgb= PreferenceConverter.getColor(store, key);
+		return manager.getColor(rgb);
+	}
+	
+	private static Color getColor(IPreferenceStore store, String key) {
+		JavaTextTools textTools= JavaPlugin.getDefault().getJavaTextTools();
+		return getColor(store, key, textTools.getColorManager());
+	}
+	
+	private IPreferenceStore getPreferenceStore() {
+		return ((AbstractUIPlugin)Platform.getPlugin(JavaUI.ID_PLUGIN)).getPreferenceStore();
+	}
+
 }

@@ -20,6 +20,9 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.codehaus.groovy.eclipse.launchers.GroovyRunner;
 import org.codehaus.groovy.eclipse.tools.EclipseFileSystemCompiler;
+import org.codehaus.groovy.syntax.SyntaxException;
+import org.codehaus.groovy.tools.ExceptionCollector;
+import org.codehaus.groovy.tools.MultiException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -33,6 +36,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.swt.widgets.Display;
 
 /**
  * @author MelamedZ
@@ -66,21 +70,56 @@ public class GroovyProject implements IResourceVisitor {
 		}
 
 		public void run(IProgressMonitor monitor) throws CoreException {
-			GroovyPlugin.trace("creating marker in " + resource.getName());
-			IMarker marker = resource.createMarker(GROOVY_ERROR_MARKER); //$NON-NLS-1$
-			Map map = new HashMap(3);
-			// TODO positional info for marker following exception hiera
-			// refactor
-			//map.put(IMarker.CHAR_START, workOutCharStart(e));
-			map.put(IMarker.SEVERITY, new Integer(IMarker.SEVERITY_ERROR));
-			map.put(IMarker.MESSAGE, e.getLocalizedMessage());
-			StringWriter trace = new StringWriter();
-			e.printStackTrace(new PrintWriter(trace));
-			map.put("trace", trace.toString()); //$NON-NLS-1$
-			marker.setAttributes(map);
 
+			if (e instanceof MultiException) {
+				MultiException me = (MultiException) e;
+				Exception[] exceptions = me.getErrors();
+				for (int i = 0; i < exceptions.length; i++) {
+					Exception exception = exceptions[i];
+					// i hate this mess 
+					if(exception instanceof ExceptionCollector){
+						ExceptionCollector ec = (ExceptionCollector) exception;
+						Iterator it = ec.iterator();
+						while( it.hasNext()){
+							markerFromException((Exception) it.next());
+						}
+					}else{
+						markerFromException(exception);
+					}
+				}
+			} else {
+				markerFromException(e);
+			}
 		}
 
+		/**
+		 * @param exception
+		 */
+		private void markerFromException(Exception exception) throws CoreException {
+			int line = 0, startCol = 0, endCol = 0;
+			if (exception instanceof SyntaxException) {
+				SyntaxException se = (SyntaxException) exception;
+				line = se.getLine();
+				startCol = se.getStartColumn();
+				endCol = se.getEndColumn();
+			}
+			
+			StringWriter trace = new StringWriter();
+			e.printStackTrace(new PrintWriter(trace));
+			createMarker(IMarker.SEVERITY_ERROR, exception.getMessage(), trace.toString(), line, startCol, endCol);
+		}
+
+		private void createMarker(int severity, String message, String stackTrace, int line, int startCol, int endCol)
+			throws CoreException {
+			GroovyPlugin.trace("creating marker in " + resource.getName());			
+			IMarker marker = resource.createMarker(GROOVY_ERROR_MARKER); //$NON-NLS-1$
+			Map map = new HashMap(3);
+			map.put(IMarker.SEVERITY, new Integer(severity));
+			map.put(IMarker.LINE_NUMBER, new Integer(line));
+			map.put(IMarker.MESSAGE, message);
+			map.put("trace", stackTrace); //$NON-NLS-1$
+			marker.setAttributes(map);
+		}
 	}
 
 	/**
@@ -114,7 +153,9 @@ public class GroovyProject implements IResourceVisitor {
 
 	private String getOutputPath(IJavaProject javaProject) throws JavaModelException {
 		String outputPath =
-			javaProject.getProject().getLocation().toString() + Path.SEPARATOR + javaProject.getOutputLocation().removeFirstSegments(1).toString();
+			javaProject.getProject().getLocation().toString()
+				+ Path.SEPARATOR
+				+ javaProject.getOutputLocation().removeFirstSegments(1).toString();
 		return outputPath;
 	}
 
@@ -127,7 +168,7 @@ public class GroovyProject implements IResourceVisitor {
 				classPath.append(entry.getPath().toString() + ";");
 			}
 		}
-		
+
 		classPath.append(getOutputPath(javaProject) + ";");
 		GroovyPlugin.trace("groovy cp = " + classPath.toString());
 		compiler.setClasspath(classPath.toString());
@@ -145,6 +186,7 @@ public class GroovyProject implements IResourceVisitor {
 			if (extension != null && extension.equalsIgnoreCase("groovy")) {
 				// build and save compilationUnit
 				IPath fullPath = resource.getFullPath();
+
 				GroovyPlugin.trace("found -" + fullPath);
 				String key = file.getFullPath().toString();
 				if (!compilationUnits.containsKey(key)) {
@@ -264,11 +306,25 @@ public class GroovyProject implements IResourceVisitor {
 		listeners.remove(listener);
 	}
 
-	private void fireGroovyFileBuilt(IFile file, CompileUnit unit) {
-		for (Iterator iter = listeners.iterator(); iter.hasNext();) {
-			GroovyBuildListner buildListner = (GroovyBuildListner) iter.next();
-			buildListner.fileBuilt(file, unit);
+	class FireFileBuiltAction implements Runnable{
+		private IFile file;
+		CompileUnit unit;
+		
+		public void run() {
+			for (Iterator iter = listeners.iterator(); iter.hasNext();) {
+				GroovyBuildListner buildListner = (GroovyBuildListner) iter.next();
+				buildListner.fileBuilt(file, unit);
+			}
 		}
+
+		public FireFileBuiltAction(IFile file, CompileUnit unit) {
+			this.file = file;
+			this.unit = unit;
+		}
+	}
+
+	private void fireGroovyFileBuilt(IFile file, CompileUnit unit) {
+		Display.getDefault().asyncExec(new FireFileBuiltAction(file,unit));
 	}
 	/**
 	 * @return Returns the javaProject.
