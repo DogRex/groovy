@@ -66,7 +66,9 @@ public class GroovyController {
     }
 
     public CompilationUnit createCompilationUnit(VirtualFile fileToCompile, Module module) {
-        return new CompilationUnit(createCompilerConfiguration(fileToCompile, module));
+        CompilerConfiguration compilerConfiguration = createCompilerConfiguration(fileToCompile, module);
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        return new CompilationUnit(compilerConfiguration, null, contextClassLoader);
     }
 
     private CompilerConfiguration createCompilerConfiguration(VirtualFile fileToCompile, Module module) {

@@ -66,7 +66,7 @@ public class GroovyControllerTest extends MockObjectTestCase {
         assertEquals(0, shell.getContext().getVariables().size());
     }
 
-    public void testCreatesAConfiguredCompilationUnitForASingleCompilableFile() throws IOException {
+    public void testCreatesACompilationUnitConfiguredWithTheClassLoaderOfTheCurrentThreadForASingleCompilableFile() throws IOException {
         String expectedCharsetName = "UTF-8";
         String expectedClasspathEntry = "some_lib.jar";
         String exargetDirectoryPath = "/home/foobar/acme/classes";
@@ -79,6 +79,7 @@ public class GroovyControllerTest extends MockObjectTestCase {
         assertEquals("number of classpath items", 1, configuration.getClasspath().size());
         assertEquals("classpath item", expectedClasspathEntry, configuration.getClasspath().get(0));
         assertEquals("target directory", new File(exargetDirectoryPath), configuration.getTargetDirectory());
+        assertSame("class loader", Thread.currentThread().getContextClassLoader(), compilationUnit.getClassLoader());
     }
 
     private Module createModuleForCreatingACompilerConfiguration(String charsetName, String classpath, String targetDirectoryPath) {
