@@ -103,7 +103,7 @@ public class GroovyASTContentProvider implements ITreeContentProvider {
 	 * @see org.eclipse.jface.viewers.IContentProvider#dispose()
 	 */
 	public void dispose() {
-
+		GroovyModel.getModel().removeBuildListener(listner);
 	}
 
 	/*
