@@ -1,14 +1,12 @@
 package org.codehaus.groovy.eclipse.editor;
 
 import org.codehaus.groovy.eclipse.editor.contentoutline.GroovyContentOutline;
-import org.codehaus.groovy.eclipse.model.IGroovyElement;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.ui.texteditor.ExtendedTextEditor;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 public class GroovyEditor extends ExtendedTextEditor {
 
-	private IGroovyElement groovyElement;
 	private ColorManager colorManager;
 	private GroovyContentOutline contentOutline;
 	public GroovyEditor() {

@@ -6,7 +6,6 @@ import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -34,9 +33,8 @@ public class GroovyBuilder extends IncrementalProjectBuilder {
 	/**
 	 * @see IncrementalProjectBuilder#build
 	 */
-	protected IProject[] build(int kind, Map args, IProgressMonitor monitor)
-		throws CoreException {
-			GroovyModel.getModel().buildGroovyContent(javaProject);
+	protected IProject[] build(int kind, Map args, IProgressMonitor monitor){
+			GroovyModel.getModel().buildGroovyContent(javaProject, monitor);
 			return null;
 		}
 }

@@ -14,6 +14,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 
@@ -76,10 +77,9 @@ public class GroovyModel {
 	/**
 	 * @param javaProject
 	 */
-	public void buildGroovyContent(IJavaProject javaProject)
-		throws CoreException {
+	public void buildGroovyContent(IJavaProject javaProject, IProgressMonitor monitor) {
 		GroovyProject gp = getGroovyProject(javaProject);
-		gp.buildGroovyContent();
+		gp.buildGroovyContent(monitor);
 	}
 
 	/**
@@ -122,9 +122,9 @@ public class GroovyModel {
 	 * 
 	 */
 	public void updateProjects() throws CoreException {
-		IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
-		for (int i = 0; i < projects.length; i++) {
-			IProject project = projects[i];
+		IProject[] allProjects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+		for (int i = 0; i < allProjects .length; i++) {
+			IProject project = allProjects[i];
 			if(project.hasNature(GroovyPlugin.GROOVY_NATURE)){
 				getGroovyProject(JavaCore.create(project));
 			}

@@ -35,7 +35,7 @@ public class NewClassWizard extends NewElementWizard  {
 	/* (non-Javadoc)
 	 * @see org.eclipse.jdt.internal.ui.wizards.NewElementWizard#finishPage(org.eclipse.core.runtime.IProgressMonitor)
 	 */
-	protected void finishPage(IProgressMonitor monitor) throws InterruptedException, CoreException {
+	protected void finishPage(IProgressMonitor monitor) throws  CoreException {
 		IFile file = fPage.createGroovyType(monitor);
 		openResource(file);
 	}

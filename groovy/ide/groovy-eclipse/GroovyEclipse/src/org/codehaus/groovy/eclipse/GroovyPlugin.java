@@ -46,8 +46,8 @@ public class GroovyPlugin extends AbstractUIPlugin {
 	private ResourceBundle resourceBundle;
 	public static final String GROOVY_BUILDER = "org.codehaus.groovy.eclipse.groovyBuilder"; //$NON-NLS-1$
 	public static final String GROOVY_NATURE = "org.codehaus.groovy.eclipse.groovyNature"; //$NON-NLS-1$
-	private GroovyDialogProvider dialogProvider = new GroovyDialogProvider();
-	private static boolean trace;
+	GroovyDialogProvider dialogProvider = new GroovyDialogProvider();
+	static boolean trace;
 	static {
 		String value = Platform.getDebugOption("org.codehaus.groovy.eclipse/trace"); //$NON-NLS-1$
 		if (value != null && value.equalsIgnoreCase("true")) //$NON-NLS-1$
@@ -247,9 +247,9 @@ public class GroovyPlugin extends AbstractUIPlugin {
 		}
 	}
 
-	private void addJar(IJavaProject javaProject, String plugin, String jar)
+	private void addJar(IJavaProject javaProject, String srcPlugin, String jar)
 		throws MalformedURLException, IOException, JavaModelException {
-		Path result = findFileInPlugin(plugin, jar);
+		Path result = findFileInPlugin(srcPlugin, jar);
 		IClasspathEntry[] oldEntries = javaProject.getRawClasspath();
 		IClasspathEntry[] newEntries = new IClasspathEntry[oldEntries.length + 1];
 		System.arraycopy(oldEntries, 0, newEntries, 0, oldEntries.length);
@@ -257,9 +257,9 @@ public class GroovyPlugin extends AbstractUIPlugin {
 		javaProject.setRawClasspath(newEntries, null);
 	}
 
-	private Path findFileInPlugin(String plugin, String file) throws MalformedURLException, IOException {
+	private Path findFileInPlugin(String srcPlugin, String file) throws MalformedURLException, IOException {
 		IPluginRegistry registry = Platform.getPluginRegistry();
-		IPluginDescriptor descriptor = registry.getPluginDescriptor(plugin);
+		IPluginDescriptor descriptor = registry.getPluginDescriptor(srcPlugin);
 		URL pluginURL = descriptor.getInstallURL();
 		URL jarURL = new URL(pluginURL, file);
 		URL localJarURL = Platform.asLocalURL(jarURL);

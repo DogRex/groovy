@@ -15,7 +15,6 @@ public class GroovyConfiguration extends SourceViewerConfiguration {
 	
 	private GroovyDoubleClickStrategy doubleClickStrategy;
 	private GroovyTagScanner tagScanner;
-	private GroovyScanner scanner;
 	private ColorManager colorManager;
 
 	public GroovyConfiguration(ColorManager colorManager) {

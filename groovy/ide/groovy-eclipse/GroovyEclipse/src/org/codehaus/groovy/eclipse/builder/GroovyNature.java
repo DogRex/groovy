@@ -13,11 +13,6 @@ import org.eclipse.core.runtime.CoreException;
 public class GroovyNature implements IProjectNature {
 	private IProject project;
 
-	/**
-	 *  
-	 */
-	public GroovyNature() {
-	}
 
 	/**
 	 * @see IProjectNature#configure

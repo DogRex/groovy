@@ -2,11 +2,11 @@ package org.codehaus.groovy.eclipse.wizards;
 
 import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
 import org.eclipse.jdt.internal.ui.wizards.NewElementWizard;
+
 
 
 /**
@@ -36,7 +36,7 @@ public class NewTestWizard extends NewElementWizard  {
 	/* (non-Javadoc)
 	 * @see org.eclipse.jdt.internal.ui.wizards.NewElementWizard#finishPage(org.eclipse.core.runtime.IProgressMonitor)
 	 */
-	protected void finishPage(IProgressMonitor monitor) throws InterruptedException, CoreException {
+	protected void finishPage(IProgressMonitor monitor){
 		IFile file;
 		try {
 			file = fPage.createGroovyTest(monitor);

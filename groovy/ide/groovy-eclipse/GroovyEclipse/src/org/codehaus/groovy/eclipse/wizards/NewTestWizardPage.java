@@ -128,16 +128,20 @@ public class NewTestWizardPage extends NewTypeWizardPage {
 	}
 
 	public IFile createGroovyTest(IProgressMonitor monitor) throws CoreException, MalformedURLException, JavaModelException, IOException {
+		monitor.beginTask("Creating Groovy Test...",2);
 		IPackageFragment packageFragment = getPackageFragment();
 		// add junit if required
 		GroovyPlugin.getPlugin().addJunitSupprt(packageFragment.getJavaProject());
 		StringBuffer src = new StringBuffer();
+		monitor.worked(1);
 		src.append("import  groovy.util.GroovyTestCase");
 		src.append("\n\n\n");
 		src.append("class ");
 		src.append(getTypeName());
 		src.append(" extends GroovyTestCase");
 		src.append("{\n\n\t void testSomething() {\n\t}\n}");
+		monitor.worked(1);
+		monitor.done();
 		return WizardUtil.createGroovyType(packageFragment, getTypeName() + ".groovy", src.toString());
 	}
 

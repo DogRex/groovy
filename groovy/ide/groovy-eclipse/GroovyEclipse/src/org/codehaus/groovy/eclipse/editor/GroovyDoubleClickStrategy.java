@@ -64,6 +64,7 @@ public class GroovyDoubleClickStrategy implements ITextDoubleClickStrategy {
 			fText.setSelectedRange(offset, len);
 			return true;
 		} catch (BadLocationException x) {
+			
 		}
 
 		return false;

@@ -29,6 +29,7 @@
       <import plugin="org.eclipse.jdt.junit.runtime"/>
       <import plugin="org.codehaus.groovy"/>
       <import plugin="org.eclipse.ui.views"/>
+      <import plugin="org.eclipse.core.runtime.compatibility"/>
    </requires>
 
 
@@ -90,8 +91,8 @@
       <shortcut
             label="Groovy"
             icon="icons/run_groovy_class.gif"
-            modes="run"
             class="org.codehaus.groovy.eclipse.launchers.GroovyLaunchShortcut"
+            modes="run"
             id="org.eclipse.jdt.debug.ui.groovyShortcut">
          <perspective
                id="org.eclipse.jdt.ui.JavaPerspective">
@@ -122,10 +123,10 @@
          point="org.eclipse.ui.editors">
       <editor
             name="Groovy Editor"
-            icon="icons/groovy_file.gif"
             extensions="groovy"
-            class="org.codehaus.groovy.eclipse.editor.GroovyEditor"
+            icon="icons/groovy_file.gif"
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            class="org.codehaus.groovy.eclipse.editor.GroovyEditor"
             id="org.codehaus.groovy.eclipse.editor.GroovyEditor">
       </editor>
    </extension>

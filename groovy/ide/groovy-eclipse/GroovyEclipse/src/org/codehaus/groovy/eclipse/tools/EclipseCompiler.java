@@ -93,7 +93,6 @@ import org.objectweb.asm.util.DumpClassVisitor;
  */
 
 public class EclipseCompiler {
-	private static final Exception[] EMPTY_EXCEPTION_ARRAY = new Exception[0];
 
 	private Verifier verifier; // Verifies and completes ASTs before byte code generation
 	private CompilerClassLoader classLoader; // Our class loader

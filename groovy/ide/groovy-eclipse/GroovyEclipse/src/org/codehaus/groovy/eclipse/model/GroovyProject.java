@@ -25,14 +25,12 @@ import org.codehaus.groovy.tools.ExceptionCollector;
 import org.codehaus.groovy.tools.MultiException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
@@ -49,7 +47,7 @@ public class GroovyProject implements IResourceVisitor {
 	private Map compilationUnits = new HashMap();
 	private EclipseFileSystemCompiler compiler = new EclipseFileSystemCompiler();
 	public static final String GROOVY_ERROR_MARKER = "org.codehaus.groovy.eclipse.groovyFailure";
-	private List listeners = new ArrayList();
+	List listeners = new ArrayList();
 
 	/**
 	 * @author MelamedZ
@@ -117,6 +115,8 @@ public class GroovyProject implements IResourceVisitor {
 			map.put(IMarker.SEVERITY, new Integer(severity));
 			map.put(IMarker.LINE_NUMBER, new Integer(line));
 			map.put(IMarker.MESSAGE, message);
+			map.put(IMarker.CHAR_START, new Integer(startCol));
+			map.put(IMarker.CHAR_END, new Integer(endCol));
 			map.put("trace", stackTrace); //$NON-NLS-1$
 			marker.setAttributes(map);
 		}
@@ -130,7 +130,7 @@ public class GroovyProject implements IResourceVisitor {
 		this.javaProject = javaProject;
 	}
 
-	public void buildGroovyContent() throws CoreException {
+	public void buildGroovyContent(IProgressMonitor monitor){
 		// TODO keep track of class files and clean before compile
 		// let's start naively , and build all groovy files each time
 		try {
@@ -144,17 +144,15 @@ public class GroovyProject implements IResourceVisitor {
 	}
 
 	private void setOutputDirectory(IJavaProject javaProject) throws JavaModelException {
-		IPath outputLocation = javaProject.getOutputLocation();
-		IProject project = javaProject.getProject();
 		String outputPath = getOutputPath(javaProject);
 		GroovyPlugin.trace("groovy output = " + outputPath);
 		compiler.setOutputDir(outputPath);
 	}
 
-	private String getOutputPath(IJavaProject javaProject) throws JavaModelException {
+	private String getOutputPath(IJavaProject jProject) throws JavaModelException {
 		String outputPath =
-			javaProject.getProject().getLocation().toString()
-				+ Path.SEPARATOR
+			jProject.getProject().getLocation().toString()
+				+ IPath.SEPARATOR
 				+ javaProject.getOutputLocation().removeFirstSegments(1).toString();
 		return outputPath;
 	}
@@ -179,7 +177,7 @@ public class GroovyProject implements IResourceVisitor {
 	 * 
 	 * @see org.eclipse.core.resources.IResourceVisitor#visit(org.eclipse.core.resources.IResource)
 	 */
-	public boolean visit(IResource resource) throws CoreException {
+	public boolean visit(IResource resource) {
 		if (resource.getType() == IResource.FILE) {
 			String extension = resource.getFileExtension();
 			IFile file = (IFile) resource;
@@ -283,7 +281,7 @@ public class GroovyProject implements IResourceVisitor {
 			List classes = unit.getClasses();
 			for (Iterator iterator = classes.iterator(); iterator.hasNext();) {
 				ClassNode classNode = (ClassNode) iterator.next();
-				MethodNode node = classNode.getMethod("main");
+				MethodNode node = (MethodNode) classNode.getDeclaredMethods("main").get(0);
 				if (node != null && node.isStatic() && node.isVoidMethod()) {
 					results.add(classNode.getName());
 				}

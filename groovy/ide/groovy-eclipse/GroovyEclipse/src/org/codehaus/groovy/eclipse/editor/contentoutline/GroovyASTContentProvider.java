@@ -33,7 +33,6 @@ public class GroovyASTContentProvider implements ITreeContentProvider {
 	}
 
 	public Object getParent(Object element) {
-		System.out.println("GroovyASTContentProvider.getParent() "+element.getClass().getName());
 		TreeAdapter adapter = (TreeAdapter) element;
 		return adapter.getParent();
 	}
@@ -67,8 +66,8 @@ public class GroovyASTContentProvider implements ITreeContentProvider {
 	 * @param compilationUnit2
 	 * @param rootElements
 	 */
-	private void createClassElements(CompileUnit compilationUnit, List rootElements) {
-		List classes = compilationUnit.getClasses();
+	private void createClassElements(CompileUnit cUnit, List rootElements) {
+		List classes = cUnit.getClasses();
 		for (Iterator iter = classes.iterator(); iter.hasNext();) {
 			ClassNode classNode = (ClassNode) iter.next();
 			rootElements.add(new ClassAdapter(classNode));
@@ -81,8 +80,8 @@ public class GroovyASTContentProvider implements ITreeContentProvider {
 	 *  
 	 */
 
-	private void createPackageAndImportElements(CompileUnit compilationUnit, List rootElements) {
-		ModuleNode module = (ModuleNode) compilationUnit.getModules().get(0);
+	private void createPackageAndImportElements(CompileUnit cUnit, List rootElements) {
+		ModuleNode module = (ModuleNode) cUnit.getModules().get(0);
 		String packageName = module.getPackageName();
 		rootElements.add(new PackageAdapter(packageName,null));
 		rootElements.add(new ImportContainer(module));

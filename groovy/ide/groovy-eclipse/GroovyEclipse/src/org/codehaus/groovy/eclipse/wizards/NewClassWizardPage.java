@@ -27,7 +27,6 @@ import org.eclipse.swt.widgets.Composite;
  */
 public class NewClassWizardPage extends NewTypeWizardPage {
 	
-	
 	/**
 	 * Creates a new <code>NewClassWizardPage</code>
 	 */
@@ -125,11 +124,13 @@ public class NewClassWizardPage extends NewTypeWizardPage {
 	}
 	
 	
-	public IFile createGroovyType(IProgressMonitor monitor) throws CoreException, InterruptedException {
+	public IFile createGroovyType(IProgressMonitor monitor) throws CoreException{
+		monitor.beginTask("Creating Groovy Class..",2);
 		String superClass = getSuperClass();
 		IPackageFragment packageFragment = getPackageFragment();
 		String shortSuperName = WizardUtil.getSuperName(packageFragment,superClass);
 		StringBuffer src = new StringBuffer();
+		monitor.worked(1);
 		if(shortSuperName.length() >0){
 			src.append("import  ");
 			src.append(superClass);
@@ -141,7 +142,9 @@ public class NewClassWizardPage extends NewTypeWizardPage {
 		if(shortSuperName.length() >0){
 			src.append(" extends "+shortSuperName);
 		}
+		monitor.worked(1);
 		src.append("{\n\n\t static void main(args) {\n\t}\n}");
+		monitor.done();
 		return WizardUtil.createGroovyType(packageFragment,getTypeName()+".groovy",src.toString());
 	}
 

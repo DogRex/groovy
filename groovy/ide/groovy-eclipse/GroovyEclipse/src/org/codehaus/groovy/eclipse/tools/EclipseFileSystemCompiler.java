@@ -19,8 +19,6 @@ import org.eclipse.core.runtime.Platform;
 
 public class EclipseFileSystemCompiler 
 {
-	private static final File[] EMPTY_FILE_ARRAY = new File[0];
-
 	private EclipseCompiler compiler;
 	private File outputDir;
 

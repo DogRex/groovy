@@ -55,7 +55,7 @@ public abstract class TreeAdapter {
 class PackageAdapter extends TreeAdapter {
 	public PackageAdapter(String packageName, Object parent) {
 		this.parent = parent;
-		name = packageName;
+		name = packageName==null?"":packageName;
 		lineNumber = 1;
 	}
 	Image getImage() {
@@ -106,10 +106,7 @@ class MethodAdapter extends TreeAdapter {
 }
 
 class ConstructorAdapter extends TreeAdapter {
-	private ConstructorNode ctorNode;
-
 	ConstructorAdapter(ClassNode classNode, ConstructorNode ctorNode, Object parent) {
-		this.ctorNode = ctorNode;
 		this.parent = parent;
 		name = classNode.getNameWithoutPackage();
 		lineNumber = ctorNode.getLineNumber();
@@ -166,15 +163,15 @@ class ClassAdapter extends TreeAdapter {
 			public void visitClass(ClassNode node) {
 			}
 			public void visitConstructor(ConstructorNode node) {
-				add(new ConstructorAdapter(classNode, node, this), node);
+				add(new ConstructorAdapter(classNode, node, ClassAdapter.this), node);
 			}
 			public void visitMethod(MethodNode node) {
-				add(new MethodAdapter(node, this), node);
+				add(new MethodAdapter(node, ClassAdapter.this), node);
 			}
 			public void visitField(FieldNode node) {
 			}
 			public void visitProperty(PropertyNode node) {
-				add(new PropertyAdapter(node, this), node);
+				add(new PropertyAdapter(node, ClassAdapter.this), node);
 			}
 
 			private void add(TreeAdapter adapter, MetadataNode node) {

@@ -1,6 +1,2 @@
 #enable tracing for the groovy plugin
 org.codehaus.groovy.eclipse/trace=true
-#enable debug mode compilation
-org.codehaus.groovy.eclipse/compiler/debug=false
-#enable verbose compilation 
-org.codehaus.groovy.eclipse/compiler/verbose=false
