@@ -19,6 +19,7 @@ import org.codehaus.groovy.eclipse.launchers.GroovyRunner;
 import org.codehaus.groovy.eclipse.tools.EclipseFileSystemCompiler;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -90,12 +91,19 @@ public class GroovyProject{
 		return outputPath;
 	}
 	private void setClassPath(IJavaProject javaProject) throws JavaModelException, Exception {
+		IWorkspaceRoot root = javaProject.getProject().getWorkspace().getRoot(); 
 		IClasspathEntry[] cpEntries = javaProject.getResolvedClasspath(false);
 		StringBuffer classPath = new StringBuffer();
 		for (int i = 0; i < cpEntries.length; i++) {
 			IClasspathEntry entry = cpEntries[i];
 			if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
-				classPath.append(entry.getPath().toString() + ";");
+				if(entry.getPath().getDevice()== null) {
+				 	IResource resource = root.findMember(entry.getPath());
+				 	if(resource != null)
+				 		classPath.append(resource.getLocation().toString() + ";");
+				 	} else {
+				 		classPath.append(entry.getPath().toString() + ";");
+				 	} 	
 			}
 		}
 		classPath.append(getOutputPath(javaProject) + ";");
