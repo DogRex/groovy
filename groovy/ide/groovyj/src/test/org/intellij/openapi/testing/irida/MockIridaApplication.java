@@ -46,12 +46,12 @@ public class MockIridaApplication extends MockUserDataHolder implements MockAppl
         return null;
     }
 
-    public /*<T> T*/Object runReadAction(Computable/*<T>*/ computation) {
-        return null;
+    public Object runReadAction(Computable computation) {
+        return computation.compute();
     }
 
     public Object runWriteAction(Computable computation) {
-        return null;
+        return computation.compute();
     }
 
     public boolean isReadAccessAllowed() {
