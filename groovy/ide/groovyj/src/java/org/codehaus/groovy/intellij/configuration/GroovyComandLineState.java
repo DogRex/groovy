@@ -41,10 +41,14 @@ public class GroovyComandLineState extends JavaCommandLineState {
         JavaParameters parameters = new JavaParameters();
         parameters.setMainClass(GroovyShell.class.getName());
         parameters.getVMParametersList().addParametersString(runConfiguration.getVmParameters());
-        parameters.getProgramParametersList().addParametersString(runConfiguration.getScriptPath());
+        parameters.getProgramParametersList().addParametersString(quoteParameter(runConfiguration.getScriptPath()));
         parameters.getProgramParametersList().addParametersString(runConfiguration.getScriptParameters());
         parameters.configureByModule(runConfiguration.getModule(), JavaParameters.JDK_AND_CLASSES_AND_TESTS);
         parameters.setWorkingDirectory(runConfiguration.getWorkingDirectoryPath());
         return parameters;
+    }
+
+    static String quoteParameter(String parameterValue) {
+        return "\"" + parameterValue + "\"";
     }
 }

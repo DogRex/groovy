@@ -22,14 +22,20 @@ import javax.swing.Icon;
 
 import com.intellij.execution.LocatableConfigurationType;
 import com.intellij.execution.Location;
+import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ProjectFileIndex;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.IconLoader;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.intellij.util.PathUtil;
 
 import org.codehaus.groovy.intellij.EditorAPIFactory;
+import org.codehaus.groovy.intellij.GroovySupportLoader;
 
 public class GroovyConfigurationType implements LocatableConfigurationType {
 
@@ -70,51 +76,40 @@ public class GroovyConfigurationType implements LocatableConfigurationType {
     }
 
     public RunnerAndConfigurationSettings createConfigurationByLocation(Location location) {
-        if ((location == null) || (location.getPsiElement() == null)) {
+        if (location == null || location.getPsiElement() == null || location.getOpenFileDescriptor() == null) {
             return null;
         }
-/*
-        PsiClass groovyScript = findGroovyScript(location.getPsiElement());
-        return (groovyScript != null) ? createRunnerAndConfigurationSettings(location, groovyScript) : null;
-*/
-        return null;
+
+        return createRunnerAndConfigurationSettings(location);
     }
 
-/*
-    private RunnerAndConfigurationSettings createRunnerAndConfigurationSettings(Location location, PsiClass groovyScript) {
+    private RunnerAndConfigurationSettings createRunnerAndConfigurationSettings(Location location) {
+        VirtualFile file = location.getOpenFileDescriptor().getFile();
+        if (GroovySupportLoader.GROOVY != file.getFileType()) {
+            return null;
+        }
+
         RunManager runManager = RunManager.getInstance(location.getProject());
-        RunnerAndConfigurationSettings runnerAndConfigurationSettings = runManager.createRunConfiguration("", configurationFactory);
-        GroovyRunConfiguration runConfiguration = (GroovyRunConfiguration) runnerAndConfigurationSettings.getConfiguration();
+        RunnerAndConfigurationSettings settings = runManager.createRunConfiguration(file.getNameWithoutExtension(), configurationFactory);
 
-        runConfiguration.setName(groovyScript.getName());
-        runConfiguration.setQualifiedNameForScript(groovyScript.getQualifiedName());
+        GroovyRunConfiguration runConfiguration = (GroovyRunConfiguration) settings.getConfiguration();
+        runConfiguration.setScriptPath(PathUtil.getCanonicalPath(file.getPath()));
 
-        Project project = groovyScript.getManager().getProject();
-        ProjectFileIndex fileIndex = ProjectRootManager.getInstance(project).getFileIndex();
-        VirtualFile virtualFile = groovyScript.getContainingFile().getVirtualFile();
-        Module module = fileIndex.getModuleForFile(virtualFile);
-        runConfiguration.setModule(module);
+        Project project = location.getPsiElement().getManager().getProject();
+        ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(project).getFileIndex();
+        runConfiguration.setModule(projectFileIndex.getModuleForFile(file));
 
-        return runnerAndConfigurationSettings;
+        return settings;
     }
-*/
 
     public boolean isConfigurationByElement(RunConfiguration runConfiguration, Project project, PsiElement psiElement) {
         if (runConfiguration instanceof GroovyRunConfiguration) {
-/*
-            PsiElement selectedGroovyScript = findGroovyScript(psiElement);
-            if (selectedGroovyScript != null) {
-                String absolutePathToScript = ((GroovyRunConfiguration) runConfiguration).getAbsolutePathToScript();
-                return selectedGroovyScript.getContainingFile().getVirtualFile().getPath().equals(absolutePathToScript);
+            VirtualFile file = psiElement.getContainingFile().getVirtualFile();
+            if (GroovySupportLoader.GROOVY == file.getFileType()) {
+                String scripthPath = ((GroovyRunConfiguration) runConfiguration).getScriptPath();
+                return PathUtil.getCanonicalPath(file.getPath()).equals(scripthPath);
             }
-*/
         }
         return false;
     }
-
-/*
-    private PsiClass findGroovyScript(PsiElement psiElement) {
-        return null;
-    }
-*/
 }

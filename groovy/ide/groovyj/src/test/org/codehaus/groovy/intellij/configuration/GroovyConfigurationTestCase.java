@@ -18,6 +18,8 @@
 
 package org.codehaus.groovy.intellij.configuration;
 
+import com.intellij.execution.RunManager;
+import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.openapi.module.JavaModuleType;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -36,7 +38,6 @@ public class GroovyConfigurationTestCase extends MockObjectTestCase {
 
     protected GroovyRunConfiguration createRunConfiguration(String vmParameters, String scriptPath, String programParameters, String workingDirectoryPath) {
         Project stubbedProject = createStubbedProject();
-
         GroovyConfigurationFactory configurationFactory = new GroovyConfigurationFactory(null, null, null);
         GroovyRunConfiguration runConfiguration = new GroovyRunConfiguration(null, stubbedProject, configurationFactory, null);
         runConfiguration.setVmParameters(vmParameters);
@@ -49,12 +50,27 @@ public class GroovyConfigurationTestCase extends MockObjectTestCase {
 
     protected Project createStubbedProject() {
         Mock stubProject = mock(Project.class, "stubbedProject#" + TestUtil.nextAbsRandomInt());
+        return createStubbedProject(stubProject);
+    }
+
+    protected Project createStubbedProject(Mock stubProject) {
         Mock stubProjectFile = Mocks.createVirtualFileMock(this, "mockProjectFile");
         stubProject.stubs().method("getProjectFile").will(returnValue(stubProjectFile.proxy()));
 
         Mock stubProjectFileParentDirectory = Mocks.createVirtualFileMock(this, "mockProjectFileParentDirectory");
         stubProjectFile.stubs().method("getParent").will(returnValue(stubProjectFileParentDirectory.proxy()));
         stubProjectFileParentDirectory.stubs().method("getPath").will(returnValue(null));
+
+        Mock stubRunManager = mock(RunManager.class);
+        stubProject.stubs().method("getComponent").with(same(RunManager.class)).will(returnValue(stubRunManager.proxy()));
+
+        Mock mockRunnerAndConfigurationSettings = mock(RunnerAndConfigurationSettings.class);
+        stubRunManager.stubs().method("createRunConfiguration").withAnyArguments().will(returnValue(mockRunnerAndConfigurationSettings.proxy()));
+
+        Project project = (Project) stubProject.proxy();
+        GroovyConfigurationFactory configurationFactory = new GroovyConfigurationFactory(null, null, null);
+        GroovyRunConfiguration runConfiguration = new GroovyRunConfiguration(null, project, configurationFactory, null);
+        mockRunnerAndConfigurationSettings.stubs().method("getConfiguration").will(returnValue(runConfiguration));
 
         Mock stubModuleManager = mock(ModuleManager.class);
         stubProject.stubs().method("getComponent").with(same(ModuleManager.class)).will(returnValue(stubModuleManager.proxy()));
@@ -68,7 +84,7 @@ public class GroovyConfigurationTestCase extends MockObjectTestCase {
             stubModuleManager.stubs().method("findModuleByName").with(not(eq(projectModule.getName()))).will(returnValue(null));
         }
 
-        return (Project) stubProject.proxy();
+        return project;
     }
 
     protected Module createStubbedModule() {

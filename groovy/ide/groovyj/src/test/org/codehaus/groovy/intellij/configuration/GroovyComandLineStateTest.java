@@ -29,9 +29,9 @@ public class GroovyComandLineStateTest extends GroovyConfigurationTestCase {
     public void testCreatesJavaParametersFromAGivenGroovyRunConfiguration() throws ExecutionException {
         GroovyRunConfiguration runConfiguration =
                 createRunConfiguration("-showversion -Xms128m -Xmx512m",
-                                       "/home/foo/acme/src/scripts/bar.groovy",
-                                       "-dir /home/foo/acme/src/ -enableWarnings",
-                                       "/home/foo/acme");
+                                       "C:\\Documents and Settings\\Foo Bar\\.groovy\\scripts\\foobar.groovy",
+                                       "-dir C:\\WINDOWS -enableWarnings",
+                                       "C:\\Documents and Settings\\All Users\\.groovy");
 
         GroovyComandLineState comandLineState = new GroovyComandLineState(runConfiguration, null, null);
         JavaParameters javaParameters = comandLineState.createJavaParameters();
@@ -43,7 +43,7 @@ public class GroovyComandLineStateTest extends GroovyConfigurationTestCase {
         assertEquals("number of program parameters", 4, groovyShellParameters.getList().size());
         assertEquals("script path", runConfiguration.getScriptPath(), groovyShellParameters.getList().get(0));
         assertEquals("all program parameters",
-                     runConfiguration.getScriptPath() + " " + runConfiguration.getScriptParameters(),
+                     GroovyComandLineState.quoteParameter(runConfiguration.getScriptPath()) + " " + runConfiguration.getScriptParameters(),
                      groovyShellParameters.getParametersString().trim());
 
         assertEquals("working directory path", runConfiguration.getWorkingDirectoryPath(), javaParameters.getWorkingDirectory());
