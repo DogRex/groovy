@@ -27,7 +27,7 @@ import org.codehaus.groovy.intellij.language.GroovyLanguage;
 
 public class GroovySupportLoader implements ApplicationComponent {
 
-    static final FileType GROOVY = new GroovyFileType(GroovyLanguage.createLanguage());
+    public static final FileType GROOVY = new GroovyFileType(GroovyLanguage.createLanguage());
 
     public String getComponentName() {
         return "groovy.integration";

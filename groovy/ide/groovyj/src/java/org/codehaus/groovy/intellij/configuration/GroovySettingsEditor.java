@@ -18,11 +18,11 @@
 
 package org.codehaus.groovy.intellij.configuration;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.Box;
 
 import com.intellij.execution.junit2.configuration.ClassBrowser;
 import com.intellij.execution.junit2.configuration.CommonJavaParameters;
@@ -73,7 +73,7 @@ public class GroovySettingsEditor extends SettingsEditor {
     private LabeledComponent createGroovyRunnableComponent() {
         LabeledComponent groovyRunnableComponent = new LabeledComponent();
         groovyRunnableComponent.setComponent(new TextFieldWithBrowseButton());
-        groovyRunnableComponent.setText("&Groovy class/script:");
+        groovyRunnableComponent.setText("&Groovy script:");
         return groovyRunnableComponent;
     }
 

@@ -18,46 +18,58 @@
 
 package org.codehaus.groovy.intellij;
 
+import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.project.Project;
 
 import org.jmock.Mock;
 import org.jmock.cglib.MockObjectTestCase;
 
+import org.codehaus.groovy.intellij.compiler.GroovyCompiler;
+
 public class GroovyJProjectComponentTest extends MockObjectTestCase {
 
-    private final Project projectMock = (Project) mock(Project.class).proxy();
+    private final Mock mockCompilerManager = mock(CompilerManager.class);
+    private final Mock mockProject = mock(Project.class);
+    private final Project selectedProject = (Project) mockProject.proxy();
 
     private GroovyJProjectComponent projectComponent;
 
     protected void setUp() {
-        assertNull(GroovyJProjectComponent.getInstance(projectMock));
+        assertNull(GroovyJProjectComponent.getInstance(selectedProject));
 
         Mock mockEditorAPIFactory = mock(EditorAPIFactory.class);
-        projectComponent = new GroovyJProjectComponent(projectMock, (EditorAPIFactory) mockEditorAPIFactory.proxy());
-        assertSame(projectComponent, GroovyJProjectComponent.getInstance(projectMock));
+        projectComponent = new GroovyJProjectComponent(selectedProject, (EditorAPIFactory) mockEditorAPIFactory.proxy());
+        assertSame(projectComponent, GroovyJProjectComponent.getInstance(selectedProject));
 
         Mock mockEditorAPI = mock(EditorAPI.class);
         mockEditorAPIFactory.stubs().method("createEditorAPI").withAnyArguments().will(returnValue(mockEditorAPI.proxy()));
+
+        mockProject.stubs().method("getComponent").with(same(CompilerManager.class)).will(returnValue(mockCompilerManager.proxy()));
     }
 
     protected void tearDown() {
-        GroovyJProjectComponent.setInstance(projectMock, null);
+        GroovyJProjectComponent.setInstance(selectedProject, null);
     }
 
-    public void testInitialisesEditorApiAndGroovyControllerReferencesWhenTheProjectIsOpened() {
+    public void testInitialisesGroovyControllerAndCompilerWithEditorApiWhenTheProjectIsOpened() {
         assertNull("reference to EditorAPI should not have been initialised", projectComponent.getEditorApi());
         assertNull("reference to GroovyController should not have been initialised", projectComponent.getGroovyController());
 
-        projectComponent.projectOpened();
+        mockCompilerManager.expects(once()).method("addCompiler").with(isA(GroovyCompiler.class));
 
+        projectComponent.projectOpened();
         assertNotNull("reference to EditorAPI should have been initialised", projectComponent.getEditorApi());
         assertNotNull("reference to GroovyController should have been initialised", projectComponent.getGroovyController());
     }
 
-    public void testRemovesReferencesToEditorApiAndGroovyControllerWhenTheProjectIsClosed() {
+    public void testRemovesReferencesToEditorApiAndGroovyControllerAndCompilerWhenTheProjectIsClosed() {
+        mockCompilerManager.expects(once()).method("addCompiler").with(isA(GroovyCompiler.class));
+
         projectComponent.projectOpened();
         assertNotNull("reference to EditorAPI should have been initialised", projectComponent.getEditorApi());
         assertNotNull("reference to GroovyController should have been initialised", projectComponent.getGroovyController());
+
+        mockCompilerManager.expects(once()).method("removeCompiler").with(isA(GroovyCompiler.class));
 
         projectComponent.projectClosed();
         assertNull("reference to EditorAPI should have been removed", projectComponent.getEditorApi());

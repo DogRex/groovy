@@ -89,7 +89,7 @@ public class GroovyFileType implements FileType {
     }
 
     public String getCharset(VirtualFile file) {
-        return null;
+        return file.getCharset().name();
     }
 
     public SyntaxHighlighter getHighlighter(Project project) {

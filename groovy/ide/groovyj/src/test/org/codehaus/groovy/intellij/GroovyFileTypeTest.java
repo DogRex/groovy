@@ -18,13 +18,17 @@
 
 package org.codehaus.groovy.intellij;
 
-import junit.framework.TestCase;
+import java.nio.charset.Charset;
 
 import com.intellij.openapi.util.IconLoader;
+import com.intellij.openapi.vfs.VirtualFile;
+
+import org.jmock.Mock;
+import org.jmock.cglib.MockObjectTestCase;
 
 import org.codehaus.groovy.intellij.language.GroovyLanguage;
 
-public class GroovyFileTypeTest extends TestCase {
+public class GroovyFileTypeTest extends MockObjectTestCase {
 
     private GroovyFileType groovyFileType = new GroovyFileType(GroovyLanguage.createLanguage());
 
@@ -72,11 +76,16 @@ public class GroovyFileTypeTest extends TestCase {
         assertEquals("supports renaming", true, groovyFileType.getSupportCapabilities().hasRename());
     }
 
-    public void testDoesNotDefineSepcificCharacterSetsYet() {
-        assertSame("character set", null, groovyFileType.getCharset(null));
+    public void testReturnsTheCharacterSetOfAGivenFileAsItsCharacterSet() {
+        String expectedCharacterSetName = "UTF-8";
+
+        Mock mockVirtualFile = Mocks.createVirtualFileMock(this);
+        mockVirtualFile.expects(once()).method("getCharset").will(returnValue(Charset.forName(expectedCharacterSetName)));
+
+        assertSame("character set", expectedCharacterSetName, groovyFileType.getCharset((VirtualFile) mockVirtualFile.proxy()));
     }
 
     public void testDoesNotHaveARepresentationInTheStructuralTree() {
-        assertSame("structural view model", null, groovyFileType.getStructureViewBuilder(null, null));
+        assertSame("structural view builder", null, groovyFileType.getStructureViewBuilder(null, null));
     }
 }

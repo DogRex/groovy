@@ -21,8 +21,11 @@ package org.codehaus.groovy.intellij;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.project.Project;
+
+import org.codehaus.groovy.intellij.compiler.GroovyCompiler;
 
 public class GroovyJProjectComponent implements ProjectComponent {
 
@@ -32,6 +35,7 @@ public class GroovyJProjectComponent implements ProjectComponent {
     private EditorAPIFactory editorApiFactory;
     private EditorAPI editorApi;
     private GroovyController groovyController;
+    private GroovyCompiler groovyCompiler;
 
     protected GroovyJProjectComponent(Project project, EditorAPIFactory editorApiFactory) {
         this.project = project;
@@ -51,11 +55,15 @@ public class GroovyJProjectComponent implements ProjectComponent {
     public void projectOpened() {
         editorApi = editorApiFactory.createEditorAPI(project);
         groovyController = new GroovyController(editorApi);
+        groovyCompiler = new GroovyCompiler(groovyController);
+        CompilerManager.getInstance(project).addCompiler(groovyCompiler);
     }
 
     public void projectClosed() {
-        editorApi = null;
+        CompilerManager.getInstance(project).removeCompiler(groovyCompiler);
+        groovyCompiler = null;
         groovyController = null;
+        editorApi = null;
     }
 
     public void initComponent() {}

@@ -21,11 +21,15 @@ package org.codehaus.groovy.intellij;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import com.intellij.openapi.compiler.CompilerPaths;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 
 import org.codehaus.groovy.control.CompilationFailedException;
+import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.messages.WarningMessage;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
@@ -56,18 +60,27 @@ public class GroovyController {
         return (selectedFile != null) && selectedFile.isValid() && !selectedFile.isDirectory();
     }
 
-    protected GroovyShell createGroovyShellForScript(VirtualFile selectedFile, Module module) {
-        ClassLoader projectClassLoader = getClass().getClassLoader();
-        CompilerConfiguration compilerConfiguration = createCompilerConfigurationForScript(selectedFile, module);
-        return new GroovyShell(projectClassLoader, new Binding(), compilerConfiguration);
+    GroovyShell createGroovyShellForScript(VirtualFile fileToRun, Module module) {
+        CompilerConfiguration compilerConfiguration = createCompilerConfiguration(fileToRun, module);
+        return new GroovyShell(getClass().getClassLoader(), new Binding(), compilerConfiguration);
     }
 
-    private CompilerConfiguration createCompilerConfigurationForScript(VirtualFile selectedFile, Module module) {
+    public CompilationUnit createCompilationUnit(VirtualFile fileToCompile, Module module) {
+        return new CompilationUnit(createCompilerConfiguration(fileToCompile, module));
+    }
+
+    private CompilerConfiguration createCompilerConfiguration(VirtualFile fileToCompile, Module module) {
         CompilerConfiguration compilerConfiguration = new CompilerConfiguration();
+        compilerConfiguration.setSourceEncoding(fileToCompile.getCharset().name());
         compilerConfiguration.setClasspath(editorApi.getCompilationClasspath(module));
-        compilerConfiguration.setSourceEncoding(selectedFile.getCharset().name());
-        compilerConfiguration.setTargetDirectory(selectedFile.getPath());
         compilerConfiguration.setOutput(new PrintWriter(System.out));
+        compilerConfiguration.setWarningLevel(WarningMessage.PARANOIA);
+
+        ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(module);
+        boolean isInTestSourceContent = moduleRootManager.getFileIndex().isInTestSourceContent(fileToCompile);
+        String outputPath = CompilerPaths.getModuleOutputPath(module, isInTestSourceContent);
+        compilerConfiguration.setTargetDirectory(outputPath);
+
         return compilerConfiguration;
     }
 }
