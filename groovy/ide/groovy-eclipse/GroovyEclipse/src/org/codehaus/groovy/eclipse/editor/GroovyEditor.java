@@ -10,16 +10,15 @@ public class GroovyEditor extends ExtendedTextEditor {
 		super();
 		colorManager = new ColorManager();
 		setSourceViewerConfiguration(new GroovyConfiguration(colorManager));
-		setDocumentProvider(new GroovyDocumentProvider());
 	}
+	
 	/*
 	 * @see IAdaptable#getAdapter(java.lang.Class)
 	 * @since 2.0
 	 */
 	public Object getAdapter(Class adapter) {
 		if (adapter.equals(IContentOutlinePage.class)) {
-			return new GroovyContentOutline((IFile) getEditorInput()
-					.getAdapter(IFile.class));
+			return new GroovyContentOutline((IFile) getEditorInput().getAdapter(IFile.class));
 		}
 		return super.getAdapter(adapter);
 	}

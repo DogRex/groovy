@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
+import org.codehaus.groovy.eclipse.editor.GroovyPartitionScanner;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.codehaus.groovy.eclipse.ui.GroovyDialogProvider;
 import org.eclipse.core.resources.IProject;
@@ -32,6 +33,7 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jface.text.rules.IPartitionTokenScanner;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
@@ -42,12 +44,14 @@ public class GroovyPlugin extends AbstractUIPlugin {
 	//The shared instance.
 	private static GroovyPlugin plugin;
 	//Resource bundle.
-
+	public final static String GROOVY_PARTITIONING= "__groovy_partitioning";   //$NON-NLS-1$
+	
 	private ResourceBundle resourceBundle;
 	public static final String GROOVY_BUILDER = "org.codehaus.groovy.eclipse.groovyBuilder"; //$NON-NLS-1$
 	public static final String GROOVY_NATURE = "org.codehaus.groovy.eclipse.groovyNature"; //$NON-NLS-1$
 	GroovyDialogProvider dialogProvider = new GroovyDialogProvider();
 	static boolean trace;
+	private IPartitionTokenScanner partitionScanner;
 	static {
 		String value = Platform.getDebugOption("org.codehaus.groovy.eclipse/trace"); //$NON-NLS-1$
 		if (value != null && value.equalsIgnoreCase("true")) //$NON-NLS-1$
@@ -301,5 +305,15 @@ public class GroovyPlugin extends AbstractUIPlugin {
 		if (trace) {
 			System.out.println(message);
 		}
+	}
+
+	/**
+	 * @return
+	 */
+	public IPartitionTokenScanner getGroovyPartitionScanner() {
+		if(partitionScanner == null){
+			partitionScanner = new GroovyPartitionScanner();
+		}
+		return partitionScanner;
 	}
 }
