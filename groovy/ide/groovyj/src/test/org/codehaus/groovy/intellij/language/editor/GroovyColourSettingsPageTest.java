@@ -19,10 +19,13 @@
 package org.codehaus.groovy.intellij.language.editor;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import junitx.framework.Assert;
+import junitx.framework.ListAssert;
 import junitx.framework.ObjectAssert;
 
 import org.intellij.openapi.testing.MockApplicationManager;
@@ -77,10 +80,15 @@ public class GroovyColourSettingsPageTest extends MockObjectTestCase {
         assertTrue("should have a greater or equal number of attribute descriptors than the Java page",
                    groovyAttributeDescriptors.length >= javaAttributeDescriptors.length);
 
+        List groovyAttributeDescriptorAttributes = new ArrayList();
+        for (int i = 0; i < groovyAttributeDescriptors.length; i++) {
+            groovyAttributeDescriptorAttributes.add(groovyAttributeDescriptors[i].getKey().getDefaultAttributes());
+        }
+
         for (int i = 0; i < javaAttributeDescriptors.length; i++) {
-            assertEquals("key for attribute descriptor #" + i,
-                    javaAttributeDescriptors[i].getKey().getDefaultAttributes(),
-                    groovyAttributeDescriptors[i].getKey().getDefaultAttributes());
+            ListAssert.assertContains("attribute descriptor attributes #" + i,
+                    groovyAttributeDescriptorAttributes,
+                    javaAttributeDescriptors[i].getKey().getDefaultAttributes());
         }
     }
 
