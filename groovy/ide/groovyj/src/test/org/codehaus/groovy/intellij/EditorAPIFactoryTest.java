@@ -24,22 +24,20 @@ import org.intellij.openapi.testing.MockApplicationManager;
 
 import com.intellij.openapi.application.ApplicationInfo;
 
-import org.jmock.cglib.Mock;
+import org.jmock.Mock;
 import org.jmock.cglib.MockObjectTestCase;
 
 public class EditorAPIFactoryTest extends MockObjectTestCase {
 
-    protected final Mock mockApplicationInfo = new Mock(ApplicationInfo.class);
+    protected final Mock mockApplicationInfo = mock(ApplicationInfo.class);
 
-    protected void setUp() throws Exception {
-        super.setUp();
+    protected void setUp() {
         mockApplicationInfo.stubs().method("getMajorVersion");
         mockApplicationInfo.stubs().method("getMinorVersion");
         MockApplicationManager.getMockApplication().registerComponent(ApplicationInfo.class, mockApplicationInfo.proxy());
     }
 
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    protected void tearDown() {
         MockApplicationManager.getMockApplication().removeComponent(ApplicationInfo.class);
     }
 

@@ -21,13 +21,8 @@ package org.codehaus.groovy.intellij;
 import java.io.File;
 
 import com.intellij.openapi.command.CommandListener;
-import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileListener;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiTreeChangeListener;
 import com.intellij.refactoring.listeners.RefactoringElementListenerProvider;
 

@@ -131,13 +131,18 @@
 
     <target name="test.irida" depends="compile.tests.irida">
         <mkdir dir="${irida.test.results.dir}"/>
-        <junit fork="yes" forkmode="once" haltonfailure="true" haltonerror="true" showoutput="true" printsummary="withOutAndErr">
+
+        <junit fork="true" forkmode="once" errorProperty="tests.failed" failureProperty="tests.failed"
+               haltonfailure="false" haltonerror="false" showoutput="true" printsummary="withOutAndErr"
+               includeantruntime="true" newenvironment="false">
+
             <classpath refid="irida.test.classpath"/>
-            <formatter usefile="false" type="plain"/>
+            <formatter type="brief" usefile="false"/>
+
             <batchtest todir="${irida.test.results.dir}">
                 <fileset dir="${irida.test.classes.dir}">
                     <include name="**/*Test.class"/>
-                    <include name="**/*Irida*TestCase.class"/>
+                    <include name="**/Create*TestCase.class"/>
                 </fileset>
                 <formatter type="xml"/>
             </batchtest>
@@ -152,11 +157,11 @@
             </fileset>
             <report format="frames" todir="${irida.test.reports.dir}"/>
         </junitreport>
+
+        <fail message="Tests failed! Check test reports." if="tests.failed"/>
     </target>
 
-    <target name="test" depends="test.irida" description="Runs all project unit tests"/>
-
-    <target name="jar.irida" depends="test.irida" description="Packages up the plugin as a jar file for IDEA Irida">
+    <target name="jar.irida" depends="test.reports.irida" description="Packages up the plugin as a jar file for IDEA Irida">
         <copy todir="${irida.classes.dir}" overwrite="true" preservelastmodified="true">
             <fileset dir="${src.etc.dir}" excludes="styles/**/*, ${binary.extensions}"/>
             <filterset>

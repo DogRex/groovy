@@ -25,7 +25,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 
-import org.jmock.cglib.Mock;
+import org.jmock.Mock;
 import org.jmock.cglib.MockObjectTestCase;
 
 import org.codehaus.groovy.intellij.Mocks;
@@ -34,17 +34,14 @@ public class BaseActionTest extends MockObjectTestCase {
 
     private static final KeyEvent NULL_KEY_EVENT = new KeyEvent(new Container(), 0, 0, 0, 0, ' ');
 
-    protected final Mock mockActionEvents = new Mock(ActionEvents.class);
-    protected final Mock mockDataContext = new Mock(DataContext.class);
-    protected final Mock mockGroovyJProjectComponent = Mocks.createGroovyJProjectComponentMock();
+    protected final Mock mockActionEvents = mock(ActionEvents.class);
+    protected final Mock mockGroovyJProjectComponent = Mocks.createGroovyJProjectComponentMock(this);
 
-    protected void setUp() throws Exception {
-        super.setUp();
+    protected void setUp() {
         ActionEvents.instance = (ActionEvents) mockActionEvents.proxy();
     }
 
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    protected void tearDown() {
         ActionEvents.instance = new ActionEvents();
     }
 
@@ -79,6 +76,7 @@ public class BaseActionTest extends MockObjectTestCase {
     }
 
     protected AnActionEvent createAnActionEvent(AnAction action) {
-        return new AnActionEvent(NULL_KEY_EVENT, (DataContext) mockDataContext.proxy(), "", action.getTemplatePresentation(), null, -1);
+        DataContext dataContextMock = (DataContext) mock(DataContext.class).proxy();
+        return new AnActionEvent(NULL_KEY_EVENT, dataContextMock, "", action.getTemplatePresentation(), null, -1);
     }
 }

@@ -23,29 +23,27 @@ import java.lang.reflect.Modifier;
 
 import com.intellij.openapi.project.Project;
 
-import org.jmock.cglib.Mock;
+import org.jmock.Mock;
 import org.jmock.cglib.MockObjectTestCase;
 
 public class GroovyJProjectComponentTest extends MockObjectTestCase {
 
-    private final Mock mockProject = new Mock(Project.class);
-    private final Mock mockEditorAPIFactory = new Mock(EditorAPIFactory.class);
-    private final Mock mockEditorAPI = new Mock(EditorAPI.class);
-    private Project projectMock = (Project) mockProject.proxy();
+    private final Project projectMock = (Project) mock(Project.class).proxy();
+
     private GroovyJProjectComponent projectComponent;
 
-    protected void setUp() throws Exception {
-        super.setUp();
-
+    protected void setUp() {
         assertNull(GroovyJProjectComponent.getInstance(projectMock));
+
+        Mock mockEditorAPIFactory = mock(EditorAPIFactory.class);
         projectComponent = new GroovyJProjectComponent(projectMock, (EditorAPIFactory) mockEditorAPIFactory.proxy());
         assertSame(projectComponent, GroovyJProjectComponent.getInstance(projectMock));
 
+        Mock mockEditorAPI = mock(EditorAPI.class);
         mockEditorAPIFactory.stubs().method("getEditorAPI").withAnyArguments().will(returnValue(mockEditorAPI.proxy()));
     }
 
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    protected void tearDown() {
         GroovyJProjectComponent.setInstance(projectMock, null);
     }
 

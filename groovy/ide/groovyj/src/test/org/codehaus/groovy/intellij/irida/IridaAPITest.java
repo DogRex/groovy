@@ -29,18 +29,18 @@ import org.codehaus.groovy.intellij.BaseEditorAPITest;
 
 public class IridaAPITest extends BaseEditorAPITest {
 
-    protected void setUp() throws Exception {
+    protected void setUp() {
         super.setUp();
         editorAPI = new IridaAPI((Project) mockProject.proxy());
     }
 
-    protected void tearDown() throws Exception {
+    protected void tearDown() {
         super.tearDown();
         MockApplicationManager.reset();
     }
 
     public void testCanRunATaskAsynchronouslyUsingAnApplicationInstance() {
-        Mock mockApplication = new Mock(Application.class);
+        Mock mockApplication = mock(Application.class);
         MockApplicationManager.setApplication((Application) mockApplication.proxy());
         mockApplication.expects(once()).method("invokeLater").with(isA(Runnable.class));
 

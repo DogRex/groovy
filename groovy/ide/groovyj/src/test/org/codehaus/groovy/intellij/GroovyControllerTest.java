@@ -18,8 +18,8 @@
 
 package org.codehaus.groovy.intellij;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 
 import com.intellij.openapi.vfs.VirtualFile;
@@ -27,7 +27,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.Phases;
-import org.jmock.cglib.Mock;
+
+import org.jmock.Mock;
 import org.jmock.cglib.MockObjectTestCase;
 
 import groovy.lang.GroovyShell;
@@ -36,15 +37,13 @@ public class GroovyControllerTest extends MockObjectTestCase {
 
     private static final String FILE_NAME = "foo.groovy";
 
-    private final Mock mockEditorAPI = new Mock(EditorAPI.class);
-    private final Mock mockVirtualFile = Mocks.createVirtualFileMock();
-    private final Mock mockGroovyShell = new Mock(GroovyShell.class);
+    private final Mock mockEditorAPI = mock(EditorAPI.class);
+    private final Mock mockVirtualFile = Mocks.createVirtualFileMock(this);
+    private final Mock mockGroovyShell = mock(GroovyShell.class);
 
     private GroovyController groovyController;
 
-    protected void setUp() throws Exception {
-        super.setUp();
-
+    protected void setUp() {
         groovyController = new GroovyController((EditorAPI) mockEditorAPI.proxy()) {
             protected GroovyShell createGroovyShellForScript(VirtualFile selectedFile) {
                 return (GroovyShell) mockGroovyShell.proxy();

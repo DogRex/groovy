@@ -20,22 +20,22 @@ package org.codehaus.groovy.intellij.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
-import org.jmock.cglib.Mock;
+import org.jmock.Mock;
 
 import org.codehaus.groovy.intellij.Mocks;
 
 public class RunActionTest extends BaseActionTest {
-
-    private final Mock mockGroovyController = Mocks.createGroovyControllerMock();
 
     protected BaseAction createAction() {
         return new RunAction();
     }
 
     public void testUsesTheGroovyControllerAssociatedToTheCurrentProjectToRunTheSelectedFileAsAGroovyScript() {
+        Mock mockGroovyController = Mocks.createGroovyControllerMock(this);
         mockActionEvents.expects(once()).method("getVirtualFile").with(isA(AnActionEvent.class));
         mockGroovyJProjectComponent.expects(once()).method("getGroovyController").will(returnValue(mockGroovyController.proxy()));
         mockGroovyController.expects(once()).method("runAsGroovyScript");
+
         executeAction();
     }
 }

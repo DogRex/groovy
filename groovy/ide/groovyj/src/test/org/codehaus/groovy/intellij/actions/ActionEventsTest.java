@@ -24,7 +24,7 @@ import com.intellij.openapi.actionSystem.DataConstants;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
 
-import org.jmock.cglib.Mock;
+import org.jmock.Mock;
 import org.jmock.cglib.MockObjectTestCase;
 
 import org.codehaus.groovy.intellij.GroovyJProjectComponent;
@@ -32,20 +32,16 @@ import org.codehaus.groovy.intellij.Mocks;
 
 public class ActionEventsTest extends MockObjectTestCase {
 
-    private final Mock mockDataContext = new Mock(DataContext.class);
-    private final Mock mockVirtualFile = Mocks.createVirtualFileMock();
-    private final Mock mockProject = new Mock(Project.class);
-    private final Mock mockGroovyJProjectComponent = Mocks.createGroovyJProjectComponentMock();
+    private final Mock mockDataContext = mock(DataContext.class);
+    private final Mock mockVirtualFile = Mocks.createVirtualFileMock(this);
 
-    private Project projectMock = (Project) mockProject.proxy();
-    private GroovyJProjectComponent projectComponentMock = (GroovyJProjectComponent) mockGroovyJProjectComponent.proxy();
-
-    private AnActionEvent anActionEvent;
+    private final Project projectMock = (Project) mock(Project.class).proxy();
+    private final GroovyJProjectComponent projectComponentMock = (GroovyJProjectComponent) Mocks.createGroovyJProjectComponentMock(this).proxy();
     private final ActionEvents actionEvents = new ActionEvents();
 
-    protected void setUp() throws Exception {
-        super.setUp();
+    private AnActionEvent anActionEvent;
 
+    protected void setUp() {
         AnAction action = new AnAction() {
             public void actionPerformed(AnActionEvent event) {}
         };

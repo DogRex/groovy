@@ -20,27 +20,26 @@ package org.codehaus.groovy.intellij;
 
 import com.intellij.openapi.vfs.VirtualFile;
 
-import org.jmock.cglib.Mock;
+import org.jmock.Mock;
+import org.jmock.cglib.MockObjectTestCase;
 
 public final class Mocks {
 
-    /**
-     * Sole constructor hidden to enfore non-instantiability.
-     */
-    private Mocks() {}
+    /** Sole constructor hidden to enfore non-instantiability. */
+    private Mocks() { }
 
     // Factory methods -------------------------------------------------------------------------------------------------
 
-    public static Mock createVirtualFileMock() {
-        return new Mock(MockableVirtualFile.class);
+    public static Mock createVirtualFileMock(MockObjectTestCase testCase) {
+        return testCase.mock(MockableVirtualFile.class);
     }
 
-    public static Mock createGroovyJProjectComponentMock() {
-        return new Mock(MockableGroovyJProjectComponent.class);
+    public static Mock createGroovyJProjectComponentMock(MockObjectTestCase testCase) {
+        return testCase.mock(MockableGroovyJProjectComponent.class);
     }
 
-    public static Mock createGroovyControllerMock() {
-        return new Mock(MockableGroovyController.class);
+    public static Mock createGroovyControllerMock(MockObjectTestCase testCase) {
+        return testCase.mock(MockableGroovyController.class);
     }
 
     // Mockable classes ------------------------------------------------------------------------------------------------

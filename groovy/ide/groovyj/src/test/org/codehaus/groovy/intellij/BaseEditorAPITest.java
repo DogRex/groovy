@@ -52,30 +52,30 @@ import com.intellij.psi.PsiTreeChangeListener;
 import com.intellij.refactoring.listeners.RefactoringElementListenerProvider;
 import com.intellij.refactoring.listeners.RefactoringListenerManager;
 
-import org.jmock.cglib.Mock;
+import org.jmock.Mock;
 import org.jmock.cglib.MockObjectTestCase;
 
 public class BaseEditorAPITest extends MockObjectTestCase {
 
     private static final File[] EMPTY_CLASSPATH = new File[0];
 
-    protected final Mock mockPsiManager = new Mock(PsiManager.class);
-    protected final Mock mockFileEditorManager = new Mock(FileEditorManager.class);
-    protected final Mock mockRefactoringListenerManager = new Mock(RefactoringListenerManager.class);
-    protected final Mock mockProjectRootManager = new Mock(ProjectRootManager.class);
-    protected final Mock mockModuleManager = new Mock(ModuleManager.class);
-    protected final Mock mockModuleRootManager = new Mock(ModuleRootManager.class);
-    protected final Mock mockCommandProcessor = new Mock(CommandProcessor.class);
-    protected final Mock mockVirtualFileManager = new Mock(VirtualFileManager.class);
-    protected final Mock mockWindowManager = new Mock(WindowManager.class);
-    protected final Mock mockStatusBar = new Mock(StatusBar.class);
+    protected final Mock mockPsiManager = mock(PsiManager.class);
+    protected final Mock mockFileEditorManager = mock(FileEditorManager.class);
+    protected final Mock mockRefactoringListenerManager = mock(RefactoringListenerManager.class);
+    protected final Mock mockProjectRootManager = mock(ProjectRootManager.class);
+    protected final Mock mockModuleManager = mock(ModuleManager.class);
+    protected final Mock mockModuleRootManager = mock(ModuleRootManager.class);
+    protected final Mock mockCommandProcessor = mock(CommandProcessor.class);
+    protected final Mock mockVirtualFileManager = mock(VirtualFileManager.class);
+    protected final Mock mockWindowManager = mock(WindowManager.class);
+    protected final Mock mockStatusBar = mock(StatusBar.class);
 
-    protected final Mock mockLocalFileSystem = new Mock(LocalFileSystem.class);
-    protected final Mock mockJarFileSystem = new Mock(JarFileSystem.class);
+    protected final Mock mockLocalFileSystem = mock(LocalFileSystem.class);
+    protected final Mock mockJarFileSystem = mock(JarFileSystem.class);
 
-    protected final Mock mockProject = new Mock(Project.class);
-    protected final Mock mockModule = new Mock(Module.class);
-    protected final Mock mockVirtualFile = Mocks.createVirtualFileMock();
+    protected final Mock mockProject = mock(Project.class);
+    protected final Mock mockModule = mock(Module.class);
+    protected final Mock mockVirtualFile = Mocks.createVirtualFileMock(this);
 
     protected final Module[] singletonModule = new Module[] { (Module) mockModule.proxy() };
     protected final VirtualFile[] moduleLibraries = new VirtualFile[] { (VirtualFile) mockVirtualFile.proxy(),
@@ -83,9 +83,7 @@ public class BaseEditorAPITest extends MockObjectTestCase {
 
     protected BaseEditorAPI editorAPI;
 
-    protected void setUp() throws Exception {
-        super.setUp();
-
+    protected void setUp() {
         editorAPI = new BaseEditorAPI((Project) mockProject.proxy()) {
             public void invokeLater(Runnable task) {}
         };
@@ -106,9 +104,7 @@ public class BaseEditorAPITest extends MockObjectTestCase {
         applicationMock.registerComponent(JarFileSystem.class, mockJarFileSystem.proxy());
     }
 
-    protected void tearDown() throws Exception {
-        super.tearDown();
-
+    protected void tearDown() {
         MockApplication applicationMock = MockApplicationManager.getMockApplication();
         applicationMock.removeComponent(PsiManager.class);
         applicationMock.removeComponent(ProjectRootManager.class);
@@ -146,7 +142,7 @@ public class BaseEditorAPITest extends MockObjectTestCase {
 
         mockVirtualFile.expects(once()).method("isValid").will(returnValue(true));
         mockVirtualFile.expects(once()).method("isDirectory").will(returnValue(false));
-        mockVirtualFile.expects(once()).method("getFileSystem").will(returnValue(new Mock(VirtualFileSystem.class).proxy()));
+        mockVirtualFile.expects(once()).method("getFileSystem").will(returnValue(mock(VirtualFileSystem.class).proxy()));
         mockVirtualFile.expects(once()).method("getExtension").will(returnValue("jar"));
 
         ArrayAssert.assertEquals(EMPTY_CLASSPATH, editorAPI.getCurrentModuleClasspath());
@@ -224,7 +220,7 @@ public class BaseEditorAPITest extends MockObjectTestCase {
 
     public void testHandlesTheRegistrationOfRefactoringListenerProviders() {
         RefactoringElementListenerProvider listenerProvider =
-                (RefactoringElementListenerProvider) new Mock(RefactoringElementListenerProvider.class).proxy();
+                (RefactoringElementListenerProvider) mock(RefactoringElementListenerProvider.class).proxy();
 
         mockRefactoringListenerManager.expects(once()).method("addListenerProvider").with(eq(listenerProvider));
         editorAPI.addRefactoringElementListenerProvider(listenerProvider);
@@ -244,7 +240,7 @@ public class BaseEditorAPITest extends MockObjectTestCase {
     }
 
     public void testHandlesTheRegistrationOfCommandListeners() {
-        CommandListener listener = (CommandListener) new Mock(CommandListener.class).proxy();
+        CommandListener listener = (CommandListener) mock(CommandListener.class).proxy();
 
         mockCommandProcessor.expects(once()).method("addCommandListener").with(eq(listener));
         editorAPI.addCommandListener(listener);
@@ -254,7 +250,7 @@ public class BaseEditorAPITest extends MockObjectTestCase {
     }
 
     public void testHandlesTheRegistrationOfVirtualFileListeners() {
-        VirtualFileListener listener = (VirtualFileListener) new Mock(VirtualFileListener.class).proxy();
+        VirtualFileListener listener = (VirtualFileListener) mock(VirtualFileListener.class).proxy();
 
         mockVirtualFileManager.expects(once()).method("addVirtualFileListener").with(eq(listener));
         editorAPI.addVirtualFileListener(listener);
