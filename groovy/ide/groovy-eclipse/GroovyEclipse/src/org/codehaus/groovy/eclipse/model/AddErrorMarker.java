@@ -43,18 +43,18 @@ package org.codehaus.groovy.eclipse.model;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
+import org.codehaus.groovy.control.CompilationFailedException;
+import org.codehaus.groovy.control.ProcessingUnit;
 import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.codehaus.groovy.syntax.SyntaxException;
-import org.codehaus.groovy.tools.CompilationFailuresException;
-import org.codehaus.groovy.tools.ExceptionCollector;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+
 
 
 /**
@@ -75,16 +75,11 @@ class AddErrorMarker implements IWorkspaceRunnable {
 		this.e = e;
 	}
 	public void run(IProgressMonitor monitor) throws CoreException {
-		if (e instanceof CompilationFailuresException) {
-			CompilationFailuresException compilationFailuresException = (CompilationFailuresException) e;
-			Iterator iterator = compilationFailuresException.iterator();
-			while (iterator.hasNext()) {
-				String key = (String) iterator.next();
-				ExceptionCollector ec = compilationFailuresException.get(key);
-				Iterator it = ec.iterator();
-				while (it.hasNext()) {
-					markerFromException((Exception) it.next());
-				}
+		if (e instanceof CompilationFailedException) {
+			CompilationFailedException compilationFailuresException = (CompilationFailedException) e;
+			ProcessingUnit unit = compilationFailuresException.getUnit();
+			for(int i =0; i < unit.getErrorCount(); ++i){
+				markerFromException(unit.getException(i));
 			}
 		} else {
 			markerFromException(e);

@@ -14,9 +14,11 @@ import java.util.Map;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.control.CompilationUnit;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.codehaus.groovy.eclipse.launchers.GroovyRunner;
-import org.codehaus.groovy.eclipse.tools.EclipseFileSystemCompiler;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -37,7 +39,7 @@ import org.eclipse.swt.widgets.Display;
 public class GroovyProject{
 	private IJavaProject javaProject;
 	private Map compilationUnits = new HashMap();
-	private EclipseFileSystemCompiler compiler = new EclipseFileSystemCompiler();
+	private CompilerConfiguration compilerConfiguration = new CompilerConfiguration();
 	public static final String GROOVY_ERROR_MARKER = "org.codehaus.groovy.eclipse.groovyFailure";
 	List listeners = new ArrayList();
 	List filesToBuild = new ArrayList();
@@ -47,7 +49,9 @@ public class GroovyProject{
 	public GroovyProject(IJavaProject javaProject) {
 		super();
 		this.javaProject = javaProject;
+		//compilerConfiguration.setDebug(true);
 	}
+	
 	public void buildGroovyContent(IProgressMonitor monitor, int kind) {
 		try {
 			
@@ -83,13 +87,14 @@ public class GroovyProject{
 	private void setOutputDirectory(IJavaProject javaProject) throws JavaModelException {
 		String outputPath = getOutputPath(javaProject);
 		GroovyPlugin.trace("groovy output = " + outputPath);
-		compiler.setOutputDir(outputPath);
+		compilerConfiguration.setTargetDirectory(outputPath);
 	}
 	private String getOutputPath(IJavaProject jProject) throws JavaModelException {
 		String outputPath = jProject.getProject().getLocation().toString() + IPath.SEPARATOR
 				+ javaProject.getOutputLocation().removeFirstSegments(1).toString();
 		return outputPath;
 	}
+	
 	private void setClassPath(IJavaProject javaProject) throws JavaModelException, Exception {
 		IWorkspaceRoot root = javaProject.getProject().getWorkspace().getRoot(); 
 		IClasspathEntry[] cpEntries = javaProject.getResolvedClasspath(false);
@@ -108,7 +113,7 @@ public class GroovyProject{
 		}
 		classPath.append(getOutputPath(javaProject) + ";");
 		GroovyPlugin.trace("groovy cp = " + classPath.toString());
-		compiler.setClasspath(classPath.toString());
+		compilerConfiguration.setClasspath(classPath.toString());
 	}
 	/**
 	 * build and save compilationUnit
@@ -123,7 +128,10 @@ public class GroovyProject{
 			file.deleteMarkers(GROOVY_ERROR_MARKER, false, IResource.DEPTH_INFINITE); //$NON-NLS-1$
 			GroovyPlugin.trace("deleted markers from " + file.getFullPath());
 			GroovyPlugin.trace(generateClassFiles ? " " : "fast " + "compiling -" + file.getFullPath());
-			CompileUnit unit = compiler.compile(file.getLocation().toFile(), generateClassFiles);
+			CompilationUnit compilationUnit = new CompilationUnit(compilerConfiguration);
+			compilationUnit.addSource(file.getLocation().toFile());
+			compilationUnit.compile(generateClassFiles?Phases.ALL:Phases.CANONICALIZATION);
+			CompileUnit unit = compilationUnit.getAST();
 			String key = file.getFullPath().toString();
 			compilationUnits.put(key, unit);
 			fireGroovyFileBuilt(file, unit);
@@ -142,19 +150,7 @@ public class GroovyProject{
 			GroovyPlugin.getPlugin().logException("error compiling " + resource.getName(), ce);
 		}
 	}
-	/**
-	 * @return Returns the compiler.
-	 */
-	public EclipseFileSystemCompiler getCompiler() {
-		return compiler;
-	}
-	/**
-	 * @param compiler
-	 *            The compiler to set.
-	 */
-	public void setCompiler(EclipseFileSystemCompiler compiler) {
-		this.compiler = compiler;
-	}
+
 	public void runGroovyMain(IFile file, String[] args) throws CoreException {
 		CompileUnit compileUnit = (CompileUnit) compilationUnits.get(file.getFullPath().toString());
 		if (compileUnit == null) {
