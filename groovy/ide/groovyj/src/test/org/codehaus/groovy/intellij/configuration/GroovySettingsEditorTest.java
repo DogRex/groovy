@@ -60,7 +60,7 @@ public class GroovySettingsEditorTest extends GroovyConfigurationTestCase {
     public void testCopiesSettingsFromAGivenGroovyRunConfigurationWhenInstructedToResetItsContents() {
         assertEquals("script path", "", settingsEditor.scriptPathTextField.getText());
         assertEquals("VM parameters", "", settingsEditor.vmParameterEditor.getText());
-        assertEquals("scripit parameters", "", settingsEditor.scriptParametersEditor.getText());
+        assertEquals("script parameters", "", settingsEditor.scriptParametersEditor.getText());
         assertEquals("working directory path", "", settingsEditor.workingDirectoryPathTextField.getText());
 
         Module[] allProjectModules = ModuleManager.getInstance(runConfiguration.getProject()).getSortedModules();
@@ -71,7 +71,7 @@ public class GroovySettingsEditorTest extends GroovyConfigurationTestCase {
 
         assertEquals("script path", runConfiguration.getScriptPath(), settingsEditor.scriptPathTextField.getText());
         assertEquals("VM parameters", runConfiguration.getVmParameters(), settingsEditor.vmParameterEditor.getText());
-        assertEquals("scripit parameters", runConfiguration.getScriptParameters(), settingsEditor.scriptParametersEditor.getText());
+        assertEquals("script parameters", runConfiguration.getScriptParameters(), settingsEditor.scriptParametersEditor.getText());
         assertEquals("working directory path", runConfiguration.getWorkingDirectoryPath(), settingsEditor.workingDirectoryPathTextField.getText());
         assertSame("module", runConfiguration.getModule(), settingsEditor.moduleComboBox.getSelectedItem());
     }
@@ -79,14 +79,27 @@ public class GroovySettingsEditorTest extends GroovyConfigurationTestCase {
     public void testUpdatesAGivenGroovyRunConfigurationWhenInstructedToDoSo() {
         settingsEditor.resetEditorFrom(runConfiguration);
 
-        GroovyRunConfiguration blankRunConfiguration = createRunConfiguration("", "", "", "");
-        settingsEditor.applyEditorTo(blankRunConfiguration);
+        String expectedScriptPath = "~/scripts/bar.groovy";
+        String expectedVmParameters = "-Xms128m -Xmx256m";
+        String expectedScriptParameters = "";
+        String expectedWorkingDirectoryPath = "..";
 
-        assertEquals("script path", settingsEditor.scriptPathTextField.getText(), blankRunConfiguration.getScriptPath());
-        assertEquals("VM parameters", settingsEditor.vmParameterEditor.getText(), blankRunConfiguration.getVmParameters());
-        assertEquals("scripit parameters", settingsEditor.scriptParametersEditor.getText(), blankRunConfiguration.getScriptParameters());
-        assertEquals("working directory path", settingsEditor.workingDirectoryPathTextField.getText(), blankRunConfiguration.getWorkingDirectoryPath());
-        assertSame("module", settingsEditor.moduleComboBox.getSelectedItem(), blankRunConfiguration.getModule());
+        settingsEditor.scriptPathTextField.setText(expectedScriptPath);
+        settingsEditor.vmParameterEditor.setText(expectedVmParameters);
+        settingsEditor.scriptParametersEditor.setText(expectedScriptParameters);
+        settingsEditor.workingDirectoryPathTextField.setText(expectedWorkingDirectoryPath);
+
+        Module[] allProjectModules = ModuleManager.getInstance(runConfiguration.getProject()).getSortedModules();
+        assertSame("module", allProjectModules[0], runConfiguration.getModule());
+
+        settingsEditor.moduleComboBox.setSelectedItem(allProjectModules[1]);
+        settingsEditor.applyEditorTo(runConfiguration);
+
+        assertEquals("script path", expectedScriptPath, runConfiguration.getScriptPath());
+        assertEquals("VM parameters", expectedVmParameters, runConfiguration.getVmParameters());
+        assertEquals("script parameters", expectedScriptParameters, runConfiguration.getScriptParameters());
+        assertEquals("working directory path", expectedWorkingDirectoryPath, runConfiguration.getWorkingDirectoryPath());
+        assertSame("module", allProjectModules[1], runConfiguration.getModule());
     }
 
     public void testConstructsASettingsEditorForAGivenProject() {

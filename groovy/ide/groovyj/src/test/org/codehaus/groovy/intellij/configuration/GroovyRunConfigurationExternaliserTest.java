@@ -40,7 +40,7 @@ public class GroovyRunConfigurationExternaliserTest extends GroovyConfigurationT
         assertEquals("number of options", 0, rootElement.getChildren("option").size());
 
         GroovyRunConfiguration uninitialisedRunConfiguration = createRunConfiguration(null, null, null, null);
-        uninitialisedRunConfiguration.setModule(null);
+        uninitialisedRunConfiguration.setModuleName("");
 
         runConfigurationExternaliser.writeExternal(uninitialisedRunConfiguration, rootElement);
 
@@ -76,7 +76,7 @@ public class GroovyRunConfigurationExternaliserTest extends GroovyConfigurationT
         assertEquals("working directory path", ExternalizablePath.urlValue(runConfiguration.getWorkingDirectoryPath()), optionsByName.get("WORKING_DIRECTORY_PATH"));
 
         Element moduleElement = rootElement.getChild("module");
-        assertEquals("module", runConfiguration.getModule().getName(), moduleElement.getAttribute("name").getValue());
+        assertEquals("module", runConfiguration.getModuleName(), moduleElement.getAttribute("name").getValue());
     }
 
     public void testDeserialisesAnExternalisedElementIntoAGivenConfiguration() {
@@ -88,7 +88,7 @@ public class GroovyRunConfigurationExternaliserTest extends GroovyConfigurationT
         Assert.assertNotEquals("VM parameters", runConfiguration.getVmParameters(), anotherRunConfiguration.getVmParameters());
         Assert.assertNotEquals("scripit parameters", runConfiguration.getScriptParameters(), anotherRunConfiguration.getScriptParameters());
         Assert.assertNotEquals("working directory path", ExternalizablePath.localPathValue(runConfiguration.getWorkingDirectoryPath()), anotherRunConfiguration.getWorkingDirectoryPath());
-        Assert.assertNotSame("module", runConfiguration.getModule(), anotherRunConfiguration.getModule());
+        Assert.assertNotEquals("module", runConfiguration.getModuleName(), anotherRunConfiguration.getModuleName());
 
         runConfigurationExternaliser.readExternal(anotherRunConfiguration, rootElement);
 
@@ -96,6 +96,6 @@ public class GroovyRunConfigurationExternaliserTest extends GroovyConfigurationT
         assertEquals("VM parameters", runConfiguration.getVmParameters(), anotherRunConfiguration.getVmParameters());
         assertEquals("scripit parameters", runConfiguration.getScriptParameters(), anotherRunConfiguration.getScriptParameters());
         assertEquals("working directory path", ExternalizablePath.localPathValue(runConfiguration.getWorkingDirectoryPath()), anotherRunConfiguration.getWorkingDirectoryPath());
-        assertEquals("module", null, anotherRunConfiguration.getModule());
+        assertEquals("module", runConfiguration.getModuleName(), anotherRunConfiguration.getModuleName());
     }
 }

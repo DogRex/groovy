@@ -24,9 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.intellij.execution.ExternalizablePath;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.project.Project;
 
 import org.jdom.Element;
 
@@ -47,7 +44,7 @@ public class GroovyRunConfigurationExternaliser {
         writeOption(VM_PARAMETERS, guard(runConfiguration.getVmParameters()), element);
         writeOption(SCRIPT_PARAMETERS, guard(runConfiguration.getScriptParameters()), element);
         writeOption(WORKING_DIRECTORY_PATH, guard(ExternalizablePath.urlValue(runConfiguration.getWorkingDirectoryPath())), element);
-        writeModule(guardModuleName(runConfiguration.getModule()), element);
+        writeModule(runConfiguration.getModuleName(), element);
     }
 
     public void readExternal(GroovyRunConfiguration runConfiguration, Element element) {
@@ -57,9 +54,7 @@ public class GroovyRunConfigurationExternaliser {
         runConfiguration.setVmParameters((String) optionsByName.get(VM_PARAMETERS));
         runConfiguration.setScriptParameters((String) optionsByName.get(SCRIPT_PARAMETERS));
         runConfiguration.setWorkingDirectoryPath(ExternalizablePath.localPathValue((String) optionsByName.get(WORKING_DIRECTORY_PATH)));
-
-        String moduleName = element.getChild(MODULE_ELEMENT).getAttribute(NAME_ATTRIBUTE).getValue();
-        runConfiguration.setModule(getModuleByName(runConfiguration.getProject(), moduleName));
+        runConfiguration.setModuleName(element.getChild(MODULE_ELEMENT).getAttribute(NAME_ATTRIBUTE).getValue());
     }
 
     private static void writeOption(String name, String value, Element element) {
@@ -89,13 +84,5 @@ public class GroovyRunConfigurationExternaliser {
 
     private static String guard(String value) {
         return (value == null) ? "" : value;
-    }
-
-    private String guardModuleName(Module module) {
-        return (module == null) ? "" : module.getName();
-    }
-
-    private static Module getModuleByName(Project project, String moduleName) {
-        return ModuleManager.getInstance(project).findModuleByName(moduleName);
     }
 }

@@ -42,6 +42,10 @@ public abstract class BaseEditorAPI implements EditorAPI {
     }
 
     public Module[] getModuleAndDependentModules(Module module) {
+        if (module == null) {
+            return Module.EMPTY_ARRAY;
+        }
+
         Module[] dependencies = ModuleRootManager.getInstance(module).getDependencies();
         Module[] moduleAndDependentModules = new Module[dependencies.length + 1];
 

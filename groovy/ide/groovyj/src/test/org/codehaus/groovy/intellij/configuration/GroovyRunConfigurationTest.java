@@ -39,6 +39,7 @@ public class GroovyRunConfigurationTest extends GroovyConfigurationTestCase {
 
     private final Mock mockEditorApi = mock(EditorAPI.class);
     private final Mock mockGroovyRunConfigurationExternalizer = mock(GroovyRunConfigurationExternaliser.class);
+
     private GroovyRunConfiguration runConfiguration;
 
     protected void setUp() {
@@ -80,7 +81,7 @@ public class GroovyRunConfigurationTest extends GroovyConfigurationTestCase {
 
     public void testThrowsARunConfigurationErrorWhenValidatedAndNoModuleIsSelected() {
         runConfiguration.setScriptPath("/home/foo/acme/scripts/bar.groovy");
-        runConfiguration.setModule(null);
+        runConfiguration.setModuleName("");
         try {
             runConfiguration.checkConfiguration();
             fail("A module must be selected!");
@@ -91,7 +92,7 @@ public class GroovyRunConfigurationTest extends GroovyConfigurationTestCase {
 
     public void testDoesNotReportAnyErrorsWhenValidatedWithAValidPathAndModule() throws RuntimeConfigurationException {
         runConfiguration.setScriptPath("/home/foo/acme/scripts/bar.groovy");
-        runConfiguration.setModule(createStubbedModule());
+        runConfiguration.setModuleName("Random Module");
         runConfiguration.checkConfiguration();
     }
 
@@ -101,7 +102,7 @@ public class GroovyRunConfigurationTest extends GroovyConfigurationTestCase {
 
         mockEditorApi.expects(once()).method("getModuleAndDependentModules").withAnyArguments().will(returnValue(Module.EMPTY_ARRAY));
 
-        ObjectAssert.assertInstanceOf("run profile state", GroovyComandLineState.class, runConfiguration.getState(null, null, null, null));
+        ObjectAssert.assertInstanceOf("run profile state", GroovyCommandLineState.class, runConfiguration.getState(null, null, null, null));
     }
 
     public void testSerialisesAGivenElementUsingItsAssociatedExternaliser() {

@@ -29,10 +29,10 @@ public class GroovySupportLoader implements ApplicationComponent {
 
     public static final FileType GROOVY = new GroovyFileType(GroovyLanguage.createLanguage());
 
-    static final String[] DEFAULT_ASSOCIATED_EXTENSIONS = new String[] { "groovy", "gvy", "gy", "gsh" };
+    private static final String[] DEFAULT_ASSOCIATED_EXTENSIONS = new String[] { "groovy", "gvy", "gy", "gsh" };
 
     public String getComponentName() {
-        return "groovy.integration";
+        return "groovy.support.loader";
     }
 
     public void initComponent() {

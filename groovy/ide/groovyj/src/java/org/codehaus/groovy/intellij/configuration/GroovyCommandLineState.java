@@ -18,26 +18,34 @@
 
 package org.codehaus.groovy.intellij.configuration;
 
+import com.intellij.execution.CantRunException;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.ConfigurationPerRunnerSettings;
 import com.intellij.execution.configurations.JavaCommandLineState;
 import com.intellij.execution.configurations.JavaParameters;
 import com.intellij.execution.configurations.RunnerSettings;
+import com.intellij.execution.configurations.RuntimeConfigurationException;
 
 import groovy.lang.GroovyShell;
 
-public class GroovyComandLineState extends JavaCommandLineState {
+public class GroovyCommandLineState extends JavaCommandLineState {
 
     private final GroovyRunConfiguration runConfiguration;
 
-    public GroovyComandLineState(GroovyRunConfiguration runConfiguration,
-                                 RunnerSettings runnerSettings,
-                                 ConfigurationPerRunnerSettings configurationSettings) {
-        super(runnerSettings, configurationSettings);
+    public GroovyCommandLineState(GroovyRunConfiguration runConfiguration,
+                                  RunnerSettings runnerSettings,
+                                  ConfigurationPerRunnerSettings configurationPerRunnerSettings) {
+        super(runnerSettings, configurationPerRunnerSettings);
         this.runConfiguration = runConfiguration;
     }
 
     protected JavaParameters createJavaParameters() throws ExecutionException {
+        try {
+            runConfiguration.checkConfiguration();
+        } catch (RuntimeConfigurationException e) {
+            throw new CantRunException(e.getMessage());
+        }
+
         JavaParameters parameters = new JavaParameters();
         parameters.setMainClass(GroovyShell.class.getName());
         parameters.getVMParametersList().addParametersString(runConfiguration.getVmParameters());
@@ -48,7 +56,7 @@ public class GroovyComandLineState extends JavaCommandLineState {
         return parameters;
     }
 
-    static String quoteParameter(String parameterValue) {
+    private static String quoteParameter(String parameterValue) {
         return "\"" + parameterValue + "\"";
     }
 }

@@ -34,7 +34,7 @@ public class GroovySupportLoaderTest extends MockObjectTestCase {
     }
 
     public void testDefinesAComponentName() {
-        assertEquals("component name", "groovy.integration", groovySupportLoader.getComponentName());
+        assertEquals("component name", "groovy.support.loader", groovySupportLoader.getComponentName());
     }
 
     public void testRegistersTheGroovyFileTypeWhenInitialisedByIntellijIdea() {
@@ -61,7 +61,7 @@ public class GroovySupportLoaderTest extends MockObjectTestCase {
         MockApplicationManager.getMockApplication().registerComponent(FileTypeManager.class, mockFileTypeManager.proxy());
 
         mockFileTypeManager.expects(once()).method("registerFileType")
-                .with(same(GroovySupportLoader.GROOVY), eq(GroovySupportLoader.DEFAULT_ASSOCIATED_EXTENSIONS));
+                .with(same(GroovySupportLoader.GROOVY), eq(new String[] { "groovy", "gvy", "gy", "gsh" }));
     }
 
     public void testRemovesTheGroovyJsrSystemPropertyWhenDisposedByIntellijIdea() {

@@ -37,9 +37,10 @@ public class GroovyConfigurationFactory extends ConfigurationFactory {
         this.runConfigurationExternaliser = runConfigurationExternaliser;
     }
 
-    public GroovyRunConfigurationExternaliser getRunConfigurationExternalizer() {
+    GroovyRunConfigurationExternaliser getRunConfigurationExternalizer() {
         return runConfigurationExternaliser;
     }
+
     // ConfigurationFactory  -------------------------------------------------------------------------------------------
 
     public RunConfiguration createTemplateConfiguration(Project project) {

@@ -37,46 +37,47 @@ import org.codehaus.groovy.intellij.TestUtil;
 
 public class GroovyConfigurationTestCase extends MockObjectTestCase {
 
-    protected GroovyRunConfiguration createRunConfiguration(String vmParameters, String scriptPath, String programParameters, String workingDirectoryPath) {
+    protected GroovyRunConfiguration createRunConfiguration(String vmParameters, String scriptPath, String scriptParameters, String workingDirectoryPath) {
         Project stubbedProject = createStubbedProject();
         GroovyConfigurationFactory configurationFactory = new GroovyConfigurationFactory(null, null, null);
         GroovyRunConfiguration runConfiguration = new GroovyRunConfiguration(null, stubbedProject, configurationFactory, null);
         runConfiguration.setVmParameters(vmParameters);
         runConfiguration.setScriptPath(scriptPath);
-        runConfiguration.setScriptParameters(programParameters);
+        runConfiguration.setScriptParameters(scriptParameters);
         runConfiguration.setModule(ModuleManager.getInstance(stubbedProject).getSortedModules()[0]);
         runConfiguration.setWorkingDirectoryPath(workingDirectoryPath);
         return runConfiguration;
     }
 
     protected Project createStubbedProject() {
-        Mock stubProject = mock(Project.class, "stubbedProject#" + TestUtil.nextAbsRandomInt());
+        Mock stubProject = mock(Project.class, "stubProject#" + TestUtil.nextAbsRandomInt());
         return createStubbedProject(stubProject);
     }
 
     protected Project createStubbedProject(Mock stubProject) {
-        Mock stubProjectFile = Mocks.createVirtualFileMock(this, "mockProjectFile");
+        Mock stubProjectFile = Mocks.createVirtualFileMock(this, "stubProjectFile");
         stubProject.stubs().method("getProjectFile").will(returnValue(stubProjectFile.proxy()));
 
-        Mock stubProjectFileParentDirectory = Mocks.createVirtualFileMock(this, "mockProjectFileParentDirectory");
+        Mock stubProjectFileParentDirectory = Mocks.createVirtualFileMock(this, "stubProjectFileParentDirectory");
         stubProjectFile.stubs().method("getParent").will(returnValue(stubProjectFileParentDirectory.proxy()));
         stubProjectFileParentDirectory.stubs().method("getPath").will(returnValue(null));
 
-        Mock stubRunManager = mock(RunManager.class);
+        Mock stubRunManager = mock(RunManager.class, "stubRunManager");
         stubProject.stubs().method("getComponent").with(same(RunManager.class)).will(returnValue(stubRunManager.proxy()));
 
-        Mock mockRunnerAndConfigurationSettings = mock(RunnerAndConfigurationSettings.class);
-        stubRunManager.stubs().method("createRunConfiguration").withAnyArguments().will(returnValue(mockRunnerAndConfigurationSettings.proxy()));
+        Mock stubRunnerAndConfigurationSettings = mock(RunnerAndConfigurationSettings.class, "stubRunnerAndConfigurationSettings");
+        stubRunManager.stubs().method("createRunConfiguration").withAnyArguments().will(returnValue(stubRunnerAndConfigurationSettings.proxy()));
 
         Project project = (Project) stubProject.proxy();
         GroovyConfigurationFactory configurationFactory = new GroovyConfigurationFactory(null, null, null);
         GroovyRunConfiguration runConfiguration = new GroovyRunConfiguration(null, project, configurationFactory, null);
-        mockRunnerAndConfigurationSettings.stubs().method("getConfiguration").will(returnValue(runConfiguration));
+        stubRunnerAndConfigurationSettings.stubs().method("getConfiguration").will(returnValue(runConfiguration));
 
-        Mock stubModuleManager = mock(ModuleManager.class);
+        Mock stubModuleManager = mock(ModuleManager.class, "stubModuleManager");
         stubProject.stubs().method("getComponent").with(same(ModuleManager.class)).will(returnValue(stubModuleManager.proxy()));
 
         Module[] allProjectModules = new Module[] { createStubbedModule(), createStubbedModule() };
+        stubModuleManager.stubs().method("getModules").will(returnValue(allProjectModules));
         stubModuleManager.stubs().method("getSortedModules").will(returnValue(allProjectModules));
 
         for (int i = 0; i < allProjectModules.length; i++) {
@@ -93,16 +94,16 @@ public class GroovyConfigurationTestCase extends MockObjectTestCase {
     }
 
     protected Module createStubbedModule(ModuleType moduleType) {
-        String moduleName = "stubbedModule#" + TestUtil.nextAbsRandomInt();
+        String moduleName = "stubModule#" + TestUtil.nextAbsRandomInt();
 
         Mock stubModule = mock(Module.class, moduleName);
         stubModule.stubs().method("getName").will(returnValue(moduleName));
         stubModule.stubs().method("getModuleType").will(returnValue(moduleType));
 
-        Mock stubModuleRootManager = mock(ModuleRootManager.class);
+        Mock stubModuleRootManager = mock(ModuleRootManager.class, "stubModuleRootManager");
         stubModule.stubs().method("getComponent").with(same(ModuleRootManager.class)).will(returnValue(stubModuleRootManager.proxy()));
 
-        Mock stubProjectJdk = mock(ProjectJdk.class);
+        Mock stubProjectJdk = mock(ProjectJdk.class, "stubProjectJdk");
         stubModuleRootManager.stubs().method("getJdk").will(returnValue(stubProjectJdk.proxy()));
         stubProjectJdk.stubs().method("getHomeDirectory").will(returnValue(new MockVirtualFile()));
 

@@ -24,7 +24,19 @@ import com.intellij.execution.configurations.ParametersList;
 
 import groovy.lang.GroovyShell;
 
-public class GroovyComandLineStateTest extends GroovyConfigurationTestCase {
+public class GroovyCommandLineStateTest extends GroovyConfigurationTestCase {
+
+    public void testDoesNotCreateJavaParametersWhenAGivenGroovyRunConfigurationIsNotValid() {
+        GroovyRunConfiguration invalidRunConfiguration = createRunConfiguration(null, "~/scripts/foobar.groovy", null, null);
+        invalidRunConfiguration.setModuleName("");
+
+        try {
+            new GroovyCommandLineState(invalidRunConfiguration, null, null).createJavaParameters();
+            fail("Java parameters cannot be created with an invalid run configuration!");
+        } catch (ExecutionException expected) {
+            assertEquals("message", "Module not selected", expected.getMessage());
+        }
+    }
 
     public void testCreatesJavaParametersFromAGivenGroovyRunConfiguration() throws ExecutionException {
         GroovyRunConfiguration runConfiguration =
@@ -33,8 +45,8 @@ public class GroovyComandLineStateTest extends GroovyConfigurationTestCase {
                                        "-dir C:\\WINDOWS -enableWarnings",
                                        "C:\\Documents and Settings\\All Users\\.groovy");
 
-        GroovyComandLineState comandLineState = new GroovyComandLineState(runConfiguration, null, null);
-        JavaParameters javaParameters = comandLineState.createJavaParameters();
+        GroovyCommandLineState commandLineState = new GroovyCommandLineState(runConfiguration, null, null);
+        JavaParameters javaParameters = commandLineState.createJavaParameters();
 
         assertEquals("main class", GroovyShell.class.getName(), javaParameters.getMainClass());
         assertEquals("VM parameters", runConfiguration.getVmParameters(), javaParameters.getVMParametersList().getParametersString().trim());
@@ -43,7 +55,7 @@ public class GroovyComandLineStateTest extends GroovyConfigurationTestCase {
         assertEquals("number of program parameters", 4, groovyShellParameters.getList().size());
         assertEquals("script path", runConfiguration.getScriptPath(), groovyShellParameters.getList().get(0));
         assertEquals("all program parameters",
-                     GroovyComandLineState.quoteParameter(runConfiguration.getScriptPath()) + " " + runConfiguration.getScriptParameters(),
+                     "\"" + runConfiguration.getScriptPath() + "\"" + " " + runConfiguration.getScriptParameters(),
                      groovyShellParameters.getParametersString().trim());
 
         assertEquals("working directory path", runConfiguration.getWorkingDirectoryPath(), javaParameters.getWorkingDirectory());

@@ -78,6 +78,11 @@ public abstract class EditorApiTestCase extends MockObjectTestCase {
         applicationMock.removeComponent(WindowManager.class);
     }
 
+    public void testReturnsAnEmptyArrayOfModulesAsTheDependentModulesOfAGivenNullModule() {
+        Module[] moduleAndDependentModules = editorApi.getModuleAndDependentModules(null);
+        assertSame("module and dependent modules", Module.EMPTY_ARRAY, moduleAndDependentModules);
+    }
+
     public void testReturnsAnArrayContainingJustAGivenModuleWhenItHasNoDependentModules() {
         mockModuleRootManager.expects(once()).method("getDependencies").will(returnValue(Module.EMPTY_ARRAY));
 

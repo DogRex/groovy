@@ -28,6 +28,7 @@ import com.intellij.execution.filters.TextConsoleBuidlerFactory;
 import com.intellij.execution.runners.RunnerInfo;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.PathUtil;
@@ -38,7 +39,6 @@ import org.codehaus.groovy.intellij.EditorAPI;
 
 public class GroovyRunConfiguration extends RuntimeConfiguration {
 
-    private final Project project;
     private final EditorAPI editorApi;
     private final GroovyRunConfigurationExternaliser runConfigurationExternaliser;
 
@@ -46,15 +46,15 @@ public class GroovyRunConfiguration extends RuntimeConfiguration {
     private String vmParameters;
     private String scriptParameters;
     private String workingDirectoryPath;
-    private Module module;
+    private String moduleName;
 
     public GroovyRunConfiguration(String name, Project project, GroovyConfigurationFactory configurationFactory, EditorAPI editorApi) {
         super(name, project, configurationFactory);
 
-        this.project = project;
         this.editorApi = editorApi;
         runConfigurationExternaliser = configurationFactory.getRunConfigurationExternalizer();
         setWorkingDirectoryPath("");
+        setModuleName("");
     }
 
     public String getScriptPath() {
@@ -87,18 +87,36 @@ public class GroovyRunConfiguration extends RuntimeConfiguration {
 
     public void setWorkingDirectoryPath(String workingDirectoryPath) {
         if (workingDirectoryPath == null || workingDirectoryPath.trim().length() == 0) {
-            this.workingDirectoryPath = PathUtil.getCanonicalPath(project.getProjectFile().getParent().getPath());
+            this.workingDirectoryPath = PathUtil.getCanonicalPath(getProject().getProjectFile().getParent().getPath());
         } else {
             this.workingDirectoryPath = workingDirectoryPath;
         }
     }
 
     public Module getModule() {
-        return module;
-    }
+        // For some really odd reason, the following always returns null and therefore cannot be used reliably!
+//        return ModuleManager.getInstance(getProject()).findModuleByName(getModuleName());
+
+        Module[] modules = ModuleManager.getInstance(getProject()).getModules();
+        for (int i = 0; i < modules.length; i++) {
+            Module module = modules[i];
+            if (module.getName().equals(getModuleName())) {
+                return module;
+            }
+        }
+        return null;
+        }
 
     public void setModule(Module module) {
-        this.module = module;
+        this.moduleName = (module == null) ? "" : module.getName();
+    }
+
+    public String getModuleName() {
+        return moduleName;
+    }
+
+    public void setModuleName(String moduleName) {
+        this.moduleName = moduleName;
     }
 
     // RunConfiguration ------------------------------------------------------------------------------------------------
@@ -114,19 +132,17 @@ public class GroovyRunConfiguration extends RuntimeConfiguration {
             throw new RuntimeConfigurationError("Groovy script not specified");
         }
 
-        if (getModule() == null) {
+        if (getModuleName() == null || getModuleName().trim().length() == 0) {
             throw new RuntimeConfigurationError("Module not selected");
         }
     }
 
-    // RunProfile ------------------------------------------------------------------------------------------------------
-
     public RunProfileState getState(DataContext context, RunnerInfo runnerInfo, RunnerSettings runnerSettings,
                                     ConfigurationPerRunnerSettings configurationSettings) {
-        GroovyComandLineState comandLineState = new GroovyComandLineState(this, runnerSettings, configurationSettings);
-        comandLineState.setConsoleBuilder(TextConsoleBuidlerFactory.getInstance().createBuilder(getProject()));
-        comandLineState.setModulesToCompile(editorApi.getModuleAndDependentModules(module));
-        return comandLineState;
+        GroovyCommandLineState commandLineState = new GroovyCommandLineState(this, runnerSettings, configurationSettings);
+        commandLineState.setConsoleBuilder(TextConsoleBuidlerFactory.getInstance().createBuilder(getProject()));
+        commandLineState.setModulesToCompile(editorApi.getModuleAndDependentModules(getModule()));
+        return commandLineState;
     }
 
     // JDOMExternalizable ----------------------------------------------------------------------------------------------
