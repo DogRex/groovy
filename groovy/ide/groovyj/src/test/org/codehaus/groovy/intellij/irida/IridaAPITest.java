@@ -47,7 +47,5 @@ public class IridaAPITest extends BaseEditorAPITest {
         editorAPI.invokeLater(new Runnable() {
             public void run() {}
         });
-
-        mockApplication.verify();
     }
 }

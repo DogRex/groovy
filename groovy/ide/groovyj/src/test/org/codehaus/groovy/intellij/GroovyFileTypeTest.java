@@ -24,7 +24,7 @@ import com.intellij.openapi.util.IconLoader;
 
 public class GroovyFileTypeTest extends TestCase {
 
-    private final GroovyFileType groovyFileType = new GroovyFileType();
+    private final GroovyFileType groovyFileType = new GroovyFileType(null);
 
     public void testDefinesAName() {
         assertEquals("name", "Groovy", groovyFileType.getName());

@@ -24,13 +24,15 @@ import com.intellij.ide.structureView.StructureViewModel;
 import com.intellij.openapi.fileTypes.FileTypeSupportCapabilities;
 import com.intellij.openapi.fileTypes.LanguageFileType;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.util.IconLoader;
+import com.intellij.openapi.vfs.VirtualFile;
+
+import org.codehaus.groovy.intellij.language.GroovyLanguage;
 
 public class GroovyFileType extends LanguageFileType {
 
-    public GroovyFileType() {
-        super(null);
+    public GroovyFileType(GroovyLanguage language) {
+        super(language);
     }
 
     public String getName() {
