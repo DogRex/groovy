@@ -155,14 +155,17 @@ public class GroovySettingsEditor extends SettingsEditor {
         return null;
     }
 
-    private static class ModuleComboBoxRenderer extends DefaultListCellRenderer {
+    static class ModuleComboBoxRenderer extends DefaultListCellRenderer {
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
             Module module = (Module) value;
-            setIcon(module.getModuleType().getNodeIcon(true));
-            setText(module.getName());
+            if (module != null) {
+                setIcon(module.getModuleType().getNodeIcon(true));
+                setText(module.getName());
+            }
+
             return this;
         }
     }

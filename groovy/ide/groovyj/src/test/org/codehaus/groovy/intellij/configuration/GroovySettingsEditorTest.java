@@ -18,14 +18,18 @@
 
 package org.codehaus.groovy.intellij.configuration;
 
+import javax.swing.JList;
+
 import org.intellij.openapi.testing.MockApplicationManager;
 
 import com.intellij.openapi.actionSystem.ActionGroup;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.ActionPopupMenu;
+import com.intellij.openapi.module.JavaModuleType;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.ModuleType;
 
 import org.jmock.Mock;
 
@@ -34,6 +38,7 @@ public class GroovySettingsEditorTest extends GroovyConfigurationTestCase {
     private final GroovyRunConfiguration groovyRunConfiguration = createRunConfiguration("-showversion", "../foo.groovy", "", "/home/acme");
 
     private GroovySettingsEditor groovySettingsEditor;
+    private GroovySettingsEditor.ModuleComboBoxRenderer moduleComboBoxRenderer;
 
     protected void setUp() {
         MockApplicationManager.reset();
@@ -46,6 +51,7 @@ public class GroovySettingsEditorTest extends GroovyConfigurationTestCase {
                 .will(returnValue(mockActionPopupMenu.proxy()));
 
         groovySettingsEditor = new GroovySettingsEditor(groovyRunConfiguration.getProject());
+        moduleComboBoxRenderer = (GroovySettingsEditor.ModuleComboBoxRenderer) groovySettingsEditor.moduleComboBox.getRenderer();
     }
 
     public void testCopiesSettingsFromAGivenGroovyRunConfigurationWhenInstructedToResetItsContents() {
@@ -93,5 +99,24 @@ public class GroovySettingsEditorTest extends GroovyConfigurationTestCase {
 
     public void testDoesNotDefineAHelpTopicYet() {
         assertEquals("help topic", null, groovySettingsEditor.getHelpTopic());
+    }
+
+    public void testUsesAListCellRendererToRenderAGivenModuleInAComboBox() {
+        ModuleType expectedModuleType = new JavaModuleType();
+        String expectedModuleName = "Foo Module";
+
+        Mock stubModule = mock(Module.class);
+        stubModule.expects(once()).method("getModuleType").will(returnValue(expectedModuleType));
+        stubModule.expects(once()).method("getName").will(returnValue(expectedModuleName));
+
+        moduleComboBoxRenderer.getListCellRendererComponent(new JList(), stubModule.proxy(), -1, false, false);
+        assertEquals("module icon", expectedModuleType.getNodeIcon(false), moduleComboBoxRenderer.getIcon());
+        assertEquals("module name", expectedModuleName, moduleComboBoxRenderer.getText());
+    }
+
+    public void testUsesAListCellRendererThatCanAlsoRenderANullModuleInAComboBox() {
+        moduleComboBoxRenderer.getListCellRendererComponent(new JList(), null, -1, false, false);
+        assertEquals("module icon", null, moduleComboBoxRenderer.getIcon());
+        assertEquals("module name", "", moduleComboBoxRenderer.getText());
     }
 }
