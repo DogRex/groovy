@@ -1,6 +1,7 @@
 package org.intellij.openapi.testing.irida;
 
 import com.intellij.execution.runners.ProcessProxyFactory;
+import com.intellij.ide.structureView.StructureViewFactory;
 import com.intellij.openapi.diff.DiffRequestFactory;
 import com.intellij.openapi.fileChooser.FileSystemTreeFactory;
 import com.intellij.openapi.ui.DialogWrapperPeerFactory;
@@ -11,7 +12,6 @@ import com.intellij.psi.search.scope.packageSet.PackageSetFactory;
 import com.intellij.ui.UIHelper;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.errorView.ErrorViewFactory;
-import com.intellij.ide.structureView.StructureViewFactory;
 
 public class MockPeerFactory extends PeerFactory {
 
@@ -55,7 +55,7 @@ public class MockPeerFactory extends PeerFactory {
         return null;
     }
 
-    public StructureViewFactory getStructureVeiwFactory() {
-        return null; 
+    public StructureViewFactory getStructureViewFactory() {
+        return null;
     }
 }
