@@ -3,6 +3,7 @@
  */
 package org.codehaus.groovy.eclipse.launchers;
 
+import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Path;
@@ -32,7 +33,7 @@ public class GroovySourceLocator extends JavaUISourceLocator {
                     if (result != null) return result;
                 }
             } catch (DebugException e) {
-                e.printStackTrace();
+                GroovyPlugin.getPlugin().logException("failed to get source element",e);
             }
         }
         return super.getSourceElement(stackFrame);
