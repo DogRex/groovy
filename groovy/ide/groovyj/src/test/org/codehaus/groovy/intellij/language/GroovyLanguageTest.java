@@ -44,7 +44,7 @@ public class GroovyLanguageTest extends MockObjectTestCase {
     }
 
     public void testDoesNotFindReferencesToTokensYet() {
-        assertEquals("token references", false, language.mayHaveReferences((IElementType) mock(IElementType.class).proxy()));
+        assertEquals("token references", false, language.mayHaveReferences(new IElementType(null, null)));
     }
 
     public void testDoesNotProduceFoldingBuildersYet() {
