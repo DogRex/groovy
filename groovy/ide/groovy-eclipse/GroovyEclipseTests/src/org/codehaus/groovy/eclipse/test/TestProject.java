@@ -78,15 +78,15 @@ public class TestProject {
 		return javaProject;
 	}
 
-	public void addJar(String plugin, String jar) throws MalformedURLException, IOException, JavaModelException {
-		Path result = findFileInPlugin(plugin, jar);
-		IClasspathEntry[] oldEntries = javaProject.getRawClasspath();
-		IClasspathEntry[] newEntries = new IClasspathEntry[oldEntries.length + 1];
-		System.arraycopy(oldEntries, 0, newEntries, 0, oldEntries.length);
-		newEntries[oldEntries.length] = JavaCore.newLibraryEntry(result, null, null);
-		javaProject.setRawClasspath(newEntries, null);
-	}
-
+//	public void addJar(String plugin, String jar) throws MalformedURLException, IOException, JavaModelException {
+//		Path result = findFileInPlugin(plugin, jar);
+//		IClasspathEntry[] oldEntries = javaProject.getRawClasspath();
+//		IClasspathEntry[] newEntries = new IClasspathEntry[oldEntries.length + 1];
+//		System.arraycopy(oldEntries, 0, newEntries, 0, oldEntries.length);
+//		newEntries[oldEntries.length] = JavaCore.newLibraryEntry(result, null, null);
+//		javaProject.setRawClasspath(newEntries, null);
+//	}
+//
 	public boolean hasJar(String jar) throws JavaModelException {
 		IClasspathEntry[] entries = javaProject.getRawClasspath();
 		for (int i = 0; i < entries.length; i++) {
@@ -200,15 +200,15 @@ public class TestProject {
 		javaProject.setRawClasspath(newEntries, null);
 	}
 
-	private Path findFileInPlugin(String plugin, String file) throws MalformedURLException, IOException {
-		IPluginRegistry registry = Platform.getPluginRegistry();
-		IPluginDescriptor descriptor = registry.getPluginDescriptor(plugin);
-		URL pluginURL = descriptor.getInstallURL();
-		URL jarURL = new URL(pluginURL, file);
-		URL localJarURL = Platform.asLocalURL(jarURL);
-		return new Path(localJarURL.getPath());
-	}
-
+//	private Path findFileInPlugin(String plugin, String file) throws MalformedURLException, IOException {
+//		IPluginRegistry registry = Platform.getPluginRegistry();
+//		IPluginDescriptor descriptor = registry.getPluginDescriptor(plugin);
+//		URL pluginURL = descriptor.getInstallURL();
+//		URL jarURL = new URL(pluginURL, file);
+//		URL localJarURL = Platform.asLocalURL(jarURL);
+//		return new Path(localJarURL.getPath());
+//	}
+//
 	private void waitForIndexer() throws JavaModelException {
 		new SearchEngine()
 			.searchAllTypeNames(

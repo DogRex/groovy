@@ -6,13 +6,16 @@
  */
 package org.codehaus.groovy.eclipse.test;
 
-import groovy.GroovyRuntimePlugin;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.codehaus.groovy.eclipse.GroovyPlugin;
+import org.codehaus.groovy.eclipse.builder.GroovyBuilder;
+import org.codehaus.groovy.eclipse.builder.GroovyNature;
+import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.eclipse.core.resources.ICommand;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.JavaModelException;
 
@@ -23,14 +26,19 @@ import org.eclipse.jdt.core.JavaModelException;
  * Preferences - Java - Code Generation - Code and Comments
  */
 public class GroovyPluginTestCase extends EclipseTestCase {
-
+	private static final List groovyRuntimeJars = new ArrayList();
+	static{
+		groovyRuntimeJars.add("asm-1.4.3.jar");
+		groovyRuntimeJars.add("groovy-1.0-beta-8-SNAPSHOT.jar");
+	};
 	public void testNatureAddAndRemove() throws CoreException {
-		GroovyPlugin.getPlugin().addGroovyNature(testProject.getProject());
+		IProject project = testProject.getProject();
+		GroovyModel.getModel().getProject(project).addGroovyNature(project);
 
 		assertTrue(hasGroovyNature());
 		assertTrue(hasGroovyBuilder());
 
-		GroovyPlugin.getPlugin().removeGroovyNature(testProject.getProject());
+		GroovyModel.getModel().getProject(project).removeGroovyNature(project);
 
 		assertFalse(hasGroovyNature());
 		assertFalse(hasGroovyBuilder());
@@ -49,7 +57,7 @@ public class GroovyPluginTestCase extends EclipseTestCase {
 	}
 
 	private List verifyNoGroovyRuntime() throws JavaModelException {
-		List groovyRuntimeJars = GroovyRuntimePlugin.getPlugin().getGroovyRuntimeJars();
+		
 		for (Iterator iter = groovyRuntimeJars.iterator(); iter.hasNext();) {
 			String jarName = (String) iter.next();
 			assertFalse(
@@ -60,19 +68,13 @@ public class GroovyPluginTestCase extends EclipseTestCase {
 		return groovyRuntimeJars;
 	}
 
-	private void verifyGroovyRuntime(List groovyRuntimeJars) throws JavaModelException {
-		for (Iterator iter = groovyRuntimeJars.iterator(); iter.hasNext();) {
-			String jarName = (String) iter.next();
-			assertTrue("all groovy runtime libs should be part of the project", testProject.hasJar(jarName));
-		}
-	}
 
 
 	private boolean hasGroovyBuilder() throws CoreException {
 		ICommand[] commands = testProject.getProject().getDescription().getBuildSpec();
 		boolean found = false;
 		for (int i = 0; i < commands.length; ++i) {
-			if (commands[i].getBuilderName().equals(GroovyPlugin.GROOVY_BUILDER)) {
+			if (commands[i].getBuilderName().equals(GroovyBuilder.GROOVY_BUILDER)) {
 				found = true;
 			}
 		}
@@ -80,7 +82,7 @@ public class GroovyPluginTestCase extends EclipseTestCase {
 	}
 
 	private boolean hasGroovyNature() throws CoreException {
-		return testProject.getProject().hasNature(GroovyPlugin.GROOVY_NATURE);
+		return testProject.getProject().hasNature(GroovyNature.GROOVY_NATURE);
 	}
 
 }

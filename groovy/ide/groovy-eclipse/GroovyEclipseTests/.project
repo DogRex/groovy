@@ -3,8 +3,6 @@
 	<name>GroovyEclipseTests</name>
 	<comment></comment>
 	<projects>
-		<project>Groovy</project>
-		<project>GroovyEclipse</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

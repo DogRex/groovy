@@ -15,8 +15,10 @@ import org.apache.commons.io.IOUtil;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 
 /**
@@ -29,7 +31,7 @@ public class GroovyModelTestCase extends EclipseTestCase {
 
 	public void testFindsAllClassesWithMain() throws CoreException {
 		createAndBuildGroovyClassWithMain();
-		String[] classes = GroovyModel.getModel().findAllClassesWithMain(testProject.getJavaProject());
+		String[] classes = GroovyModel.getModel().findAllRunnableClasses(testProject.getJavaProject());
 		for (int i = 0; i < classes.length; i++) {
 			System.out.println(classes[i]);
 		}
@@ -56,7 +58,8 @@ public class GroovyModelTestCase extends EclipseTestCase {
 			"MainClass.groovy",
 			"class MainClass { static void main(args){}}");
 		plugin.addGroovyRuntime(testProject.getProject());
-		model.buildGroovyContent(testProject.getJavaProject());
+		model.buildGroovyContent(testProject.getJavaProject(), new NullProgressMonitor(),
+				IncrementalProjectBuilder.FULL_BUILD);
 	}
 
 	public void testRunGroovyMainWithArgs() throws CoreException, IOException, InterruptedException {
@@ -69,7 +72,8 @@ public class GroovyModelTestCase extends EclipseTestCase {
 				getClass().getResource("groovyfiles/write-args-to-file.groovy").openStream());
 
 		plugin.addGroovyRuntime(testProject.getProject());
-		model.buildGroovyContent(testProject.getJavaProject());
+		model.buildGroovyContent(testProject.getJavaProject(), new NullProgressMonitor(),
+				IncrementalProjectBuilder.FULL_BUILD);
 		String[] args = new String[] { tempFileName, "zohar", "james", "jon" };
 		model.runGroovyMain(groovyFile, args);
 		String expectedText = tempFileName + "zoharjamesjonthe end";
@@ -84,7 +88,8 @@ public class GroovyModelTestCase extends EclipseTestCase {
 				getClass().getResource("groovyfiles/write-args-to-file.groovy").openStream());
 		
 		plugin.addGroovyRuntime(testProject.getProject());
-		model.buildGroovyContent(testProject.getJavaProject());
+		model.buildGroovyContent(testProject.getJavaProject(), new NullProgressMonitor(),
+				IncrementalProjectBuilder.FULL_BUILD);
 		final String tempFileName = getTempFileName();
 		String[] args = new String[] { tempFileName, "zohar", "james", "jon" };
 		model.runGroovyMain("TestProject", "pack1.MainClass", args);

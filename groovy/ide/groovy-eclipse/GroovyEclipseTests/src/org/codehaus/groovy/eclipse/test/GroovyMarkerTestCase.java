@@ -15,8 +15,10 @@ package org.codehaus.groovy.eclipse.test;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.IJavaModelMarker;
 
 public class GroovyMarkerTestCase extends EclipseTestCase {
@@ -33,7 +35,8 @@ public class GroovyMarkerTestCase extends EclipseTestCase {
 	}
 
 	public void testErrorMarker() throws Exception {
-		model.buildGroovyContent(testProject.getJavaProject());
+		model.buildGroovyContent(testProject.getJavaProject(), new NullProgressMonitor(),
+				IncrementalProjectBuilder.FULL_BUILD);
 		IMarker[] markers = getFailureMarkers();
 		assertEquals(1,markers.length);
 		IMarker marker = markers[0];
@@ -42,8 +45,10 @@ public class GroovyMarkerTestCase extends EclipseTestCase {
 	}
 
 	public void testMarkerClearing() throws Exception {
-		model.buildGroovyContent(testProject.getJavaProject());
-		model.buildGroovyContent(testProject.getJavaProject());
+		model.buildGroovyContent(testProject.getJavaProject(), new NullProgressMonitor(),
+				IncrementalProjectBuilder.FULL_BUILD);
+		model.buildGroovyContent(testProject.getJavaProject(), new NullProgressMonitor(),
+				IncrementalProjectBuilder.FULL_BUILD);
 		IMarker[] markers = getFailureMarkers();
 		assertEquals(1, markers.length);
 	}
