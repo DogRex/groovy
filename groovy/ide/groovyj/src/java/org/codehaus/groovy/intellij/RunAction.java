@@ -3,18 +3,19 @@ package org.codehaus.groovy.intellij;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataConstants;
-import com.intellij.openapi.wm.WindowManager;
-import com.intellij.openapi.wm.StatusBar;
-import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
-import groovy.lang.GroovyShell;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.StatusBar;
+import com.intellij.openapi.wm.WindowManager;
 import groovy.lang.Binding;
-import org.codehaus.groovy.control.CompilerConfiguration;
+import groovy.lang.GroovyShell;
 import org.codehaus.groovy.control.CompilationFailedException;
+import org.codehaus.groovy.control.CompilerConfiguration;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -29,9 +30,11 @@ import java.io.IOException;
  */
 public class RunAction extends AnAction
 {
+	private Logger LOG = Logger.getInstance("GroovyJ.RunAction");
+
 	public void actionPerformed(AnActionEvent e)
 	{
-		Project project = (Project) e.getDataContext().getData(DataConstants.PROJECT);
+		final Project project = (Project) e.getDataContext().getData(DataConstants.PROJECT);
 		final StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
 		VirtualFile[] selectedFiles = FileEditorManager.getInstance(project).getSelectedFiles();
 		if (selectedFiles.length > 0)
@@ -39,6 +42,16 @@ public class RunAction extends AnAction
 			final VirtualFile selectedFile = selectedFiles[0];
 			if (!selectedFile.isDirectory())
 			{
+				File[] classpathForVFile = IdeaToolbox.getClasspathForVFile(project, selectedFile);
+				StringBuffer sb = new StringBuffer();
+				for (int i = 0; i < classpathForVFile.length; i++)
+				{
+					File file = classpathForVFile[i];
+					sb.append(file.getPath() + File.pathSeparatorChar);
+				}
+				final String classpath = sb.toString();
+				LOG.info("Classpath: " + classpath);
+
 				ApplicationManager.getApplication().runReadAction(new Runnable()
 				{
 					public void run()
@@ -50,8 +63,9 @@ public class RunAction extends AnAction
 						configuration.setTargetDirectory(selectedFile.getPath());
 /*
 						configuration.setOutput();
-						configuration.setClasspath();
 */
+						configuration.setClasspath(classpath);
+
 						ClassLoader loader = GroovyJPlugin.getInstance().getClass().getClassLoader();
 						GroovyShell shell = new GroovyShell(loader, new Binding(), configuration);
 						try
@@ -60,11 +74,11 @@ public class RunAction extends AnAction
 						}
 						catch (CompilationFailedException e1)
 						{
-							statusBar.setInfo("Run failed: " + e1.getMessage());
+							LOG.error("Run failed: " + e1.getMessage());
 						}
 						catch (IOException e1)
 						{
-							statusBar.setInfo("Run failed: " + e1.getMessage());
+							LOG.error("Run failed: " + e1.getMessage());
 						}
 					}
 				});
