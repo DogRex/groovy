@@ -70,11 +70,11 @@ public class EclipseFileSystemCompiler
 	}
 
 
-	public CompileUnit compile(File file)throws Exception{
-		return compile(new File[]{file});
+	public CompileUnit compile(File file, boolean generateClassFiles)throws Exception{
+		return compile(new File[]{file}, generateClassFiles);
 	}
 	
-	public CompileUnit compile(File[] files)
+	public CompileUnit compile(File[] files, boolean generateClassFiles)
 	throws Exception
 	{
 		FileCharStream[] fileCharStreams = new FileCharStream[ files.length ];
@@ -86,7 +86,7 @@ public class EclipseFileSystemCompiler
 		
 		List result = new ArrayList();
 		compiler.setVerbose(true);
-		CompileUnit compileUnit = compiler.compile( fileCharStreams , result);
+		CompileUnit compileUnit = compiler.compile( fileCharStreams , result, generateClassFiles);
 		for (Iterator iter = result.iterator(); iter.hasNext();) {
 			GroovyClass element = (GroovyClass) iter.next();
 			dumpClassFile( element );

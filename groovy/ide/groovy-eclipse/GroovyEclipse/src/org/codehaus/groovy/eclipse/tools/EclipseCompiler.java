@@ -169,9 +169,8 @@ public class EclipseCompiler {
 	 */
 
 	
-	public CompileUnit compile(CharStream[] sources, List classes) throws GroovyException {
+	public CompileUnit compile(CharStream[] sources, List classes, boolean generateClasses ) throws GroovyException {
 		CompilationFailuresException failures = new CompilationFailuresException();
-
 		//
 		// First up, get at list of source files for error reporting
 		// purposes.
@@ -221,7 +220,6 @@ public class EclipseCompiler {
 		if (!failures.isEmpty()) {
 			throw failures;
 		}
-
 		//
 		// Next, compile the CSTs to ASTs, and from there to classes.
 
@@ -242,7 +240,12 @@ public class EclipseCompiler {
 				throw new CompilerBugException( descriptors[i], "AST creation", e );
 			}
 		}
-
+		
+		if(!generateClasses){
+			// Control Leaves 
+			return unit;
+		}
+		
 		for (Iterator iter = unit.getModules().iterator(); iter.hasNext();) {
 			ModuleNode module = (ModuleNode) iter.next();
 			try {

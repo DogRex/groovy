@@ -1,6 +1,6 @@
 /*
  * Created on Jan 27, 2004
- *  
+ *
  */
 package org.codehaus.groovy.eclipse.editor.contentoutline;
 
@@ -16,13 +16,14 @@ import org.codehaus.groovy.ast.ImportNode;
 import org.codehaus.groovy.ast.MetadataNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
 import org.eclipse.swt.graphics.Image;
 
 /**
  * @author zohar melamed
- *  
+ *
  */
 public abstract class TreeAdapter {
 	protected static Object[] empty = new Object[0];
@@ -45,10 +46,24 @@ public abstract class TreeAdapter {
 		return name;
 	}
 	/**
-	 * 
+	 *
 	 */
 	int getLineNumber() {
 		return lineNumber;
+	}
+
+	String generateMethodName(String methodName, Parameter[] parameters){
+		StringBuffer buffer = new StringBuffer(methodName);
+		buffer.append("(");
+		for (int i = 0; i < parameters.length; i++) {
+			Parameter parameter = parameters[i];
+			buffer.append(parameter.getName());
+			if(i+1 < parameters.length){
+				buffer.append(",");
+			}
+		}
+		buffer.append(")");
+		return buffer.toString();
 	}
 }
 
@@ -67,25 +82,7 @@ class PropertyAdapter extends TreeAdapter {
 	PropertyAdapter(PropertyNode property, Object parent) {
 		this.parent = parent;
 		name = property.getName();
-		children = new Object[1];
-		children[0] = new FieldAdapter(property.getField(), this);
-		lineNumber = property.getLineNumber();
-	}
-
-	Image getImage() {
-		return JavaPluginImages.get(JavaPluginImages.IMG_OBJS_UNKNOWN);
-	}
-}
-
-class FieldAdapter extends TreeAdapter {
-	/**
-	 * @param node
-	 * @param adapter
-	 */
-	public FieldAdapter(FieldNode node, Object parent) {
-		name = node.getName();
-		this.parent = parent;
-		lineNumber = node.getLineNumber();
+		lineNumber = property.getLineNumber()-1;
 	}
 
 	Image getImage() {
@@ -93,27 +90,30 @@ class FieldAdapter extends TreeAdapter {
 	}
 }
 
+
 class MethodAdapter extends TreeAdapter {
+
 	MethodAdapter(MethodNode methodNode, Object parent) {
 		this.parent = parent;
-		name = methodNode.getName();
-		lineNumber = methodNode.getLineNumber();
+		name = generateMethodName(methodNode.getName(),methodNode.getParameters());
+		lineNumber = methodNode.getLineNumber()-1;
 	}
 
 	Image getImage() {
-		return JavaPluginImages.get(JavaPluginImages.IMG_MISC_DEFAULT);
+		return JavaPluginImages.get(JavaPluginImages.IMG_MISC_PUBLIC);
 	}
 }
 
 class ConstructorAdapter extends TreeAdapter {
 	ConstructorAdapter(ClassNode classNode, ConstructorNode ctorNode, Object parent) {
 		this.parent = parent;
-		name = classNode.getNameWithoutPackage();
+		//name = classNode.getNameWithoutPackage();
+		name = generateMethodName(classNode.getNameWithoutPackage(),ctorNode.getParameters());
 		lineNumber = ctorNode.getLineNumber();
 	}
 
 	Image getImage() {
-		return JavaPluginImages.get(JavaPluginImages.IMG_MISC_DEFAULT);
+		return JavaPluginImages.get(JavaPluginImages.IMG_OBJS_CLASS);
 	}
 }
 

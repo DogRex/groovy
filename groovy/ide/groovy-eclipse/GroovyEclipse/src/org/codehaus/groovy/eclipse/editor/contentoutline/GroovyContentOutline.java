@@ -1,6 +1,6 @@
 /*
  * Created on 21-Jan-2004
- * 
+ *
  * To change the template for this generated file go to Window - Preferences -
  * Java - Code Generation - Code and Comments
  */
@@ -26,7 +26,7 @@ import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
 /**
  * @author MelamedZ
- * 
+ *
  * To change the template for this generated type comment go to Window -
  * Preferences - Java - Code Generation - Code and Comments
  */
@@ -41,16 +41,16 @@ public class GroovyContentOutline extends ContentOutlinePage implements GroovyBu
 	}
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.ui.part.IPage#createControl(org.eclipse.swt.widgets.Composite)
 	 */
 	public void createControl(Composite parent) {
 		super.createControl(parent);
 		TreeViewer viewer = getTreeViewer();
 
-		viewer.setContentProvider(new GroovyASTContentProvider());
+		viewer.setContentProvider(new GroovyASTContentProvider(this));
 		viewer.setLabelProvider(new GroovyASTLabelProvider());
-		
+
 		viewer.addDoubleClickListener(new IDoubleClickListener() {
 			public void doubleClick(DoubleClickEvent event) {
 				IStructuredSelection selection = (IStructuredSelection) event.getSelection();
@@ -60,14 +60,14 @@ public class GroovyContentOutline extends ContentOutlinePage implements GroovyBu
 			}
 
 		});
-		
+
 		GroovyModel model = GroovyModel.getModel();
-		model.addBuildListener(this);
 		CompileUnit unit = model.getCompilationUnit(file);
 		getTreeViewer().setInput(unit);
 		getTreeViewer().expandAll();
+		model.addBuildListener(this);
 	}
-	
+
 	protected void navigateToEditor(int line) {
 		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 		IEditorPart part = page.getActiveEditor();
@@ -82,7 +82,7 @@ public class GroovyContentOutline extends ContentOutlinePage implements GroovyBu
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.codehaus.groovy.eclipse.model.GroovyBuildListner#fileBuilt(org.eclipse.core.resources.IFile)
 	 */
 	public void fileBuilt(IFile fileBuilt, CompileUnit compilationUnit) {

@@ -5,8 +5,6 @@
  * Java - Code Generation - Code and Comments
  */
 package org.codehaus.groovy.eclipse.model;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -19,14 +17,9 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.codehaus.groovy.eclipse.launchers.GroovyRunner;
 import org.codehaus.groovy.eclipse.tools.EclipseFileSystemCompiler;
-import org.codehaus.groovy.syntax.SyntaxException;
-import org.codehaus.groovy.tools.CompilationFailuresException;
-import org.codehaus.groovy.tools.ExceptionCollector;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceVisitor;
-import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -40,74 +33,13 @@ import org.eclipse.swt.widgets.Display;
  * To change the template for this generated type comment go to Window -
  * Preferences - Java - Code Generation - Code and Comments
  */
-public class GroovyProject implements IResourceVisitor {
+public class GroovyProject{
 	private IJavaProject javaProject;
 	private Map compilationUnits = new HashMap();
 	private EclipseFileSystemCompiler compiler = new EclipseFileSystemCompiler();
 	public static final String GROOVY_ERROR_MARKER = "org.codehaus.groovy.eclipse.groovyFailure";
 	List listeners = new ArrayList();
-	/**
-	 * @author MelamedZ
-	 * 
-	 * To change the template for this generated type comment go to Window -
-	 * Preferences - Java - Code Generation - Code and Comments
-	 */
-	class AddErrorMarker implements IWorkspaceRunnable {
-		private IResource resource;
-		private Exception e;
-		/**
-		 * @param resource
-		 */
-		public AddErrorMarker(IResource resource, Exception e) {
-			super();
-			this.resource = resource;
-			this.e = e;
-		}
-		public void run(IProgressMonitor monitor) throws CoreException {
-			if (e instanceof CompilationFailuresException) {
-				CompilationFailuresException compilationFailuresException = (CompilationFailuresException) e;
-				Iterator iterator = compilationFailuresException.iterator();
-				while (iterator.hasNext()) {
-					String key = (String) iterator.next();
-					ExceptionCollector ec = compilationFailuresException.get(key);
-					Iterator it = ec.iterator();
-					while (it.hasNext()) {
-						markerFromException((Exception) it.next());
-					}
-				}
-			} else {
-				markerFromException(e);
-			}
-		}
-		/**
-		 * @param exception
-		 */
-		private void markerFromException(Exception exception) throws CoreException {
-			int line = 0, startCol = 0, endCol = 0;
-			if (exception instanceof SyntaxException) {
-				SyntaxException se = (SyntaxException) exception;
-				line = se.getLine();
-				startCol = se.getStartColumn();
-				endCol = se.getEndColumn();
-			}
-			StringWriter trace = new StringWriter();
-			e.printStackTrace(new PrintWriter(trace));
-			createMarker(IMarker.SEVERITY_ERROR, exception.getMessage(), trace.toString(), line, startCol, endCol);
-		}
-		private void createMarker(int severity, String message, String stackTrace, int line, int startCol, int endCol)
-				throws CoreException {
-			GroovyPlugin.trace("creating marker in " + resource.getName());
-			IMarker marker = resource.createMarker(GROOVY_ERROR_MARKER); //$NON-NLS-1$
-			Map map = new HashMap(3);
-			map.put(IMarker.SEVERITY, new Integer(severity));
-			map.put(IMarker.LINE_NUMBER, new Integer(line));
-			map.put(IMarker.MESSAGE, message);
-			//			map.put(IMarker.CHAR_START, new Integer(startCol));
-			//			map.put(IMarker.CHAR_END, new Integer(endCol));
-			map.put("trace", stackTrace); //$NON-NLS-1$
-			marker.setAttributes(map);
-		}
-	}
+	List filesToBuild = new ArrayList();
 	/**
 	 * @param javaProject
 	 */
@@ -115,18 +47,38 @@ public class GroovyProject implements IResourceVisitor {
 		super();
 		this.javaProject = javaProject;
 	}
-	public void buildGroovyContent(IProgressMonitor monitor) {
-		// TODO keep track of class files and clean before compile
-		// let's start naively , and build all groovy files each time
+	public void buildGroovyContent(IProgressMonitor monitor, int kind) {
 		try {
+			
+			long start = System.currentTimeMillis();
 			setClassPath(javaProject);
 			setOutputDirectory(javaProject);
-			compilationUnits.clear();
-			javaProject.getProject().accept(this);
+			
+			filesToBuild.clear();
+			if(kind == IncrementalProjectBuilder.FULL_BUILD)
+				javaProject.getProject().accept(
+						new FullGroovyBuilder(filesToBuild));
+			else{
+				javaProject.getProject().accept(
+						new IncrementalGroovyBuilder(javaProject, compilationUnits, this,filesToBuild));
+				
+			}
+			monitor.beginTask("Compiling Groovy Files",filesToBuild.size());
+			for (Iterator iter = filesToBuild.iterator(); iter.hasNext();) {
+				IFile file = (IFile) iter.next();
+				monitor.setTaskName("Compiling "+file.getName());
+				GroovyPlugin.trace("Compiling "+file.getName());
+				compileGroovyFile(file,true);
+				monitor.worked(1);
+			}
+			System.out.println("compile of " + compilationUnits.size() + " took "
+					+ (System.currentTimeMillis() - start));
 		} catch (Exception e) {
+			monitor.worked(1);
 			GroovyPlugin.getPlugin().logException("error building groovy files", e);
 		}
 	}
+	
 	private void setOutputDirectory(IJavaProject javaProject) throws JavaModelException {
 		String outputPath = getOutputPath(javaProject);
 		GroovyPlugin.trace("groovy output = " + outputPath);
@@ -150,35 +102,26 @@ public class GroovyProject implements IResourceVisitor {
 		GroovyPlugin.trace("groovy cp = " + classPath.toString());
 		compiler.setClasspath(classPath.toString());
 	}
-	/*
-	 * (non-Javadoc)
+	/**
+	 * build and save compilationUnit
 	 * 
-	 * @see org.eclipse.core.resources.IResourceVisitor#visit(org.eclipse.core.resources.IResource)
+	 * @param file
+	 * @param fullPath
+	 * @throws CoreException
+	 * @throws Exception
 	 */
-	public boolean visit(IResource resource) {
-		if (resource.getType() == IResource.FILE) {
-			String extension = resource.getFileExtension();
-			IFile file = (IFile) resource;
-			if (extension != null && extension.equalsIgnoreCase("groovy")) {
-				// build and save compilationUnit
-				IPath fullPath = resource.getFullPath();
-				GroovyPlugin.trace("found -" + fullPath);
-				String key = file.getFullPath().toString();
-				if (!compilationUnits.containsKey(key)) {
-					try {
-						file.deleteMarkers(GROOVY_ERROR_MARKER, false, IResource.DEPTH_INFINITE); //$NON-NLS-1$
-						GroovyPlugin.trace("deleted markers from " + fullPath);
-						GroovyPlugin.trace("compiling -" + fullPath);
-						CompileUnit unit = compiler.compile(file.getLocation().toFile());
-						compilationUnits.put(key, unit);
-						fireGroovyFileBuilt(file, unit);
-					} catch (Exception e) {
-						handleCompilationError(resource, e);
-					}
-				}
-			}
+	void compileGroovyFile(IFile file, boolean generateClassFiles) {
+		try {
+			file.deleteMarkers(GROOVY_ERROR_MARKER, false, IResource.DEPTH_INFINITE); //$NON-NLS-1$
+			GroovyPlugin.trace("deleted markers from " + file.getFullPath());
+			GroovyPlugin.trace(generateClassFiles ? " " : "fast " + "compiling -" + file.getFullPath());
+			CompileUnit unit = compiler.compile(file.getLocation().toFile(), generateClassFiles);
+			String key = file.getFullPath().toString();
+			compilationUnits.put(key, unit);
+			fireGroovyFileBuilt(file, unit);
+		} catch (Exception e) {
+			handleCompilationError(file, e);
 		}
-		return true;
 	}
 	/**
 	 * @param e
@@ -271,11 +214,11 @@ public class GroovyProject implements IResourceVisitor {
 				List mainMethods = classNode.getDeclaredMethods("main");
 				for (Iterator methoodIterator = mainMethods.iterator(); methoodIterator.hasNext();) {
 					MethodNode methodNode = (MethodNode) methoodIterator.next();
-					if (methodNode!= null && methodNode.isStatic() && methodNode.isVoidMethod()) {
+					if (methodNode != null && methodNode.isStatic() && methodNode.isVoidMethod()) {
 						results.add(classNode.getName());
 					}
 				}
-				if(isTestCaseClass(classNode)){
+				if (isTestCaseClass(classNode)) {
 					results.add(classNode.getName());
 				}
 			}

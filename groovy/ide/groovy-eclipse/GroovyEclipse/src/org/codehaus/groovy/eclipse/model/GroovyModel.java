@@ -77,9 +77,9 @@ public class GroovyModel {
 	/**
 	 * @param javaProject
 	 */
-	public void buildGroovyContent(IJavaProject javaProject, IProgressMonitor monitor) {
+	public void buildGroovyContent(IJavaProject javaProject, IProgressMonitor monitor, int kind) {
 		GroovyProject gp = getGroovyProject(javaProject);
-		gp.buildGroovyContent(monitor);
+		gp.buildGroovyContent(monitor,kind);
 	}
 
 	/**
