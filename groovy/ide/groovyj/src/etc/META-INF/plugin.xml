@@ -1,48 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!DOCTYPE idea-plugin PUBLIC "-//IntelliJ Technology Network//DTD Plugin Manager 0.1//EN" "http://plugins.intellij.net/plugin.dtd">
+<!DOCTYPE idea-plugin PUBLIC "-//IntelliJ Technology Network//DTD Plugin Manager 0.1//EN" "NEW URI NOT KNOWN YET!">
 
 <idea-plugin url="@PROJECT.HOMEPAGE@" version="2">
 
     <name>@PROJECT.TITLE@</name>
     <description>@PROJECT.DESCRIPTION@</description>
     <version>@PROJECT.VERSION@</version>
-    <vendor url="@PROJECT.VENDOR.HOMEPAGE@" email="@PROJECT.VENDOR.EMAIL@">@PROJECT.VENDOR@</vendor>
+    <vendor logo="/icons/groovy_16x16.png" url="@PROJECT.VENDOR.HOMEPAGE@" email="@PROJECT.VENDOR.EMAIL@">@PROJECT.VENDOR@</vendor>
     <change-notes>@PROJECT.CHANGE-NOTES@</change-notes>
     <idea-version since-build="@PROJECT.IDEA.SINCE-BUILD@" until-build="@PROJECT.IDEA.UNTIL-BUILD@"/>
 
-    <project-components>
-        <component>
-            <implementation-class>org.codehaus.groovy.intellij.GroovyJProjectComponent</implementation-class>
+    <extensions xmlns="com.intellij">
+        <component area="IDEA_PROJECT">
+            <implementation>org.codehaus.groovy.intellij.GroovyJProjectComponent</implementation>
         </component>
-    </project-components>
+    </extensions>
 
-    <application-components>
+    <extensions xmlns="com.intellij">
         <component>
-            <implementation-class>org.codehaus.groovy.intellij.EditorAPIFactory</implementation-class>
+            <implementation>org.codehaus.groovy.intellij.EditorAPIFactory</implementation>
         </component>
         <component>
-            <implementation-class>org.codehaus.groovy.intellij.configuration.GroovyConfigurationType</implementation-class>
+            <implementation>org.codehaus.groovy.intellij.configuration.GroovyConfigurationType</implementation>
         </component>
         <component>
-            <implementation-class>org.codehaus.groovy.intellij.GroovySupportLoader</implementation-class>
+            <implementation>org.codehaus.groovy.intellij.GroovySupportLoader</implementation>
         </component>
-    </application-components>
-<!--
-    <actions>
-        <action id="Groovy::RunGroovyScript"
-                class="org.codehaus.groovy.intellij.actions.RunAction"
-                text="_Run Groovy script"
-                description="Run Groovy script"
-                icon="/icons/groovy_16x16.png">
-            <keyboard-shortcut first-keystroke="ctrl alt G" second-keystroke="R" keymap="$default"/>
-            <add-to-group group-id="MainToolBar" anchor="after" relative-to-action="RunnerActions"/>
-        </action>
-        <group id="Groovy::Menu" text="Groov_y" popup="true">
-            <reference id="Groovy::RunGroovyScript"/>
-            <add-to-group group-id="MainMenu" anchor="after" relative-to-action="RunMenu"/>
-            <add-to-group group-id="RunContextPopupGroup" anchor="last"/>
-        </group>
-    </actions>
--->
+    </extensions>
+
 </idea-plugin>
