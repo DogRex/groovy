@@ -179,7 +179,7 @@ public class BaseEditorAPITest extends MockObjectTestCase {
         assertEquals(expectedClasspath, editorAPI.getCurrentModuleClasspathAsString());
     }
 
-    private void setExpectationsForExtractingCurrentModuleClasspath() throws IOException {
+    private void setExpectationsForExtractingCurrentModuleClasspath() {
         mockModuleManager.expects(once()).method("getModules").will(returnValue(singletonModule));
         mockModuleRootManager.expects(once()).method("getFiles").with(eq(OrderRootType.CLASSES)).will(returnValue(moduleLibraries));
 
@@ -205,9 +205,19 @@ public class BaseEditorAPITest extends MockObjectTestCase {
         mockVirtualFile.expects(once()).method("getFileSystem")
                 .after("jar extension").will(returnValue(mockJarFileSystem.proxy()))
                 .id("JAR filesystem");
+
+        Mock mockJarFile = mock(MockableJarFile.class);
+        mockJarFile.expects(once()).method("getName").will(returnValue("lib/compile/jdom.jar"));
+
         mockJarFileSystem.expects(once()).method("getJarFile").with(isA(VirtualFile.class))
-                .after(mockVirtualFile, "JAR filesystem").will(returnValue(new JarFile(new File("lib/compile/jdom.jar"))))
+                .after(mockVirtualFile, "JAR filesystem").will(returnValue(mockJarFile.proxy()))
                 .id("second iteration");
+    }
+
+    private static class MockableJarFile extends JarFile {
+        public MockableJarFile() throws IOException {
+            super(System.getProperty("java.home") + File.separator + "lib" + File.separator + "rt.jar");
+        }
     }
 
     public void testHandlesTheRegistrationOfFileEditorManagerListeners() {
