@@ -29,6 +29,8 @@ public class GroovySupportLoader implements ApplicationComponent {
 
     public static final FileType GROOVY = new GroovyFileType(GroovyLanguage.createLanguage());
 
+    static final String[] DEFAULT_ASSOCIATED_EXTENSIONS = new String[] { "groovy", "gvy", "gy", "gsh" };
+
     public String getComponentName() {
         return "groovy.integration";
     }
@@ -38,7 +40,7 @@ public class GroovySupportLoader implements ApplicationComponent {
 
         ApplicationManager.getApplication().runWriteAction(new Runnable() {
             public void run() {
-                FileTypeManager.getInstance().registerFileType(GROOVY, new String[] { "groovy" });
+                FileTypeManager.getInstance().registerFileType(GROOVY, DEFAULT_ASSOCIATED_EXTENSIONS);
             }
         });
     }

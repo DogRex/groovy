@@ -59,7 +59,9 @@ public class GroovySupportLoaderTest extends MockObjectTestCase {
 
         Mock mockFileTypeManager = mock(FileTypeManager.class);
         MockApplicationManager.getMockApplication().registerComponent(FileTypeManager.class, mockFileTypeManager.proxy());
-        mockFileTypeManager.expects(once()).method("registerFileType").with(same(GroovySupportLoader.GROOVY), eq(new String[] { "groovy" }));
+
+        mockFileTypeManager.expects(once()).method("registerFileType")
+                .with(same(GroovySupportLoader.GROOVY), eq(GroovySupportLoader.DEFAULT_ASSOCIATED_EXTENSIONS));
     }
 
     public void testRemovesTheGroovyJsrSystemPropertyWhenDisposedByIntellijIdea() {
