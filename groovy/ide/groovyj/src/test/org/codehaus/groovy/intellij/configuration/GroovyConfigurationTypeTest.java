@@ -118,7 +118,7 @@ public class GroovyConfigurationTypeTest extends GroovyConfigurationTestCase {
         assertEquals("runner and configuration settings", null, settings);
     }
 
-    public void testCreateAConfigurationWhenTheGivenLocationPointsToAGroovyScript() {
+    public void testCreatesAConfigurationWhenTheGivenLocationPointsToAGroovyScript() {
         Location stubbedLocation = createStubbedLocationPretendingToPointToAGroovyScript();
         RunnerAndConfigurationSettings settings = configurationType.createConfigurationByLocation(stubbedLocation);
         assertNotNull("runner and configuration settings should have been created", settings.getConfiguration());

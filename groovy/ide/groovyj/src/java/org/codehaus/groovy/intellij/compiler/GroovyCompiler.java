@@ -29,7 +29,6 @@ import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompileScope;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
 import com.intellij.openapi.compiler.TranslatingCompiler;
-import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.vfs.VirtualFile;
 
@@ -57,7 +56,7 @@ public class GroovyCompiler implements TranslatingCompiler {
     }
 
     public boolean isCompilableFile(VirtualFile file, CompileContext context) {
-        return GroovySupportLoader.GROOVY.equals(FileTypeManager.getInstance().getFileTypeByFile(file));
+        return GroovySupportLoader.GROOVY == file.getFileType();
     }
 
     public ExitStatus compile(final CompileContext context, final VirtualFile[] filesToCompile) {
