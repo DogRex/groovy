@@ -22,9 +22,7 @@ import javax.swing.Icon;
 
 import com.intellij.openapi.util.IconLoader;
 
-public class Icons {
+public final class Icons {
 
     public static final Icon SMALLEST = IconLoader.getIcon("/icons/groovy_16x16.png");
-
-    private Icons() {}
 }
