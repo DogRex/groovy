@@ -91,7 +91,7 @@ public class GroovyRunConfigurationExternaliser {
         return (value == null) ? "" : value;
     }
 
-    public String guardModuleName(Module module) {
+    private String guardModuleName(Module module) {
         return (module == null) ? "" : module.getName();
     }
 

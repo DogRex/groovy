@@ -150,10 +150,10 @@ public class GroovyCompiler implements TranslatingCompiler {
 
     private static class ExitStatusImpl implements TranslatingCompiler.ExitStatus {
 
-        private OutputItem[] compiledFiles;
-        private VirtualFile[] filesToRecompile;
+        private final OutputItem[] compiledFiles;
+        private final VirtualFile[] filesToRecompile;
 
-        public ExitStatusImpl(OutputItem[] compiledFiles, VirtualFile[] filesToRecompile) {
+        private ExitStatusImpl(OutputItem[] compiledFiles, VirtualFile[] filesToRecompile) {
             this.compiledFiles = compiledFiles;
             this.filesToRecompile = filesToRecompile;
         }
