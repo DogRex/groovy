@@ -18,84 +18,152 @@
 
 package org.codehaus.groovy.intellij.configuration;
 
+import java.awt.Component;
+
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JList;
 import javax.swing.JPanel;
 
-import com.intellij.execution.junit2.configuration.ClassBrowser;
-import com.intellij.execution.junit2.configuration.CommonJavaParameters;
-import com.intellij.execution.junit2.configuration.ConfigurationModuleSelector;
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.LabeledComponent;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
+import com.intellij.ui.RawCommandLineEditor;
 
 public class GroovySettingsEditor extends SettingsEditor {
 
-    private final JComponent editor;
+    private final Project project;
+
+    final TextFieldWithBrowseButton scriptPathTextField = new TextFieldWithBrowseButton();
+    final RawCommandLineEditor vmParameterEditor = new RawCommandLineEditor();
+    final RawCommandLineEditor scriptParametersEditor = new RawCommandLineEditor();
+    final TextFieldWithBrowseButton workingDirectoryPathTextField = new TextFieldWithBrowseButton();
+    final JComboBox moduleComboBox;
+
+    JComponent editor;
 
     public GroovySettingsEditor(Project project) {
-        editor = createSettingsEditor(project);
+        this.project = project;
+        moduleComboBox = new JComboBox(ModuleManager.getInstance(project).getSortedModules());
+        editor = createSettingsEditor();
     }
 
-    protected void resetEditorFrom(Object source) {}
+    protected void resetEditorFrom(Object source) {
+        GroovyRunConfiguration runConfiguration = (GroovyRunConfiguration) source;
+        scriptPathTextField.setText(runConfiguration.getScriptPath());
+        vmParameterEditor.setText(runConfiguration.getVmParameters());
+        scriptParametersEditor.setText(runConfiguration.getScriptParameters());
+        workingDirectoryPathTextField.setText(runConfiguration.getWorkingDirectoryPath());
+        moduleComboBox.setSelectedItem(runConfiguration.getModule());
+    }
 
-    protected void applyEditorTo(Object target) {}
+    protected void applyEditorTo(Object target) {
+        GroovyRunConfiguration runConfiguration = (GroovyRunConfiguration) target;
+        runConfiguration.setScriptPath(scriptPathTextField.getText());
+        runConfiguration.setVmParameters(vmParameterEditor.getText());
+        runConfiguration.setScriptParameters(scriptParametersEditor.getText());
+        runConfiguration.setWorkingDirectoryPath(workingDirectoryPathTextField.getText());
+        runConfiguration.setModule((Module) moduleComboBox.getSelectedItem());
+    }
+
+    private JComponent createSettingsEditor() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.add(createScriptPathComponent());
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(createVmParametersComponent());
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(createScriptParametersComponent());
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(createWorkingDirectoryPathComponent());
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(createModuleClasspathComponent());
+        return panel;
+    }
+
+    private LabeledComponent createScriptPathComponent() {
+        FileChooserDescriptor scriptChooserDescriptor = FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor();
+
+        String title = "Select Groovy Script";
+        scriptChooserDescriptor.setTitle(title);
+        scriptPathTextField.addBrowseFolderListener(title, null, project, scriptChooserDescriptor);
+
+        LabeledComponent scriptPathComponent = new LabeledComponent();
+        scriptPathComponent.setComponent(scriptPathTextField);
+        scriptPathComponent.setText("Groovy &Script:");
+        return scriptPathComponent;
+    }
+
+    private LabeledComponent createVmParametersComponent() {
+        vmParameterEditor.setDialodCaption("VM Parameters");
+
+        LabeledComponent vmParametersComponent = new LabeledComponent();
+        vmParametersComponent.setText("&VM Parameters:");
+        vmParametersComponent.setComponent(vmParameterEditor);
+        return vmParametersComponent;
+    }
+
+    private LabeledComponent createScriptParametersComponent() {
+        scriptParametersEditor.setDialodCaption("Script Parameters");
+
+        LabeledComponent programParametersComponent = new LabeledComponent();
+        programParametersComponent.setText("Script Pa&rameters:");
+        programParametersComponent.setComponent(scriptParametersEditor);
+        return programParametersComponent;
+    }
+
+    private LabeledComponent createWorkingDirectoryPathComponent() {
+        FileChooserDescriptor workingDirectoryChooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor();
+
+        String title = "Select Working Directory";
+        workingDirectoryChooserDescriptor.setTitle(title);
+        workingDirectoryPathTextField.addBrowseFolderListener(title, null, project, workingDirectoryChooserDescriptor);
+
+        LabeledComponent workingDirectoryPathComponent = new LabeledComponent();
+        workingDirectoryPathComponent.setComponent(workingDirectoryPathTextField);
+        workingDirectoryPathComponent.setOpaque(true);
+        workingDirectoryPathComponent.setText("&Working Directory:");
+        return workingDirectoryPathComponent;
+    }
+
+    private LabeledComponent createModuleClasspathComponent() {
+        moduleComboBox.setRenderer(new ModuleComboBoxRenderer());
+
+        LabeledComponent moduleClasspathComponent = new LabeledComponent();
+        moduleClasspathComponent.setComponent(moduleComboBox);
+        moduleClasspathComponent.setText("Use classpath and JDK of m&odule:");
+        return moduleClasspathComponent;
+    }
 
     protected JComponent createEditor() {
         return editor;
     }
 
-    private JComponent createSettingsEditor(Project project) {
-        CommonJavaParameters commonJavaParameters = createCommonJavaParameters();
-        LabeledComponent groovyRunnableComponent = createGroovyRunnableComponent();
-        LabeledComponent moduleClasspathComponent = createModuleClasspathComponent();
-        createAndLinkUpMainClassToModuleClasspath(project, groovyRunnableComponent, moduleClasspathComponent);
-
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.add(groovyRunnableComponent);
-        panel.add(Box.createVerticalStrut(10));
-        panel.add(commonJavaParameters);
-        panel.add(Box.createVerticalStrut(10));
-        panel.add(moduleClasspathComponent);
-        return panel;
+    protected void disposeEditor() {
+        editor = null;
     }
-
-    private CommonJavaParameters createCommonJavaParameters() {
-        CommonJavaParameters commonJavaParameters = new CommonJavaParameters();
-        commonJavaParameters.setProgramParametersText("Program pa&rameters:");
-        return commonJavaParameters;
-    }
-
-    private LabeledComponent createGroovyRunnableComponent() {
-        LabeledComponent groovyRunnableComponent = new LabeledComponent();
-        groovyRunnableComponent.setComponent(new TextFieldWithBrowseButton());
-        groovyRunnableComponent.setText("&Groovy script:");
-        return groovyRunnableComponent;
-    }
-
-    private LabeledComponent createModuleClasspathComponent() {
-        LabeledComponent moduleClasspathComponent = new LabeledComponent();
-        moduleClasspathComponent.setComponent(new JComboBox());
-        moduleClasspathComponent.setText("Use classpath and JDK of m&odule:");
-        return moduleClasspathComponent;
-    }
-
-    private void createAndLinkUpMainClassToModuleClasspath(Project project,
-                                                           LabeledComponent groovyRunnableComponent,
-                                                           LabeledComponent moduleClasspathComponent) {
-        JComboBox moduleClasspathComboBox = (JComboBox) moduleClasspathComponent.getComponent();
-        ConfigurationModuleSelector configurationModuleSelector = new ConfigurationModuleSelector(project, moduleClasspathComboBox);
-        ClassBrowser applicationClassBrowser = ClassBrowser.createApplicationClassBrowser(project, configurationModuleSelector);
-        applicationClassBrowser.setField((TextFieldWithBrowseButton) groovyRunnableComponent.getComponent());
-    }
-
-    protected void disposeEditor() {}
 
     public String getHelpTopic() {
         return null;
+    }
+
+    private static class ModuleComboBoxRenderer extends DefaultListCellRenderer {
+
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+            Module module = (Module) value;
+            setIcon(module.getModuleType().getNodeIcon(true));
+            setText(module.getName());
+            return this;
+        }
     }
 }

@@ -31,8 +31,10 @@ import org.codehaus.groovy.intellij.Mocks;
 public class GroovyConfigurationFactoryTest extends MockObjectTestCase {
 
     private final Mock mockEditorApiFactory = mock(EditorAPIFactory.class);
-    private GroovyConfigurationFactory configurationFactory = new GroovyConfigurationFactory(new GroovyConfigurationType(null),
-                                                                                             (EditorAPIFactory) mockEditorApiFactory.proxy());
+
+    private final GroovyConfigurationFactory configurationFactory = new GroovyConfigurationFactory((EditorAPIFactory) mockEditorApiFactory.proxy(),
+                                                                                                   new GroovyConfigurationType(null),
+                                                                                                   null);
 
     public void testCreatesARuntimeConfigurationForAGivenProject() {
         Mock mockProject = mock(Project.class);
@@ -45,9 +47,5 @@ public class GroovyConfigurationFactoryTest extends MockObjectTestCase {
         RunConfiguration templateConfiguration = configurationFactory.createTemplateConfiguration((Project) mockProject.proxy());
         assertSame("project", mockProject.proxy(), templateConfiguration.getProject());
         assertSame("configuration factory", configurationFactory, templateConfiguration.getFactory());
-    }
-
-    public void testReturnsNullWhenAskedToCreateAConfigurationTemplate() {
-        assertNull(configurationFactory.createConfigurationTemplate(null));
     }
 }

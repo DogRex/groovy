@@ -18,11 +18,34 @@
 
 package org.codehaus.groovy.intellij.configuration;
 
-import junit.framework.TestCase;
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.JavaParameters;
+import com.intellij.execution.configurations.ParametersList;
 
-public class GroovyComandLineStateTest extends TestCase {
+import groovy.lang.GroovyShell;
 
-    public void testDoesNotCreateJavaParametersYet() {
-        assertEquals("java parameters", null, new GroovyComandLineState(null, null, null).createJavaParameters());
+public class GroovyComandLineStateTest extends GroovyConfigurationTestCase {
+
+    public void testCreatesJavaParametersFromAGivenGroovyRunConfiguration() throws ExecutionException {
+        GroovyRunConfiguration runConfiguration =
+                createRunConfiguration("-showversion -Xms128m -Xmx512m",
+                                       "/home/foo/acme/src/scripts/bar.groovy",
+                                       "-dir /home/foo/acme/src/ -enableWarnings",
+                                       "/home/foo/acme");
+
+        GroovyComandLineState comandLineState = new GroovyComandLineState(runConfiguration, null, null);
+        JavaParameters javaParameters = comandLineState.createJavaParameters();
+
+        assertEquals("main class", GroovyShell.class.getName(), javaParameters.getMainClass());
+        assertEquals("VM parameters", runConfiguration.getVmParameters(), javaParameters.getVMParametersList().getParametersString().trim());
+
+        ParametersList groovyShellParameters = javaParameters.getProgramParametersList();
+        assertEquals("number of program parameters", 4, groovyShellParameters.getList().size());
+        assertEquals("script path", runConfiguration.getScriptPath(), groovyShellParameters.getList().get(0));
+        assertEquals("all program parameters",
+                     runConfiguration.getScriptPath() + " " + runConfiguration.getScriptParameters(),
+                     groovyShellParameters.getParametersString().trim());
+
+        assertEquals("working directory path", runConfiguration.getWorkingDirectoryPath(), javaParameters.getWorkingDirectory());
     }
 }

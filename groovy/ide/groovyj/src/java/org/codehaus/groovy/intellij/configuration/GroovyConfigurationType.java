@@ -40,7 +40,7 @@ public class GroovyConfigurationType implements LocatableConfigurationType {
     // ApplicationComponent --------------------------------------------------------------------------------------------
 
     public GroovyConfigurationType(EditorAPIFactory editorApiFactory) {
-        configurationFactory = new GroovyConfigurationFactory(this, editorApiFactory);
+        configurationFactory = new GroovyConfigurationFactory(editorApiFactory, this, new GroovyRunConfigurationExternaliser());
     }
 
     public String getComponentName() {
@@ -84,27 +84,27 @@ public class GroovyConfigurationType implements LocatableConfigurationType {
     private RunnerAndConfigurationSettings createRunnerAndConfigurationSettings(Location location, PsiClass groovyScript) {
         RunManager runManager = RunManager.getInstance(location.getProject());
         RunnerAndConfigurationSettings runnerAndConfigurationSettings = runManager.createRunConfiguration("", configurationFactory);
-        GroovyRuntimeConfiguration runtimeConfiguration = (GroovyRuntimeConfiguration) runnerAndConfigurationSettings.getConfiguration();
+        GroovyRunConfiguration runConfiguration = (GroovyRunConfiguration) runnerAndConfigurationSettings.getConfiguration();
 
-        runtimeConfiguration.setName(groovyScript.getName());
-        runtimeConfiguration.setQualifiedNameForScript(groovyScript.getQualifiedName());
+        runConfiguration.setName(groovyScript.getName());
+        runConfiguration.setQualifiedNameForScript(groovyScript.getQualifiedName());
 
         Project project = groovyScript.getManager().getProject();
         ProjectFileIndex fileIndex = ProjectRootManager.getInstance(project).getFileIndex();
         VirtualFile virtualFile = groovyScript.getContainingFile().getVirtualFile();
         Module module = fileIndex.getModuleForFile(virtualFile);
-        runtimeConfiguration.setSelectedModule(module);
+        runConfiguration.setModule(module);
 
         return runnerAndConfigurationSettings;
     }
 */
 
     public boolean isConfigurationByElement(RunConfiguration runConfiguration, Project project, PsiElement psiElement) {
-        if (runConfiguration instanceof GroovyRuntimeConfiguration) {
+        if (runConfiguration instanceof GroovyRunConfiguration) {
 /*
             PsiElement selectedGroovyScript = findGroovyScript(psiElement);
             if (selectedGroovyScript != null) {
-                String absolutePathToScript = ((GroovyRuntimeConfiguration) runConfiguration).getAbsolutePathToScript();
+                String absolutePathToScript = ((GroovyRunConfiguration) runConfiguration).getAbsolutePathToScript();
                 return selectedGroovyScript.getContainingFile().getVirtualFile().getPath().equals(absolutePathToScript);
             }
 */

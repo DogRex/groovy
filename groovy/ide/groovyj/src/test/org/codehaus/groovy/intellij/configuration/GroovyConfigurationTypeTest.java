@@ -30,7 +30,6 @@ import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiClass;
 
 import org.jmock.Mock;
 import org.jmock.cglib.MockObjectTestCase;
@@ -111,7 +110,8 @@ public class GroovyConfigurationTypeTest extends MockObjectTestCase {
         mockProjectFile.expects(once()).method("getParent").will(returnValue(mockProjectFileParentDirectory.proxy()));
         mockProjectFileParentDirectory.expects(once()).method("getPath").will(returnValue("somewhere on the filesystem"));
 
-        GroovyRuntimeConfiguration groovyRuntimeConfiguration = new GroovyRuntimeConfiguration(null, (Project) mockProject.proxy(), null, null);
-        assertEquals("configure by element", false, configurationType.isConfigurationByElement(groovyRuntimeConfiguration, null, null));
+        GroovyConfigurationFactory configurationFactory = new GroovyConfigurationFactory(null, configurationType, null);
+        GroovyRunConfiguration runConfiguration = new GroovyRunConfiguration(null, (Project) mockProject.proxy(), configurationFactory, null);
+        assertEquals("configure by element", false, configurationType.isConfigurationByElement(runConfiguration, null, null));
     }
 }

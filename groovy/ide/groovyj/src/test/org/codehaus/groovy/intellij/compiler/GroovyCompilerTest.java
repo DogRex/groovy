@@ -19,7 +19,6 @@
 package org.codehaus.groovy.intellij.compiler;
 
 import java.io.IOException;
-import java.util.Random;
 
 import org.intellij.openapi.testing.MockApplicationManager;
 
@@ -49,12 +48,11 @@ import org.jmock.core.Constraint;
 import org.codehaus.groovy.intellij.GroovyController;
 import org.codehaus.groovy.intellij.GroovySupportLoader;
 import org.codehaus.groovy.intellij.Mocks;
+import org.codehaus.groovy.intellij.TestUtil;
 
 import antlr.RecognitionException;
 
 public class GroovyCompilerTest extends MockObjectTestCase {
-
-    private static final Random PSEUDO_RANDOM_NUMBER_GENERATOR = new Random();
 
     private final Mock mockGroovyController = Mocks.createGroovyControllerMock(this);
     private final Mock mockFileTypeManager = mock(FileTypeManager.class);
@@ -109,7 +107,7 @@ public class GroovyCompilerTest extends MockObjectTestCase {
     }
 
     public void testAddsSyntaxErrorsWithPreciseLocationToCompileContext() throws IOException, CompilationFailedException {
-        SyntaxException syntaxException = new SyntaxException("a syntax exception", nextAbsRandomInt(), nextAbsRandomInt());
+        SyntaxException syntaxException = new SyntaxException("a syntax exception", TestUtil.nextAbsRandomInt(), TestUtil.nextAbsRandomInt());
 
         MockCompilationUnit compilationUnit = new MockCompilationUnit();
         compilationUnit.exception = new CompilationFailedException(Phases.PARSING, compilationUnit, null);
@@ -135,7 +133,7 @@ public class GroovyCompilerTest extends MockObjectTestCase {
     }
 
     public void testAddsRecognitionExceptionsWithPreciseLocationToCompileContext() throws IOException, CompilationFailedException {
-        RecognitionException recognitionException = new RecognitionException(null, "file name", nextAbsRandomInt(), nextAbsRandomInt());
+        RecognitionException recognitionException = new RecognitionException(null, "file name", TestUtil.nextAbsRandomInt(), TestUtil.nextAbsRandomInt());
 
         MockCompilationUnit compilationUnit = new MockCompilationUnit();
         compilationUnit.exception = new CompilationFailedException(Phases.PARSING, compilationUnit, null);
@@ -233,10 +231,6 @@ public class GroovyCompilerTest extends MockObjectTestCase {
         mockVirtualFile.stubs().method("getPath").will(returnValue(filePath));
         mockVirtualFile.stubs().method("getUrl").will(returnValue("file://" + filePath));
         return (VirtualFile) mockVirtualFile.proxy();
-    }
-
-    private int nextAbsRandomInt() {
-        return Math.abs(PSEUDO_RANDOM_NUMBER_GENERATOR.nextInt());
     }
 
     private static class MockCompilationUnit extends CompilationUnit {

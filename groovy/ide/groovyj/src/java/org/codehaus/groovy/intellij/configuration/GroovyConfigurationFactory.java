@@ -19,7 +19,6 @@
 package org.codehaus.groovy.intellij.configuration;
 
 import com.intellij.execution.configurations.ConfigurationFactory;
-import com.intellij.execution.configurations.ConfigurationTemplate;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.project.Project;
 
@@ -28,19 +27,22 @@ import org.codehaus.groovy.intellij.EditorAPIFactory;
 public class GroovyConfigurationFactory extends ConfigurationFactory {
 
     private final EditorAPIFactory editorApiFactory;
+    private final GroovyRunConfigurationExternaliser runConfigurationExternaliser;
 
-    public GroovyConfigurationFactory(GroovyConfigurationType configurationType, EditorAPIFactory editorApiFactory) {
+    public GroovyConfigurationFactory(EditorAPIFactory editorApiFactory,
+                                      GroovyConfigurationType configurationType,
+                                      GroovyRunConfigurationExternaliser runConfigurationExternaliser) {
         super(configurationType);
         this.editorApiFactory = editorApiFactory;
+        this.runConfigurationExternaliser = runConfigurationExternaliser;
     }
 
+    public GroovyRunConfigurationExternaliser getRunConfigurationExternalizer() {
+        return runConfigurationExternaliser;
+    }
     // ConfigurationFactory  -------------------------------------------------------------------------------------------
 
     public RunConfiguration createTemplateConfiguration(Project project) {
-        return new GroovyRuntimeConfiguration("Unnamed", project, this, editorApiFactory.createEditorAPI(project));
-    }
-
-    public ConfigurationTemplate createConfigurationTemplate(Project project) {
-        return null;
+        return new GroovyRunConfiguration("Unnamed", project, this, editorApiFactory.createEditorAPI(project));
     }
 }

@@ -18,73 +18,33 @@
 
 package org.codehaus.groovy.intellij.configuration;
 
+import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.ConfigurationPerRunnerSettings;
 import com.intellij.execution.configurations.JavaCommandLineState;
 import com.intellij.execution.configurations.JavaParameters;
 import com.intellij.execution.configurations.RunnerSettings;
 
+import groovy.lang.GroovyShell;
+
 public class GroovyComandLineState extends JavaCommandLineState {
 
-    private final GroovyRuntimeConfiguration runtimeConfiguration;
+    private final GroovyRunConfiguration runConfiguration;
 
-    public GroovyComandLineState(GroovyRuntimeConfiguration runtimeConfiguration,
+    public GroovyComandLineState(GroovyRunConfiguration runConfiguration,
                                  RunnerSettings runnerSettings,
                                  ConfigurationPerRunnerSettings configurationSettings) {
         super(runnerSettings, configurationSettings);
-        this.runtimeConfiguration = runtimeConfiguration;
+        this.runConfiguration = runConfiguration;
     }
 
-    protected JavaParameters createJavaParameters() {
-/*
-        JavaParameters javaparameters = new JavaParameters();
-
-        javaparameters.setMainClass(DevelopmentRunnerWrapper.class.getName());
-
-        String pathToPlugin = PathUtil.getJarPathForClass(DevelopmentRunnerWrapper.class);
-        javaparameters.getClassPath().add(pathToPlugin);
-
-        if (fULCRunConfiguration.getUseGui()) {
-            javaparameters.getProgramParametersList().addParametersString("-useGui");
-        }
-
-        Project project = fULCRunConfiguration.getProject();
-
-        if (fULCRunConfiguration.getApplicationClass() != null) {
-            javaparameters.getProgramParametersList().addParametersString("-applicationClass " + convertTo$NotationForInnerClasses(fULCRunConfiguration.getApplicationClass()));
-        }
-
-        if (fULCRunConfiguration.getConnectionType() != null) {
-            javaparameters.getProgramParametersList().addParametersString("-connectionType " + fULCRunConfiguration.getConnectionType().getID());
-        }
-
-        if (fULCRunConfiguration.getLogLevel() != null) {
-            javaparameters.getProgramParametersList().addParametersString("-logLevel " + fULCRunConfiguration.getLogLevel().getName());
-        }
-
-        NameValuePair[] initParameters = fULCRunConfiguration.getInitParameters();
-        for (int i = 0; i < initParameters.length; i++) {
-            NameValuePair initParameter = initParameters[i];
-            javaparameters.getProgramParametersList().addParametersString("-initParameter " + initParameter.getName() + "=" + initParameter.getValue());
-        }
-
-        NameValuePair[] userParameters = fULCRunConfiguration.getUserParameters();
-        for (int i = 0; i < userParameters.length; i++) {
-            NameValuePair userParameter = userParameters[i];
-            javaparameters.getProgramParametersList().addParametersString("-userParameter " + userParameter.getName() + "=" + userParameter.getValue());
-        }
-
-        javaparameters.getProgramParametersList().addParametersString(fULCRunConfiguration.getProgramParameters());
-        javaparameters.getVMParametersList().addParametersString(fULCRunConfiguration.getVMParameters());
-        javaparameters.configureByModule(fULCRunConfiguration.getModule(), JavaParameters.JDK_AND_CLASSES_AND_TESTS);
-
-        String workingDirectory = fULCRunConfiguration.getWorkingDirectory();
-        if (workingDirectory == null || workingDirectory.trim().length() == 0) {
-            workingDirectory = PathUtil.getLocalPath(project.getProjectFile().getParent());
-        }
-        javaparameters.setWorkingDirectory(workingDirectory);
-
-        return javaparameters;
-*/
-        return null;
+    protected JavaParameters createJavaParameters() throws ExecutionException {
+        JavaParameters parameters = new JavaParameters();
+        parameters.setMainClass(GroovyShell.class.getName());
+        parameters.getVMParametersList().addParametersString(runConfiguration.getVmParameters());
+        parameters.getProgramParametersList().addParametersString(runConfiguration.getScriptPath());
+        parameters.getProgramParametersList().addParametersString(runConfiguration.getScriptParameters());
+        parameters.configureByModule(runConfiguration.getModule(), JavaParameters.JDK_AND_CLASSES_AND_TESTS);
+        parameters.setWorkingDirectory(runConfiguration.getWorkingDirectoryPath());
+        return parameters;
     }
 }
