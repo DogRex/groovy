@@ -2,8 +2,12 @@ package org.intellij.openapi.testing.irida;
 
 import com.intellij.execution.runners.ProcessProxyFactory;
 import com.intellij.ide.structureView.StructureViewFactory;
+import com.intellij.lang.ASTNode;
+import com.intellij.lang.Language;
+import com.intellij.lang.PsiBuilder;
 import com.intellij.openapi.diff.DiffRequestFactory;
 import com.intellij.openapi.fileChooser.FileSystemTreeFactory;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapperPeerFactory;
 import com.intellij.openapi.vcs.FileStatusFactory;
 import com.intellij.openapi.vcs.actions.VcsContextFactory;
@@ -56,6 +60,10 @@ public class MockPeerFactory extends PeerFactory {
     }
 
     public StructureViewFactory getStructureViewFactory() {
+        return null;
+    }
+
+    public PsiBuilder createBuilder(ASTNode tree, Language language, CharSequence sequence, Project project) {
         return null;
     }
 }

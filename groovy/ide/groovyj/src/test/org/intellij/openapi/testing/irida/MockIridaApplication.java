@@ -140,6 +140,10 @@ public class MockIridaApplication extends MockUserDataHolder implements MockAppl
         return false;
     }
 
+    public boolean isHeadlessEnvironment() {
+        return false;
+    }
+
     public boolean isDispatchThread() {
         return false;
     }
