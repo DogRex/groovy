@@ -20,14 +20,14 @@ package org.codehaus.groovy.intellij;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ApplicationComponent;
+import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeManager;
-import com.intellij.openapi.fileTypes.LanguageFileType;
 
 import org.codehaus.groovy.intellij.language.GroovyLanguage;
 
 public class GroovySupportLoader implements ApplicationComponent {
 
-    static final LanguageFileType GROOVY = new GroovyFileType(GroovyLanguage.createLanguage());
+    static final FileType GROOVY = new GroovyFileType(GroovyLanguage.createLanguage());
 
     public String getComponentName() {
         return "groovy.integration";

@@ -26,13 +26,7 @@ import org.codehaus.groovy.intellij.language.GroovyLanguage;
 
 public class GroovyFileTypeTest extends TestCase {
 
-    private GroovyFileType groovyFileType;
-
-    protected void setUp() throws Exception {
-        GroovyLanguage groovyLanguage = GroovyLanguage.createLanguage();
-        groovyFileType = new GroovyFileType(groovyLanguage);
-        assertSame("language ", groovyLanguage, groovyFileType.getLanguage());
-    }
+    private GroovyFileType groovyFileType = new GroovyFileType(GroovyLanguage.createLanguage());
 
     public void testDefinesAName() {
         assertEquals("name", "Groovy", groovyFileType.getName());
@@ -48,6 +42,14 @@ public class GroovyFileTypeTest extends TestCase {
 
     public void testHasTheGroovyFileTypeIcon() {
         assertSame("icon", IconLoader.getIcon("/icons/groovy_fileType.png"), groovyFileType.getIcon());
+    }
+
+    public void testDoesNotRepresentABinaryFile() {
+        assertEquals("is binary file", false, groovyFileType.isBinary());
+    }
+
+    public void testIsNotAReadOnlyFileType() {
+        assertEquals("is binary file", false, groovyFileType.isReadOnly());
     }
 
     public void testSupportsKeywordCompletion() {
@@ -68,5 +70,13 @@ public class GroovyFileTypeTest extends TestCase {
 
     public void testSupportsTheRenamingOfGroovyElements() {
         assertEquals("supports renaming", true, groovyFileType.getSupportCapabilities().hasRename());
+    }
+
+    public void testDoesNotDefineSepcificCharacterSetsYet() {
+        assertSame("character set", null, groovyFileType.getCharset(null));
+    }
+
+    public void testDoesNotHaveARepresentationInTheStructuralTree() {
+        assertSame("structural view model", null, groovyFileType.getStructureViewBuilder(null, null));
     }
 }
