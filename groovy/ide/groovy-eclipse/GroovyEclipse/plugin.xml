@@ -95,8 +95,8 @@
       <shortcut
             label="Groovy"
             icon="icons/run_groovy_class.gif"
-            modes="run"
             class="org.codehaus.groovy.eclipse.launchers.GroovyLaunchShortcut"
+            modes="run"
             id="org.eclipse.jdt.debug.ui.groovyShortcut">
          <perspective
                id="org.eclipse.jdt.ui.JavaPerspective">
@@ -127,10 +127,10 @@
          point="org.eclipse.ui.editors">
       <editor
             name="Groovy Editor"
-            icon="icons/groovy_file.gif"
             extensions="groovy"
-            class="org.codehaus.groovy.eclipse.editor.GroovyEditor"
+            icon="icons/groovy_file.gif"
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            class="org.codehaus.groovy.eclipse.editor.GroovyEditor"
             id="org.codehaus.groovy.eclipse.editor.GroovyEditor">
       </editor>
    </extension>
@@ -189,7 +189,7 @@
          point="org.eclipse.ui.ide.markerImageProviders">
       <imageprovider
             markertype="org.eclipse.jdt.debug.javaStratumLineBreakpointMarker"
-            icon="icons/full/obj16/brkp_obj.gif"
+            icon="icons/brkp_obj.gif"
             id="org.codehaus.groovy.eclipse.breakpointMarkerProvider">
       </imageprovider>
    </extension>
@@ -199,11 +199,6 @@
             name="Groovy Source Locator"
             class="org.codehaus.groovy.eclipse.launchers.GroovySourceLocator"
             id="org.codehaus.groovy.eclipse.editor.groovySourceLocator">
-      </sourceLocator>
-      <sourceLocator
-            name="GroovyEclipse.sourceLocator1"
-            class="org.codehaus.groovy.eclipse.launchers.GroovySourceLocator"
-            id="GroovyEclipse.sourceLocator1">
       </sourceLocator>
    </extension>
 
