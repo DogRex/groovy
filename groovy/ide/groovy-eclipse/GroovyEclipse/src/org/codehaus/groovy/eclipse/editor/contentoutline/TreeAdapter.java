@@ -55,7 +55,7 @@ public abstract class TreeAdapter {
 class PackageAdapter extends TreeAdapter {
 	public PackageAdapter(String packageName, Object parent) {
 		this.parent = parent;
-		name = packageName==null?"":packageName;
+		name = packageName==null?"(default-package)":packageName;
 		lineNumber = 1;
 	}
 	Image getImage() {

@@ -1,11 +1,17 @@
 package org.codehaus.groovy.eclipse.wizards;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
+import org.eclipse.jdt.internal.ui.actions.WorkbenchRunnableAdapter;
 import org.eclipse.jdt.internal.ui.wizards.NewElementWizard;
+
 
 /**
  * @see Wizard
@@ -40,11 +46,25 @@ public class NewClassWizard extends NewElementWizard  {
 		openResource(file);
 	}
 	
+	
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.wizard.IWizard#performFinish()
 	 */
-	public boolean performFinish() {
-		return super.performFinish();
+public boolean performFinish() {
+		IWorkspaceRunnable op = new IWorkspaceRunnable() {
+			public void run(IProgressMonitor monitor) throws CoreException,
+					OperationCanceledException {
+				finishPage(monitor);
+			}
+		};
+		try {
+			getContainer().run(false, true, new WorkbenchRunnableAdapter(op));
+		} catch (InvocationTargetException e) {
+			handleFinishException(getShell(), e);
+			return false;
+		} catch (InterruptedException e) {
+			return false;
+		}
+		return true;
 	}
-
 }

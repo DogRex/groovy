@@ -40,7 +40,7 @@ public class GroovyLauncherTab extends JavaMainTab {
 		dialog.setBlockOnOpen(true);
 		dialog.setMessage("Select a Groovy class to run");
 		dialog.setTitle("Choose Groovy Class");
-		final String [] availableClasses = GroovyModel.getModel().findAllClassesWithMain(javaProject);
+		final String [] availableClasses = GroovyModel.getModel().findAllRunnableClasses(javaProject);
 		dialog.setContentProvider(new ArrayContentProvider());
 		dialog.setLabelProvider(new DefaultLabelProvider());
 		dialog.setInput(availableClasses);

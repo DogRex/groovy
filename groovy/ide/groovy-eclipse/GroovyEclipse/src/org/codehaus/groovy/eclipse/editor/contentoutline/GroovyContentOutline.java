@@ -32,16 +32,12 @@ import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
  */
 public class GroovyContentOutline extends ContentOutlinePage implements GroovyBuildListner {
 	private IFile file;
-	private final GroovyASTContentProvider provider;
-	private final GroovyASTLabelProvider labelProvider;
 
 	/**
 	 * @param file
 	 */
 	public GroovyContentOutline(IFile file) {
 		this.file = file;
-		provider = new GroovyASTContentProvider();
-		labelProvider = new GroovyASTLabelProvider();
 	}
 	/*
 	 * (non-Javadoc)
@@ -51,8 +47,9 @@ public class GroovyContentOutline extends ContentOutlinePage implements GroovyBu
 	public void createControl(Composite parent) {
 		super.createControl(parent);
 		TreeViewer viewer = getTreeViewer();
-		viewer.setContentProvider(provider);
-		viewer.setLabelProvider(labelProvider);
+
+		viewer.setContentProvider(new GroovyASTContentProvider());
+		viewer.setLabelProvider(new GroovyASTLabelProvider());
 		
 		viewer.addDoubleClickListener(new IDoubleClickListener() {
 			public void doubleClick(DoubleClickEvent event) {
@@ -68,6 +65,7 @@ public class GroovyContentOutline extends ContentOutlinePage implements GroovyBu
 		model.addBuildListener(this);
 		CompileUnit unit = model.getCompilationUnit(file);
 		getTreeViewer().setInput(unit);
+		getTreeViewer().expandAll();
 	}
 	
 	protected void navigateToEditor(int line) {

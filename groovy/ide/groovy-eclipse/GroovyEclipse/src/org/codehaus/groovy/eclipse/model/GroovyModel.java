@@ -41,9 +41,9 @@ public class GroovyModel {
 	/**
 	 * @param javaProject
 	 */
-	public String[] findAllClassesWithMain(IJavaProject javaProject) {
+	public String[] findAllRunnableClasses(IJavaProject javaProject) {
 		GroovyProject gp = getGroovyProject(javaProject);
-		return gp.findAllClassesWithMain();
+		return gp.findAllRunnableClasses();
 	}
 
 	public void runGroovyMain(String projectName,String className, String[] args) throws CoreException{

@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.eclipse.jdt.ui.text.IJavaColorConstants;
 import org.eclipse.jface.text.TextAttribute;
-import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.IWordDetector;
@@ -42,9 +41,9 @@ public class GroovyTagScanner extends RuleBasedScanner {
 		new Token(
 				new TextAttribute(manager.getColor(IJavaColorConstants.JAVA_SINGLE_LINE_COMMENT)));
 		
-		rules[i++] = new PatternRule("//", null, slcomment, (char)ICharacterScanner.EOF, true);
+		rules[i++] = new PatternRule("//", null, slcomment, '`', true);
 		// ml comments
-		rules[i++] = new MultiLineRule("/*", "*/", mlcomment, '\\');
+		rules[i++] = new MultiLineRule("/*", "*/", mlcomment, '`');
 		
 		WordRule keywords = new WordRule(new IWordDetector(){
 
