@@ -166,7 +166,9 @@ class ClassAdapter extends TreeAdapter {
 				add(new ConstructorAdapter(classNode, node, ClassAdapter.this), node);
 			}
 			public void visitMethod(MethodNode node) {
-				add(new MethodAdapter(node, ClassAdapter.this), node);
+				//TODO - get clinit to be marked as syntetic
+				if(!"<clinit>".equals(node.getName()))
+					add(new MethodAdapter(node, ClassAdapter.this), node);
 			}
 			public void visitField(FieldNode node) {
 			}

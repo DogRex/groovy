@@ -32,7 +32,7 @@ public class GroovyConfiguration extends SourceViewerConfiguration {
 		this.colorManager = colorManager;
 	}
 	public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
-		return new String[] { IDocument.DEFAULT_CONTENT_TYPE, GroovyPartitionScanner.GROOVY_MULTILINE_COMMENT };		
+		return new String[] { IDocument.DEFAULT_CONTENT_TYPE, GroovyPartitionScanner.GROOVY_MULTILINE_COMMENT ,GroovyPartitionScanner.GROOVY_MULTILINE_STRINGS};		
 	}
 	public ITextDoubleClickStrategy getDoubleClickStrategy(
 		ISourceViewer sourceViewer,
@@ -72,6 +72,11 @@ public class GroovyConfiguration extends SourceViewerConfiguration {
 		dr= new DefaultDamagerRepairer(new SingleTokenScanner(new TextAttribute(colorManager.getColor(IJavaColorConstants.JAVA_MULTI_LINE_COMMENT))));
 		reconciler.setDamager(dr, GroovyPartitionScanner.GROOVY_MULTILINE_COMMENT);
 		reconciler.setRepairer(dr, GroovyPartitionScanner.GROOVY_MULTILINE_COMMENT);
+
+		dr= new DefaultDamagerRepairer(new SingleTokenScanner(new TextAttribute(colorManager.getColor(IJavaColorConstants.JAVA_STRING))));
+		reconciler.setDamager(dr, GroovyPartitionScanner.GROOVY_MULTILINE_STRINGS);
+		reconciler.setRepairer(dr, GroovyPartitionScanner.GROOVY_MULTILINE_STRINGS);
+
 		
 		return reconciler;
 	}

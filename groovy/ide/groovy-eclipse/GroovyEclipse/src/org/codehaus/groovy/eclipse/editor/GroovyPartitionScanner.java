@@ -10,14 +10,14 @@ import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.IWordDetector;
 import org.eclipse.jface.text.rules.MultiLineRule;
 import org.eclipse.jface.text.rules.RuleBasedPartitionScanner;
-import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WordRule;
 
 public class GroovyPartitionScanner extends RuleBasedPartitionScanner {
 
 	public final static String GROOVY_MULTILINE_COMMENT= "__groovy_multiline_comment"; //$NON-NLS-1$
-	public final static String[] GROOVY_PARTITION_TYPES= new String[] { GROOVY_MULTILINE_COMMENT};
+	public final static String GROOVY_MULTILINE_STRINGS= "__groovy_multiline_string"; //$NON-NLS-1$
+	public final static String[] GROOVY_PARTITION_TYPES= new String[] { GROOVY_MULTILINE_COMMENT,GROOVY_MULTILINE_STRINGS};
 
 	/**
 	 * Detector for empty comments.
@@ -74,15 +74,18 @@ public class GroovyPartitionScanner extends RuleBasedPartitionScanner {
 		super();
 
 		IToken comment= new Token(GROOVY_MULTILINE_COMMENT);
+		IToken string = new Token(GROOVY_MULTILINE_STRINGS);
 
 		List rules= new ArrayList();
 
 		// Add rule for single line comments.
 		rules.add(new EndOfLineRule("//", Token.UNDEFINED)); //$NON-NLS-1$
 
+
 		// Add rule for strings and character constants.
-		rules.add(new SingleLineRule("\"", "\"", Token.UNDEFINED, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
-		rules.add(new SingleLineRule("'", "'", Token.UNDEFINED, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
+//		rules.add(new SingleLineRule("\"", "\"", Token.UNDEFINED, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
+		rules.add(new MultiLineRule("'", "'", string, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
+		rules.add(new MultiLineRule("\"", "\"", string, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
 
 		// Add special case word rule.
 		rules.add(new WordPredicateRule(comment));
