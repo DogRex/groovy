@@ -2,9 +2,9 @@ package org.codehaus.groovy.eclipse.editor;
 import org.codehaus.groovy.eclipse.editor.contentoutline.GroovyContentOutline;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.ui.texteditor.ExtendedTextEditor;
+import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
-public class GroovyEditor extends ExtendedTextEditor {
+public class GroovyEditor extends TextEditor {
 	private ColorManager colorManager;
 	public GroovyEditor() {
 		super();
