@@ -40,6 +40,7 @@ public final class GroovyTokenTypeToElementTypeMappings {
 
     private static IElementType[] ASSIGNMENT_TYPES = IElementType.EMPTY_ARRAY;
     private static IElementType[] LITERAL_TYPES = IElementType.EMPTY_ARRAY;
+    private static IElementType[] COMMENT_TYPES = IElementType.EMPTY_ARRAY;
 
     static {
         try {
@@ -58,6 +59,10 @@ public final class GroovyTokenTypeToElementTypeMappings {
         return LITERAL_TYPES;
     }
 
+    public static IElementType[] getCommentTypes() {
+        return COMMENT_TYPES;
+    }
+
     public static IElementType getType(int tokenTypeIndex) {
         return (IElementType) TOKEN_TYPES.get(tokenTypeIndex);
     }
@@ -66,16 +71,18 @@ public final class GroovyTokenTypeToElementTypeMappings {
         Field[] fields = GroovyTokenTypes.class.getDeclaredFields();
         List assignmentTypes = new ArrayList();
         List literalTypes = new ArrayList();
+        List commentTypes = new ArrayList();
 
         for (int i = 0; i < fields.length; i++) {
             Field field = fields[i];
             if (isPublicStaticFinalIntegerPrimitive(field)) {
-                addTokenTypeMapping(field, assignmentTypes, literalTypes);
+                addTokenTypeMapping(field, assignmentTypes, literalTypes, commentTypes);
             }
         }
 
         ASSIGNMENT_TYPES = (IElementType[]) assignmentTypes.toArray(IElementType.EMPTY_ARRAY);
         LITERAL_TYPES = (IElementType[]) literalTypes.toArray(IElementType.EMPTY_ARRAY);
+        COMMENT_TYPES = (IElementType[]) commentTypes.toArray(IElementType.EMPTY_ARRAY);
     }
 
     private static boolean isPublicStaticFinalIntegerPrimitive(Field field) {
@@ -85,23 +92,25 @@ public final class GroovyTokenTypeToElementTypeMappings {
                && field.getType().equals(int.class);
     }
 
-    private static void addTokenTypeMapping(Field field, List assignmentTypes, List literalTypes) throws IllegalAccessException {
+    private static void addBadCharacterTokenTypeMapping() {
+        TOKEN_TYPES.put(BAD_CHARACTER, new GroovyElementType("BAD_CHARACTER"));
+    }
+
+    private static void addTokenTypeMapping(Field field, List assignmentTypes, List literalTypes, List commentTypes) throws IllegalAccessException {
         int tokenTypeIndex = field.getInt(GROOVY_TOKEN_TYPES);
         String tokenTypeName = field.getName();
         IElementType elementType = new GroovyElementType(tokenTypeName);
 
         TOKEN_TYPES.put(tokenTypeIndex, elementType);
 
-        if (tokenTypeName != null && tokenTypeName.endsWith("ASSIGN")) {
-            assignmentTypes.add(elementType);
-        }
-
-        if (tokenTypeName != null && tokenTypeName.startsWith("LITERAL_")) {
-            literalTypes.add(elementType);
-        }
+        registerElementTypeIfApplicable("ASSIGN",  tokenTypeName, elementType, assignmentTypes);
+        registerElementTypeIfApplicable("LITERAL", tokenTypeName, elementType, literalTypes);
+        registerElementTypeIfApplicable("COMMENT", tokenTypeName, elementType, commentTypes);
     }
 
-    private static void addBadCharacterTokenTypeMapping() {
-        TOKEN_TYPES.put(BAD_CHARACTER, new GroovyElementType("BAD_CHARACTER"));
+    private static void registerElementTypeIfApplicable(String keyword, String tokenTypeName, IElementType elementType, List elementTypeCategory) {
+        if (tokenTypeName != null && tokenTypeName.indexOf(keyword) > -1) {
+            elementTypeCategory.add(elementType);
+        }
     }
 }

@@ -18,11 +18,17 @@
 
 package org.codehaus.groovy.intellij.psi;
 
+import java.util.Arrays;
+import java.util.List;
+
 import junit.framework.TestCase;
 import junitx.framework.Assert;
+import junitx.framework.ListAssert;
 import junitx.framework.StringAssert;
 
 import com.intellij.psi.tree.IElementType;
+
+import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
 
 public class GroovyTokenTypeToElementTypeMappingsTest extends TestCase {
 
@@ -41,6 +47,16 @@ public class GroovyTokenTypeToElementTypeMappingsTest extends TestCase {
     public void testHoldsAllGroovyLiteralTypes() {
         IElementType[] elementTypes = GroovyTokenTypeToElementTypeMappings.getLiteralTypes();
         assertElementTypesAreCorrectlyDetected("LITERAL", elementTypes);
+    }
+
+    public void testHoldsAllGroovyCommentTypes() {
+        IElementType[] elementTypes = GroovyTokenTypeToElementTypeMappings.getCommentTypes();
+        assertElementTypesAreCorrectlyDetected("COMMENT", elementTypes);
+
+        List listOfElementTypes = Arrays.asList(elementTypes);
+        ListAssert.assertContains(listOfElementTypes, GroovyTokenTypeToElementTypeMappings.getType(GroovyTokenTypes.SH_COMMENT));
+        ListAssert.assertContains(listOfElementTypes, GroovyTokenTypeToElementTypeMappings.getType(GroovyTokenTypes.ML_COMMENT));
+        ListAssert.assertContains(listOfElementTypes, GroovyTokenTypeToElementTypeMappings.getType(GroovyTokenTypes.SL_COMMENT));
     }
 
     private void assertElementTypesAreCorrectlyDetected(String keyword, IElementType[] literalTypes) {
