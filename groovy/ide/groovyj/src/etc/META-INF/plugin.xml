@@ -2,25 +2,30 @@
 
 <!DOCTYPE idea-plugin PUBLIC "-//IntelliJ Technology Network//DTD Plugin Manager 0.1//EN" "http://plugins.intellij.net/plugin.dtd">
 
-<idea-plugin url="@PROJECT.HOMEPAGE@">
+<idea-plugin url="@PROJECT.HOMEPAGE@" version="2">
 
     <name>@PROJECT.TITLE@</name>
     <description>@PROJECT.DESCRIPTION@</description>
     <version>@PROJECT.VERSION@</version>
     <vendor url="@PROJECT.VENDOR.HOMEPAGE@" email="@PROJECT.VENDOR.EMAIL@">@PROJECT.VENDOR@</vendor>
     <change-notes>@PROJECT.CHANGE-NOTES@</change-notes>
-    <idea-version since-build="@PROJECT.IDEA.SINCE-BUILD@"/>
+    <idea-version since-build="@PROJECT.IDEA.SINCE-BUILD@" until-build="@PROJECT.IDEA.UNTIL-BUILD@"/>
 
     <project-components>
         <component>
             <implementation-class>org.codehaus.groovy.intellij.GroovyJProjectComponent</implementation-class>
-            <option name="workspace" value="true"/>
         </component>
     </project-components>
 
     <application-components>
         <component>
-            <implementation-class>groovy.idesupport.idea.GroovySupportLoader</implementation-class>
+            <implementation-class>org.codehaus.groovy.intellij.configuration.GroovyConfigurationType</implementation-class>
+        </component>
+        <component>
+            <implementation-class>org.codehaus.groovy.intellij.configuration.GroovyConfigurationFactory</implementation-class>
+        </component>
+        <component>
+            <implementation-class>org.codehaus.groovy.intellij.GroovySupportLoader</implementation-class>
         </component>
     </application-components>
 
@@ -29,7 +34,7 @@
                 class="org.codehaus.groovy.intellij.actions.RunAction"
                 text="_Run Groovy script or class"
                 description="Run Groovy script or class"
-                icon="/icons/groovy_16x16.png">
+                icon="/icons/groovy_18x18.png">
             <keyboard-shortcut first-keystroke="ctrl alt G" second-keystroke="R" keymap="$default"/>
             <add-to-group group-id="MainToolBar" anchor="after" relative-to-action="RunnerActions"/>
         </action>
