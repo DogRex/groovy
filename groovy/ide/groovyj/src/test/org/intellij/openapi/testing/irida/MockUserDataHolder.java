@@ -1,4 +1,4 @@
-package org.intellij.openapi.testing.pallada;
+package org.intellij.openapi.testing.irida;
 
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.UserDataHolder;

@@ -25,7 +25,6 @@ import com.intellij.openapi.project.Project;
 
 public class EditorAPIFactory {
 
-    private static final String PALLADA = "org.codehaus.groovy.intellij.pallada.PalladaAPI";
     private static final String IRIDA = "org.codehaus.groovy.intellij.irida.IridaAPI";
 
     private static final Class[] CONSTRUCTOR_PARAMETER_TYPES = new Class[] { Project.class };
@@ -52,9 +51,6 @@ public class EditorAPIFactory {
     }
 
     private String getClassForIDEA(String ideaName, int buildNumber) {
-        if ((ideaName.toLowerCase().matches(".*pallada.*")) || ((buildNumber >= 1200) && (buildNumber < 3000))) {
-            return PALLADA;
-        }
         if ((ideaName.toLowerCase().matches(".*irida.*")) || (buildNumber >= 3000)) {
             return IRIDA;
         }

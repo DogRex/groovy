@@ -32,13 +32,13 @@
         <property name="test.results.dir" value="${build.dir}/test-results"/>
         <property name="test.reports.dir" value="${build.dir}/test-reports"/>
 
-        <property name="pallada.home" value="${lib.compile.dir}/pallada"/>
-        <property name="pallada.classes.dir" value="${classes.dir}/pallada"/>
-        <property name="pallada.test.classes.dir" value="${test.classes.dir}/pallada"/>
-        <property name="pallada.test.results.dir" value="${test.results.dir}/pallada"/>
-        <property name="pallada.test.reports.dir" value="${test.reports.dir}/pallada"/>
+        <property name="irida.home" value="${lib.compile.dir}/irida"/>
+        <property name="irida.classes.dir" value="${classes.dir}/irida"/>
+        <property name="irida.test.classes.dir" value="${test.classes.dir}/irida"/>
+        <property name="irida.test.results.dir" value="${test.results.dir}/irida"/>
+        <property name="irida.test.reports.dir" value="${test.reports.dir}/irida"/>
 
-        <property name="pallada.plugins.dir" value="${pallada.home}/config/plugins"/>
+        <property name="irida.plugins.dir" value="${irida.home}/config/plugins"/>
         <property name="distfile.name" value="${project.name}-${project.version}"/>
 
         <!-- Variable for tokenisation -->
@@ -56,24 +56,24 @@
         <path id="compile.classpath">
             <fileset dir="${lib.compile.dir}">
                 <include name="**/*.jar"/>
-                <exclude name="pallada/**/*.jar"/>
+                <exclude name="irida/**/*.jar"/>
             </fileset>
             <fileset dir="${lib.runtime.dir}">
                 <include name="**/*.jar"/>
             </fileset>
         </path>
 
-        <path id="pallada.compile.classpath">
-            <fileset dir="${pallada.home}">
+        <path id="irida.compile.classpath">
+            <fileset dir="${irida.home}">
                 <include name="**/*.jar"/>
             </fileset>
-            <pathelement location="${pallada.classes.dir}"/>
+            <pathelement location="${irida.classes.dir}"/>
             <path refid="compile.classpath"/>
         </path>
 
-        <path id="pallada.test.classpath">
-            <pathelement location="${pallada.test.classes.dir}"/>
-            <path refid="pallada.compile.classpath"/>
+        <path id="irida.test.classpath">
+            <pathelement location="${irida.test.classes.dir}"/>
+            <path refid="irida.compile.classpath"/>
         </path>
 
         <tstamp>
@@ -91,15 +91,16 @@
         </filterset>
     </target>
 
-    <target name="check.pallada.available" depends="initialise.build" >
-        <available property="pallada.available"
+    <target name="check.irida.available" depends="initialise.build" >
+        <available property="irida.available"
                    classname="com.intellij.refactoring.MoveDestination"
-                   classpathref="pallada.test.classpath"/>
+                   classpathref="irida.test.classpath"/>
     </target>
 
-    <target name="pallada.available" depends="check.pallada.available" unless="pallada.available">
-        <fail>IntelliJ IDEA (Pallada) is not available. Please either define 'pallada.home' in project.properties or copy
-              $IDEA_HOME/lib/idea.jar, $IDEA_HOME/lib/openapi.jar and $IDEA_HOME/lib/trove4j.jar to ${pallada.home}/lib.
+    <target name="irida.available" depends="check.irida.available" unless="irida.available">
+        <fail>IntelliJ IDEA (Irida) is not available. Please either define 'irida.home' in project.properties or copy
+              $IDEA_HOME/lib/idea.jar, $IDEA_HOME/lib/extensions.jar, $IDEA_HOME/lib/openapi.jar,
+              $IDEA_HOME/lib/picocontainer.jar and $IDEA_HOME/lib/trove4j.jar to ${irida.home}/lib.
         </fail>
     </target>
 
@@ -107,54 +108,56 @@
         <delete dir="${build.dir}"/>
     </target>
 
-    <target name="compile.pallada" depends="pallada.available">
-        <mkdir dir="${pallada.classes.dir}"/>
-        <javac srcdir="${src.java.dir}" destdir="${pallada.classes.dir}" debug="on" excludes="**/irida/**/*.java">
-            <classpath refid="pallada.compile.classpath"/>
+    <target name="compile.irida" depends="irida.available">
+        <mkdir dir="${irida.classes.dir}"/>
+        <javac srcdir="${src.java.dir}" destdir="${irida.classes.dir}" debug="on">
+            <classpath refid="irida.compile.classpath"/>
+        </javac>
+        <copy todir="${irida.classes.dir}" overwrite="true" preservelastmodified="true">
+            <fileset dir="${src.etc.dir}" includes="${binary.extensions}"/>
+        </copy>
+    </target>
+
+    <target name="compile" depends="compile.irida" description="Compiles the project source files"/>
+
+    <target name="compile.tests.irida" depends="compile.irida">
+        <mkdir dir="${irida.test.classes.dir}"/>
+        <javac srcdir="${src.test.dir}" destdir="${irida.test.classes.dir}" debug="on">
+            <classpath refid="irida.test.classpath"/>
         </javac>
     </target>
 
-    <target name="compile" depends="compile.pallada" description="Compiles the project source files"/>
+    <target name="compile.tests" depends="compile.tests.irida"/>
 
-    <target name="compile.tests.pallada" depends="compile.pallada">
-        <mkdir dir="${pallada.test.classes.dir}"/>
-        <javac srcdir="${src.test.dir}" destdir="${pallada.test.classes.dir}" debug="on"
-               excludes="**/aurora/**/*.java, **/irida/**/*.java">
-            <classpath refid="pallada.test.classpath"/>
-        </javac>
-    </target>
-
-    <target name="compile.tests" depends="compile.tests.pallada"/>
-
-    <target name="test.pallada" depends="compile.tests.pallada">
-        <mkdir dir="${pallada.test.results.dir}"/>
+    <target name="test.irida" depends="compile.tests.irida">
+        <mkdir dir="${irida.test.results.dir}"/>
         <junit fork="yes" forkmode="once" haltonfailure="true" haltonerror="true" showoutput="true" printsummary="withOutAndErr">
-            <classpath refid="pallada.test.classpath"/>
+            <classpath refid="irida.test.classpath"/>
             <formatter usefile="false" type="plain"/>
-            <batchtest todir="${pallada.test.results.dir}">
-                <fileset dir="${pallada.test.classes.dir}">
+            <batchtest todir="${irida.test.results.dir}">
+                <fileset dir="${irida.test.classes.dir}">
                     <include name="**/*Test.class"/>
-                    <include name="**/*Pallada*TestCase.class"/>
+                    <include name="**/*Irida*TestCase.class"/>
                 </fileset>
                 <formatter type="xml"/>
             </batchtest>
         </junit>
     </target>
 
-    <target name="test.reports.pallada" depends="test.pallada">
-        <mkdir dir="${pallada.test.reports.dir}"/>
-        <junitreport todir="${pallada.test.results.dir}">
-            <fileset dir="${pallada.test.results.dir}">
+    <target name="test.reports.irida" depends="test.irida">
+        <mkdir dir="${irida.test.reports.dir}"/>
+        <junitreport todir="${irida.test.results.dir}">
+            <fileset dir="${irida.test.results.dir}">
                 <include name="TEST-*.xml"/>
             </fileset>
-            <report format="frames" todir="${pallada.test.reports.dir}"/>
+            <report format="frames" todir="${irida.test.reports.dir}"/>
         </junitreport>
     </target>
 
-    <target name="test" depends="test.pallada" description="Runs all project unit tests"/>
+    <target name="test" depends="test.irida" description="Runs all project unit tests"/>
 
-    <target name="jar.pallada" depends="test.pallada" description="Packages up the plugin as a jar file for IDEA Pallada">
-        <copy todir="${pallada.classes.dir}" overwrite="true" preservelastmodified="true">
+    <target name="jar.irida" depends="test.irida" description="Packages up the plugin as a jar file for IDEA Irida">
+        <copy todir="${irida.classes.dir}" overwrite="true" preservelastmodified="true">
             <fileset dir="${src.etc.dir}" excludes="styles/**/*, ${binary.extensions}"/>
             <filterset>
                 <filter token="PROJECT.TITLE" value="Groovy IDEA Integration"/>
@@ -163,29 +166,26 @@
             <filterset refid="project.variables"/>
             <filterset refid="timestamp.variables"/>
         </copy>
-        <copy todir="${pallada.classes.dir}" overwrite="true" preservelastmodified="true">
-            <fileset dir="${src.etc.dir}" includes="${binary.extensions}"/>
-        </copy>
 
         <mkdir dir="${dist.dir}"/>
-        <jar basedir="${pallada.classes.dir}" compress="true" update="true" destfile="${dist.dir}/${distfile.name}-pallada.jar"/>
+        <jar basedir="${irida.classes.dir}" compress="true" update="true" destfile="${dist.dir}/${distfile.name}-irida.jar"/>
     </target>
 
-    <target name="zip.pallada" depends="jar.pallada" description="Packages up the plugin as a deployable zip file for IDEA Pallada">
-        <zip compress="true" update="true" destfile="${dist.dir}/${distfile.name}-pallada.zip">
-            <zipfileset prefix="${project.name}/lib" file="${dist.dir}/${distfile.name}-pallada.jar"/>
+    <target name="zip.irida" depends="jar.irida" description="Packages up the plugin as a deployable zip file for IDEA Irida">
+        <zip compress="true" update="true" destfile="${dist.dir}/${distfile.name}-irida.zip">
+            <zipfileset prefix="${project.name}/lib" file="${dist.dir}/${distfile.name}-irida.jar"/>
             <zipfileset prefix="${project.name}/lib" dir="${lib.runtime.dir}"/>
         </zip>
-        <delete file="${dist.dir}/${distfile.name}-pallada.jar"/>
+        <delete file="${dist.dir}/${distfile.name}-irida.jar"/>
     </target>
 
-    <target name="build.deliverables" depends="zip.pallada" description="Creates all installable plugin distributions">
+    <target name="build.deliverables" depends="zip.irida" description="Creates all installable plugin distributions">
         <buildnumber/>
     </target>
 
-    <target name="deploy.pallada" depends="zip.pallada" description="Deploys the plugin into an IntelliJ IDEA installation">
-        <delete dir="${pallada.plugins.dir}/${project.name}" failonerror="true"/>
-        <unzip src="${dist.dir}/${distfile.name}-pallada.zip" dest="${pallada.plugins.dir}"/>
+    <target name="deploy.irida" depends="zip.irida" description="Deploys the plugin into an IntelliJ IDEA installation">
+        <delete dir="${irida.plugins.dir}/${project.name}" failonerror="true"/>
+        <unzip src="${dist.dir}/${distfile.name}-irida.zip" dest="${irida.plugins.dir}"/>
     </target>
 
 </project>

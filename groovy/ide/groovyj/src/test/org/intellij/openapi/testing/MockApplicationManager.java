@@ -8,36 +8,16 @@ import com.intellij.openapi.application.ApplicationManager;
 
 public class MockApplicationManager extends ApplicationManager {
 
-    private static final String AURORA = "org.intellij.openapi.testing.aurora.MockAuroraApplication";
-    private static final String PALLADA = "org.intellij.openapi.testing.pallada.MockPalladaApplication";
+    private static final String IRIDA = "org.intellij.openapi.testing.irida.MockIridaApplication";
 
     private static MockApplication applicationMock = createMockApplication();
-    private static Application ourApplicationCopy = ourApplication;
-
-    public static boolean isAurora() {
-        try {
-            Class.forName("com.intellij.refactoring.move.moveClassesOrPackages.MoveDestination");
-            return true;
-        } catch (ClassNotFoundException e1) {
-            try {
-                Class.forName("com.intellij.refactoring.MoveDestination");
-                return false;
-            } catch (ClassNotFoundException e2) {
-                throw new IllegalStateException("Unable to determine the target IDEA release!");
-            }
-        }
-    }
 
     public static void setApplication(Application application) {
         ourApplication = application;
     }
 
     public static void reset() {
-        if (isAurora()) {
-            resetInternalApplication();
-        } else {
-            stubInternalApplication();
-        }
+        stubInternalApplication();
     }
 
     public static MockApplication getMockApplication() {
@@ -51,13 +31,9 @@ public class MockApplicationManager extends ApplicationManager {
         ourApplication = applicationMock;
     }
 
-    private static void resetInternalApplication() {
-        ourApplication = ourApplicationCopy;
-    }
-
     private static MockApplication createMockApplication() {
         try {
-            Class clazz = Class.forName((isAurora() ? AURORA : PALLADA));
+            Class clazz = Class.forName(IRIDA);
             Constructor constructor = clazz.getConstructor(new Class[0]);
             return (MockApplication) constructor.newInstance(new Object[0]);
         } catch (NumberFormatException e) {

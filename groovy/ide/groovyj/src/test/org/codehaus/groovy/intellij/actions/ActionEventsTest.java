@@ -49,7 +49,8 @@ public class ActionEventsTest extends MockObjectTestCase {
         AnAction action = new AnAction() {
             public void actionPerformed(AnActionEvent event) {}
         };
-        anActionEvent = new AnActionEvent(null, (DataContext) mockDataContext.proxy(), "", action.getTemplatePresentation(), -1);
+
+        anActionEvent = new AnActionEvent(null, (DataContext) mockDataContext.proxy(), "", action.getTemplatePresentation(), null, -1);
 
         mockDataContext.stubs().method("getData").with(eq(DataConstants.VIRTUAL_FILE)).will(returnValue(mockVirtualFile.proxy()));
         mockDataContext.stubs().method("getData").with(eq(DataConstants.PROJECT)).will(returnValue(projectMock));

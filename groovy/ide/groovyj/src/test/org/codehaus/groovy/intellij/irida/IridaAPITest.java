@@ -16,7 +16,7 @@
  */
 
 
-package org.codehaus.groovy.intellij.pallada;
+package org.codehaus.groovy.intellij.irida;
 
 import org.intellij.openapi.testing.MockApplicationManager;
 
@@ -27,11 +27,11 @@ import org.jmock.Mock;
 
 import org.codehaus.groovy.intellij.BaseEditorAPITest;
 
-public class PalladaAPITest extends BaseEditorAPITest {
+public class IridaAPITest extends BaseEditorAPITest {
 
     protected void setUp() throws Exception {
         super.setUp();
-        editorAPI = new PalladaAPI((Project) mockProject.proxy());
+        editorAPI = new IridaAPI((Project) mockProject.proxy());
     }
 
     protected void tearDown() throws Exception {

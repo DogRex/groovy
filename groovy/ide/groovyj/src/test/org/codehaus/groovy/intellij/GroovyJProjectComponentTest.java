@@ -80,12 +80,10 @@ public class GroovyJProjectComponentTest extends MockObjectTestCase {
 
     public void testDoesNothingWhenInitialisedByIdea() {
         projectComponent.initComponent();
-        assertTrue(true);
     }
 
     public void testDoesNothingWhenDisposedByIdea() {
         projectComponent.disposeComponent();
-        assertTrue(true);
     }
 
     public void testHasAComponentName() {

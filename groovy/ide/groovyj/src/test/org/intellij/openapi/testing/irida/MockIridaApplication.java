@@ -1,19 +1,21 @@
-package org.intellij.openapi.testing.pallada;
+package org.intellij.openapi.testing.irida;
 
 import java.awt.Component;
 
 import org.intellij.openapi.testing.MockApplication;
-import org.intellij.openapi.testing.MockComponentManager;
 
 import com.intellij.openapi.application.ApplicationListener;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.components.BaseComponent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Key;
 import com.intellij.peer.PeerFactory;
 import com.intellij.psi.EmptySubstitutor;
 
-public class MockPalladaApplication extends MockUserDataHolder implements MockApplication {
+import org.picocontainer.PicoContainer;
+
+public class MockIridaApplication extends MockUserDataHolder implements MockApplication {
 
     private final MockComponentManager componentManager = createComponentManager();
 
@@ -48,7 +50,7 @@ public class MockPalladaApplication extends MockUserDataHolder implements MockAp
         return null;
     }
 
-    public /*<T> T*/Object runWriteAction(Computable/*<T>*/ computation) {
+    public Object runWriteAction(Computable computation) {
         return null;
     }
 
@@ -76,7 +78,11 @@ public class MockPalladaApplication extends MockUserDataHolder implements MockAp
 
     public void exit() {}
 
-    public /*<T> T*/ Object getUserData(Key/*<T>*/ key) {
+    public Object getUserData(Key key) {
+        return null;
+    }
+
+    public BaseComponent getComponent(String name) {
         return null;
     }
 
@@ -90,6 +96,10 @@ public class MockPalladaApplication extends MockUserDataHolder implements MockAp
 
     public Object[] getComponents(Class aClass) {
         return componentManager.getComponents(aClass);
+    }
+
+    public PicoContainer getPicoContainer() {
+        return null;
     }
 
     public boolean hasComponent(Class aClass) {

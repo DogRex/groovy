@@ -1,10 +1,13 @@
-package org.intellij.openapi.testing;
+package org.intellij.openapi.testing.irida;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import com.intellij.openapi.components.BaseComponent;
 import com.intellij.openapi.components.ComponentManager;
 import com.intellij.openapi.util.Key;
+
+import org.picocontainer.PicoContainer;
 
 public class MockComponentManager implements ComponentManager {
 
@@ -26,8 +29,16 @@ public class MockComponentManager implements ComponentManager {
         return new Object[0];
     }
 
+    public PicoContainer getPicoContainer() {
+        return null;
+    }
+
     public Class[] getComponentInterfaces() {
         return new Class[0];
+    }
+
+    public BaseComponent getComponent(String name) {
+        return null;
     }
 
     public Object getComponent(Class aClass) {

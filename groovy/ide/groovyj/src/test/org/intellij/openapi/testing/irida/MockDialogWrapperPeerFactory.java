@@ -1,4 +1,4 @@
-package org.intellij.openapi.testing.pallada;
+package org.intellij.openapi.testing.irida;
 
 import java.awt.Component;
 
