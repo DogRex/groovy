@@ -8,6 +8,7 @@ import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
 import org.eclipse.jdt.internal.ui.actions.WorkbenchRunnableAdapter;
@@ -71,5 +72,17 @@ public class NewTestWizard extends NewElementWizard  {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.jdt.internal.ui.wizards.NewElementWizard#getSchedulingRule()
+	 */
+	protected ISchedulingRule getSchedulingRule() {
+		return new ISchedulingRule() {
+			public boolean contains(ISchedulingRule rule) {
+				return false;
+			}
+			public boolean isConflicting(ISchedulingRule rule) {
+				return false;
+			}};
+	}
 }
 
