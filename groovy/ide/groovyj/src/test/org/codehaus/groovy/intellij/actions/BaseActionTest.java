@@ -1,0 +1,83 @@
+/*
+ * $Id$
+ *
+ * Copyright (c) 2004 The Codehaus - http://groovy.codehaus.org
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and limitations under the License.
+ *
+ */
+
+
+package org.codehaus.groovy.intellij.actions;
+
+import java.awt.Container;
+import java.awt.event.KeyEvent;
+
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
+
+import org.jmock.cglib.Mock;
+import org.jmock.cglib.MockObjectTestCase;
+
+import org.codehaus.groovy.intellij.Mocks;
+
+public class BaseActionTest extends MockObjectTestCase {
+
+    private static final KeyEvent NULL_KEY_EVENT = new KeyEvent(new Container(), 0, 0, 0, 0, ' ');
+
+    protected final Mock mockActionEvents = new Mock(ActionEvents.class);
+    protected final Mock mockDataContext = new Mock(DataContext.class);
+    protected final Mock mockGroovyJProjectComponent = Mocks.createGroovyJProjectComponentMock();
+
+    protected void setUp() throws Exception {
+        super.setUp();
+        ActionEvents.instance = (ActionEvents) mockActionEvents.proxy();
+    }
+
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        ActionEvents.instance = new ActionEvents();
+    }
+
+    protected BaseAction createAction() {
+        return new BaseAction() {
+            public void actionPerformed(AnActionEvent e) {}
+        };
+    }
+
+    protected void executeAction() {
+        mockActionEvents.expects(once()).method("getGroovyJProjectComponent").with(isA(AnActionEvent.class)).
+                will(returnValue(mockGroovyJProjectComponent.proxy()));
+
+        BaseAction action = createAction();
+        action.actionPerformed(createAnActionEvent(action));
+    }
+
+    public void testIsEnabledIfEventOriginatedFromAGroovyFile() {
+        assertActionEnabledIfEventOriginatedFromGroovFileInProject(createAction(), true);
+    }
+
+    public void testIsNotEnabledIfEventDidNotOriginateFromAGroovyFile() {
+        assertActionEnabledIfEventOriginatedFromGroovFileInProject(createAction(), false);
+    }
+
+    protected void assertActionEnabledIfEventOriginatedFromGroovFileInProject(AnAction action, boolean isGroovyFile) {
+        mockActionEvents.expects(once()).method("isGroovyFile").with(isA(AnActionEvent.class)).will(returnValue(isGroovyFile));
+
+        action.update(createAnActionEvent(action));
+        assertEquals("action enabled? ", isGroovyFile, action.getTemplatePresentation().isEnabled());
+    }
+
+    protected AnActionEvent createAnActionEvent(AnAction action) {
+        return new AnActionEvent(NULL_KEY_EVENT, (DataContext) mockDataContext.proxy(), "", action.getTemplatePresentation(), -1);
+    }
+}

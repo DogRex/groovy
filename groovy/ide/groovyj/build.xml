@@ -1,70 +1,191 @@
+<!-- This build script requires Ant 1.6.2 or later. -->
+<project name="GroovyJ" default="build.deliverables" basedir=".">
 
-<!--
-    ========================================
-            Groovy IntelliJ plugin
+    <target name="initialise.build">
+        <!-- Project properties -->
+        <property file="project.properties"/>
 
-           author: Guillaume Laforge
-    ========================================
--->
+        <!-- Default project properties if not found in project.properties -->
+        <property name="project.name" value="Set name in project.properties"/>
+        <property name="project.title" value="Set title in project.properties"/>
+        <property name="project.version" value="dev"/>
+        <property name="project.idea.since-build" value="Set idea.since-build in project.properties"/>
+        <property name="project.description" value="Set description in project.properties"/>
+        <property name="project.change-notes" value="Set change-notes in project.properties"/>
+        <property name="project.homedir" value="Set homedir in project.properties"/>
 
-<project name="GroovyJ" default="dist" basedir=".">
+        <property name="binary.extensions" value="**/*.png, **/*.jpg, **/*.jpeg, **/*.gif"/>
 
-	<property name="source.dir" value="src/java"/>
-	<property name="test.dir" value="src/test"/>
-	<property name="target.dir" value="target"/>
-	<property name="lib.dir" value="lib"/>
-	<property name="classes.dir" value="${target.dir}/classes"/>
-	<property name="test-classes.dir" value="${target.dir}/test-classes"/>
+        <!-- Folders -->
+        <property name="src.etc.dir" value="src/etc"/>
+        <property name="src.java.dir" value="src/java"/>
+        <property name="src.test.dir" value="src/test"/>
 
-	<property name="deploy.dist" value="c:/debug/plugins"/>
+        <property name="lib.dir" value="lib"/>
+        <property name="lib.compile.dir" value="${lib.dir}/compile"/>
+        <property name="lib.runtime.dir" value="${lib.dir}/runtime"/>
 
-	<path id="compile.classpath">
-		<fileset dir="${lib.dir}">
-			<include name="*.jar"/>
-		</fileset>
-	</path>
+        <property name="build.dir" value="build"/>
+        <property name="classes.dir" value="${build.dir}/classes"/>
+        <property name="dist.dir" value="${build.dir}/dist"/>
+        <property name="test.classes.dir" value="${build.dir}/test-classes"/>
+        <property name="test.results.dir" value="${build.dir}/test-results"/>
+        <property name="test.reports.dir" value="${build.dir}/test-reports"/>
 
-	<target name="clean" description="Clean everything">
-		<delete dir="${target.dir}"/>
-	</target>
+        <property name="pallada.home" value="${lib.compile.dir}/pallada"/>
+        <property name="pallada.classes.dir" value="${classes.dir}/pallada"/>
+        <property name="pallada.test.classes.dir" value="${test.classes.dir}/pallada"/>
+        <property name="pallada.test.results.dir" value="${test.results.dir}/pallada"/>
+        <property name="pallada.test.reports.dir" value="${test.reports.dir}/pallada"/>
 
-	<target name="compile" depends="clean" description="Compile the project">
+        <property name="pallada.plugins.dir" value="${pallada.home}/config/plugins"/>
+        <property name="distfile.name" value="${project.name}-${project.version}"/>
 
-		<mkdir dir="${target.dir}"/>
-		<mkdir dir="${classes.dir}"/>
-		<mkdir dir="${classes.dir}/META-INF/"/>
-		<mkdir dir="${test-classes.dir}"/>
+        <!-- Variable for tokenisation -->
+        <filterset id="project.variables">
+            <filter token="PROJECT.NAME" value="${project.name}"/>
+            <filter token="PROJECT.HOMEPAGE" value="${project.homepage}"/>
+            <filter token="PROJECT.VERSION" value="${project.version}"/>
+            <filter token="PROJECT.DESCRIPTION" value="${project.description}"/>
+            <filter token="PROJECT.CHANGE-NOTES" value="${project.change-notes}"/>
+            <filter token="PROJECT.VENDOR" value="${project.vendor}"/>
+            <filter token="PROJECT.VENDOR.EMAIL" value="${project.vendor.email}"/>
+            <filter token="PROJECT.VENDOR.HOMEPAGE" value="${project.vendor.homepage}"/>
+        </filterset>
 
-		<javac srcdir="${source.dir}" destdir="${classes.dir}">
-			<classpath refid="compile.classpath"/>
-		</javac>
+        <path id="compile.classpath">
+            <fileset dir="${lib.compile.dir}">
+                <include name="**/*.jar"/>
+                <exclude name="pallada/**/*.jar"/>
+            </fileset>
+            <fileset dir="${lib.runtime.dir}">
+                <include name="**/*.jar"/>
+            </fileset>
+        </path>
 
-		<javac srcdir="${test.dir}" destdir="${test-classes.dir}">
-			<classpath refid="compile.classpath"/>
-		</javac>
+        <path id="pallada.compile.classpath">
+            <fileset dir="${pallada.home}">
+                <include name="**/*.jar"/>
+            </fileset>
+            <pathelement location="${pallada.classes.dir}"/>
+            <path refid="compile.classpath"/>
+        </path>
 
-	</target>
+        <path id="pallada.test.classpath">
+            <pathelement location="${pallada.test.classes.dir}"/>
+            <path refid="pallada.compile.classpath"/>
+        </path>
 
-	<target name="test" depends="compile" description="Launch the test suite">
+        <tstamp>
+            <format property="TODAY" pattern="d-MMMM-yyyy" locale="en"/>
+            <format property="DAY" pattern="d" locale="en"/>
+            <format property="MONTH" pattern="MM" locale="en"/>
+            <format property="YEAR" pattern="yyyy" locale="en"/>
+        </tstamp>
 
-	</target>
+        <filterset id="timestamp.variables">
+            <filter token="TIMESTAMP" value="${TODAY}"/>
+            <filter token="DAY" value="${DAY}"/>
+            <filter token="MONTH" value="${MONTH}"/>
+            <filter token="YEAR" value="${YEAR}"/>
+        </filterset>
+    </target>
 
-	<target name="jar" depends="compile" description="Create a jar file">
-		<copy file="${source.dir}/META-INF/plugin.xml" todir="${classes.dir}/META-INF/"/>
-		<jar destfile="${target.dir}/groovyj-plugin.jar" basedir="${classes.dir}"/>
-	</target>
+    <target name="check.pallada.available" depends="initialise.build" >
+        <available property="pallada.available"
+                   classname="com.intellij.refactoring.MoveDestination"
+                   classpathref="pallada.test.classpath"/>
+    </target>
 
-	<target name="dist" depends="jar" description="Create a installable plugin distribution">
+    <target name="pallada.available" depends="check.pallada.available" unless="pallada.available">
+        <fail>IntelliJ IDEA (Pallada) is not available. Please either define 'pallada.home' in project.properties or copy
+              $IDEA_HOME/lib/idea.jar, $IDEA_HOME/lib/openapi.jar and $IDEA_HOME/lib/trove4j.jar to ${pallada.home}/lib.
+        </fail>
+    </target>
 
-	</target>
+    <target name="clean" depends="initialise.build" description="Deletes all artifacts from a previous build">
+        <delete dir="${build.dir}"/>
+    </target>
 
-	<target name="deploy" depends="dist" description="Deploy the plugin into an IntelliJ IDEA installtion">
-		<mkdir dir="${deploy.dist}/groovyj"/>
-		<mkdir dir="${deploy.dist}/groovyj/lib"/>
-		<copy file="${target.dir}/groovyj-plugin.jar" todir="${deploy.dist}/groovyj/lib"/>
-		<copy file="${lib.dir}/asm-1.4.3.jar" todir="${deploy.dist}/groovyj/lib"/>
-		<copy file="${lib.dir}/asm-util-1.4.3.jar" todir="${deploy.dist}/groovyj/lib"/>
-		<copy file="${lib.dir}/groovy-1.0-beta-7-SNAPSHOT.jar" todir="${deploy.dist}/groovyj/lib"/>
-	</target>
+    <target name="compile.pallada" depends="pallada.available">
+        <mkdir dir="${pallada.classes.dir}"/>
+        <javac srcdir="${src.java.dir}" destdir="${pallada.classes.dir}" debug="on" excludes="**/irida/**/*.java">
+            <classpath refid="pallada.compile.classpath"/>
+        </javac>
+    </target>
+
+    <target name="compile" depends="compile.pallada" description="Compiles the project source files"/>
+
+    <target name="compile.tests.pallada" depends="compile.pallada">
+        <mkdir dir="${pallada.test.classes.dir}"/>
+        <javac srcdir="${src.test.dir}" destdir="${pallada.test.classes.dir}" debug="on"
+               excludes="**/aurora/**/*.java, **/irida/**/*.java">
+            <classpath refid="pallada.test.classpath"/>
+        </javac>
+    </target>
+
+    <target name="compile.tests" depends="compile.tests.pallada"/>
+
+    <target name="test.pallada" depends="compile.tests.pallada">
+        <mkdir dir="${pallada.test.results.dir}"/>
+        <junit fork="yes" forkmode="once" haltonfailure="true" haltonerror="true" showoutput="true" printsummary="withOutAndErr">
+            <classpath refid="pallada.test.classpath"/>
+            <formatter usefile="false" type="plain"/>
+            <batchtest todir="${pallada.test.results.dir}">
+                <fileset dir="${pallada.test.classes.dir}">
+                    <include name="**/*Test.class"/>
+                    <include name="**/*Pallada*TestCase.class"/>
+                </fileset>
+                <formatter type="xml"/>
+            </batchtest>
+        </junit>
+    </target>
+
+    <target name="test.reports.pallada" depends="test.pallada">
+        <mkdir dir="${pallada.test.reports.dir}"/>
+        <junitreport todir="${pallada.test.results.dir}">
+            <fileset dir="${pallada.test.results.dir}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="${pallada.test.reports.dir}"/>
+        </junitreport>
+    </target>
+
+    <target name="test" depends="test.pallada" description="Runs all project unit tests"/>
+
+    <target name="jar.pallada" depends="test.pallada" description="Packages up the plugin as a jar file for IDEA Pallada">
+        <copy todir="${pallada.classes.dir}" overwrite="true" preservelastmodified="true">
+            <fileset dir="${src.etc.dir}" excludes="styles/**/*, ${binary.extensions}"/>
+            <filterset>
+                <filter token="PROJECT.TITLE" value="Groovy IDEA Integration"/>
+                <filter token="PROJECT.IDEA.SINCE-BUILD" value="2233"/>
+            </filterset>
+            <filterset refid="project.variables"/>
+            <filterset refid="timestamp.variables"/>
+        </copy>
+        <copy todir="${pallada.classes.dir}" overwrite="true" preservelastmodified="true">
+            <fileset dir="${src.etc.dir}" includes="${binary.extensions}"/>
+        </copy>
+
+        <mkdir dir="${dist.dir}"/>
+        <jar basedir="${pallada.classes.dir}" compress="true" update="true" destfile="${dist.dir}/${distfile.name}-pallada.jar"/>
+    </target>
+
+    <target name="zip.pallada" depends="jar.pallada" description="Packages up the plugin as a deployable zip file for IDEA Pallada">
+        <zip compress="true" update="true" destfile="${dist.dir}/${distfile.name}-pallada.zip">
+            <zipfileset prefix="${project.name}/lib" file="${dist.dir}/${distfile.name}-pallada.jar"/>
+            <zipfileset prefix="${project.name}/lib" dir="${lib.runtime.dir}"/>
+        </zip>
+        <delete file="${dist.dir}/${distfile.name}-pallada.jar"/>
+    </target>
+
+    <target name="build.deliverables" depends="zip.pallada" description="Creates all installable plugin distributions">
+        <buildnumber/>
+    </target>
+
+    <target name="deploy.pallada" depends="zip.pallada" description="Deploys the plugin into an IntelliJ IDEA installation">
+        <delete dir="${pallada.plugins.dir}/${project.name}" failonerror="true"/>
+        <unzip src="${dist.dir}/${distfile.name}-pallada.zip" dest="${pallada.plugins.dir}"/>
+    </target>
 
 </project>
