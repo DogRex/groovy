@@ -26,7 +26,6 @@ import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeSupportCapabilities;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.pom.java.LanguageLevel;
 
@@ -53,7 +52,7 @@ public class GroovyFileType implements FileType {
     }
 
     public Icon getIcon() {
-        return IconLoader.getIcon("/icons/groovy_fileType.png");
+        return Icons.SMALLEST;
     }
 
     public boolean isBinary() {

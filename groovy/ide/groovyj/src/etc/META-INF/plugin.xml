@@ -28,13 +28,13 @@
             <implementation-class>org.codehaus.groovy.intellij.GroovySupportLoader</implementation-class>
         </component>
     </application-components>
-
+<!--
     <actions>
         <action id="Groovy::RunGroovyScript"
                 class="org.codehaus.groovy.intellij.actions.RunAction"
                 text="_Run Groovy script"
                 description="Run Groovy script"
-                icon="/icons/groovy_18x18.png">
+                icon="/icons/groovy_16x16.png">
             <keyboard-shortcut first-keystroke="ctrl alt G" second-keystroke="R" keymap="$default"/>
             <add-to-group group-id="MainToolBar" anchor="after" relative-to-action="RunnerActions"/>
         </action>
@@ -44,5 +44,5 @@
             <add-to-group group-id="RunContextPopupGroup" anchor="last"/>
         </group>
     </actions>
-
+-->
 </idea-plugin>

@@ -20,7 +20,6 @@ package org.codehaus.groovy.intellij;
 
 import java.nio.charset.Charset;
 
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vfs.VirtualFile;
 
 import org.jmock.Mock;
@@ -45,7 +44,7 @@ public class GroovyFileTypeTest extends MockObjectTestCase {
     }
 
     public void testHasTheGroovyFileTypeIcon() {
-        assertSame("icon", IconLoader.getIcon("/icons/groovy_fileType.png"), groovyFileType.getIcon());
+        assertSame("icon", Icons.SMALLEST, groovyFileType.getIcon());
     }
 
     public void testDoesNotRepresentABinaryFile() {

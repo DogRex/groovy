@@ -29,17 +29,15 @@ import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.PathUtil;
 
 import org.codehaus.groovy.intellij.EditorAPIFactory;
 import org.codehaus.groovy.intellij.GroovySupportLoader;
+import org.codehaus.groovy.intellij.Icons;
 
 public class GroovyConfigurationType implements LocatableConfigurationType {
-
-    private static final Icon ICON = IconLoader.getIcon("/icons/groovy_16x16.png");
 
     private final GroovyConfigurationFactory configurationFactory;
 
@@ -68,7 +66,7 @@ public class GroovyConfigurationType implements LocatableConfigurationType {
     }
 
     public Icon getIcon() {
-        return ICON;
+        return Icons.SMALLEST;
     }
 
     public ConfigurationFactory[] getConfigurationFactories() {
