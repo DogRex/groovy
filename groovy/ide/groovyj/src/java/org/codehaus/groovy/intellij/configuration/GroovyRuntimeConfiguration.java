@@ -18,22 +18,32 @@
 
 package org.codehaus.groovy.intellij.configuration;
 
-import com.intellij.execution.ExecutionException;
 import com.intellij.execution.RuntimeConfiguration;
 import com.intellij.execution.configurations.ConfigurationPerRunnerSettings;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.configurations.RunnerSettings;
+import com.intellij.execution.filters.TextConsoleBuidlerFactory;
 import com.intellij.execution.runners.RunnerInfo;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 
 import org.jdom.Element;
 
+import org.codehaus.groovy.intellij.EditorAPI;
+
 public class GroovyRuntimeConfiguration extends RuntimeConfiguration {
 
-    public GroovyRuntimeConfiguration(String name, Project project, GroovyConfigurationFactory configurationFactory) {
+    private final EditorAPI editorApi;
+    private Module selectedModule;
+    private String workingDirectoryPath;
+
+    public GroovyRuntimeConfiguration(String name, Project project, GroovyConfigurationFactory configurationFactory,
+                                      EditorAPI editorApi) {
         super(name, project, configurationFactory);
+        this.editorApi = editorApi;
+        workingDirectoryPath = project.getProjectFile().getParent().getPath();
     }
 
     // RunConfiguration ------------------------------------------------------------------------------------------------
@@ -44,11 +54,12 @@ public class GroovyRuntimeConfiguration extends RuntimeConfiguration {
 
     // RunProfile ------------------------------------------------------------------------------------------------------
 
-    public RunProfileState getState(DataContext context,
-                                    RunnerInfo runnerInfo,
-                                    RunnerSettings runnerSettings,
+    public RunProfileState getState(DataContext context, RunnerInfo runnerInfo, RunnerSettings runnerSettings,
                                     ConfigurationPerRunnerSettings configurationSettings) {
-        return null;
+        GroovyComandLineState comandLineState = new GroovyComandLineState(this, runnerSettings, configurationSettings);
+        comandLineState.setConsoleBuilder(TextConsoleBuidlerFactory.getInstance().createBuilder(getProject()));
+        comandLineState.setModulesToCompile(editorApi.getModuleAndDependentModules(selectedModule));
+        return comandLineState;
     }
 
     // JDOMExternalizable ----------------------------------------------------------------------------------------------

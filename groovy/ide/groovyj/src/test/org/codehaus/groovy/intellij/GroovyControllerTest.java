@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.vfs.VirtualFile;
 
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -45,7 +46,7 @@ public class GroovyControllerTest extends MockObjectTestCase {
 
     protected void setUp() {
         groovyController = new GroovyController((EditorAPI) mockEditorAPI.proxy()) {
-            protected GroovyShell createGroovyShellForScript(VirtualFile selectedFile) {
+            protected GroovyShell createGroovyShellForScript(VirtualFile selectedFile, Module module) {
                 return (GroovyShell) mockGroovyShell.proxy();
             }
         };
@@ -54,35 +55,36 @@ public class GroovyControllerTest extends MockObjectTestCase {
     public void testCreatesAGroovyShellWithAnEmptyContext() {
         groovyController = new GroovyController((EditorAPI) mockEditorAPI.proxy());
 
-        mockEditorAPI.expects(once()).method("getCurrentModuleClasspathAsString").will(returnValue("some_lib.jar"));
+        Module expectedModule = (Module) mock(Module.class).proxy();
+        mockEditorAPI.expects(once()).method("getCompilationClasspath").with(same(expectedModule)).will(returnValue("some_lib.jar"));
         mockVirtualFile.expects(once()).method("getCharset").will(returnValue(Charset.forName("UTF-8")));
         mockVirtualFile.expects(once()).method("getPath").will(returnValue("/dev/null/foo.groovy"));
 
-        GroovyShell shell = groovyController.createGroovyShellForScript((VirtualFile) mockVirtualFile.proxy());
+        GroovyShell shell = groovyController.createGroovyShellForScript((VirtualFile) mockVirtualFile.proxy(), expectedModule);
         assertEquals(0, shell.getContext().getVariables().size());
     }
 
     public void testDoesNotAttemptToRunAGroovyScriptIfTheGivenFileReferenceIsNull() {
-        groovyController.runAsGroovyScript(null);
+        groovyController.runAsGroovyScriptInModule(null, null);
     }
 
     public void testDoesNotAttemptToRunAGivenFileAsAGroovyScriptIfTheFileIsNotValid() {
         mockVirtualFile.expects(once()).method("isValid").will(returnValue(false));
-        groovyController.runAsGroovyScript((VirtualFile) mockVirtualFile.proxy());
+        groovyController.runAsGroovyScriptInModule((VirtualFile) mockVirtualFile.proxy(), null);
     }
 
     public void testDoesNotAttemptToRunAGivenFileAsAGroovyScriptIfTheFileIsActuallyADirectory() {
         mockVirtualFile.expects(once()).method("isValid").will(returnValue(true));
         mockVirtualFile.expects(once()).method("isDirectory").will(returnValue(true));
 
-        groovyController.runAsGroovyScript((VirtualFile) mockVirtualFile.proxy());
+        groovyController.runAsGroovyScriptInModule((VirtualFile) mockVirtualFile.proxy(), null);
     }
 
     public void testRunsTheCurrentlySelectedFileAsAGroovyScriptUsingTheEditorApi() {
         setExpectationsForRunningAFileAsAGroovyScript(FILE_NAME);
         mockGroovyShell.expects(once()).method("run").with(isA(InputStream.class), eq(FILE_NAME), isA(String[].class));
 
-        groovyController.runAsGroovyScript((VirtualFile) mockVirtualFile.proxy());
+        groovyController.runAsGroovyScriptInModule((VirtualFile) mockVirtualFile.proxy(), null);
     }
 
     public void testDoesNothingWhenRunningAGroovyScriptFailsDueToACompilationError() {
@@ -90,7 +92,7 @@ public class GroovyControllerTest extends MockObjectTestCase {
         mockGroovyShell.expects(once()).method("run").with(isA(InputStream.class), eq(FILE_NAME), isA(String[].class))
                 .will(throwException(new CompilationFailedException(Phases.SEMANTIC_ANALYSIS, new CompilationUnit())));
 
-        groovyController.runAsGroovyScript((VirtualFile) mockVirtualFile.proxy());
+        groovyController.runAsGroovyScriptInModule((VirtualFile) mockVirtualFile.proxy(), null);
     }
 
     public void testDoesNothingWhenRunningAGroovyScriptFailsBecauseTheScriptCouldNotBeFound() {
@@ -99,7 +101,7 @@ public class GroovyControllerTest extends MockObjectTestCase {
         mockGroovyShell.expects(once()).method("run").with(isA(InputStream.class), eq(FILE_NAME), isA(String[].class))
                 .will(throwException(new CompilationFailedException(Phases.INITIALIZATION, null, new IOException("script not found"))));
 
-        groovyController.runAsGroovyScript((VirtualFile) mockVirtualFile.proxy());
+        groovyController.runAsGroovyScriptInModule((VirtualFile) mockVirtualFile.proxy(), null);
     }
 
     private String setExpectationsForRunningAFileAsAGroovyScript(String fileName) {

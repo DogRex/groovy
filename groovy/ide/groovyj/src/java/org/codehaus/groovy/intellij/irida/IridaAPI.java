@@ -19,6 +19,8 @@
 package org.codehaus.groovy.intellij.irida;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.compiler.ex.CompilerPathsEx;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 
 import org.codehaus.groovy.intellij.BaseEditorAPI;
@@ -27,6 +29,10 @@ public class IridaAPI extends BaseEditorAPI {
 
     public IridaAPI(Project project) {
         super(project);
+    }
+
+    public String getCompilationClasspath(Module module) {
+        return CompilerPathsEx.getCompilationClasspath(module);
     }
 
     public void invokeLater(Runnable task) {

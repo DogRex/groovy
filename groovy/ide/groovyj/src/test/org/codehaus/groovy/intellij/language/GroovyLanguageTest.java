@@ -28,7 +28,7 @@ public class GroovyLanguageTest extends MockObjectTestCase {
     private final GroovyLanguage language = GroovyLanguage.createLanguage();
 
     public void testHasItsIdSetToGroovy() {
-        assertEquals("Language: Groovy", language.toString());
+        assertEquals("Language: " + GroovyLanguage.ID, language.toString());
     }
 
     public void testDoesNotHaveAParserDefinitionYet() {

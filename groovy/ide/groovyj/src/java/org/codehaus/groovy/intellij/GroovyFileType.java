@@ -20,12 +20,9 @@ package org.codehaus.groovy.intellij;
 
 import javax.swing.Icon;
 
-import com.intellij.ide.structureView.StructureViewModel;
 import com.intellij.openapi.fileTypes.FileTypeSupportCapabilities;
 import com.intellij.openapi.fileTypes.LanguageFileType;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
-import com.intellij.openapi.vfs.VirtualFile;
 
 import org.codehaus.groovy.intellij.language.GroovyLanguage;
 
@@ -73,9 +70,5 @@ public class GroovyFileType extends LanguageFileType {
                 return true;
             }
         };
-    }
-
-    public StructureViewModel getStructureViewModel(VirtualFile file, Project project) {
-        return null;
     }
 }

@@ -22,27 +22,48 @@ import java.lang.reflect.Constructor;
 
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.components.ApplicationComponent;
 
-public class EditorAPIFactory {
+public class EditorAPIFactory implements ApplicationComponent {
 
-    private static final String IRIDA = "org.codehaus.groovy.intellij.irida.IridaAPI";
+    private static final String IRIDA_EDITOR_API = "org.codehaus.groovy.intellij.irida.IridaAPI";
 
-    private static final Class[] CONSTRUCTOR_PARAMETER_TYPES = new Class[] { Project.class };
+    // ApplicationComponent --------------------------------------------------------------------------------------------
 
-    public EditorAPI getEditorAPI(Project project) {
+    public String getComponentName() {
+        return "groovy.editorApi.factory";
+    }
+
+    public void initComponent() {}
+
+    public void disposeComponent() {}
+
+    // Factory implementation ------------------------------------------------------------------------------------------
+
+    private static interface ClassSelector {
+        String getClass(String ideaName, int buildNumber);
+    }
+
+    public EditorAPI createEditorAPI(Project project) {
+        return (EditorAPI) createEditorAPI(new Class[] { Project.class }, new Object[] { project }, new ClassSelector() {
+            public String getClass(String ideaName, int buildNumber) {
+                if ((ideaName.toLowerCase().matches(".*irida.*")) || (buildNumber >= 3000)) {
+                    return IRIDA_EDITOR_API;
+                }
+                throw new IllegalArgumentException("Unknown IntelliJ IDEA name and build number combination!");
+            }
+        });
+    }
+
+    private Object createEditorAPI(Class[] parameterTypes, Object[] parameterValues, ClassSelector closure) {
         ApplicationInfo applicationInfo = ApplicationInfo.getInstance();
         String ideaName = applicationInfo.getVersionName();
         String buildNumber = applicationInfo.getBuildNumber();
 
-        System.out.print("[Groovy IDEA Integration] ideaName = " + ideaName);
-        System.out.print("; buildNumber = " + buildNumber);
-        System.out.print("; majorVersion = " + applicationInfo.getMajorVersion());
-        System.out.println("; minorVersion = " + applicationInfo.getMinorVersion());
-
         try {
             int build = Integer.parseInt(buildNumber);
-            Constructor constructor = Class.forName(getClassForIDEA(ideaName, build)).getConstructor(CONSTRUCTOR_PARAMETER_TYPES);
-            return (EditorAPI) constructor.newInstance(new Object[] { project });
+            Constructor constructor = Class.forName(closure.getClass(ideaName, build)).getConstructor(parameterTypes);
+            return constructor.newInstance(parameterValues);
         } catch (NumberFormatException e) {
             throw newFactoryRuntimeException(ideaName, buildNumber, e);
         } catch (Exception e) {
@@ -50,14 +71,7 @@ public class EditorAPIFactory {
         }
     }
 
-    private String getClassForIDEA(String ideaName, int buildNumber) {
-        if ((ideaName.toLowerCase().matches(".*irida.*")) || (buildNumber >= 3000)) {
-            return IRIDA;
-        }
-        throw new RuntimeException("Could not load API connector for " + ideaName + "build #" + buildNumber);
-    }
-
     private RuntimeException newFactoryRuntimeException(String ideaName, String buildNumber, Exception e) {
-        return new RuntimeException("Could not load API connector for " + ideaName + " build #" + buildNumber, e);
+        return new RuntimeException("Could not create editor API for " + ideaName + " build #" + buildNumber, e);
     }
 }

@@ -31,7 +31,7 @@ import com.intellij.psi.tree.IElementType;
 
 public class GroovyLanguage extends Language {
 
-    public static final String ID = "Groovy";
+    static final String ID = "Groovy";
 
     public static GroovyLanguage createLanguage() {
         GroovyLanguage language = (GroovyLanguage) Language.findByID(GroovyLanguage.ID);

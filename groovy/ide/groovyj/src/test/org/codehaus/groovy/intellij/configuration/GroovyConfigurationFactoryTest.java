@@ -18,29 +18,32 @@
 
 package org.codehaus.groovy.intellij.configuration;
 
-import junit.framework.TestCase;
-
 import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.openapi.project.Project;
+import com.intellij.testFramework.MockVirtualFile;
 
-public class GroovyConfigurationFactoryTest extends TestCase {
+import org.jmock.Mock;
+import org.jmock.cglib.MockObjectTestCase;
 
-    private final GroovyConfigurationFactory configurationFactory = new GroovyConfigurationFactory(new GroovyConfigurationType());
+import org.codehaus.groovy.intellij.EditorAPIFactory;
+import org.codehaus.groovy.intellij.Mocks;
 
-    public void testHasAComponentName() {
-        assertEquals("groovyj.configuration.factory", configurationFactory.getComponentName());
-    }
+public class GroovyConfigurationFactoryTest extends MockObjectTestCase {
 
-    public void testDoesNothingWhenInitialisedByIdea() {
-        configurationFactory.initComponent();
-    }
+    private final Mock mockEditorApiFactory = mock(EditorAPIFactory.class);
+    private GroovyConfigurationFactory configurationFactory = new GroovyConfigurationFactory(new GroovyConfigurationType(null),
+                                                                                             (EditorAPIFactory) mockEditorApiFactory.proxy());
 
-    public void testDoesNothingWhenDisposedByIdea() {
-        configurationFactory.disposeComponent();
-    }
+    public void testCreatesARuntimeConfigurationForAGivenProject() {
+        Mock mockProject = mock(Project.class);
+        Mock mockProjectFile = Mocks.createVirtualFileMock(this, "mockProjectFile");
+        mockProject.expects(once()).method("getProjectFile").withNoArguments().will(returnValue(mockProjectFile.proxy()));
+        mockProjectFile.expects(once()).method("getParent").withNoArguments().will(returnValue(new MockVirtualFile()));
 
-    public void testCreatesARunConfigurationForAnyGivenProject() {
-        RunConfiguration templateConfiguration = configurationFactory.createTemplateConfiguration(null);
-        assertNull(templateConfiguration.getProject());
+        mockEditorApiFactory.expects(once()).method("createEditorAPI").with(same(mockProject.proxy())).will(returnValue(null));
+
+        RunConfiguration templateConfiguration = configurationFactory.createTemplateConfiguration((Project) mockProject.proxy());
+        assertSame("project", mockProject.proxy(), templateConfiguration.getProject());
         assertSame("configuration factory", configurationFactory, templateConfiguration.getFactory());
     }
 

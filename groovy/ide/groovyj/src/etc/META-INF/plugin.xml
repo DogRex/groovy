@@ -19,10 +19,10 @@
 
     <application-components>
         <component>
-            <implementation-class>org.codehaus.groovy.intellij.configuration.GroovyConfigurationType</implementation-class>
+            <implementation-class>org.codehaus.groovy.intellij.EditorAPIFactory</implementation-class>
         </component>
         <component>
-            <implementation-class>org.codehaus.groovy.intellij.configuration.GroovyConfigurationFactory</implementation-class>
+            <implementation-class>org.codehaus.groovy.intellij.configuration.GroovyConfigurationType</implementation-class>
         </component>
         <component>
             <implementation-class>org.codehaus.groovy.intellij.GroovySupportLoader</implementation-class>
@@ -30,16 +30,16 @@
     </application-components>
 
     <actions>
-        <action id="Groovy::RunGroovyClassOrScript"
+        <action id="Groovy::RunGroovyScript"
                 class="org.codehaus.groovy.intellij.actions.RunAction"
-                text="_Run Groovy script or class"
-                description="Run Groovy script or class"
+                text="_Run Groovy script"
+                description="Run Groovy script"
                 icon="/icons/groovy_18x18.png">
             <keyboard-shortcut first-keystroke="ctrl alt G" second-keystroke="R" keymap="$default"/>
             <add-to-group group-id="MainToolBar" anchor="after" relative-to-action="RunnerActions"/>
         </action>
         <group id="Groovy::Menu" text="Groov_y" popup="true">
-            <reference id="Groovy::RunGroovyClassOrScript"/>
+            <reference id="Groovy::RunGroovyScript"/>
             <add-to-group group-id="MainMenu" anchor="after" relative-to-action="RunMenu"/>
             <add-to-group group-id="RunContextPopupGroup" anchor="last"/>
         </group>

@@ -21,29 +21,23 @@ package org.codehaus.groovy.intellij.configuration;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationTemplate;
 import com.intellij.execution.configurations.RunConfiguration;
-import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.project.Project;
 
-public class GroovyConfigurationFactory extends ConfigurationFactory implements ApplicationComponent {
+import org.codehaus.groovy.intellij.EditorAPIFactory;
 
-    public GroovyConfigurationFactory(GroovyConfigurationType configurationType) {
+public class GroovyConfigurationFactory extends ConfigurationFactory {
+
+    private final EditorAPIFactory editorApiFactory;
+
+    public GroovyConfigurationFactory(GroovyConfigurationType configurationType, EditorAPIFactory editorApiFactory) {
         super(configurationType);
+        this.editorApiFactory = editorApiFactory;
     }
-
-    // ApplicationComponent --------------------------------------------------------------------------------------------
-
-    public String getComponentName() {
-        return "groovyj.configuration.factory";
-    }
-
-    public void initComponent() {}
-
-    public void disposeComponent() {}
 
     // ConfigurationFactory  -------------------------------------------------------------------------------------------
 
     public RunConfiguration createTemplateConfiguration(Project project) {
-        return new GroovyRuntimeConfiguration("Unnamed", project, this);
+        return new GroovyRuntimeConfiguration("Unnamed", project, this, editorApiFactory.createEditorAPI(project));
     }
 
     public ConfigurationTemplate createConfigurationTemplate(Project project) {

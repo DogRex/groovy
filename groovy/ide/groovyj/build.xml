@@ -80,6 +80,7 @@
         <filterset id="project.variables">
             <filter token="PROJECT.NAME" value="${project.name}"/>
             <filter token="PROJECT.HOMEPAGE" value="${project.homepage}"/>
+            <filter token="PROJECT.TITLE" value="${project.title}"/>
             <filter token="PROJECT.VERSION" value="${project.version}"/>
             <filter token="PROJECT.DESCRIPTION" value="${project.description}"/>
             <filter token="PROJECT.CHANGE-NOTES" value="${project.change-notes}"/>

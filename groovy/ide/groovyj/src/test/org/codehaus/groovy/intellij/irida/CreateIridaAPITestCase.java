@@ -30,13 +30,13 @@ public class CreateIridaAPITestCase extends EditorAPIFactoryTest {
         mockApplicationInfo.expects(once()).method("getVersionName").will(returnValue("a string containing the name iRIdA..."));
         mockApplicationInfo.expects(once()).method("getBuildNumber").will(returnValue("3212"));
 
-        EditorAPI editorAPI = new EditorAPIFactory().getEditorAPI(null);
-        StringAssert.assertContains("IridaAPI", editorAPI.getClass().getName());
+        EditorAPI editorApi = editorApiFactory.createEditorAPI(null);
+        StringAssert.assertContains("IridaAPI", editorApi.getClass().getName());
 
         mockApplicationInfo.expects(once()).method("getVersionName").will(returnValue("a string containing the name IrIDa..."));
         mockApplicationInfo.expects(once()).method("getBuildNumber").will(returnValue("3300"));
 
-        editorAPI = new EditorAPIFactory().getEditorAPI(null);
-        StringAssert.assertContains("IridaAPI", editorAPI.getClass().getName());
+        editorApi = new EditorAPIFactory().createEditorAPI(null);
+        StringAssert.assertContains("IridaAPI", editorApi.getClass().getName());
     }
 }

@@ -18,9 +18,6 @@
 
 package org.codehaus.groovy.intellij;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Modifier;
-
 import com.intellij.openapi.project.Project;
 
 import org.jmock.Mock;
@@ -40,39 +37,30 @@ public class GroovyJProjectComponentTest extends MockObjectTestCase {
         assertSame(projectComponent, GroovyJProjectComponent.getInstance(projectMock));
 
         Mock mockEditorAPI = mock(EditorAPI.class);
-        mockEditorAPIFactory.stubs().method("getEditorAPI").withAnyArguments().will(returnValue(mockEditorAPI.proxy()));
+        mockEditorAPIFactory.stubs().method("createEditorAPI").withAnyArguments().will(returnValue(mockEditorAPI.proxy()));
     }
 
     protected void tearDown() {
         GroovyJProjectComponent.setInstance(projectMock, null);
     }
 
-    public void testHasTheConstructorRequiredByIntellijIdea() throws NoSuchMethodException {
-        Constructor constructor = GroovyJProjectComponent.class.getConstructor(new Class[]{Project.class});
-        assertTrue(Modifier.isPublic(constructor.getModifiers()));
-
-        GroovyJProjectComponent groovyJProjectComponent = new GroovyJProjectComponent(projectMock);
-        assertNotSame(projectComponent, GroovyJProjectComponent.getInstance(projectMock));
-        assertSame(groovyJProjectComponent, GroovyJProjectComponent.getInstance(projectMock));
-    }
-
     public void testInitialisesEditorApiAndGroovyControllerReferencesWhenTheProjectIsOpened() {
-        assertNull("reference to EditorAPI should not have been initialised", projectComponent.getEditorAPI());
+        assertNull("reference to EditorAPI should not have been initialised", projectComponent.getEditorApi());
         assertNull("reference to GroovyController should not have been initialised", projectComponent.getGroovyController());
 
         projectComponent.projectOpened();
 
-        assertNotNull("reference to EditorAPI should have been initialised", projectComponent.getEditorAPI());
+        assertNotNull("reference to EditorAPI should have been initialised", projectComponent.getEditorApi());
         assertNotNull("reference to GroovyController should have been initialised", projectComponent.getGroovyController());
     }
 
     public void testRemovesReferencesToEditorApiAndGroovyControllerWhenTheProjectIsClosed() {
         projectComponent.projectOpened();
-        assertNotNull("reference to EditorAPI should have been initialised", projectComponent.getEditorAPI());
+        assertNotNull("reference to EditorAPI should have been initialised", projectComponent.getEditorApi());
         assertNotNull("reference to GroovyController should have been initialised", projectComponent.getGroovyController());
 
         projectComponent.projectClosed();
-        assertNull("reference to EditorAPI should have been removed", projectComponent.getEditorAPI());
+        assertNull("reference to EditorAPI should have been removed", projectComponent.getEditorApi());
         assertNull("reference to GroovyController should have been removed", projectComponent.getGroovyController());
     }
 

@@ -23,6 +23,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataConstants;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.module.Module;
 
 import org.jmock.Mock;
 import org.jmock.cglib.MockObjectTestCase;
@@ -36,6 +37,7 @@ public class ActionEventsTest extends MockObjectTestCase {
     private final Mock mockVirtualFile = Mocks.createVirtualFileMock(this);
 
     private final Project projectMock = (Project) mock(Project.class).proxy();
+    private final Module moduleMock = (Module) mock(Module.class).proxy();
     private final GroovyJProjectComponent projectComponentMock = (GroovyJProjectComponent) Mocks.createGroovyJProjectComponentMock(this).proxy();
     private final ActionEvents actionEvents = new ActionEvents();
 
@@ -50,6 +52,8 @@ public class ActionEventsTest extends MockObjectTestCase {
 
         mockDataContext.stubs().method("getData").with(eq(DataConstants.VIRTUAL_FILE)).will(returnValue(mockVirtualFile.proxy()));
         mockDataContext.stubs().method("getData").with(eq(DataConstants.PROJECT)).will(returnValue(projectMock));
+        mockDataContext.stubs().method("getData").with(eq(DataConstants.MODULE)).will(returnValue(moduleMock));
+
         GroovyJProjectComponent.setInstance(projectMock, projectComponentMock);
     }
 
@@ -59,6 +63,10 @@ public class ActionEventsTest extends MockObjectTestCase {
 
     public void testRetrievesTheProjectFromWhichAGivenActionEventOriginated() {
         assertSame(projectMock, actionEvents.getProject(anActionEvent));
+    }
+
+    public void testRetrievesTheModuleFromWhichAGivenActionEventOriginated() {
+        assertSame(moduleMock, actionEvents.getModule(anActionEvent));
     }
 
     public void testRetrievesTheGroovyjProjectComponentInstanceAssociatedToTheProjectFromWhichAGivenActionEventOriginated() {

@@ -18,19 +18,18 @@
 
 package org.codehaus.groovy.intellij;
 
-import java.io.File;
-
 import com.intellij.openapi.command.CommandListener;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.vfs.VirtualFileListener;
 import com.intellij.psi.PsiTreeChangeListener;
 import com.intellij.refactoring.listeners.RefactoringElementListenerProvider;
 
 public interface EditorAPI {
 
-    File[] getCurrentModuleClasspath();
+    Module[] getModuleAndDependentModules(Module module);
 
-    String getCurrentModuleClasspathAsString();
+    String getCompilationClasspath(Module module);
 
     void invokeLater(Runnable task);
 

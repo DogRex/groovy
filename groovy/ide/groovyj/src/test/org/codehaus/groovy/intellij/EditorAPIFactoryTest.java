@@ -30,6 +30,7 @@ import org.jmock.cglib.MockObjectTestCase;
 public class EditorAPIFactoryTest extends MockObjectTestCase {
 
     protected final Mock mockApplicationInfo = mock(ApplicationInfo.class);
+    protected final EditorAPIFactory editorApiFactory = new EditorAPIFactory();
 
     protected void setUp() {
         mockApplicationInfo.stubs().method("getMajorVersion");
@@ -41,36 +42,59 @@ public class EditorAPIFactoryTest extends MockObjectTestCase {
         MockApplicationManager.getMockApplication().removeComponent(ApplicationInfo.class);
     }
 
+    public void testDefinesAComponentName() {
+        assertEquals("component name", "groovy.editorApi.factory", editorApiFactory.getComponentName());
+    }
+
+    public void testDoesNothingWhenInitialisedByIdea() {
+        editorApiFactory.initComponent();
+    }
+
+    public void testDoesNothingWhenDisposedByIdea() {
+        editorApiFactory.disposeComponent();
+    }
+
     public void testThrowsARuntimeExceptionWhenAttemptingToCreateEditorApiWithInvalidBuildNumber() {
         mockApplicationInfo.expects(once()).method("getVersionName").will(returnValue("IDEA version name"));
         mockApplicationInfo.expects(once()).method("getBuildNumber").will(returnValue("invalid build number"));
         try {
-            new EditorAPIFactory().getEditorAPI(null);
+            editorApiFactory.createEditorAPI(null);
             fail("A RuntimeException should have been thrown for this unsupported version of IntelliJ IDEA!");
         } catch (RuntimeException expected) {
-            StringAssert.assertContains("Could not load API connector for", expected.getMessage());
+            StringAssert.assertContains("Could not create editor API for", expected.getMessage());
         }
     }
 
-    public void testThrowsARuntimeExceptionWhenAttemptingToCreateEditorApiUnderAriadnaVersionOfIntellijIdea() {
+    public void testThrowsARuntimeExceptionWhenAttemptingToCreateEditorApiUnderTheAriadnaVersionOfIntellijIdea() {
         mockApplicationInfo.expects(once()).method("getVersionName").will(returnValue("a string that contains the name AriAdNa..."));
         mockApplicationInfo.expects(once()).method("getBuildNumber").will(returnValue("700"));
         try {
-            new EditorAPIFactory().getEditorAPI(null);
+            editorApiFactory.createEditorAPI(null);
             fail("A RuntimeException should have been thrown for this unsupported version of IntelliJ IDEA!");
         } catch (RuntimeException expected) {
-            StringAssert.assertContains("Could not load API connector for", expected.getMessage());
+            StringAssert.assertContains("Could not create editor API for", expected.getMessage());
         }
     }
 
-    public void testThrowsARuntimeExceptionWhenAttemptingToCreateEditorApiUnderAuroraVersionOfIntellijIdea() {
+    public void testThrowsARuntimeExceptionWhenAttemptingToCreateEditorApiUnderTheAuroraVersionOfIntellijIdea() {
         mockApplicationInfo.expects(once()).method("getVersionName").will(returnValue("a string that contains the name AuRorA..."));
         mockApplicationInfo.expects(once()).method("getBuildNumber").will(returnValue("1130"));
         try {
-            new EditorAPIFactory().getEditorAPI(null);
+            editorApiFactory.createEditorAPI(null);
             fail("A RuntimeException should have been thrown for this unsupported version of IntelliJ IDEA!");
         } catch (RuntimeException expected) {
-            StringAssert.assertContains("Could not load API connector for", expected.getMessage());
+            StringAssert.assertContains("Could not create editor API for", expected.getMessage());
+        }
+    }
+
+    public void testThrowsARuntimeExceptionWhenAttemptingToCreateEditorApiUnderThePalladaVersionOfIntellijIdea() {
+        mockApplicationInfo.expects(once()).method("getVersionName").will(returnValue("a string that contains the name AuRorA..."));
+        mockApplicationInfo.expects(once()).method("getBuildNumber").will(returnValue("1130"));
+        try {
+            editorApiFactory.createEditorAPI(null);
+            fail("A RuntimeException should have been thrown for this unsupported version of IntelliJ IDEA!");
+        } catch (RuntimeException expected) {
+            StringAssert.assertContains("Could not create editor API for", expected.getMessage());
         }
     }
 }

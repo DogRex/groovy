@@ -24,7 +24,7 @@ import org.jmock.Mock;
 
 import org.codehaus.groovy.intellij.Mocks;
 
-public class RunActionTest extends BaseActionTest {
+public class RunActionTest extends BaseActionTestCase {
 
     protected BaseAction createAction() {
         return new RunAction();
@@ -32,9 +32,11 @@ public class RunActionTest extends BaseActionTest {
 
     public void testUsesTheGroovyControllerAssociatedToTheCurrentProjectToRunTheSelectedFileAsAGroovyScript() {
         Mock mockGroovyController = Mocks.createGroovyControllerMock(this);
-        mockActionEvents.expects(once()).method("getVirtualFile").with(isA(AnActionEvent.class));
         mockGroovyJProjectComponent.expects(once()).method("getGroovyController").will(returnValue(mockGroovyController.proxy()));
-        mockGroovyController.expects(once()).method("runAsGroovyScript");
+
+        mockActionEvents.expects(once()).method("getVirtualFile").with(isA(AnActionEvent.class));
+        mockActionEvents.expects(once()).method("getModule").with(isA(AnActionEvent.class));
+        mockGroovyController.expects(once()).method("runAsGroovyScriptInModule").withAnyArguments();
 
         executeAction();
     }

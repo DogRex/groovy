@@ -18,14 +18,60 @@
 
 package org.codehaus.groovy.intellij.configuration;
 
-import junit.framework.TestCase;
+import junitx.framework.ObjectAssert;
 
-public class GroovyRuntimeConfigurationTest extends TestCase {
+import org.intellij.openapi.testing.MockApplicationManager;
 
-    private GroovyRuntimeConfiguration runtimeConfiguration = new GroovyRuntimeConfiguration(null, null, null);
+import com.intellij.execution.filters.TextConsoleBuidlerFactory;
+import com.intellij.execution.filters.TextConsoleBuidlerFactoryImpl;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.options.SettingsEditor;
+import com.intellij.openapi.project.Project;
+
+import org.jmock.Mock;
+import org.jmock.cglib.MockObjectTestCase;
+
+import org.codehaus.groovy.intellij.EditorAPI;
+import org.codehaus.groovy.intellij.Mocks;
+
+public class GroovyRuntimeConfigurationTest extends MockObjectTestCase {
+
+    private final Mock mockProject = mock(Project.class);
+    private final Mock mockEditorApi = mock(EditorAPI.class);
+    private GroovyRuntimeConfiguration runtimeConfiguration;
+
+    protected void setUp() {
+        assertWorkingDirectoryIsInitialisedAtConstructionTime();
+        runtimeConfiguration = new GroovyRuntimeConfiguration(null, (Project) mockProject.proxy(), null, (EditorAPI) mockEditorApi.proxy());
+    }
+
+    private void assertWorkingDirectoryIsInitialisedAtConstructionTime() {
+        Mock mockProjectFile = Mocks.createVirtualFileMock(this, "mockProjectFile");
+        mockProject.expects(once()).method("getProjectFile").will(returnValue(mockProjectFile.proxy()));
+
+        Mock mockProjectFileParentDirectory = Mocks.createVirtualFileMock(this, "mockProjectFileParentDirectory");
+        mockProjectFile.expects(once()).method("getParent").will(returnValue(mockProjectFileParentDirectory.proxy()));
+        mockProjectFileParentDirectory.expects(once()).method("getPath").will(returnValue("somewhere on the filesystem"));
+    }
+
+    public void testCreatesAConfigurationEditorForAnyGivenProject() {
+        MockApplicationManager.reset();
+
+        Mock mockActionManager = mock(ActionManager.class);
+        MockApplicationManager.getMockApplication().registerComponent(ActionManager.class, mockActionManager.proxy());
+        mockActionManager.expects(atLeastOnce()).method("createActionPopupMenu").withAnyArguments().will(returnValue(null));
+        mockProject.expects(once()).method("isDefault").withNoArguments().will(returnValue(false));
+
+        SettingsEditor configurationEditor = runtimeConfiguration.getConfigurationEditor();
+        assertNotNull("configuration editor", configurationEditor);
+    }
 
     public void testDoesNotProvideARunProfileStateYet() {
-        assertEquals("run profile state", null, runtimeConfiguration.getState(null, null, null, null));
+        MockApplicationManager.reset();
+        MockApplicationManager.getMockApplication().registerComponent(TextConsoleBuidlerFactory.class, new TextConsoleBuidlerFactoryImpl());
+        mockEditorApi.expects(once()).method("getModuleAndDependentModules").withAnyArguments().will(returnValue(Module.EMPTY_ARRAY));
+        ObjectAssert.assertInstanceOf("run profile state", GroovyComandLineState.class, runtimeConfiguration.getState(null, null, null, null));
     }
 
     public void testDoesNothingWhenSerialisedToDisk() {

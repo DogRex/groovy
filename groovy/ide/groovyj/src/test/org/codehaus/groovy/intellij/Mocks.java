@@ -31,15 +31,23 @@ public final class Mocks {
     // Factory methods -------------------------------------------------------------------------------------------------
 
     public static Mock createVirtualFileMock(MockObjectTestCase testCase) {
-        return testCase.mock(MockableVirtualFile.class);
+        return createMock(testCase, MockableVirtualFile.class, "mockVirtualFile");
+    }
+
+    public static Mock createVirtualFileMock(MockObjectTestCase testCase, String roleName) {
+        return createMock(testCase, MockableVirtualFile.class, roleName);
     }
 
     public static Mock createGroovyJProjectComponentMock(MockObjectTestCase testCase) {
-        return testCase.mock(MockableGroovyJProjectComponent.class);
+        return createMock(testCase, MockableGroovyJProjectComponent.class, "mockGroovyJProjectComponent");
     }
 
     public static Mock createGroovyControllerMock(MockObjectTestCase testCase) {
-        return testCase.mock(MockableGroovyController.class);
+        return createMock(testCase, MockableGroovyController.class, "mockGroovyController");
+    }
+
+    private static Mock createMock(MockObjectTestCase testCase, Class mockedType, String roleName) {
+        return testCase.mock(mockedType, roleName);
     }
 
     // Mockable classes ------------------------------------------------------------------------------------------------

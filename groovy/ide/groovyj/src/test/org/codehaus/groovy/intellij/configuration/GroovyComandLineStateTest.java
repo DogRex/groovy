@@ -16,16 +16,13 @@
  */
 
 
-package org.codehaus.groovy.intellij.actions;
+package org.codehaus.groovy.intellij.configuration;
 
-import com.intellij.openapi.actionSystem.AnActionEvent;
+import junit.framework.TestCase;
 
-import org.codehaus.groovy.intellij.GroovyController;
+public class GroovyComandLineStateTest extends TestCase {
 
-public class RunAction extends BaseAction {
-
-    public void actionPerformed(AnActionEvent event) {
-        GroovyController groovyController = actionEvents.getGroovyJProjectComponent(event).getGroovyController();
-        groovyController.runAsGroovyScriptInModule(actionEvents.getVirtualFile(event), actionEvents.getModule(event));
+    public void testDoesNotCreateJavaParametersYet() {
+        assertEquals("java parameters", null, new GroovyComandLineState(null, null, null).createJavaParameters());
     }
 }

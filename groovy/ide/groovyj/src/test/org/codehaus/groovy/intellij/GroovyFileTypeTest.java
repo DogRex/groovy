@@ -22,9 +22,17 @@ import junit.framework.TestCase;
 
 import com.intellij.openapi.util.IconLoader;
 
+import org.codehaus.groovy.intellij.language.GroovyLanguage;
+
 public class GroovyFileTypeTest extends TestCase {
 
-    private final GroovyFileType groovyFileType = new GroovyFileType(null);
+    private GroovyFileType groovyFileType;
+
+    protected void setUp() throws Exception {
+        GroovyLanguage groovyLanguage = GroovyLanguage.createLanguage();
+        groovyFileType = new GroovyFileType(groovyLanguage);
+        assertSame("language ", groovyLanguage, groovyFileType.getLanguage());
+    }
 
     public void testDefinesAName() {
         assertEquals("name", "Groovy", groovyFileType.getName());
@@ -60,13 +68,5 @@ public class GroovyFileTypeTest extends TestCase {
 
     public void testSupportsTheRenamingOfGroovyElements() {
         assertEquals("supports renaming", true, groovyFileType.getSupportCapabilities().hasRename());
-    }
-
-    public void testDoesNotHaveARepresentationInTheStructuralTree() {
-        assertSame("structural view model", null, groovyFileType.getStructureViewModel(null, null));
-    }
-
-    public void testIsNotBoundToADefinitionOfTheGroovyLanguageYet() {
-        assertSame("language definition", null, groovyFileType.getLanguage());
     }
 }

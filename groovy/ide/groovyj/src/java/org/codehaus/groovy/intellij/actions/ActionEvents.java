@@ -22,6 +22,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataConstants;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.module.Module;
 
 import org.codehaus.groovy.intellij.GroovyJProjectComponent;
 
@@ -31,10 +32,6 @@ public class ActionEvents {
 
     public GroovyJProjectComponent getGroovyJProjectComponent(AnActionEvent event) {
         return GroovyJProjectComponent.getInstance(getProject(event));
-    }
-
-    public Project getProject(AnActionEvent event) {
-        return (Project) event.getDataContext().getData(DataConstants.PROJECT);
     }
 
     public boolean isGroovyFile(AnActionEvent event) {
@@ -47,5 +44,13 @@ public class ActionEvents {
 
     public VirtualFile getVirtualFile(AnActionEvent event) {
         return (VirtualFile) event.getDataContext().getData(DataConstants.VIRTUAL_FILE);
+    }
+
+    public Project getProject(AnActionEvent event) {
+        return (Project) event.getDataContext().getData(DataConstants.PROJECT);
+    }
+
+    public Module getModule(AnActionEvent event) {
+        return (Module) event.getDataContext().getData(DataConstants.MODULE);
     }
 }

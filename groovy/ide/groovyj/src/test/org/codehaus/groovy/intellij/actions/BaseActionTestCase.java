@@ -31,7 +31,7 @@ import org.jmock.cglib.MockObjectTestCase;
 
 import org.codehaus.groovy.intellij.Mocks;
 
-public class BaseActionTest extends MockObjectTestCase {
+public abstract class BaseActionTestCase extends MockObjectTestCase {
 
     private static final KeyEvent NULL_KEY_EVENT = new KeyEvent(new Container(), 0, 0, 0, 0, ' ');
 
@@ -46,11 +46,7 @@ public class BaseActionTest extends MockObjectTestCase {
         ActionEvents.instance = new ActionEvents();
     }
 
-    protected BaseAction createAction() {
-        return new BaseAction() {
-            public void actionPerformed(AnActionEvent e) {}
-        };
-    }
+    protected abstract BaseAction createAction();
 
     protected void executeAction() {
         mockActionEvents.expects(once()).method("getGroovyJProjectComponent").with(isA(AnActionEvent.class)).

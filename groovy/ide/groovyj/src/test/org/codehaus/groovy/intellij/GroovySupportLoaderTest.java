@@ -30,7 +30,7 @@ public class GroovySupportLoaderTest extends MockObjectTestCase {
     private final GroovySupportLoader groovySupportLoader = new GroovySupportLoader();
 
     public void testDefinesAComponentName() {
-        assertEquals("component name", "GroovySupportLoader", groovySupportLoader.getComponentName());
+        assertEquals("component name", "groovy.integration", groovySupportLoader.getComponentName());
     }
 
     public void testRegistersTheGroovyFileTypeWhenInitialisedByItsContainer() {
@@ -43,7 +43,7 @@ public class GroovySupportLoaderTest extends MockObjectTestCase {
         groovySupportLoader.initComponent();
     }
 
-    public void testDoesNothingWhenDisposedByItsContainer() {
+    public void testDoesNothingWhenDisposedByIntellijIdea() {
         groovySupportLoader.disposeComponent();
     }
 }

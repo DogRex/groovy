@@ -21,6 +21,7 @@ package org.codehaus.groovy.intellij;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.vfs.VirtualFile;
 
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -31,17 +32,17 @@ import groovy.lang.GroovyShell;
 
 public class GroovyController {
 
-    private final EditorAPI editorAPI;
+    private final EditorAPI editorApi;
 
-    public GroovyController(EditorAPI editorAPI) {
-        this.editorAPI = editorAPI;
+    public GroovyController(EditorAPI editorApi) {
+        this.editorApi = editorApi;
     }
 
-    public void runAsGroovyScript(VirtualFile selectedFile) {
-        if ((selectedFile != null) && (selectedFile.isValid()) && (!selectedFile.isDirectory())) {
-            editorAPI.writeMessageToStatusBar("Running " + selectedFile.getName() + "...");
+    public void runAsGroovyScriptInModule(VirtualFile selectedFile, Module module) {
+        if (isValidFile(selectedFile)) {
+            editorApi.writeMessageToStatusBar("Running " + selectedFile.getName() + "...");
             try {
-                GroovyShell groovyShellForScript = createGroovyShellForScript(selectedFile);
+                GroovyShell groovyShellForScript = createGroovyShellForScript(selectedFile, module);
                 groovyShellForScript.run(selectedFile.getInputStream(), selectedFile.getName(), new String[0]);
             } catch (CompilationFailedException e) {
                 System.out.println("Run failed: " + e.getMessage());
@@ -51,16 +52,19 @@ public class GroovyController {
         }
     }
 
-    protected GroovyShell createGroovyShellForScript(VirtualFile selectedFile) {
-//        ClassLoader projectClassLoader = GroovyJProjectComponent.getInstance(project).getClass().getClassLoader();
+    private boolean isValidFile(VirtualFile selectedFile) {
+        return (selectedFile != null) && selectedFile.isValid() && !selectedFile.isDirectory();
+    }
+
+    protected GroovyShell createGroovyShellForScript(VirtualFile selectedFile, Module module) {
         ClassLoader projectClassLoader = getClass().getClassLoader();
-        CompilerConfiguration compilerConfiguration = createCompilerConfigurationForScript(selectedFile);
+        CompilerConfiguration compilerConfiguration = createCompilerConfigurationForScript(selectedFile, module);
         return new GroovyShell(projectClassLoader, new Binding(), compilerConfiguration);
     }
 
-    private CompilerConfiguration createCompilerConfigurationForScript(VirtualFile selectedFile) {
+    private CompilerConfiguration createCompilerConfigurationForScript(VirtualFile selectedFile, Module module) {
         CompilerConfiguration compilerConfiguration = new CompilerConfiguration();
-        compilerConfiguration.setClasspath(editorAPI.getCurrentModuleClasspathAsString());
+        compilerConfiguration.setClasspath(editorApi.getCompilationClasspath(module));
         compilerConfiguration.setSourceEncoding(selectedFile.getCharset().name());
         compilerConfiguration.setTargetDirectory(selectedFile.getPath());
         compilerConfiguration.setOutput(new PrintWriter(System.out));

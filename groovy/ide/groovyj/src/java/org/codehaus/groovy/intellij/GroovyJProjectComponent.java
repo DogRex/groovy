@@ -29,17 +29,13 @@ public class GroovyJProjectComponent implements ProjectComponent {
     private static final Map INSTANCES = new HashMap();
 
     private Project project;
-    private EditorAPIFactory editorAPIFactory;
-    private EditorAPI editorAPI;
+    private EditorAPIFactory editorApiFactory;
+    private EditorAPI editorApi;
     private GroovyController groovyController;
 
-    public GroovyJProjectComponent(Project project) {
-        this(project, new EditorAPIFactory());
-    }
-
-    protected GroovyJProjectComponent(Project project, EditorAPIFactory editorAPIFactory) {
+    protected GroovyJProjectComponent(Project project, EditorAPIFactory editorApiFactory) {
         this.project = project;
-        this.editorAPIFactory = editorAPIFactory;
+        this.editorApiFactory = editorApiFactory;
 
         GroovyJProjectComponent.setInstance(project, this);
     }
@@ -53,12 +49,12 @@ public class GroovyJProjectComponent implements ProjectComponent {
     }
 
     public void projectOpened() {
-        editorAPI = editorAPIFactory.getEditorAPI(project);
-        groovyController = new GroovyController(editorAPI);
+        editorApi = editorApiFactory.createEditorAPI(project);
+        groovyController = new GroovyController(editorApi);
     }
 
     public void projectClosed() {
-        editorAPI = null;
+        editorApi = null;
         groovyController = null;
     }
 
@@ -70,11 +66,11 @@ public class GroovyJProjectComponent implements ProjectComponent {
         return "groovyj.project.plugin";
     }
 
-    public EditorAPI getEditorAPI() {
-        return editorAPI;
-    }
-
     public GroovyController getGroovyController() {
         return groovyController;
+    }
+
+    EditorAPI getEditorApi() {
+        return editorApi;
     }
 }

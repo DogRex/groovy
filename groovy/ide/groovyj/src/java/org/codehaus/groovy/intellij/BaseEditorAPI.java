@@ -18,27 +18,15 @@
 
 package org.codehaus.groovy.intellij;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.zip.ZipFile;
-
 import com.intellij.openapi.command.CommandListener;
 import com.intellij.openapi.command.CommandProcessor;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
-import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
-import com.intellij.openapi.roots.OrderRootType;
-import com.intellij.openapi.vfs.JarFileSystem;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileListener;
 import com.intellij.openapi.vfs.VirtualFileManager;
-import com.intellij.openapi.vfs.VirtualFileSystem;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiTreeChangeListener;
@@ -47,54 +35,20 @@ import com.intellij.refactoring.listeners.RefactoringListenerManager;
 
 public abstract class BaseEditorAPI implements EditorAPI {
 
-    private final Logger logger = Logger.getInstance(getClass().getName());
-
     protected final Project project;
 
     public BaseEditorAPI(Project project) {
         this.project = project;
     }
 
-    public String getCurrentModuleClasspathAsString() {
-        StringBuffer buffer = new StringBuffer();
-        File[] moduleClasspath = getCurrentModuleClasspath();
-        for (int i = 0; i < moduleClasspath.length; i++) {
-            buffer.append(moduleClasspath[i].getPath());
-            if (i < (moduleClasspath.length - 1)) {
-                buffer.append(File.pathSeparatorChar);
-            }
-        }
-        return buffer.toString();
-    }
+    public Module[] getModuleAndDependentModules(Module module) {
+        Module[] dependencies = ModuleRootManager.getInstance(module).getDependencies();
+        Module[] moduleAndDependentModules = new Module[dependencies.length + 1];
 
-    public File[] getCurrentModuleClasspath() {
-        List paths = new ArrayList();
-        VirtualFile[] files = getModuleRootManager().getFiles(OrderRootType.CLASSES);
+        moduleAndDependentModules[0] = module;
+        System.arraycopy(dependencies, 0, moduleAndDependentModules, 1, dependencies.length);
 
-        for (int i = 0; i < files.length; i++) {
-            VirtualFile classpathEntry = files[i];
-
-            if (isValidClasspathEntry(classpathEntry)) {
-                VirtualFileSystem fileSystem = classpathEntry.getFileSystem();
-
-                if (fileSystem instanceof LocalFileSystem) {
-                    paths.add(new File(classpathEntry.getPath().replace('/', File.separatorChar)));
-                } else if (fileSystem instanceof JarFileSystem) {
-                    try {
-                        ZipFile jarFile = ((JarFileSystem) fileSystem).getJarFile(classpathEntry);
-                        paths.add(new File(jarFile.getName()));
-                    } catch (IOException e) {
-                        logger.info("Error getting JAR file for virtual file: " + e);
-                    }
-                }
-            }
-        }
-
-        return (File[]) paths.toArray(new File[paths.size()]);
-    }
-
-    private boolean isValidClasspathEntry(VirtualFile file) {
-        return (file.isValid()) && (file.isDirectory() || file.getExtension().equalsIgnoreCase("jar"));
+        return moduleAndDependentModules;
     }
 
     public void writeMessageToStatusBar(String message) {
@@ -159,13 +113,5 @@ public abstract class BaseEditorAPI implements EditorAPI {
 
     private VirtualFileManager getVirtualFileManager() {
         return VirtualFileManager.getInstance();
-    }
-
-    private ModuleRootManager getModuleRootManager() {
-        return ModuleRootManager.getInstance(getModuleManager().getModules()[0]);
-    }
-
-    private ModuleManager getModuleManager() {
-        return ModuleManager.getInstance(project);
     }
 }
