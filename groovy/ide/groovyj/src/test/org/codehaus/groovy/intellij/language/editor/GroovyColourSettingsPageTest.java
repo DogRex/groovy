@@ -58,12 +58,12 @@ public class GroovyColourSettingsPageTest extends MockObjectTestCase {
         MockApplicationManager.getMockApplication().removeComponent(EditorColorsManager.class);
     }
 
-    public void testUsesTheIconOfTheGroovyFileType() {
-        assertSame("icon", GroovySupportLoader.GROOVY.getIcon(), groovyColourSettingsPage.getIcon());
-    }
-
     public void testDefinesADisplayName() {
         assertEquals("display name", "Groovy", groovyColourSettingsPage.getDisplayName());
+    }
+
+    public void testUsesTheIconOfTheGroovyFileType() {
+        assertSame("icon", GroovySupportLoader.GROOVY.getIcon(), groovyColourSettingsPage.getIcon());
     }
 
     public void testHasTextToBeUsedForDemonstrationPurposes() {
@@ -74,7 +74,8 @@ public class GroovyColourSettingsPageTest extends MockObjectTestCase {
         AttributesDescriptor[] groovyAttributeDescriptors = groovyColourSettingsPage.getAttributeDescriptors();
         AttributesDescriptor[] javaAttributeDescriptors = javaColourSettingsPage.getAttributeDescriptors();
 
-        assertEquals("number of attribute descriptors", javaAttributeDescriptors.length, groovyAttributeDescriptors.length);
+        assertTrue("should have a greater or equal number of attribute descriptors than the Java page",
+                   groovyAttributeDescriptors.length >= javaAttributeDescriptors.length);
 
         for (int i = 0; i < javaAttributeDescriptors.length; i++) {
             assertEquals("key for attribute descriptor #" + i,

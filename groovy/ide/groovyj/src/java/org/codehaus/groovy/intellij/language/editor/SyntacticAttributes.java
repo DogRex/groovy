@@ -23,6 +23,7 @@ import com.intellij.openapi.editor.colors.TextAttributesKey;
 
 public final class SyntacticAttributes {
 
+    public static final TextAttributesKey GROOVY_SCRIPT_HEADER_COMMENT = TextAttributesKey.createTextAttributesKey("GROOVY_SCRIPT_HEADER_COMMENT", HighlighterColors.JAVA_LINE_COMMENT.getDefaultAttributes());
     public static final TextAttributesKey GROOVY_LINE_COMMENT = TextAttributesKey.createTextAttributesKey("GROOVY_LINE_COMMENT", HighlighterColors.JAVA_LINE_COMMENT.getDefaultAttributes());
     public static final TextAttributesKey GROOVY_BLOCK_COMMENT = TextAttributesKey.createTextAttributesKey("GROOVY_BLOCK_COMMENT", HighlighterColors.JAVA_BLOCK_COMMENT.getDefaultAttributes());
     public static final TextAttributesKey GROOVY_DOC_COMMENT = TextAttributesKey.createTextAttributesKey("GROOVY_DOC_COMMENT", HighlighterColors.JAVA_DOC_COMMENT.getDefaultAttributes());
