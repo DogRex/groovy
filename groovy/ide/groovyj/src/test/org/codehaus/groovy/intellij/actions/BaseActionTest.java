@@ -24,6 +24,7 @@ import java.awt.event.KeyEvent;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.Presentation;
 
 import org.jmock.Mock;
 import org.jmock.cglib.MockObjectTestCase;
@@ -63,16 +64,22 @@ public class BaseActionTest extends MockObjectTestCase {
         assertActionEnabledAndVisibleIfEventOriginatedFromGroovFileInProject(createAction(), true);
     }
 
-    public void testIsNeitherEnabledNorVisibleIfEventDidNotOriginateFromAGroovyFile() {
+    public void testIsNotEnabledButRemainsVisibleIfEventDidNotOriginateFromAGroovyFile() {
         assertActionEnabledAndVisibleIfEventOriginatedFromGroovFileInProject(createAction(), false);
     }
 
     protected void assertActionEnabledAndVisibleIfEventOriginatedFromGroovFileInProject(AnAction action, boolean isGroovyFile) {
+        Presentation presentation = action.getTemplatePresentation();
+        presentation.setEnabled(!isGroovyFile);
+        assertEquals("action enabled?", !isGroovyFile, presentation.isEnabled());
+        assertEquals("action visible?", true, presentation.isVisible());
+
         mockActionEvents.expects(once()).method("isGroovyFile").with(isA(AnActionEvent.class)).will(returnValue(isGroovyFile));
 
-        action.update(createAnActionEvent(action));
-        assertEquals("action enabled? ", isGroovyFile, action.getTemplatePresentation().isEnabled());
-        assertEquals("action visible? ", isGroovyFile, action.getTemplatePresentation().isVisible());
+        AnActionEvent actionEvent = createAnActionEvent(action);
+        action.update(actionEvent);
+        assertEquals("action enabled?", isGroovyFile, actionEvent.getPresentation().isEnabled());
+        assertEquals("action visible?", true, actionEvent.getPresentation().isVisible());
     }
 
     protected AnActionEvent createAnActionEvent(AnAction action) {
