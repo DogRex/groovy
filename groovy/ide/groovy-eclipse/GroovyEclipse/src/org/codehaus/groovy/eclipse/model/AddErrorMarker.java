@@ -78,6 +78,7 @@ class AddErrorMarker implements IWorkspaceRunnable {
 		if (e instanceof CompilationFailedException) {
 			CompilationFailedException compilationFailuresException = (CompilationFailedException) e;
 			ProcessingUnit unit = compilationFailuresException.getUnit();
+			unit.
 			for(int i =0; i < unit.getErrorCount(); ++i){
 				markerFromException(unit.getException(i));
 			}

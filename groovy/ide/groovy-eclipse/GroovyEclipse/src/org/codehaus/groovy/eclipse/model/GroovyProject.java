@@ -5,6 +5,7 @@
  * Java - Code Generation - Code and Comments
  */
 package org.codehaus.groovy.eclipse.model;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -21,14 +22,18 @@ import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.control.ProcessingUnit;
 import org.codehaus.groovy.control.CompilationUnit.ProgressCallback;
 import org.codehaus.groovy.eclipse.GroovyPlugin;
+import org.codehaus.groovy.eclipse.builder.GroovyNature;
 import org.codehaus.groovy.eclipse.launchers.GroovyRunner;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Preferences;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
@@ -46,6 +51,40 @@ public class GroovyProject{
 	public static final String GROOVY_ERROR_MARKER = "org.codehaus.groovy.eclipse.groovyFailure";
 	List listeners = new ArrayList();
 	List filesToBuild = new ArrayList();
+	
+
+	class AddGroovySupport implements Runnable {
+		final IProject project;
+
+		public AddGroovySupport(IProject project) {
+			trace("AddGroovySupport.AddGroovySupport()");
+			this.project = project;
+		}
+
+		/**
+		 * @param string
+		 */
+
+		public void run() {
+			GroovyPlugin plugin = GroovyPlugin.getPlugin();
+			try {
+				trace("AddGroovySupport.run()");
+				if (plugin.getDialogProvider().doesUserWantGroovySupport()) {
+					addGrovyExclusionFilter(project);
+					plugin.addGroovyRuntime(project);
+					addGroovyNature(project);					
+				} else {
+					Preferences preferences = plugin.getPluginPreferences();
+					preferences.setValue(project.getName() + "NoSupport", true);
+					plugin.savePluginPreferences();
+				}
+			} catch (CoreException e) {
+				plugin.logException("failed to add groovy support", e);
+			}
+		}
+
+	}
+
 	/**
 	 * @param javaProject
 	 */
@@ -93,19 +132,22 @@ public class GroovyProject{
 	 * @param monitor
 	 */
 	private void compileGroovyFiles(IProgressMonitor monitor) {
+		
 		CompilationUnit compilationUnit = new CompilationUnit(compilerConfiguration);
+		Thread.currentThread().setContextClassLoader(compilationUnit.getClassLoader());
 		compilationUnit.setProgressCallback(new ProgressCallback(){
 			public void call(ProcessingUnit context, int phase) throws CompilationFailedException {
 				System.out.println("GroovyProject.compileGroovyFiles() "+ context + " phase "+phase);
 				if(phase == Phases.OUTPUT){
-					CompilationUnit unit = (CompilationUnit) context;
+					//CompilationUnit unit = (CompilationUnit) context;
 					//String key = unit.
 				}
 			}
 			
 		});
+		IFile file = null;
 		for (Iterator iter = filesToBuild.iterator(); iter.hasNext();) {
-			IFile file = (IFile) iter.next();
+			file = (IFile) iter.next();
 			try {
 				file.deleteMarkers(GROOVY_ERROR_MARKER, false, IResource.DEPTH_INFINITE); //$NON-NLS-1$
 			} catch (CoreException e1) {
@@ -115,11 +157,10 @@ public class GroovyProject{
 			compilationUnit.addSource(file.getLocation().toFile());
 		}
 		try{
-			compilationUnit.compile(Phases.ALL);
-			CompileUnit unit = compilationUnit.getAST();
+			compilationUnit.compile();
 		} catch (Exception e) {
 			// buhhh !
-			//handleCompilationError(file, e);
+			handleCompilationError(file, e);
 		}
 		
 	}
@@ -183,7 +224,7 @@ public class GroovyProject{
 	 * @param e
 	 */
 	private void handleCompilationError(IResource resource, Exception e) {
-		GroovyPlugin.trace("compilation error : " + e.getMessage());
+		//GroovyPlugin.trace("compilation error : " + e.getMessage());
 		try {
 			resource.getWorkspace().run(new AddErrorMarker(resource, e), null);
 		} catch (CoreException ce) {
@@ -311,4 +352,74 @@ public class GroovyProject{
 	public CompileUnit getCompilationUnit(IFile file) {
 		return (CompileUnit) compilationUnits.get(file.getFullPath().toString());
 	}
+
+	/**
+	 * @param resource
+	 * @throws CoreException
+	 */
+	public synchronized void groovyFileAdded(IResource resource) throws CoreException {
+		GroovyPlugin plugin = GroovyPlugin.getPlugin();
+		Preferences preferences = plugin.getPluginPreferences();
+		IProject project = resource.getProject();
+		boolean alreadyAsked = preferences.getBoolean(project.getName()+ "NoSupport");
+		
+		if (!project.exists() || project.hasNature(GroovyNature.GROOVY_NATURE)|| alreadyAsked)
+			return;
+		
+		AddGroovySupport support = new AddGroovySupport(project);
+		Display.getDefault().asyncExec(support);
+	}
+	
+	public void addGrovyExclusionFilter(IProject project) {
+		// make sure .groovy files are not copied to the output
+		// dir
+		String excludedResources = javaProject.getOption(
+				"org.eclipse.jdt.core.builder.resourceCopyExclusionFilter",
+				true);
+		if (excludedResources.indexOf("*.groovy") == -1) {
+			excludedResources = excludedResources.length() == 0 ? "*.groovy"
+					: excludedResources + ",*.groovy";
+			javaProject.setOption(
+					"org.eclipse.jdt.core.builder.resourceCopyExclusionFilter",
+					excludedResources);
+		}
+	}
+	
+	/**
+	 *  
+	 */
+	public void addGroovyNature(IProject project) throws CoreException {
+		trace("GroovyPlugin.addGroovyNature()");
+		if (project.hasNature(GroovyNature.GROOVY_NATURE))
+			return;
+
+		IProjectDescription description = project.getDescription();
+		String[] ids = description.getNatureIds();
+		String[] newIds = new String[ids.length + 1];
+		System.arraycopy(ids, 0, newIds, 0, ids.length);
+		newIds[ids.length] = GroovyNature.GROOVY_NATURE;
+		description.setNatureIds(newIds);
+		project.setDescription(description, null);
+	}
+
+	public void removeGroovyNature(IProject project) throws CoreException {
+		trace("GroovyPlugin.removeGroovyNature()");
+		IProjectDescription description = project.getDescription();
+		String[] ids = description.getNatureIds();
+		for (int i = 0; i < ids.length; ++i) {
+			if (ids[i].equals(GroovyNature.GROOVY_NATURE)) {
+				String[] newIds = new String[ids.length - 1];
+				System.arraycopy(ids, 0, newIds, 0, i);
+				System.arraycopy(ids, i + 1, newIds, i, ids.length - i - 1);
+				description.setNatureIds(newIds);
+				project.setDescription(description, null);
+				return;
+			}
+		}
+	}
+
+	private void trace(String string) {
+		GroovyPlugin.trace(string);
+	}
+
 }

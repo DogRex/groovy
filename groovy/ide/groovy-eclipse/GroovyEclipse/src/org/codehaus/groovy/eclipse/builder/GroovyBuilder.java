@@ -13,6 +13,8 @@ import org.eclipse.jdt.core.JavaCore;
  */
 public class GroovyBuilder extends IncrementalProjectBuilder {
 	private IJavaProject javaProject;
+	public static final String GROOVY_BUILDER = "org.codehaus.groovy.eclipse.groovyBuilder"; //$NON-NLS-1$
+
 	/*
 	 * (non-Javadoc)
 	 * 

@@ -1,12 +1,8 @@
 package org.codehaus.groovy.eclipse;
 
-import groovy.GroovyRuntimePlugin;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Iterator;
-import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
@@ -14,7 +10,6 @@ import org.codehaus.groovy.eclipse.editor.GroovyPartitionScanner;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.codehaus.groovy.eclipse.ui.GroovyDialogProvider;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -23,20 +18,20 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPluginDescriptor;
-import org.eclipse.core.runtime.IPluginRegistry;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Preferences;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.text.rules.IPartitionTokenScanner;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.osgi.util.ManifestElement;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
 
 /**
  * The main plugin class to be used in the desktop.
@@ -44,18 +39,24 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 public class GroovyPlugin extends AbstractUIPlugin {
 	//The shared instance.
 	private static GroovyPlugin plugin;
-	private static boolean  askAboutRunTime = true;
-	//Resource bundle.
-	public final static String GROOVY_PARTITIONING= "__groovy_partitioning";   //$NON-NLS-1$
 	
+	//Resource bundle.
+	public final static String GROOVY_PARTITIONING = "__groovy_partitioning"; //$NON-NLS-1$
+
 	private ResourceBundle resourceBundle;
-	public static final String GROOVY_BUILDER = "org.codehaus.groovy.eclipse.groovyBuilder"; //$NON-NLS-1$
-	public static final String GROOVY_NATURE = "org.codehaus.groovy.eclipse.groovyNature"; //$NON-NLS-1$
+
+
 	GroovyDialogProvider dialogProvider = new GroovyDialogProvider();
+
 	static boolean trace;
+
 	private IPartitionTokenScanner partitionScanner;
+
+	private static final String PLUGIN_ID = "org.codehaus.groovy.eclipse";
+
 	static {
-		String value = Platform.getDebugOption("org.codehaus.groovy.eclipse/trace"); //$NON-NLS-1$
+		String value = Platform
+				.getDebugOption("org.codehaus.groovy.eclipse/trace"); //$NON-NLS-1$
 		if (value != null && value.equalsIgnoreCase("true")) //$NON-NLS-1$
 			GroovyPlugin.trace = true;
 	}
@@ -79,13 +80,15 @@ public class GroovyPlugin extends AbstractUIPlugin {
 					IResource resource = delta.getResource();
 
 					if (resource.getType() == IResource.FILE
-						&& "groovy".equalsIgnoreCase(resource.getFileExtension())) {
-						trace("GroovyFilesChangeListner new groovy file detected : " + resource.getName());
+							&& "groovy".equalsIgnoreCase(resource
+									.getFileExtension())) {
+						trace("GroovyFilesChangeListner new groovy file detected : "
+								+ resource.getName());
 						trace(delta.toString());
-						addGrovyExclusionFilter(resource.getProject());
-						if(askAboutRunTime) {
-							groovyFileAdded(resource.getProject());
-							askAboutRunTime = false;
+						try {
+							GroovyModel.getModel().groovyFileAdded(resource);
+						} catch (CoreException e) {
+							logException("failed to add groovy runtime support",e);			
 						}
 					}
 					return true;
@@ -99,102 +102,21 @@ public class GroovyPlugin extends AbstractUIPlugin {
 			}
 		}
 	}
+
 	/**
 	 * The constructor.
 	 */
-	public GroovyPlugin(IPluginDescriptor descriptor) {
-		super(descriptor);
+	public GroovyPlugin() {
+		super();
 		plugin = this;
 		try {
-			resourceBundle =
-				ResourceBundle.getBundle("org.codehaus.groovy.eclipse.TestNatureAndBuilderPluginResources");
+			resourceBundle = ResourceBundle
+					.getBundle("org.codehaus.groovy.eclipse.TestNatureAndBuilderPluginResources");
 		} catch (MissingResourceException x) {
 			resourceBundle = null;
 		}
 	}
 
-	class AddGroovySupport implements Runnable {
-		final IProject project;
-		public AddGroovySupport(IProject project) {
-			trace("AddGroovySupport.AddGroovySupport()");
-			this.project = project;
-		}
-
-		public void run() {
-			try {
-				trace("AddGroovySupport.run()");
-				Preferences preferences = getPluginPreferences();
-				boolean alreadyAsked = preferences.getBoolean(project.getName()+"NoSupport");
-				if (!project.exists() || project.hasNature(GROOVY_NATURE)||alreadyAsked)
-					return;
-
-				if (dialogProvider.doesUserWantGroovySupport()) {
-					addGrovyExclusionFilter(project);
-					addGroovyNature(project);
-					addGroovyRuntime(project);
-				}else{
-					preferences.setValue(project.getName()+"NoSupport",true);
-					savePluginPreferences();
-				}
-			} catch (CoreException e) {
-				logException("failed to add groovy support", e);
-			}
-		}
-
-	}
-
-	public void addGrovyExclusionFilter(IProject project) {
-		// make sure .groovy files are not copied to the output
-		// dir
-		IJavaProject javaProject = JavaCore.create(project);
-		String excludedResources =
-			javaProject.getOption("org.eclipse.jdt.core.builder.resourceCopyExclusionFilter", true);
-		if (excludedResources.indexOf("*.groovy") == -1) {
-			excludedResources = excludedResources.length() == 0 ? "*.groovy" : excludedResources + ",*.groovy";
-			javaProject.setOption("org.eclipse.jdt.core.builder.resourceCopyExclusionFilter", excludedResources);
-		}
-	}
-
-	/**
-	 * @param project
-	 */
-	protected void groovyFileAdded(IProject project) {
-		AddGroovySupport support = new AddGroovySupport(project);
-		Display.getDefault().asyncExec(support);
-	}
-
-	/**
-	 *  
-	 */
-	public void addGroovyNature(IProject project) throws CoreException {
-		trace("GroovyPlugin.addGroovyNature()");
-		if (project.hasNature(GROOVY_NATURE))
-			return;
-
-		IProjectDescription description = project.getDescription();
-		String[] ids = description.getNatureIds();
-		String[] newIds = new String[ids.length + 1];
-		System.arraycopy(ids, 0, newIds, 0, ids.length);
-		newIds[ids.length] = GROOVY_NATURE;
-		description.setNatureIds(newIds);
-		project.setDescription(description, null);
-	}
-
-	public void removeGroovyNature(IProject project) throws CoreException {
-		trace("GroovyPlugin.removeGroovyNature()");
-		IProjectDescription description = project.getDescription();
-		String[] ids = description.getNatureIds();
-		for (int i = 0; i < ids.length; ++i) {
-			if (ids[i].equals(GROOVY_NATURE)) {
-				String[] newIds = new String[ids.length - 1];
-				System.arraycopy(ids, 0, newIds, 0, i);
-				System.arraycopy(ids, i + 1, newIds, i, ids.length - i - 1);
-				description.setNatureIds(newIds);
-				project.setDescription(description, null);
-				return;
-			}
-		}
-	}
 
 	/**
 	 * Returns the shared instance.
@@ -235,18 +157,29 @@ public class GroovyPlugin extends AbstractUIPlugin {
 	 */
 	public void addGroovyRuntime(IProject project) {
 		trace("GroovyPlugin.addGroovyRuntime()");
-		List groovyRuntimeJars = GroovyRuntimePlugin.getPlugin().getGroovyRuntimeJars();
-		for (Iterator iter = groovyRuntimeJars.iterator(); iter.hasNext();) {
-			String jarName = (String) iter.next();
-			try {
-				addJar(JavaCore.create(project), GroovyRuntimePlugin.PLUGIN_ID, jarName);
-			} catch (Exception e) {
-				logException("failed to add jar :" + jarName, e);
+		String requires = (String) getBundle().getHeaders().get(
+				org.osgi.framework.Constants.BUNDLE_CLASSPATH);
+		ManifestElement[] elements;
+		try {
+			elements = ManifestElement.parseHeader(Constants.BUNDLE_CLASSPATH,
+					requires);
+			// add all jars exported by this plugin apart from Groovy.jar which
+			// contains this class..
+			for (int i = 0; i < elements.length; i++) {
+				String libName = elements[i].getValue();
+				if (!libName.endsWith("groovy-eclipse.jar")) {
+					addJar(JavaCore.create(project), PLUGIN_ID, libName);
+				}
+
 			}
+		} catch (Exception e) {
+			logException("Failed to add groovy runtime support",e);
 		}
+
 	}
 
-	public void addJunitSupprt(IJavaProject project) throws MalformedURLException, JavaModelException, IOException {
+	public void addJunitSupprt(IJavaProject project)
+			throws MalformedURLException, JavaModelException, IOException {
 		trace("GroovyPlugin.addJunitSupprt()");
 		IClasspathEntry[] entries = project.getRawClasspath();
 		boolean found = false;
@@ -262,40 +195,31 @@ public class GroovyPlugin extends AbstractUIPlugin {
 	}
 
 	private void addJar(IJavaProject javaProject, String srcPlugin, String jar)
-		throws MalformedURLException, IOException, JavaModelException {
+			throws MalformedURLException, IOException, JavaModelException {
 		Path result = findFileInPlugin(srcPlugin, jar);
 		IClasspathEntry[] oldEntries = javaProject.getRawClasspath();
 		IClasspathEntry[] newEntries = new IClasspathEntry[oldEntries.length + 1];
 		System.arraycopy(oldEntries, 0, newEntries, 0, oldEntries.length);
-		newEntries[oldEntries.length] = JavaCore.newLibraryEntry(result, null, null);
+		newEntries[oldEntries.length] = JavaCore.newLibraryEntry(result, null,
+				null);
 		javaProject.setRawClasspath(newEntries, null);
 	}
 
-	private Path findFileInPlugin(String srcPlugin, String file) throws MalformedURLException, IOException {
-		IPluginRegistry registry = Platform.getPluginRegistry();
-		IPluginDescriptor descriptor = registry.getPluginDescriptor(srcPlugin);
-		URL pluginURL = descriptor.getInstallURL();
+	private Path findFileInPlugin(String srcPlugin, String file)
+			throws MalformedURLException, IOException {
+		Bundle bundle = Platform.getBundle(srcPlugin);
+		URL pluginURL = bundle.getEntry("/");
 		URL jarURL = new URL(pluginURL, file);
 		URL localJarURL = Platform.asLocalURL(jarURL);
 		return new Path(localJarURL.getPath());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.eclipse.core.runtime.Plugin#startup()
-	 */
-	public void startup() throws CoreException {
-		super.startup();
-		getWorkspace().addResourceChangeListener(new GroovyFilesChangeListner());
-		GroovyModel.getModel().updateProjects();
-
-	}
-
 	public void logException(String message, Exception e) {
-		IStatus status = new Status(IStatus.ERROR, getDescriptor().getUniqueIdentifier(), 0, message, e); //$NON-NLS-1$
+		IStatus status = new Status(IStatus.ERROR, getBundle()
+				.getSymbolicName(), 0, message, e); //$NON-NLS-1$
 		getLog().log(status);
 	}
+
 	/**
 	 * @return Returns the dialogProvider.
 	 */
@@ -317,11 +241,24 @@ public class GroovyPlugin extends AbstractUIPlugin {
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
+	 */
+	public void start(BundleContext context) throws Exception {
+		super.start(context);
+		getWorkspace()
+				.addResourceChangeListener(new GroovyFilesChangeListner());
+		GroovyModel.getModel().updateProjects();
+
+	}
+
 	/**
 	 * @return
 	 */
 	public IPartitionTokenScanner getGroovyPartitionScanner() {
-		if(partitionScanner == null){
+		if (partitionScanner == null) {
 			partitionScanner = new GroovyPartitionScanner();
 		}
 		return partitionScanner;

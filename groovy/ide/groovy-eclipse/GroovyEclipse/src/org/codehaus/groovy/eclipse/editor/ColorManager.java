@@ -4,16 +4,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
-import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jdt.ui.text.IColorManager;
 import org.eclipse.jdt.ui.text.JavaTextTools;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public class ColorManager {
 
@@ -39,7 +36,7 @@ public class ColorManager {
 	}
 	
 	private IPreferenceStore getPreferenceStore() {
-		return ((AbstractUIPlugin)Platform.getPlugin(JavaUI.ID_PLUGIN)).getPreferenceStore();
+		return JavaPlugin.getDefault().getPreferenceStore();
 	}
 
 }

@@ -1,6 +1,5 @@
 package org.codehaus.groovy.eclipse.builder;
 
-import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -12,7 +11,7 @@ import org.eclipse.core.runtime.CoreException;
  */
 public class GroovyNature implements IProjectNature {
 	private IProject project;
-
+	public static final String GROOVY_NATURE = "org.codehaus.groovy.eclipse.groovyNature"; //$NON-NLS-1$
 
 	/**
 	 * @see IProjectNature#configure
@@ -24,11 +23,11 @@ public class GroovyNature implements IProjectNature {
 		for (int i = 0; i < commands.length; ++i)
 			if (commands[i]
 				.getBuilderName()
-				.equals(GroovyPlugin.GROOVY_BUILDER))
+				.equals(GroovyBuilder.GROOVY_BUILDER))
 				return;
 
 		ICommand command = description.newCommand();
-		command.setBuilderName(GroovyPlugin.GROOVY_BUILDER);
+		command.setBuilderName(GroovyBuilder.GROOVY_BUILDER);
 		ICommand[] newCommands = new ICommand[commands.length + 1];
 		System.arraycopy(commands, 0, newCommands, 0, commands.length);
 		newCommands[newCommands.length - 1] = command;
@@ -42,7 +41,7 @@ public class GroovyNature implements IProjectNature {
 		for (int i = 0; i < commands.length; ++i) {
 			if (commands[i]
 				.getBuilderName()
-				.equals(GroovyPlugin.GROOVY_BUILDER)) {
+				.equals(GroovyBuilder.GROOVY_BUILDER)) {
 				ICommand[] newCommands = new ICommand[commands.length - 1];
 				System.arraycopy(commands, 0, newCommands, 0, i);
 				System.arraycopy(
