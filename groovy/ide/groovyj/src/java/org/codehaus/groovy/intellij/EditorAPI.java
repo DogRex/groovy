@@ -1,7 +1,7 @@
 /*
  * $Id$
  *
- * Copyright (c) 2004 The Codehaus - http://groovy.codehaus.org
+ * Copyright (c) 2005 The Codehaus - http://groovy.codehaus.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
