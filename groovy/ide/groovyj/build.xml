@@ -14,7 +14,7 @@
         <fail>This build script requires Ant 1.6.2 or later!</fail>
     </target>
 
-    <target name="initialise.build" depends="ant.version.pass">
+    <target name="initialise" depends="ant.version.pass">
         <!-- Project properties -->
         <property file="project.properties"/>
 
@@ -26,6 +26,7 @@
         <property name="project.description" value="Set description in project.properties"/>
         <property name="project.change-notes" value="Set change-notes in project.properties"/>
         <property name="project.homedir" value="Set homedir in project.properties"/>
+        <property name="distfile.name" value="${project.name}-${project.version}"/>
 
         <property name="binary.extensions" value="**/*.png, **/*.jpg, **/*.jpeg, **/*.gif"/>
 
@@ -48,23 +49,23 @@
         <property name="irida.home" value="${lib.compile.dir}/irida"/>
         <property name="irida.classes.dir" value="${classes.dir}/irida"/>
         <property name="irida.test.classes.dir" value="${test.classes.dir}/irida"/>
-        <property name="irida.test.results.dir" value="${test.results.dir}/irida"/>
-        <property name="irida.test.reports.dir" value="${test.reports.dir}/irida"/>
-
         <property name="irida.plugins.dir" value="${irida.home}/config/plugins"/>
-        <property name="distfile.name" value="${project.name}-${project.version}"/>
 
-        <!-- Variable for tokenisation -->
-        <filterset id="project.variables">
-            <filter token="PROJECT.NAME" value="${project.name}"/>
-            <filter token="PROJECT.HOMEPAGE" value="${project.homepage}"/>
-            <filter token="PROJECT.VERSION" value="${project.version}"/>
-            <filter token="PROJECT.DESCRIPTION" value="${project.description}"/>
-            <filter token="PROJECT.CHANGE-NOTES" value="${project.change-notes}"/>
-            <filter token="PROJECT.VENDOR" value="${project.vendor}"/>
-            <filter token="PROJECT.VENDOR.EMAIL" value="${project.vendor.email}"/>
-            <filter token="PROJECT.VENDOR.HOMEPAGE" value="${project.vendor.homepage}"/>
-        </filterset>
+        <property name="clover.dir" value="clover"/>
+        <property name="clover.lib.dir" value="${user.home}/.ant/lib"/>
+        <property name="clover.reports" value="${build.dir}/clover-reports"/>
+        <property name="coverage.criteria" value="98%"/>
+
+        <path id="clover.classpath">
+            <pathelement location="${clover.lib.dir}/clover-1.3.4.jar"/>
+        </path>
+
+        <condition property="clover.available">
+            <and>
+                <available classname="com.cenqua.clover.tasks.CloverTask" classpathref="clover.classpath"/>
+                <available file="${clover.lib.dir}/clover.license" type="file"/>
+            </and>
+        </condition>
 
         <path id="compile.classpath">
             <fileset dir="${lib.compile.dir}">
@@ -86,8 +87,20 @@
 
         <path id="irida.test.classpath">
             <pathelement location="${irida.test.classes.dir}"/>
+            <path refid="clover.classpath"/>
             <path refid="irida.compile.classpath"/>
         </path>
+
+        <filterset id="project.variables">
+            <filter token="PROJECT.NAME" value="${project.name}"/>
+            <filter token="PROJECT.HOMEPAGE" value="${project.homepage}"/>
+            <filter token="PROJECT.VERSION" value="${project.version}"/>
+            <filter token="PROJECT.DESCRIPTION" value="${project.description}"/>
+            <filter token="PROJECT.CHANGE-NOTES" value="${project.change-notes}"/>
+            <filter token="PROJECT.VENDOR" value="${project.vendor}"/>
+            <filter token="PROJECT.VENDOR.EMAIL" value="${project.vendor.email}"/>
+            <filter token="PROJECT.VENDOR.HOMEPAGE" value="${project.vendor.homepage}"/>
+        </filterset>
 
         <tstamp>
             <format property="TODAY" pattern="d-MMMM-yyyy" locale="en"/>
@@ -104,7 +117,7 @@
         </filterset>
     </target>
 
-    <target name="check.irida.available" depends="initialise.build" >
+    <target name="check.irida.available" depends="initialise" >
         <available property="irida.available"
                    classname="com.intellij.lang.Language"
                    classpathref="irida.test.classpath"/>
@@ -117,8 +130,8 @@
         </fail>
     </target>
 
-    <target name="clean" depends="initialise.build" description="Deletes all artifacts from a previous build">
-        <delete dir="${build.dir}"/>
+    <target name="clean" depends="initialise" description="Deletes all artifacts from a previous build">
+        <delete dir="${build.dir}" failonerror="false"/>
     </target>
 
     <target name="compile.irida" depends="irida.available">
@@ -131,8 +144,6 @@
         </copy>
     </target>
 
-    <target name="compile" depends="compile.irida" description="Compiles the project source files"/>
-
     <target name="compile.tests.irida" depends="compile.irida">
         <mkdir dir="${irida.test.classes.dir}"/>
         <javac srcdir="${src.test.dir}" destdir="${irida.test.classes.dir}" debug="on">
@@ -140,10 +151,8 @@
         </javac>
     </target>
 
-    <target name="compile.tests" depends="compile.tests.irida"/>
-
     <target name="test.irida" depends="compile.tests.irida">
-        <mkdir dir="${irida.test.results.dir}"/>
+        <mkdir dir="${test.results.dir}"/>
 
         <junit fork="true" forkmode="once" errorProperty="tests.failed" failureProperty="tests.failed"
                haltonfailure="false" haltonerror="false" showoutput="true" printsummary="withOutAndErr"
@@ -152,7 +161,7 @@
             <classpath refid="irida.test.classpath"/>
             <formatter type="brief" usefile="false"/>
 
-            <batchtest todir="${irida.test.results.dir}">
+            <batchtest todir="${test.results.dir}">
                 <fileset dir="${irida.test.classes.dir}">
                     <include name="**/*Test.class"/>
                     <include name="**/Create*TestCase.class"/>
@@ -163,20 +172,64 @@
     </target>
 
     <target name="test.reports.irida" depends="test.irida">
-        <mkdir dir="${irida.test.reports.dir}"/>
-        <junitreport todir="${irida.test.results.dir}">
-            <fileset dir="${irida.test.results.dir}">
+        <mkdir dir="${test.reports.dir}"/>
+
+        <junitreport todir="${test.results.dir}">
+            <fileset dir="${test.results.dir}">
                 <include name="TEST-*.xml"/>
             </fileset>
-            <report format="frames" todir="${irida.test.reports.dir}"/>
+            <report format="frames" todir="${test.reports.dir}"/>
         </junitreport>
 
         <fail message="Tests failed! Check test reports." if="tests.failed"/>
     </target>
 
-    <target name="jar.irida" depends="test.reports.irida" description="Packages up the plug-in as a jar file for IDEA Irida">
+    <target name="with.clover" depends="initialise" if="clover.available">
+        <taskdef resource="clovertasks"/>
+
+        <mkdir dir="${clover.dir}"/>
+        <delete failonerror="true">
+            <fileset dir="${clover.dir}" includes="clover.db*"/>
+        </delete>
+
+        <clover-setup enabled="true" initString="${clover.dir}/clover.db">
+            <fileset dir="${src.java.dir}" includes="**/*.java"/>
+        </clover-setup>
+    </target>
+
+    <target name="without.clover" depends="initialise" if="clover.available">
+        <taskdef resource="clovertasks"/>
+        <clover-setup enabled="false"/>
+    </target>
+
+    <target name="coverage.reports" depends="with.clover" if="clover.available">
+        <!-- generate a history point for the current coverage -->
+        <clover-historypoint historyDir="${clover.dir}/history"/>
+
+        <clover-report>
+            <!-- generate a current report -->
+            <current alwaysReport="true" outfile="${clover.reports}" title="Clover Report for GroovyJ">
+                <format type="html"/>
+            </current>
+
+            <!-- generate a historical report -->
+            <historical outfile="${clover.reports}" historyDir="${clover.dir}/history">
+                <format type="html"/>
+            </historical>
+        </clover-report>
+    </target>
+
+    <target name="clover.check" depends="with.clover" if="clover.available">
+        <clover-check target="${coverage.criteria}" failureProperty="clover.check.failed"/>
+    </target>
+
+    <target name="coverage.check" depends="clover.check" if="clover.check.failed">
+        <fail message="Coverage criteria not met! Check coverage reports."/>
+    </target>
+
+    <target name="jar.irida" depends="compile.irida" description="Packages up the plug-in as a jar file for IDEA Irida">
         <copy todir="${irida.classes.dir}" overwrite="true" preservelastmodified="true">
-            <fileset dir="${src.etc.dir}" excludes="styles/**/*, ${binary.extensions}"/>
+            <fileset dir="${src.etc.dir}" excludes="styles/**/*, ${binary.extensions}, **/*.xcf"/>
             <filterset>
                 <filter token="PROJECT.TITLE" value="Groovy Integration"/>
                 <filter token="PROJECT.IDEA.SINCE-BUILD" value="3214"/>
@@ -189,20 +242,29 @@
         <jar basedir="${irida.classes.dir}" compress="true" update="true" destfile="${dist.dir}/${distfile.name}-irida.jar"/>
     </target>
 
-    <target name="zip.irida" depends="jar.irida" description="Packages up the plug-in as a deployable zip file for IDEA Irida">
+    <target name="zip.irida" depends="initialise" description="Packages up the plug-in as a deployable zip file for IntelliJ IDEA (Irida)">
+        <delete failonerror="true">
+            <fileset dir="${irida.classes.dir}" includes="**/*.class"/>
+        </delete>
+
+        <antcall inheritall="true" target="jar.irida"/>
+
         <zip compress="true" update="true" destfile="${dist.dir}/${distfile.name}-irida.zip">
             <zipfileset prefix="${project.name}/lib" file="${dist.dir}/${distfile.name}-irida.jar"/>
             <zipfileset prefix="${project.name}/lib" dir="${lib.runtime.dir}"/>
         </zip>
+
         <delete file="${dist.dir}/${distfile.name}-irida.jar"/>
     </target>
 
-    <target name="build.all" depends="zip.irida" description="Creates all installable plug-in distributions">
+    <target name="build.all" description="Creates all installable plug-in distributions"
+            depends="clean, with.clover, test.reports.irida, coverage.reports, coverage.check, without.clover, zip.irida">
         <buildnumber/>
     </target>
 
     <target name="deploy.irida" depends="zip.irida" description="Deploys the plug-in into an IntelliJ IDEA installation">
         <delete dir="${irida.plugins.dir}/${project.name}" failonerror="true"/>
+
         <unzip src="${dist.dir}/${distfile.name}-irida.zip" dest="${irida.plugins.dir}"/>
 
         <copy file="${src.etc.dir}/idea/Groovy Script Files.xml"
