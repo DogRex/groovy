@@ -14,9 +14,12 @@ import java.util.Map;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.Phases;
+import org.codehaus.groovy.control.ProcessingUnit;
+import org.codehaus.groovy.control.CompilationUnit.ProgressCallback;
 import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.codehaus.groovy.eclipse.launchers.GroovyRunner;
 import org.eclipse.core.resources.IFile;
@@ -69,6 +72,7 @@ public class GroovyProject{
 				
 			}
 			monitor.beginTask("Compiling Groovy Files",filesToBuild.size());
+			compileGroovyFiles(monitor);
 			for (Iterator iter = filesToBuild.iterator(); iter.hasNext();) {
 				IFile file = (IFile) iter.next();
 				monitor.setTaskName("Compiling "+file.getName());
@@ -84,6 +88,42 @@ public class GroovyProject{
 		}
 	}
 	
+	/**
+	 * @param filesToBuild2
+	 * @param monitor
+	 */
+	private void compileGroovyFiles(IProgressMonitor monitor) {
+		CompilationUnit compilationUnit = new CompilationUnit(compilerConfiguration);
+		compilationUnit.setProgressCallback(new ProgressCallback(){
+			public void call(ProcessingUnit context, int phase) throws CompilationFailedException {
+				System.out.println("GroovyProject.compileGroovyFiles() "+ context + " phase "+phase);
+				if(phase == Phases.OUTPUT){
+					CompilationUnit unit = (CompilationUnit) context;
+					//String key = unit.
+				}
+			}
+			
+		});
+		for (Iterator iter = filesToBuild.iterator(); iter.hasNext();) {
+			IFile file = (IFile) iter.next();
+			try {
+				file.deleteMarkers(GROOVY_ERROR_MARKER, false, IResource.DEPTH_INFINITE); //$NON-NLS-1$
+			} catch (CoreException e1) {
+				e1.printStackTrace();
+			}
+			GroovyPlugin.trace("deleted markers from " + file.getFullPath());
+			compilationUnit.addSource(file.getLocation().toFile());
+		}
+		try{
+			compilationUnit.compile(Phases.ALL);
+			CompileUnit unit = compilationUnit.getAST();
+		} catch (Exception e) {
+			// buhhh !
+			//handleCompilationError(file, e);
+		}
+		
+	}
+
 	private void setOutputDirectory(IJavaProject javaProject) throws JavaModelException {
 		String outputPath = getOutputPath(javaProject);
 		GroovyPlugin.trace("groovy output = " + outputPath);
