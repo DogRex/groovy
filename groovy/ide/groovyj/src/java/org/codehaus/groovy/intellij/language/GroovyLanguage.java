@@ -19,6 +19,7 @@
 package org.codehaus.groovy.intellij.language;
 
 import com.intellij.codeFormatting.PseudoTextBuilder;
+import com.intellij.lang.Commenter;
 import com.intellij.lang.Language;
 import com.intellij.lang.PairedBraceMatcher;
 import com.intellij.lang.ParserDefinition;
@@ -72,5 +73,9 @@ public class GroovyLanguage extends Language {
 
     public Annotator getAnnotator() {
         return null;
+    }
+
+    public Commenter getCommenter() {
+        return new GroovyCommenter();
     }
 }

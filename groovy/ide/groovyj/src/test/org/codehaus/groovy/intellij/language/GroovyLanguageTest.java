@@ -18,6 +18,9 @@
 
 package org.codehaus.groovy.intellij.language;
 
+import junitx.framework.Assert;
+import junitx.framework.ObjectAssert;
+
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.tree.IElementType;
 
@@ -61,5 +64,10 @@ public class GroovyLanguageTest extends MockObjectTestCase {
 
     public void testDoesNotProduceAnnotatorsYet() {
         assertEquals("annotator", null, language.getAnnotator());
+    }
+
+    public void testProducesACommenterForGroovy() {
+        Assert.assertNotEquals("commenter", null, language.getCommenter());
+        ObjectAssert.assertInstanceOf("groovy has its own commenter", GroovyCommenter.class, language.getCommenter());
     }
 }
