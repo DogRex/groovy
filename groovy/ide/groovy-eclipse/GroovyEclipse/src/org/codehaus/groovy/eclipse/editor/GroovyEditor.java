@@ -8,19 +8,11 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 public class GroovyEditor extends ExtendedTextEditor {
 
 	private ColorManager colorManager;
-	private GroovyContentOutline contentOutline;
 	public GroovyEditor() {
 		super();
 		colorManager = new ColorManager();
 		setSourceViewerConfiguration(new GroovyConfiguration(colorManager));
 		setDocumentProvider(new GroovyDocumentProvider());
-	}
-
-	private IContentOutlinePage getContentOutline(){
-		if(contentOutline == null){
-			contentOutline  = new GroovyContentOutline((IFile) getEditorInput().getAdapter(IFile.class));
-		}
-		return contentOutline;
 	}
 	/*
 	 * @see IAdaptable#getAdapter(java.lang.Class)
@@ -28,7 +20,7 @@ public class GroovyEditor extends ExtendedTextEditor {
 	 */
 	public Object getAdapter(Class adapter) {
 		if (adapter.equals(IContentOutlinePage.class)) {
-			return getContentOutline(); 
+			return new GroovyContentOutline((IFile) getEditorInput().getAdapter(IFile.class));
 		}
 
 		return super.getAdapter(adapter);
