@@ -20,6 +20,10 @@ package org.codehaus.groovy.intellij;
 
 import java.nio.charset.Charset;
 
+import junitx.framework.ObjectAssert;
+
+import com.intellij.ide.highlighter.JavaFileHighlighter;
+import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.vfs.VirtualFile;
 
 import org.jmock.Mock;
@@ -84,7 +88,14 @@ public class GroovyFileTypeTest extends MockObjectTestCase {
         assertSame("character set", expectedCharacterSetName, groovyFileType.getCharset((VirtualFile) mockVirtualFile.proxy()));
     }
 
-    public void testDoesNotHaveARepresentationInTheStructuralTree() {
+    public void testTemporarilyUsesTheJavaFileHighlighterAsItsHighlighter() {
+        StdFileTypes.XML = Stubs.LANGUAGE_FILE_TYPE;
+        StdFileTypes.JAVA = Stubs.LANGUAGE_FILE_TYPE;
+
+        ObjectAssert.assertInstanceOf("highlighter", JavaFileHighlighter.class, groovyFileType.getHighlighter(null));
+    }
+
+    public void testDoesNotHaveARepresentationInTheStructuralTreeYet() {
         assertSame("structural view builder", null, groovyFileType.getStructureViewBuilder(null, null));
     }
 }

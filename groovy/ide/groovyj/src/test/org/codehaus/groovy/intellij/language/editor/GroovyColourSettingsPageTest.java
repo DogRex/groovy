@@ -22,22 +22,16 @@ import java.awt.Color;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.swing.Icon;
-
 import junitx.framework.Assert;
 import junitx.framework.ObjectAssert;
 
 import org.intellij.openapi.testing.MockApplicationManager;
 
 import com.intellij.ide.highlighter.JavaFileHighlighter;
-import com.intellij.lang.Language;
 import com.intellij.openapi.editor.colors.ColorKey;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
-import com.intellij.openapi.editor.markup.TextAttributes;
-import com.intellij.openapi.fileTypes.FileTypeSupportCapabilities;
-import com.intellij.openapi.fileTypes.LanguageFileType;
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.options.colors.AttributesDescriptor;
 import com.intellij.openapi.options.colors.ColorDescriptor;
@@ -47,34 +41,12 @@ import org.jmock.Mock;
 import org.jmock.cglib.MockObjectTestCase;
 
 import org.codehaus.groovy.intellij.GroovySupportLoader;
+import org.codehaus.groovy.intellij.Stubs;
 
 public class GroovyColourSettingsPageTest extends MockObjectTestCase {
 
-    private static final TextAttributes DUMMY_TEXT_ATTRIBUTES = new TextAttributes();
-
-    private static final LanguageFileType DUMMY_LANGUAGE_FILE_TYPE = new LanguageFileType(Language.ANY) {
-        public String getName() {
-            return null;
-        }
-
-        public String getDescription() {
-            return null;
-        }
-
-        public String getDefaultExtension() {
-            return null;
-        }
-
-        public Icon getIcon() {
-            return null;
-        }
-
-        public FileTypeSupportCapabilities getSupportCapabilities() {
-            return null;
-        }
-    };
-
     private final JavaColorSettingsPage javaColourSettingsPage = new JavaColorSettingsPage();
+
     private GroovyColourSettingsPage groovyColourSettingsPage;
 
     protected void setUp() {
@@ -105,9 +77,9 @@ public class GroovyColourSettingsPageTest extends MockObjectTestCase {
         assertEquals("number of attribute descriptors", javaAttributeDescriptors.length, groovyAttributeDescriptors.length);
 
         for (int i = 0; i < javaAttributeDescriptors.length; i++) {
-            TextAttributesKey expectedAttributesKey = javaAttributeDescriptors[i].getKey();
-            TextAttributesKey actualAttributesKey = groovyAttributeDescriptors[i].getKey();
-            assertEquals("key for attribute descriptor #" + i, expectedAttributesKey.getDefaultAttributes(), actualAttributesKey.getDefaultAttributes());
+            assertEquals("key for attribute descriptor #" + i,
+                    javaAttributeDescriptors[i].getKey().getDefaultAttributes(),
+                    groovyAttributeDescriptors[i].getKey().getDefaultAttributes());
         }
     }
 
@@ -127,7 +99,9 @@ public class GroovyColourSettingsPageTest extends MockObjectTestCase {
         Map groovyAdditionalHighlightingTagToDescriptorMap = groovyColourSettingsPage.getAdditionalHighlightingTagToDescriptorMap();
         Map javaAdditionalHighlightingTagToDescriptorMap = javaColourSettingsPage.getAdditionalHighlightingTagToDescriptorMap();
 
-        assertEquals("number of additional highlighting tags", javaAdditionalHighlightingTagToDescriptorMap.size(), groovyAdditionalHighlightingTagToDescriptorMap.size());
+        assertEquals("number of additional highlighting tags",
+                     javaAdditionalHighlightingTagToDescriptorMap.size(),
+                     groovyAdditionalHighlightingTagToDescriptorMap.size());
 
         for (Iterator iterator = javaAdditionalHighlightingTagToDescriptorMap.keySet().iterator(); iterator.hasNext();) {
             String key = (String) iterator.next();
@@ -137,9 +111,9 @@ public class GroovyColourSettingsPageTest extends MockObjectTestCase {
         }
     }
 
-    public void testUsesTheJavaFileHighlighterAsItsHighlighter() {
-        StdFileTypes.XML = DUMMY_LANGUAGE_FILE_TYPE;
-        StdFileTypes.JAVA = DUMMY_LANGUAGE_FILE_TYPE;
+    public void testTemporarilyUsesTheJavaFileHighlighterAsItsHighlighter() {
+        StdFileTypes.XML = Stubs.LANGUAGE_FILE_TYPE;
+        StdFileTypes.JAVA = Stubs.LANGUAGE_FILE_TYPE;
 
         ObjectAssert.assertInstanceOf("highlighter", JavaFileHighlighter.class, groovyColourSettingsPage.getHighlighter());
     }
@@ -153,7 +127,7 @@ public class GroovyColourSettingsPageTest extends MockObjectTestCase {
     private EditorColorsScheme createStubbedEditorColorsScheme() {
         Mock stubEditorColorsScheme = mock(EditorColorsScheme.class);
         stubEditorColorsScheme.stubs().method("getColor").with(isA(ColorKey.class)).will(returnValue(Color.LIGHT_GRAY));
-        stubEditorColorsScheme.stubs().method("getAttributes").with(isA(TextAttributesKey.class)).will(returnValue(DUMMY_TEXT_ATTRIBUTES));
+        stubEditorColorsScheme.stubs().method("getAttributes").with(isA(TextAttributesKey.class)).will(returnValue(Stubs.TEXT_ATTRIBUTES));
         return (EditorColorsScheme) stubEditorColorsScheme.proxy();
     }
 }
