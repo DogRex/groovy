@@ -2,7 +2,6 @@
 
     <target name="check.ant.version">
         <echo taskname="ant.version" message="${ant.version}"/>
-
         <condition property="ant.version.ok">
             <or>
                 <contains string="${ant.version}" substring="1.6.2" casesensitive="false"/>
@@ -272,6 +271,12 @@
 
         <copy file="${src.etc.dir}/idea/GroovyJ Code Style.xml"
               todir="${irida.plugins.dir}/../codestyles/" overwrite="true"/>
+    </target>
+
+    <target name="allow.interactive.plugin.dev" depends="initialise"
+        description="small helper to delete jars from the plugin lib dir that are deployed through
+        the internal plugin devkit but are in the way when running the plugin (ClassCastException)">
+        <delete file="${irida.plugins.dir}/groovyj/lib/irida.jar" quiet="true"/>
     </target>
 
 </project>

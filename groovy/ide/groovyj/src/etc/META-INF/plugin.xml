@@ -18,6 +18,12 @@
         </component>
     </project-components>
 
+    <application-components>
+        <component>
+            <implementation-class>groovy.idesupport.idea.GroovySupportLoader</implementation-class>
+        </component>
+    </application-components>
+
     <actions>
         <action id="Groovy::RunGroovyClassOrScript"
                 class="org.codehaus.groovy.intellij.actions.RunAction"

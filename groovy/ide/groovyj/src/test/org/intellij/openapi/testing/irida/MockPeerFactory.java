@@ -11,6 +11,7 @@ import com.intellij.psi.search.scope.packageSet.PackageSetFactory;
 import com.intellij.ui.UIHelper;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.errorView.ErrorViewFactory;
+import com.intellij.ide.structureView.StructureViewFactory;
 
 public class MockPeerFactory extends PeerFactory {
 
@@ -52,5 +53,9 @@ public class MockPeerFactory extends PeerFactory {
 
     public VcsContextFactory getVcsContextFactory() {
         return null;
+    }
+
+    public StructureViewFactory getStructureVeiwFactory() {
+        return null; 
     }
 }
