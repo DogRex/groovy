@@ -10,7 +10,7 @@
     </target>
 
     <target name="ant.version.pass" depends="check.ant.version" unless="ant.version.ok">
-        <fail>This build script requires Ant 1.6.2 or later!</fail>
+        <fail>This build script requires Ant 1.6.2 or later.</fail>
     </target>
 
     <target name="initialise" depends="ant.version.pass">
@@ -105,9 +105,18 @@
     </target>
 
     <target name="check.irida.available" depends="initialise" >
-        <available property="irida.available"
-                   classname="com.intellij.lang.Language"
-                   classpathref="irida.test.classpath"/>
+        <condition property="irida.available">
+            <and>
+                <available classname="com.intellij.lang.Language"
+                           classpathref="irida.compile.classpath"/>
+
+                <available classname="org.picocontainer.defaults.DefaultPicoContainer"
+                           classpathref="irida.compile.classpath"/>
+
+                <available classname="gnu.trove.TIntObjectHashMap"
+                           classpathref="irida.compile.classpath"/>
+            </and>
+        </condition>
     </target>
 
     <target name="irida.available" depends="check.irida.available" unless="irida.available">
