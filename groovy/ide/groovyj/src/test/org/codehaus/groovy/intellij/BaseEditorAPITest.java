@@ -173,7 +173,9 @@ public class BaseEditorAPITest extends MockObjectTestCase {
     public void testCanRetrieveTheClasspathOfTheCurrentProjectModuleAsAString() throws IOException {
         setExpectationsForExtractingCurrentModuleClasspath();
 
-        String expectedClasspath = "/usr/lib/foo;lib/compile/jdom.jar".replace('/', File.separatorChar);
+        String expectedClasspath = "/usr/lib/foo;lib/compile/jdom.jar";
+        expectedClasspath = expectedClasspath.replace('/', File.separatorChar);
+        expectedClasspath = expectedClasspath.replace(';', File.pathSeparatorChar);
         assertEquals(expectedClasspath, editorAPI.getCurrentModuleClasspathAsString());
     }
 
