@@ -16,12 +16,16 @@
       <library name="asm-util-1.4.1.jar">
          <export name="*"/>
       </library>
-      <library name="groovy-1.0-beta-3.jar">
+      <library name="groovy-1.0-beta-4-snapshot.jar">
          <export name="*"/>
       </library>
       <library name="Groovy.jar">
          <export name="*"/>
       </library>
    </runtime>
+   <requires>
+      <import plugin="org.eclipse.core.runtime.compatibility"/>
+   </requires>
+
 
 </plugin>
