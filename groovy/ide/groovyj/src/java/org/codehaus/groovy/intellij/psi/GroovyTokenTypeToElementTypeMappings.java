@@ -63,13 +63,13 @@ public final class GroovyTokenTypeToElementTypeMappings {
     }
 
     private static void loadGroovyTokenTypeMappings() throws IllegalAccessException {
-        Field[] fields = GROOVY_TOKEN_TYPES.getClass().getFields();
+        Field[] fields = GroovyTokenTypes.class.getDeclaredFields();
         List assignmentTypes = new ArrayList();
         List literalTypes = new ArrayList();
 
         for (int i = 0; i < fields.length; i++) {
             Field field = fields[i];
-            if (isPublicAndStatic(field)) {
+            if (isPublicStaticFinalIntegerPrimitive(field)) {
                 addTokenTypeMapping(field, assignmentTypes, literalTypes);
             }
         }
@@ -78,8 +78,11 @@ public final class GroovyTokenTypeToElementTypeMappings {
         LITERAL_TYPES = (IElementType[]) literalTypes.toArray(IElementType.EMPTY_ARRAY);
     }
 
-    private static boolean isPublicAndStatic(Field field) {
-        return Modifier.isPublic(field.getModifiers()) && Modifier.isStatic(field.getModifiers());
+    private static boolean isPublicStaticFinalIntegerPrimitive(Field field) {
+        return Modifier.isPublic(field.getModifiers())
+               && Modifier.isStatic(field.getModifiers())
+               && Modifier.isFinal(field.getModifiers())
+               && field.getType().equals(int.class);
     }
 
     private static void addTokenTypeMapping(Field field, List assignmentTypes, List literalTypes) throws IllegalAccessException {

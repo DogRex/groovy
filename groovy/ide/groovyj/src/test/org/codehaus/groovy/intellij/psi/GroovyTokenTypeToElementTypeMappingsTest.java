@@ -26,7 +26,7 @@ import com.intellij.psi.tree.IElementType;
 
 public class GroovyTokenTypeToElementTypeMappingsTest extends TestCase {
 
-    public void testIncludesTheBadCharacterFromAntlrAsAElementType() {
+    public void testIncludesTheBadCharacterFromAntlrAsAGroovyElementType() {
         assertEquals("element type index", -1, GroovyTokenTypeToElementTypeMappings.BAD_CHARACTER);
 
         IElementType elementType = GroovyTokenTypeToElementTypeMappings.getType(GroovyTokenTypeToElementTypeMappings.BAD_CHARACTER);
