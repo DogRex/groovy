@@ -14,22 +14,10 @@
     </target>
 
     <target name="initialise" depends="ant.version.pass">
-        <!-- Project properties -->
         <property file="project.properties"/>
-
-        <!-- Default project properties if not found in project.properties -->
-        <property name="project.name" value="Set name in project.properties"/>
-        <property name="project.title" value="Set title in project.properties"/>
-        <property name="project.version" value="dev"/>
-        <property name="project.idea.since-build" value="Set idea.since-build in project.properties"/>
-        <property name="project.description" value="Set description in project.properties"/>
-        <property name="project.change-notes" value="Set change-notes in project.properties"/>
-        <property name="project.homedir" value="Set homedir in project.properties"/>
         <property name="distfile.name" value="${project.name}-${project.version}"/>
-
         <property name="binary.extensions" value="**/*.png, **/*.jpg, **/*.jpeg, **/*.gif"/>
 
-        <!-- Folders -->
         <property name="src.etc.dir" value="src/etc"/>
         <property name="src.java.dir" value="src/java"/>
         <property name="src.test.dir" value="src/test"/>
@@ -48,7 +36,6 @@
         <property name="irida.home" value="${lib.compile.dir}/irida"/>
         <property name="irida.classes.dir" value="${classes.dir}/irida"/>
         <property name="irida.test.classes.dir" value="${test.classes.dir}/irida"/>
-        <property name="irida.plugins.dir" value="${irida.home}/config/plugins"/>
 
         <property name="clover.dir" value="clover"/>
         <property name="clover.lib.dir" value="${user.home}/.ant/lib"/>
@@ -230,8 +217,8 @@
         <copy todir="${irida.classes.dir}" overwrite="true" preservelastmodified="true">
             <fileset dir="${src.etc.dir}" excludes="styles/**/*, ${binary.extensions}, **/*.xcf"/>
             <filterset>
-                <filter token="PROJECT.TITLE" value="Groovy Integration"/>
-                <filter token="PROJECT.IDEA.SINCE-BUILD" value="3214"/>
+                <filter token="PROJECT.IDEA.SINCE-BUILD" value="3235"/>
+                <filter token="PROJECT.IDEA.UNTIL-BUILD" value="3235"/>
             </filterset>
             <filterset refid="project.variables"/>
             <filterset refid="timestamp.variables"/>
@@ -261,24 +248,17 @@
         <buildnumber/>
     </target>
 
-    <target name="deploy.irida" depends="zip.irida" description="Deploys the plug-in into an IntelliJ IDEA installation">
+    <target name="deploy.irida" depends="zip.irida" if="irida.plugins.dir"
+            description="Deploys the plug-in into an IntelliJ IDEA installation">
         <delete dir="${irida.plugins.dir}/${project.name}" failonerror="true"/>
-
         <unzip src="${dist.dir}/${distfile.name}-irida.zip" dest="${irida.plugins.dir}"/>
-
-        <!-- for the moment do not deploy the filetype settings this way. It's to be done via the new groovyj
-        <copy file="${src.etc.dir}/idea/Groovy Script Files.xml"
-              todir="${irida.plugins.dir}/../filetypes/" overwrite="true"/>                                  -->
-
-        <copy file="${src.etc.dir}/idea/GroovyJ Code Style.xml"
-              todir="${irida.plugins.dir}/../codestyles/" overwrite="true"/>
     </target>
 
-    <target name="allow.interactive.plugin.dev" depends="initialise"
-        description="small helper to delete jars from the plugin lib dir that are deployed through
-        the internal plugin devkit but are in the way when running the plugin (ClassCastException)">
+    <target name="allow.interactive.plugin.dev" depends="initialise" if="irida.plugins.dir"
+            description="small helper to delete jars from the plugin lib dir that are deployed through
+                         the internal plugin devkit but are in the way when running the plugin (ClassCastException)">
         <delete quiet="true">
-            <fileset dir="${irida.plugins.dir}/groovyj/lib" includes="irida.jar, openapi.jar" />
+            <fileset dir="${irida.plugins.dir}/${project.name}/lib" includes="irida.jar, openapi.jar" />
         </delete>
     </target>
 

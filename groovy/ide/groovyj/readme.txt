@@ -13,7 +13,7 @@ The current version is maintained in the file /build.number.
 The version of the installed plugin is in the /META-INF/plugin.xml.
 The automatic build cares for putting it there.
 
-We currently work agains Intellij IDEA EAP build 3235 (Irida) openapi.
+We currently work against IntelliJ IDEA, EAP build #3235 (Irida).
 In descriptions below this version is called 'XXXX'.
 
 h1. recent changes
