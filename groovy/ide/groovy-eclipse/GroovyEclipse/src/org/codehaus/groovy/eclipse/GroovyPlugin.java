@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.IPluginRegistry;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Preferences;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
@@ -118,13 +119,18 @@ public class GroovyPlugin extends AbstractUIPlugin {
 		public void run() {
 			try {
 				trace("AddGroovySupport.run()");
-				if (!project.exists() || project.hasNature(GROOVY_NATURE))
+				Preferences preferences = getPluginPreferences();
+				boolean alreadyAsked = preferences.getBoolean(project.getName()+"NoSupport");
+				if (!project.exists() || project.hasNature(GROOVY_NATURE)||alreadyAsked)
 					return;
 
 				if (dialogProvider.doesUserWantGroovySupport()) {
 					addGrovyExclusionFilter(project);
 					addGroovyNature(project);
 					addGroovyRuntime(project);
+				}else{
+					preferences.setValue(project.getName()+"NoSupport",true);
+					savePluginPreferences();
 				}
 			} catch (CoreException e) {
 				logException("failed to add groovy support", e);
