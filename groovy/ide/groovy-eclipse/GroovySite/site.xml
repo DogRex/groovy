@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/org.codehaus.groovy.groovy.feature_1.0.0.jar" id="org.codehaus.groovy.groovy.feature" version="1.0.0">
+      <category name="Groovy"/>
+   </feature>
+   <category-def name="Groovy" label="Groovy"/>
+</site>

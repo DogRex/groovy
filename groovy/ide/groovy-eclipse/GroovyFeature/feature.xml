@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.codehaus.groovy.groovy.feature"
+      label="GroovyFeature"
+      version="1.0.0"
+      provider-name="">
+
+   <license>
+      Lic text goes here
+   </license>
+
+   <requires>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.jdt.core"/>
+      <import plugin="org.eclipse.ui.ide"/>
+      <import plugin="org.eclipse.jface.text"/>
+      <import plugin="org.eclipse.ui.workbench.texteditor"/>
+      <import plugin="org.eclipse.ui.editors"/>
+      <import plugin="org.eclipse.jdt.debug"/>
+      <import plugin="org.eclipse.debug.core"/>
+      <import plugin="org.eclipse.jdt.launching"/>
+      <import plugin="org.eclipse.debug.ui"/>
+      <import plugin="org.eclipse.jdt.debug.ui"/>
+      <import plugin="org.eclipse.jdt.ui"/>
+      <import plugin="org.eclipse.jdt.junit.runtime"/>
+   </requires>
+
+   <plugin
+         id="org.codehaus.groovy"
+         download-size="0"
+         install-size="0"
+         version="1.0.0"/>
+
+   <plugin
+         id="org.codehaus.groovy.eclipse"
+         download-size="0"
+         install-size="0"
+         version="1.0.0"/>
+
+</feature>
