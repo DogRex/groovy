@@ -23,6 +23,7 @@ import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.openapi.module.JavaModuleType;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.ProjectJdk;
 import com.intellij.openapi.roots.ModuleRootManager;
@@ -88,11 +89,15 @@ public class GroovyConfigurationTestCase extends MockObjectTestCase {
     }
 
     protected Module createStubbedModule() {
+        return createStubbedModule(new JavaModuleType());
+    }
+
+    protected Module createStubbedModule(ModuleType moduleType) {
         String moduleName = "stubbedModule#" + TestUtil.nextAbsRandomInt();
 
         Mock stubModule = mock(Module.class, moduleName);
         stubModule.stubs().method("getName").will(returnValue(moduleName));
-        stubModule.stubs().method("getModuleType").will(returnValue(new JavaModuleType()));
+        stubModule.stubs().method("getModuleType").will(returnValue(moduleType));
 
         Mock stubModuleRootManager = mock(ModuleRootManager.class);
         stubModule.stubs().method("getComponent").with(same(ModuleRootManager.class)).will(returnValue(stubModuleRootManager.proxy()));

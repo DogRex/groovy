@@ -18,6 +18,7 @@
 
 package org.codehaus.groovy.intellij;
 
+import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.vfs.VirtualFile;
 
 import org.jmock.Mock;
@@ -38,6 +39,10 @@ public final class Mocks {
         return createMock(testCase, MockableVirtualFile.class, roleName);
     }
 
+    public static Mock createModuleTypeMock(MockObjectTestCase testCase) {
+        return createMock(testCase, MockableModuleType.class, "mockModuleType");
+    }
+
     public static Mock createGroovyJProjectComponentMock(MockObjectTestCase testCase) {
         return createMock(testCase, MockableGroovyJProjectComponent.class, "mockGroovyJProjectComponent");
     }
@@ -56,6 +61,13 @@ public final class Mocks {
 
         public MockableVirtualFile() {
             super();
+        }
+    }
+
+    private static abstract class MockableModuleType extends ModuleType {
+
+        public MockableModuleType() {
+            super(null);
         }
     }
 

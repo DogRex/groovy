@@ -18,6 +18,7 @@
 
 package org.codehaus.groovy.intellij.configuration;
 
+import javax.swing.Icon;
 import javax.swing.JList;
 
 import org.intellij.openapi.testing.MockApplicationManager;
@@ -26,18 +27,20 @@ import com.intellij.openapi.actionSystem.ActionGroup;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.ActionPopupMenu;
-import com.intellij.openapi.module.JavaModuleType;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleType;
 
 import org.jmock.Mock;
 
+import org.codehaus.groovy.intellij.Icons;
+import org.codehaus.groovy.intellij.Mocks;
+
 public class GroovySettingsEditorTest extends GroovyConfigurationTestCase {
 
-    private final GroovyRunConfiguration groovyRunConfiguration = createRunConfiguration("-showversion", "../foo.groovy", "", "/home/acme");
+    private final GroovyRunConfiguration runConfiguration = createRunConfiguration("-showversion", "../foo.groovy", "", "/home/acme");
 
-    private GroovySettingsEditor groovySettingsEditor;
+    private GroovySettingsEditor settingsEditor;
     private GroovySettingsEditor.ModuleComboBoxRenderer moduleComboBoxRenderer;
 
     protected void setUp() {
@@ -50,68 +53,68 @@ public class GroovySettingsEditorTest extends GroovyConfigurationTestCase {
         mockActionManager.stubs().method("createActionPopupMenu").with(eq(ActionPlaces.UNKNOWN), isA(ActionGroup.class))
                 .will(returnValue(mockActionPopupMenu.proxy()));
 
-        groovySettingsEditor = new GroovySettingsEditor(groovyRunConfiguration.getProject());
-        moduleComboBoxRenderer = (GroovySettingsEditor.ModuleComboBoxRenderer) groovySettingsEditor.moduleComboBox.getRenderer();
+        settingsEditor = new GroovySettingsEditor(runConfiguration.getProject());
+        moduleComboBoxRenderer = (GroovySettingsEditor.ModuleComboBoxRenderer) settingsEditor.moduleComboBox.getRenderer();
     }
 
     public void testCopiesSettingsFromAGivenGroovyRunConfigurationWhenInstructedToResetItsContents() {
-        assertEquals("script path", "", groovySettingsEditor.scriptPathTextField.getText());
-        assertEquals("VM parameters", "", groovySettingsEditor.vmParameterEditor.getText());
-        assertEquals("scripit parameters", "", groovySettingsEditor.scriptParametersEditor.getText());
-        assertEquals("working directory path", "", groovySettingsEditor.workingDirectoryPathTextField.getText());
+        assertEquals("script path", "", settingsEditor.scriptPathTextField.getText());
+        assertEquals("VM parameters", "", settingsEditor.vmParameterEditor.getText());
+        assertEquals("scripit parameters", "", settingsEditor.scriptParametersEditor.getText());
+        assertEquals("working directory path", "", settingsEditor.workingDirectoryPathTextField.getText());
 
-        Module[] allProjectModules = ModuleManager.getInstance(groovyRunConfiguration.getProject()).getSortedModules();
-        assertSame("module", allProjectModules[0], groovySettingsEditor.moduleComboBox.getSelectedItem());
+        Module[] allProjectModules = ModuleManager.getInstance(runConfiguration.getProject()).getSortedModules();
+        assertSame("module", allProjectModules[0], settingsEditor.moduleComboBox.getSelectedItem());
 
-        groovyRunConfiguration.setModule(allProjectModules[1]);
-        groovySettingsEditor.resetEditorFrom(groovyRunConfiguration);
+        runConfiguration.setModule(allProjectModules[1]);
+        settingsEditor.resetEditorFrom(runConfiguration);
 
-        assertEquals("script path", groovyRunConfiguration.getScriptPath(), groovySettingsEditor.scriptPathTextField.getText());
-        assertEquals("VM parameters", groovyRunConfiguration.getVmParameters(), groovySettingsEditor.vmParameterEditor.getText());
-        assertEquals("scripit parameters", groovyRunConfiguration.getScriptParameters(), groovySettingsEditor.scriptParametersEditor.getText());
-        assertEquals("working directory path", groovyRunConfiguration.getWorkingDirectoryPath(), groovySettingsEditor.workingDirectoryPathTextField.getText());
-        assertSame("module", groovyRunConfiguration.getModule(), groovySettingsEditor.moduleComboBox.getSelectedItem());
+        assertEquals("script path", runConfiguration.getScriptPath(), settingsEditor.scriptPathTextField.getText());
+        assertEquals("VM parameters", runConfiguration.getVmParameters(), settingsEditor.vmParameterEditor.getText());
+        assertEquals("scripit parameters", runConfiguration.getScriptParameters(), settingsEditor.scriptParametersEditor.getText());
+        assertEquals("working directory path", runConfiguration.getWorkingDirectoryPath(), settingsEditor.workingDirectoryPathTextField.getText());
+        assertSame("module", runConfiguration.getModule(), settingsEditor.moduleComboBox.getSelectedItem());
     }
 
     public void testUpdatesAGivenGroovyRunConfigurationWhenInstructedToDoSo() {
-        groovySettingsEditor.resetEditorFrom(groovyRunConfiguration);
+        settingsEditor.resetEditorFrom(runConfiguration);
 
-        GroovyRunConfiguration runConfiguration = createRunConfiguration("", "", "", "");
-        groovySettingsEditor.applyEditorTo(runConfiguration);
+        GroovyRunConfiguration blankRunConfiguration = createRunConfiguration("", "", "", "");
+        settingsEditor.applyEditorTo(blankRunConfiguration);
 
-        assertEquals("script path", groovySettingsEditor.scriptPathTextField.getText(), runConfiguration.getScriptPath());
-        assertEquals("VM parameters", groovySettingsEditor.vmParameterEditor.getText(), runConfiguration.getVmParameters());
-        assertEquals("scripit parameters", groovySettingsEditor.scriptParametersEditor.getText(), runConfiguration.getScriptParameters());
-        assertEquals("working directory path", groovySettingsEditor.workingDirectoryPathTextField.getText(), runConfiguration.getWorkingDirectoryPath());
-        assertSame("module", groovySettingsEditor.moduleComboBox.getSelectedItem(), runConfiguration.getModule());
+        assertEquals("script path", settingsEditor.scriptPathTextField.getText(), blankRunConfiguration.getScriptPath());
+        assertEquals("VM parameters", settingsEditor.vmParameterEditor.getText(), blankRunConfiguration.getVmParameters());
+        assertEquals("scripit parameters", settingsEditor.scriptParametersEditor.getText(), blankRunConfiguration.getScriptParameters());
+        assertEquals("working directory path", settingsEditor.workingDirectoryPathTextField.getText(), blankRunConfiguration.getWorkingDirectoryPath());
+        assertSame("module", settingsEditor.moduleComboBox.getSelectedItem(), blankRunConfiguration.getModule());
     }
 
     public void testConstructsASettingsEditorForAGivenProject() {
-        assertSame("settings editor component", groovySettingsEditor.editor, groovySettingsEditor.createEditor());
+        assertSame("settings editor component", settingsEditor.editor, settingsEditor.createEditor());
     }
 
     public void testLosesItsSettingsEditorComponentWhenDisposedByIdea() {
-        assertNotNull("settings editor component", groovySettingsEditor.editor);
+        assertNotNull("settings editor component", settingsEditor.editor);
 
-        groovySettingsEditor.disposeEditor();
-        assertEquals("settings editor component", null, groovySettingsEditor.editor);
+        settingsEditor.disposeEditor();
+        assertEquals("settings editor component", null, settingsEditor.editor);
     }
 
     public void testDoesNotDefineAHelpTopicYet() {
-        assertEquals("help topic", null, groovySettingsEditor.getHelpTopic());
+        assertEquals("help topic", null, settingsEditor.getHelpTopic());
     }
 
     public void testUsesAListCellRendererToRenderAGivenModuleInAComboBox() {
-        ModuleType expectedModuleType = new JavaModuleType();
-        String expectedModuleName = "Foo Module";
+        Mock mockModuleType = Mocks.createModuleTypeMock(this);
+        Module stubbedModule = createStubbedModule((ModuleType) mockModuleType.proxy());
 
-        Mock stubModule = mock(Module.class);
-        stubModule.expects(once()).method("getModuleType").will(returnValue(expectedModuleType));
-        stubModule.expects(once()).method("getName").will(returnValue(expectedModuleName));
+        boolean nodeIconOpened = true;
+        Icon expectedNodeIcon = Icons.SMALLEST;
+        mockModuleType.expects(once()).method("getNodeIcon").with(eq(nodeIconOpened)).will(returnValue(expectedNodeIcon));
 
-        moduleComboBoxRenderer.getListCellRendererComponent(new JList(), stubModule.proxy(), -1, false, false);
-        assertEquals("module icon", expectedModuleType.getNodeIcon(false), moduleComboBoxRenderer.getIcon());
-        assertEquals("module name", expectedModuleName, moduleComboBoxRenderer.getText());
+        moduleComboBoxRenderer.getListCellRendererComponent(new JList(), stubbedModule, -1, false, false);
+        assertSame("module icon", expectedNodeIcon, moduleComboBoxRenderer.getIcon());
+        assertEquals("module name", stubbedModule.getName(), moduleComboBoxRenderer.getText());
     }
 
     public void testUsesAListCellRendererThatCanAlsoRenderANullModuleInAComboBox() {
