@@ -9,62 +9,62 @@
 
 <project name="GroovyJ" default="dist" basedir=".">
 
-  <property name="source.dir"       value="src/java"/>
-  <property name="test.dir"         value="src/test"/>
-  <property name="target.dir"       value="target"/>
-  <property name="lib.dir"          value="lib"/>
-  <property name="classes.dir"      value="${target.dir}/classes"/>
-  <property name="test-classes.dir" value="${target.dir}/test-classes"/>
+	<property name="source.dir" value="src/java"/>
+	<property name="test.dir" value="src/test"/>
+	<property name="target.dir" value="target"/>
+	<property name="lib.dir" value="lib"/>
+	<property name="classes.dir" value="${target.dir}/classes"/>
+	<property name="test-classes.dir" value="${target.dir}/test-classes"/>
 
-  <property name="deploy.dist"      value="c:/debug/plugins"/>
+	<property name="deploy.dist" value="c:/debug/plugins"/>
 
-  <path id="compile.classpath">
-    <fileset dir="${lib.dir}">
-      <include name="*.jar"/>
-    </fileset>
-  </path>
+	<path id="compile.classpath">
+		<fileset dir="${lib.dir}">
+			<include name="*.jar"/>
+		</fileset>
+	</path>
 
-  <target name="clean" description="Clean everything">
-    <delete dir="${target.dir}"/>
-  </target>
+	<target name="clean" description="Clean everything">
+		<delete dir="${target.dir}"/>
+	</target>
 
-  <target name="compile" depends="clean" description="Compile the project">
+	<target name="compile" depends="clean" description="Compile the project">
 
-    <mkdir dir="${target.dir}"/>
-    <mkdir dir="${classes.dir}"/>
-    <mkdir dir="${classes.dir}/META-INF/"/>
-    <mkdir dir="${test-classes.dir}"/>
+		<mkdir dir="${target.dir}"/>
+		<mkdir dir="${classes.dir}"/>
+		<mkdir dir="${classes.dir}/META-INF/"/>
+		<mkdir dir="${test-classes.dir}"/>
 
-    <javac srcdir="${source.dir}" destdir="${classes.dir}" >
-      <classpath refid="compile.classpath"/>
-    </javac>
+		<javac srcdir="${source.dir}" destdir="${classes.dir}">
+			<classpath refid="compile.classpath"/>
+		</javac>
 
-    <javac srcdir="${test.dir}" destdir="${test-classes.dir}">
-      <classpath refid="compile.classpath"/>
-    </javac>
-    
-  </target>
+		<javac srcdir="${test.dir}" destdir="${test-classes.dir}">
+			<classpath refid="compile.classpath"/>
+		</javac>
 
-  <target name="test" depends="compile" description="Launch the test suite">
+	</target>
 
-  </target>
+	<target name="test" depends="compile" description="Launch the test suite">
 
-  <target name="jar" depends="compile" description="Create a jar file">
-    <copy file="${source.dir}/META-INF/plugin.xml" todir="${classes.dir}/META-INF/"/>
-    <jar destfile="${target.dir}/groovyj-plugin.jar" basedir="${classes.dir}" />
-  </target>
+	</target>
 
-  <target name="dist" depends="jar" description="Create a installable plugin distribution">
+	<target name="jar" depends="compile" description="Create a jar file">
+		<copy file="${source.dir}/META-INF/plugin.xml" todir="${classes.dir}/META-INF/"/>
+		<jar destfile="${target.dir}/groovyj-plugin.jar" basedir="${classes.dir}"/>
+	</target>
 
-  </target>
+	<target name="dist" depends="jar" description="Create a installable plugin distribution">
 
-  <target name="deploy" depends="dist" description="Deploy the plugin into an IntelliJ IDEA installtion">
-    <mkdir dir="${deploy.dist}/groovyj"/>
-    <mkdir dir="${deploy.dist}/groovyj/lib"/>
-    <copy file="${target.dir}/groovyj-plugin.jar" todir="${deploy.dist}/groovyj/lib"/>
-    <copy file="${lib.dir}/asm-1.4.3.jar" todir="${deploy.dist}/groovyj/lib"/>
-    <copy file="${lib.dir}/asm-util-1.4.3.jar" todir="${deploy.dist}/groovyj/lib"/>
-    <copy file="${lib.dir}/groovy-1.0-beta-7-SNAPSHOT.jar" todir="${deploy.dist}/groovyj/lib"/>
-  </target>
+	</target>
+
+	<target name="deploy" depends="dist" description="Deploy the plugin into an IntelliJ IDEA installtion">
+		<mkdir dir="${deploy.dist}/groovyj"/>
+		<mkdir dir="${deploy.dist}/groovyj/lib"/>
+		<copy file="${target.dir}/groovyj-plugin.jar" todir="${deploy.dist}/groovyj/lib"/>
+		<copy file="${lib.dir}/asm-1.4.3.jar" todir="${deploy.dist}/groovyj/lib"/>
+		<copy file="${lib.dir}/asm-util-1.4.3.jar" todir="${deploy.dist}/groovyj/lib"/>
+		<copy file="${lib.dir}/groovy-1.0-beta-7-SNAPSHOT.jar" todir="${deploy.dist}/groovyj/lib"/>
+	</target>
 
 </project>
