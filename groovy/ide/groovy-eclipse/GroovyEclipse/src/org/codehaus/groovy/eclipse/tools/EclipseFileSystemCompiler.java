@@ -35,7 +35,6 @@ public class EclipseFileSystemCompiler
 			compiler.setDebug(true);
 		}
 		
-		
 	}
 
 	public void setVerbose(boolean verbose)

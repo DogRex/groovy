@@ -1,60 +1,49 @@
 /*
-	public CompileUnit compile(CharStream[] sources, List results)
-	throws Exception
-	{
-		CSTNode[] compilationUnits = new CSTNode[ sources.length ];
+$Id$
 
-		for ( int i = 0 ; i < sources.length ; ++i )
-		{
-			try
-			{
-				compilationUnits[ i ] = stageOneCompile( sources[ i ] );
-			}
-			catch (Exception e)
-			{
-				if ( e instanceof SyntaxException )
-				{
-					((SyntaxException)e).setSourceLocator( sources[ i ].getDescription() );
-				}
-				this.errors.add( e );
-			}
-			finally
-			{
-					sources[ i ].close();
-			}
-		}
+Copyright 2003 (C) James Strachan and Bob Mcwhirter. All Rights Reserved.
 
-		if ( ! this.errors.isEmpty() )
-		{
-			MultiException exception = new MultiException( (Exception[]) this.errors.toArray( EMPTY_EXCEPTION_ARRAY ) );
-			this.errors.clear();
-			throw exception; 
-		}
+Redistribution and use of this software and associated documentation
+("Software"), with or without modification, are permitted provided
+that the following conditions are met:
 
+1. Redistributions of source code must retain copyright
+   statements and notices.  Redistributions must also contain a
+   copy of this document.
 
-		CompileUnit unit = new CompileUnit();
-		
-		for ( int i = 0 ; i < compilationUnits.length ; ++i )
-		{
-			stageThreeCompile( unit, compilationUnits[ i ], sources[ i ] );
-		}
-		
-		stageFourCompile(results, unit);
+2. Redistributions in binary form must reproduce the
+   above copyright notice, this list of conditions and the
+   following disclaimer in the documentation and/or other
+   materials provided with the distribution.
 
-		return unit;
-	}
-	*/
+3. The name "groovy" must not be used to endorse or promote
+   products derived from this Software without prior written
+   permission of The Codehaus.  For written permission,
+   please contact info@codehaus.org.
 
+4. Products derived from this Software may not be called "groovy"
+   nor may "groovy" appear in their names without prior written
+   permission of The Codehaus. "groovy" is a registered
+   trademark of The Codehaus.
 
+5. Due credit should be given to The Codehaus -
+   http://groovy.codehaus.org/
 
-/*
- * Created on 14-Jan-2004
- * 
- * To change the template for this generated file go to Window - Preferences -
- * Java - Code Generation - Code and Comments
- */
+THIS SOFTWARE IS PROVIDED BY THE CODEHAUS AND CONTRIBUTORS
+``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+THE CODEHAUS OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+OF THE POSSIBILITY OF SUCH DAMAGE.
+
+*/
 package org.codehaus.groovy.eclipse.tools;
-
 
 import groovy.lang.CompilerConfig;
 
@@ -75,10 +64,6 @@ import org.codehaus.groovy.classgen.ClassGenerator;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.classgen.Verifier;
 import org.codehaus.groovy.syntax.lexer.CharStream;
-import org.codehaus.groovy.syntax.lexer.Lexer;
-import org.codehaus.groovy.syntax.lexer.LexerTokenStream;
-import org.codehaus.groovy.syntax.parser.ASTBuilder;
-import org.codehaus.groovy.syntax.parser.CSTNode;
 import org.codehaus.groovy.syntax.parser.Parser;
 import org.codehaus.groovy.tools.CompilationFailuresException;
 import org.codehaus.groovy.tools.CompilerBugException;
@@ -89,283 +74,259 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.util.DumpClassVisitor;
 
 /**
- *  Controls the compilation process, from source to class generation.
- */
+*  Controls the compilation process, from source to class generation.
+*/
 
 public class EclipseCompiler {
+   private Verifier verifier; // Verifies and completes ASTs before byte code generation
+   private CompilerClassLoader classLoader; // Our class loader
+   private CompilerConfig config = new CompilerConfig(); // compiler configuration
+   private boolean verbose = false; // If set, extra output is generated
+   private boolean debug = false; // If set, debugging output is generated
 
-	private Verifier verifier; // Verifies and completes ASTs before byte code generation
-	private CompilerClassLoader classLoader; // Our class loader
-	private CompilerConfig config = new CompilerConfig(); // compiler configuration
-	private boolean verbose = false; // If set, extra output is generated
-	private boolean debug = false; // If set, debugging output is generated
+   private int maximumParseFailuresPerFile = 10; // Limits the number of parse errors before giving up
+   private int maximumFailuresPerCompile = 15; // Limits the number of total errors before giving up
 
-	private int maximumParseFailuresPerFile = 10; // Limits the number of parse errors before giving up
-	private int maximumFailuresPerCompile = 15; // Limits the number of total errors before giving up
+   //---------------------------------------------------------------------------
+   // CONSTRUCTORS AND SETTINGS
 
-	//---------------------------------------------------------------------------
-	// CONSTRUCTORS AND SETTINGS
+   /**
+    *  Initializes the compiler.
+    */
 
-	/**
-	 *  Initializes the compiler.
-	 */
+   public EclipseCompiler() {
+       this.verifier = new Verifier();
+       this.classLoader = new CompilerClassLoader();
+   }
 
-	public EclipseCompiler () {
-		this.verifier = new Verifier();
-		this.classLoader = new CompilerClassLoader();
-	}
+   /**
+    *  Returns the compiler's class loader.
+    */
 
-	/**
-	 *  Returns the compiler's class loader.
-	 */
+   protected CompilerClassLoader getClassLoader() {
+       return this.classLoader;
+   }
 
-	protected CompilerClassLoader getClassLoader() {
-		return this.classLoader;
-	}
+   /**
+    *  Controls the output verbosity.
+    */
 
-	/**
-	 *  Controls the output verbosity.
-	 */
+   public void setVerbose(boolean verbose) {
+       this.verbose = verbose;
+   }
 
-	public void setVerbose(boolean verbose) {
-		this.verbose = verbose;
-	}
+   /**
+    *  Controls the presence of debugging output.
+    */
 
-	/**
-	 *  Controls the presence of debugging output.
-	 */
+   public void setDebug(boolean debug) {
+       this.debug = debug;
+   }
 
-	public void setDebug(boolean debug) {
-		this.debug = debug;
-	}
+   /**
+    *  Adds additional paths to the class loader's search path.
+    */
 
-	/**
-	 *  Adds additional paths to the class loader's search path.
-	 */
+   public void setClasspath(String classpath) throws Exception {
+       StringTokenizer paths = new StringTokenizer(classpath, File.pathSeparator);
 
-	public void setClasspath(String classpath) throws Exception {
-		StringTokenizer paths = new StringTokenizer(classpath, File.pathSeparator);
+       while (paths.hasMoreTokens()) {
+           getClassLoader().addPath(paths.nextToken());
+       }
+   }
 
-		while (paths.hasMoreTokens()) {
-			getClassLoader().addPath(paths.nextToken());
-		}
-	}
+   public CompilerConfig getConfig() {
+       return config;
+   }
 
-	public CompilerConfig getConfig() {
-		return config;
-	}
+   public void setConfig(CompilerConfig config) {
+       this.config = config;
+   }
 
-	public void setConfig(CompilerConfig config) {
-		this.config = config;
-	}
+   //---------------------------------------------------------------------------
+   // COMPILATION
 
-	//---------------------------------------------------------------------------
-	// COMPILATION
 
-	/**
-	 *  Compiles a set of <code>{@link CharStream}</code> sources.  Collects exceptions
-	 *  during processing and throws a <code>{@link CompilationFailuresException}</code>
-	 *  on error.  Other exceptions are bugs that need to be caught and encapsulated.
-	 */
+   /**
+    *  Compiles a set of <code>{@link CharStream}</code> sources.  Collects exceptions
+    *  during processing and throws a <code>{@link CompilationFailuresException}</code>
+    *  on error.  Other exceptions are bugs that need to be caught and encapsulated.
+    *  returns the compilation unit produced
+    * @param generateClasses  if false just genertae AST wioth no java classes 
+    */
+   public CompileUnit compile(CharStream[] sources, List classes, boolean generateClasses ) throws CompilationFailuresException, CompilerBugException {
+       CompilationFailuresException failures = new CompilationFailuresException();
 
-	
-	public CompileUnit compile(CharStream[] sources, List classes, boolean generateClasses ) throws GroovyException {
-		CompilationFailuresException failures = new CompilationFailuresException();
-		//
-		// First up, get at list of source files for error reporting
-		// purposes.
+       //
+       // First up, get at list of source files for error reporting
+       // purposes.
 
-		String[] descriptors = new String[sources.length];
+       String[] descriptors = new String[sources.length];
 
-		for (int i = 0; i < sources.length; ++i) {
-			descriptors[i] = sources[i].getDescription();
-			if (descriptors[i] == null) {
-				descriptors[i] = "unknown" + i;
-			}
-		}
+       for (int i = 0; i < sources.length; ++i) {
+           descriptors[i] = sources[i].getDescription();
+           if (descriptors[i] == null) {
+               descriptors[i] = "unknown" + i;
+           }
+       }
 
-		//
-		// Next, run parse the sources, producing a CST for each.
+       //
+       // Next, parse the sources to ASTs.
 
-		CSTNode[] csts = new CSTNode[sources.length];
+       CompileUnit unit = new CompileUnit( getClassLoader(), config );
 
-		for (int i = 0; i < sources.length; ++i) {
-			try {
-				csts[i] = parseSource(sources[i], descriptors[i]);
-			}
-			catch (ExceptionCollector e) {
-				if (!e.isEmpty()) {
-					failures.add(descriptors[i], e);
-				}
+       for (int i = 0; i < sources.length; ++i) {
+           try {
 
-				if (failures.total() > maximumFailuresPerCompile) {
-					throw failures;
-				}
-			}
-			catch( Exception e ) {
-				throw new CompilerBugException( descriptors[i], "parse", e );
-			}
-			finally {
-				try {
-					sources[i].close();
-				}
-				catch (Exception e) {
-				}
-			}
-		}
+               if( verbose ) {
+                   System.out.println("building source [" + descriptors[i] + "]");
+               }
+               
+               ModuleNode ast = parse( sources[i], descriptors[i] );
+               unit.addModule(ast);
+           }
+           catch (ExceptionCollector e) {
+               if (!e.isEmpty()) {
+                   failures.add(descriptors[i], e);
+               }
 
-		//
-		// If there were parse errors, bail out.
+               if (failures.total() > maximumFailuresPerCompile) {
+                   throw failures;
+               }
+           }
+           catch( Exception e ) {
+               throw new CompilerBugException( descriptors[i], "parse", e );
+           }
+           finally {
+               try {
+                   sources[i].close();
+               }
+               catch (Exception e) {
+               }
+           }
+       }
 
-		if (!failures.isEmpty()) {
-			throw failures;
-		}
-		//
-		// Next, compile the CSTs to ASTs, and from there to classes.
+       //
+       // If there were parse errors, bail out.
 
-		CompileUnit unit = new CompileUnit(getClassLoader(), config);
-		
+       if (!failures.isEmpty()) {
+           throw failures;
+       }
 
-		for (int i = 0; i < csts.length; ++i) {
-			try {
-				ModuleNode ast = buildAST(csts[i], descriptors[i]);
-				unit.addModule(ast);
-			}
-			catch (ExceptionCollector e) {
-				if (!e.isEmpty()) {
-					failures.add(descriptors[i], e);
-				}
-			}
-			catch( Exception e ) {
-				throw new CompilerBugException( descriptors[i], "AST creation", e );
-			}
-		}
-		
-		if(!generateClasses){
-			// Control Leaves 
-			return unit;
-		}
-		
-		for (Iterator iter = unit.getModules().iterator(); iter.hasNext();) {
-			ModuleNode module = (ModuleNode) iter.next();
-			try {
-				Iterator classNodes = module.getClasses().iterator();
-				while (classNodes.hasNext()) {
-					ClassNode classNode = (ClassNode) classNodes.next();
+       if(!generateClasses){
+       		// control leaves - fast compile no need to gen classes
+       		return unit;
+       }
+       //
+       // Next, compile the ASTs to classes.
 
-					if (verbose) {
-						System.out.println("Generating class: " + classNode.getName());
-					}
+       for (Iterator iter = unit.getModules().iterator(); iter.hasNext();) {
+           ModuleNode module = (ModuleNode) iter.next();
+           try {
+               Iterator classNodes = module.getClasses().iterator();
+               while (classNodes.hasNext()) {
+                   ClassNode classNode = (ClassNode) classNodes.next();
 
-					classes.addAll(generateClasses(new GeneratorContext(unit), classNode, module.getDescription()));
-				}
-			}
-			catch (ExceptionCollector e) {
-				if (!e.isEmpty()) {
-					failures.add(module.getDescription(), e);
-				}
-			}
-			catch( Exception e ) {
-				throw new CompilerBugException( module.getDescription(), "class generation", e );
-			}
-		}
+                   if (verbose) {
+                       System.out.println("Generating class: " + classNode.getName());
+                   }
 
-		if (!failures.isEmpty()) {
-			throw failures;
-		}
+                   classes.addAll(generateClasses(new GeneratorContext(unit), classNode, module.getDescription()));
+               }
+           }
+           catch (ExceptionCollector e) {
+               if (!e.isEmpty()) {
+                   failures.add(module.getDescription(), e);
+               }
+           }
+           catch( Exception e ) {
+               throw new CompilerBugException( module.getDescription(), "class generation", e );
+           }
+       }
 
-		return unit;
-	}
+       if (!failures.isEmpty()) {
+           throw failures;
+       }
 
-	/**
-	 *  Parses a <code>CharStream</code> source, producing a Concrete
-	 *  Syntax Tree (CST).  Lexing and parsing errors will be collected in 
-	 *  an <code>ExceptionCollector</code>.
-	 */
+       return unit;
+   }
 
-	protected CSTNode parseSource(CharStream charStream, String descriptor) throws ExceptionCollector, Exception {
-		CSTNode tree = null;
 
-		if (verbose) {
-			System.out.println("Parsing: " + descriptor);
-		}
 
-		ExceptionCollector collector = new ExceptionCollector(maximumParseFailuresPerFile);
+  /**
+   *  Parses a <code>CharStream</code> source, producing a Concrete
+   *  Syntax Tree (CST).  Lexing and parsing errors will be collected in 
+   *  an <code>ExceptionCollector</code>.
+   */
 
-		try {
-			Lexer lexer = new Lexer(charStream);
-			Parser parser = new Parser(new LexerTokenStream(lexer), collector);
+   protected ModuleNode parse( CharStream charStream, String descriptor ) throws ExceptionCollector, Exception {
+       ModuleNode ast = null;
 
-			collector.throwUnlessEmpty();
-			tree = parser.compilationUnit();
-		}
-		catch (ExceptionCollector e) {
-			collector.merge(e, false);
-		}
-		catch (GroovyException e) {
-			collector.add(e, false);
-		}
+       if (verbose) {
+           System.out.println("Parsing: " + descriptor);
+       }
 
-		collector.throwUnlessEmpty();
+       ExceptionCollector collector = new ExceptionCollector(maximumParseFailuresPerFile);
 
-		return tree;
-	}
+       try {
+           Parser parser = Parser.create( charStream, collector );
 
-	/**
-	 *  Creates an Abstract Syntax Tree (AST) from the CST.
-	 */
+           collector.throwUnlessEmpty();
+           ast = parser.parse( getClassLoader(), descriptor );
+       }
+       catch (ExceptionCollector e) {
+           collector.merge(e, false);
+       }
+       catch (GroovyException e) {
+           collector.add(e, false);
+       }
 
-	protected ModuleNode buildAST(CSTNode cst, String descriptor) throws Exception {
-		//        ExceptionCollector collector = new ExceptionCollector();
+       collector.throwUnlessEmpty();
 
-		ASTBuilder astBuilder = new ASTBuilder(getClassLoader()); // , collector );
+       return ast;
+   }
 
-		ModuleNode module = astBuilder.build(cst);
-		module.setDescription(descriptor);
 
-		//        collector.throwUnlessEmpty();
-		return module;
-	}
 
-	/**
-	 *  Generates a class from an AST.
-	 */
+  /**
+   *  Generates a class from an AST.
+   */
 
-	protected ArrayList generateClasses(GeneratorContext context, ClassNode classNode, String descriptor)
-	throws Exception {
-		ArrayList results = new ArrayList();
-		ClassGenerator classGenerator = null;
-		//        ExceptionCollector collector
+   protected ArrayList generateClasses(GeneratorContext context, ClassNode classNode, String descriptor)
+       throws Exception {
+       ArrayList results = new ArrayList();
+       ClassGenerator classGenerator = null;
+       //        ExceptionCollector collector
 
-		//
-		// First, ensure the AST is in proper shape.
+       //
+       // First, ensure the AST is in proper shape.
 
-		verifier.visitClass(classNode);
+       verifier.visitClass(classNode);
 
-		if (debug) {
-			DumpClassVisitor dumpVisitor = new DumpClassVisitor(new PrintWriter(new OutputStreamWriter(System.out)));
+       if (debug) {
+           DumpClassVisitor dumpVisitor = new DumpClassVisitor(new PrintWriter(new OutputStreamWriter(System.out)));
 
-			classGenerator = new ClassGenerator(context, dumpVisitor, getClassLoader(), descriptor);
-			classGenerator.visitClass(classNode);
-		}
-		else {
-			ClassWriter classWriter = new ClassWriter(true);
+           classGenerator = new ClassGenerator(context, dumpVisitor, getClassLoader(), descriptor);
+           classGenerator.visitClass(classNode);
+       }
+       else {
+           ClassWriter classWriter = new ClassWriter(true);
 
-			classGenerator = new ClassGenerator(context, classWriter, getClassLoader(), descriptor);
-			classGenerator.visitClass(classNode);
+           classGenerator = new ClassGenerator(context, classWriter, getClassLoader(), descriptor);
+           classGenerator.visitClass(classNode);
 
-			byte[] bytes = classWriter.toByteArray();
+           byte[] bytes = classWriter.toByteArray();
 
-			results.add(new GroovyClass(classNode.getName(), bytes));
-		}
+           results.add(new GroovyClass(classNode.getName(), bytes));
+       }
 
-		LinkedList innerClasses = classGenerator.getInnerClasses();
+       LinkedList innerClasses = classGenerator.getInnerClasses();
 
-		while (!innerClasses.isEmpty()) {
-			results.addAll(generateClasses(context, (ClassNode) innerClasses.removeFirst(), descriptor));
-		}
+       while (!innerClasses.isEmpty()) {
+           results.addAll(generateClasses(context, (ClassNode) innerClasses.removeFirst(), descriptor));
+       }
 
-		return results;
-		// return (GroovyClass[]) results.toArray( GroovyClass.EMPTY_ARRAY );
-	}
+       return results;
+       // return (GroovyClass[]) results.toArray( GroovyClass.EMPTY_ARRAY );
+   }
 }
