@@ -65,7 +65,7 @@
 
         <path id="irida.compile.classpath">
             <fileset dir="${irida.home}">
-                <include name="**/*.jar"/>
+				<include name="lib/*.jar"/>
             </fileset>
             <pathelement location="${irida.classes.dir}"/>
             <path refid="compile.classpath"/>
@@ -111,10 +111,14 @@
     </target>
 
     <target name="irida.available" depends="check.irida.available" unless="irida.available">
-        <fail>IntelliJ IDEA (Irida) is not available. Please either define 'irida.home' in project.properties or copy
-              $IDEA_HOME/lib/extensions.jar, $IDEA_HOME/lib/forms_rt.jar, $IDEA_HOME/lib/idea.jar,
-              $IDEA_HOME/lib/openapi.jar, $IDEA_HOME/lib/picocontainer.jar and $IDEA_HOME/lib/trove4j.jar to
-              ${irida.home}/lib.
+		<fail>IntelliJ IDEA (Irida) is not available. Please either start with 'ant -Dirida.home=/path/to/irida' or copy
+	$IDEA_HOME/lib/extensions.jar, 
+	$IDEA_HOME/lib/forms_rt.jar, 
+	$IDEA_HOME/lib/idea.jar,
+	$IDEA_HOME/lib/openapi.jar, 
+	$IDEA_HOME/lib/picocontainer.jar and 
+	$IDEA_HOME/lib/trove4j.jar to
+${irida.home}/lib.
         </fail>
     </target>
 
