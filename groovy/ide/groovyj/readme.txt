@@ -7,7 +7,7 @@ This file contains information for users and developers:
 * how to setup environment for developing
 * implemented features (= what to test before committing)
 ----
-h1. current version
+h1. Current Version
 
 The current version is maintained in the file /build.number.
 The version of the installed plugin is in the /META-INF/plugin.xml.
@@ -21,7 +21,7 @@ h1. recent changes
 Recent changes are to be viewed via cvs diff.
 The diff will show new 'todo's and what was 'done'.
 
-h1. todo
+h1. TODO
 
 * fix: find out how to use the diagnostic logger
 * ref: remove dupl. meta-inf/plugin.xml in groovj root and /src/etc, adapt build.xml
@@ -32,13 +32,13 @@ h1. todo
 * fix: use a Groovy Lexer/Parser (or equivalent) in place of the one for JavaScript
 * fix: adapt the visitors to make PSI nodes from the AST
 
-h1. done
+h1. Done
 
 [dierk, 4 Mar 05] first step into logging for getting better info what happens when
 [dierk, 2 Mar 05] starting this document
 [dierk, 2 Mar 05] introducing Groovy to the Custom Language API
 
-h1. how to install
+h1. Installation
 
 When using the "interactive development" just hit Build/Make and the plugin will be
 installed in the sandbox (see below). Hit 'ant allow.interactive.plugin.dev'.
@@ -46,21 +46,19 @@ Hit groovyj run configuration (see below) for testing.
 
 Otherwise call 'ant deploy.irida'. Adapt paths in /project.properties first.
 
-h1. how to setup environment for developing
+h1. Development Environment
 
-For interactive development, I made best experiences with the following
-setup:
-* download and install Idea Version XXXX
+For interactive development, I made best experiences with the following setup:
+* download and install IDEA build #XXXX (Irida)
 * make a copy of that installation called Idea-XXXX-sandbox
   (this is where the plugin will live in while developing)
 * copy your ~/.IntelliJIdea/ dir to some safe place and remove all plugins in the copy
 * adapt seetings in Idea-XXXX-sandbox/bin/idea.properties to point to that copy
   (this is to protect your settings, otherwise a malfunctioned plugin can do harm to it)
-* download from
-  http://www.intellij.net/eap/products/idea/redirect.jsp?filename=ideaXXXX-dev.zip
+* download from http://www.intellij.net/eap/products/idea/redirect.jsp?filename=ideaXXXX-dev.zip
   and install the devkit.
 * make a (global) library that points to the openapi sources and javadoc in that download.
-  add the irida.jar from Idea-XXXX-sandbox/lib to it.
+  add the irida.jar from IDEA-XXXX-sandbox/lib to it.
 * open /groovyj.ipr within Idea. If all runs fine, ok. If not, set up the project as follows:
   * New Project / Plugin Module
   * as JDK choose your IDEAs home as IDEA sdk (this option comes with the devkit)
@@ -72,18 +70,18 @@ setup:
   shutdown, and possible to debug.
 * For logging support add the following to IDEA/bin/log.xml just before the <root> element:
   <category name="groovy.idesupport.idea" additivity="true">
-	<priority value="DEBUG"/>
-	<appender-ref ref="CONSOLE-DEBUG"/>
+      <priority value="DEBUG"/>
+      <appender-ref ref="CONSOLE-DEBUG"/>
   </category>
 
 
 h1. implemented features (= what to test before committing)
 
 * start with plugin
-  : idea should show no warnings
-  : 'Groovy' is visible in the menu bar but has no menu items, yet
-* goto Project Settings / File Types
-  : Groovy must be in the list and the groovy 'G' icon. Registered Extensions are shown.
+  : IDEA should show no warnings
+  : 'Groovy' is visible in the menu bar
+* Go to Project Settings / File Types
+  : Groovy must be in the list and the groovy 'G' icon. Registered extensions are shown.
 * open /src/etc/check/simple.groovy
   : 'G' icon appears in Project View beneath the file name
   : 'G' icon appears in Editor Tab beneath the file name
