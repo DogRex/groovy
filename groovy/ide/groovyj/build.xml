@@ -266,8 +266,9 @@
 
         <unzip src="${dist.dir}/${distfile.name}-irida.zip" dest="${irida.plugins.dir}"/>
 
+        <!-- for the moment do not deploy the filetype settings this way. It's to be done via the new groovyj
         <copy file="${src.etc.dir}/idea/Groovy Script Files.xml"
-              todir="${irida.plugins.dir}/../filetypes/" overwrite="true"/>
+              todir="${irida.plugins.dir}/../filetypes/" overwrite="true"/>                                  -->
 
         <copy file="${src.etc.dir}/idea/GroovyJ Code Style.xml"
               todir="${irida.plugins.dir}/../codestyles/" overwrite="true"/>
@@ -276,7 +277,9 @@
     <target name="allow.interactive.plugin.dev" depends="initialise"
         description="small helper to delete jars from the plugin lib dir that are deployed through
         the internal plugin devkit but are in the way when running the plugin (ClassCastException)">
-        <delete file="${irida.plugins.dir}/groovyj/lib/irida.jar" quiet="true"/>
+        <delete quiet="true">
+            <fileset dir="${irida.plugins.dir}/groovyj/lib" includes="irida.jar, openapi.jar" />
+        </delete>
     </target>
 
 </project>

@@ -23,23 +23,28 @@ The diff will show new 'todo's and what was 'done'.
 
 h1. todo
 
-* doc: fill 'how to install'
+* fix: find out how to use the diagnostic logger
+* ref: remove dupl. meta-inf/plugin.xml in groovj root and /src/etc, adapt build.xml
 * doc: add some words on how to use automatic build
 * ref: remove duplication from groovy.idesupport.idea and org.codehaus.groovy.intellij
 * ref: get the unit tests running in a 'plain vanilla' setup
 * new: make the Groovy runner write his output to the 'Messages' view.
-* fix: use a Groovy Lexer/Parser in place of the one for JavaScript
+* fix: use a Groovy Lexer/Parser (or equivalent) in place of the one for JavaScript
 * fix: adapt the visitors to make PSI nodes from the AST
 
 h1. done
 
-[dierk, 2 Mar 05]
-* starting this document
-* introducing Groovy to the Custom Language API
+[dierk, 4 Mar 05] first step into logging for getting better info what happens when
+[dierk, 2 Mar 05] starting this document
+[dierk, 2 Mar 05] introducing Groovy to the Custom Language API
 
 h1. how to install
 
-tbd.
+When using the "interactive development" just hit Build/Make and the plugin will be
+installed in the sandbox (see below). Hit 'ant allow.interactive.plugin.dev'.
+Hit groovyj run configuration (see below) for testing.
+
+Otherwise call 'ant deploy.irida'. Adapt paths in /project.properties first.
 
 h1. how to setup environment for developing
 
@@ -58,12 +63,18 @@ setup:
   add the irida.jar from Idea-XXXX-sandbox/lib to it.
 * open /groovyj.ipr within Idea. If all runs fine, ok. If not, set up the project as follows:
   * New Project / Plugin Module
+  * as JDK choose your IDEAs home as IDEA sdk (this option comes with the devkit)
   * Adapt settings in Project Settings / Paths / PlugIn Development
   * Classpath settings as usual: everything below /lib and your idea library
   * Run / Edit Configurations / Plugin (uncheck 'Make Module before...')
 * For trying the new Plugin you best use the Plugin Run Configuration rather than closing
   idea and doing so per Idea-XXXX-sandbox/bin starter. The Sandbox is safer to use, easier to
   shutdown, and possible to debug.
+* For logging support add the following to IDEA/bin/log.xml just before the <root> element:
+  <category name="groovy.idesupport.idea" additivity="true">
+	<priority value="DEBUG"/>
+	<appender-ref ref="CONSOLE-DEBUG"/>
+  </category>
 
 
 h1. implemented features (= what to test before committing)
