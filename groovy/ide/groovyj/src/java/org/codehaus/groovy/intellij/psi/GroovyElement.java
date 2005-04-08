@@ -18,17 +18,6 @@
 
 package org.codehaus.groovy.intellij.psi;
 
-import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.PsiElement;
 
-import org.codehaus.groovy.intellij.language.GroovyLanguage;
-
-public class GroovyElementType extends IElementType {
-
-    GroovyElementType(String debugName) {
-        super(debugName, GroovyLanguage.findOrCreate());
-    }
-
-    public String toString() {
-        return "[Groovy " + super.toString() + "]";
-    }
-}
+public interface GroovyElement extends PsiElement {}

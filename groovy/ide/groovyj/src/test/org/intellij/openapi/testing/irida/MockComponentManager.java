@@ -8,10 +8,12 @@ import com.intellij.openapi.components.ComponentManager;
 import com.intellij.openapi.util.Key;
 
 import org.picocontainer.PicoContainer;
+import org.picocontainer.defaults.DefaultPicoContainer;
 
 public class MockComponentManager implements ComponentManager {
 
     private final Map componentRegistry = new HashMap();
+    private final PicoContainer picoContainer = new DefaultPicoContainer();
 
     public void registerComponent(Class aClass, Object component) {
         componentRegistry.put(aClass, component);
@@ -30,7 +32,7 @@ public class MockComponentManager implements ComponentManager {
     }
 
     public PicoContainer getPicoContainer() {
-        return null;
+        return picoContainer;
     }
 
     public Class[] getComponentInterfaces() {

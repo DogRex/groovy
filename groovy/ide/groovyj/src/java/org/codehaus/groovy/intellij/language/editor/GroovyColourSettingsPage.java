@@ -25,14 +25,12 @@ import javax.swing.Icon;
 
 import com.intellij.codeInsight.CodeInsightColors;
 import com.intellij.debugger.settings.DebuggerColors;
-import com.intellij.ide.highlighter.JavaFileHighlighter;
 import com.intellij.openapi.editor.HighlighterColors;
 import com.intellij.openapi.editor.colors.ColorKey;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.openapi.options.colors.AttributesDescriptor;
 import com.intellij.openapi.options.colors.ColorDescriptor;
 import com.intellij.openapi.options.colors.ColorSettingsPage;
-import com.intellij.pom.java.LanguageLevel;
 
 import org.codehaus.groovy.intellij.GroovySupportLoader;
 
@@ -150,6 +148,6 @@ public class GroovyColourSettingsPage implements ColorSettingsPage {
     }
 
     public SyntaxHighlighter getHighlighter() {
-        return new JavaFileHighlighter(LanguageLevel.HIGHEST);
+        return new GroovyFileHighlighter();
     }
 }

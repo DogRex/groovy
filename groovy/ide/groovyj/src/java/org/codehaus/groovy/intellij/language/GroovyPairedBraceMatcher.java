@@ -23,14 +23,14 @@ import com.intellij.lang.PairedBraceMatcher;
 
 import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
 
-import org.codehaus.groovy.intellij.psi.GroovyTokenTypeToElementTypeMappings;
+import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
 public class GroovyPairedBraceMatcher implements PairedBraceMatcher {
 
     private static final BracePair[] BRACE_PAIRS = new BracePair[] {
-        new BracePair('(', GroovyTokenTypeToElementTypeMappings.getType(GroovyTokenTypes.LPAREN), ')', GroovyTokenTypeToElementTypeMappings.getType(GroovyTokenTypes.RPAREN), false),
-        new BracePair('[', GroovyTokenTypeToElementTypeMappings.getType(GroovyTokenTypes.LBRACK), ']', GroovyTokenTypeToElementTypeMappings.getType(GroovyTokenTypes.RBRACK), false),
-        new BracePair('{', GroovyTokenTypeToElementTypeMappings.getType(GroovyTokenTypes.LCURLY), '}', GroovyTokenTypeToElementTypeMappings.getType(GroovyTokenTypes.RCURLY), true)
+        new BracePair('(', GroovyTokenTypeMappings.getType(GroovyTokenTypes.LPAREN), ')', GroovyTokenTypeMappings.getType(GroovyTokenTypes.RPAREN), false),
+        new BracePair('[', GroovyTokenTypeMappings.getType(GroovyTokenTypes.LBRACK), ']', GroovyTokenTypeMappings.getType(GroovyTokenTypes.RBRACK), false),
+        new BracePair('{', GroovyTokenTypeMappings.getType(GroovyTokenTypes.LCURLY), '}', GroovyTokenTypeMappings.getType(GroovyTokenTypes.RCURLY), true)
     };
 
     public BracePair[] getPairs() {

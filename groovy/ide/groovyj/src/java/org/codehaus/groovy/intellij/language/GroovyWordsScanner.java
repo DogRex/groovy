@@ -16,19 +16,16 @@
  */
 
 
-package org.codehaus.groovy.intellij.psi;
+package org.codehaus.groovy.intellij.language;
 
-import com.intellij.psi.tree.IElementType;
+import com.intellij.lang.cacheBuilder.DefaultWordsScanner;
+import com.intellij.lexer.Lexer;
 
-import org.codehaus.groovy.intellij.language.GroovyLanguage;
+import org.codehaus.groovy.intellij.psi.GroovyTokenSets;
 
-public class GroovyElementType extends IElementType {
+public class GroovyWordsScanner extends DefaultWordsScanner {
 
-    GroovyElementType(String debugName) {
-        super(debugName, GroovyLanguage.findOrCreate());
-    }
-
-    public String toString() {
-        return "[Groovy " + super.toString() + "]";
+    public GroovyWordsScanner(Lexer groovyLexer) {
+        super(groovyLexer, GroovyTokenSets.IDENTIFIERS, GroovyTokenSets.COMMENTS, GroovyTokenSets.STRING_LITERALS);
     }
 }

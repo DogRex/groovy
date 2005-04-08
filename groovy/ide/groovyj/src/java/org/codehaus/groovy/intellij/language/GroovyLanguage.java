@@ -26,49 +26,67 @@ import com.intellij.lang.ParserDefinition;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.cacheBuilder.WordsScanner;
 import com.intellij.lang.folding.FoldingBuilder;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.tree.IElementType;
 
+import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
+
+import org.picocontainer.MutablePicoContainer;
+
+import org.codehaus.groovy.intellij.language.editor.GroovyFileHighlighter;
+import org.codehaus.groovy.intellij.language.editor.GroovyFoldingBuilder;
+import org.codehaus.groovy.intellij.language.editor.GroovyPseudoTextBuilder;
+import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
+
 public class GroovyLanguage extends Language {
 
-    static final String ID = "Groovy";
+    private static final String ID = "Groovy";
 
-    public static GroovyLanguage createLanguage() {
+    public static GroovyLanguage findOrCreate() {
         GroovyLanguage language = (GroovyLanguage) Language.findByID(GroovyLanguage.ID);
         return (language == null) ? new GroovyLanguage() : language;
     }
 
+    private final MutablePicoContainer picoContainer;
+
     private GroovyLanguage() {
-        super(ID);
+        super(GroovyLanguage.ID);
+
+        picoContainer = (MutablePicoContainer) ApplicationManager.getApplication().getPicoContainer();
+        picoContainer.unregisterComponent(GroovyLanguageToolsFactory.class);
+        picoContainer.registerComponentImplementation(GroovyLanguageToolsFactory.class);
+        picoContainer.registerComponentImplementation(GroovyParserDefinition.class);
     }
 
     public ParserDefinition getParserDefinition() {
-        return null;
+        Object languageToolsFactory = picoContainer.getComponentInstance(GroovyLanguageToolsFactory.class);
+        return new GroovyParserDefinition((GroovyLanguageToolsFactory) languageToolsFactory);
     }
 
     public SyntaxHighlighter getSyntaxHighlighter(Project project) {
-        return null;
+        return new GroovyFileHighlighter();
     }
 
     public WordsScanner getWordsScanner() {
-        return null;
+        return new GroovyWordsScanner(getParserDefinition().createLexer(null));
     }
 
     public boolean mayHaveReferences(IElementType token) {
-        return false;
+        return token == GroovyTokenTypeMappings.getType(GroovyTokenTypes.IDENT);
     }
 
     public FoldingBuilder getFoldingBuilder() {
-        return null;
+        return new GroovyFoldingBuilder();
     }
 
     public PseudoTextBuilder getFormatter() {
-        return null;
+        return new GroovyPseudoTextBuilder();
     }
 
     public PairedBraceMatcher getPairedBraceMatcher() {
-        return null;
+        return new GroovyPairedBraceMatcher();
     }
 
     public Annotator getAnnotator() {

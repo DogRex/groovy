@@ -16,19 +16,18 @@
  */
 
 
-package org.codehaus.groovy.intellij.psi;
+package org.codehaus.groovy.intellij.language;
 
-import com.intellij.psi.tree.IElementType;
+import com.intellij.lang.PsiParser;
+import com.intellij.lexer.Lexer;
 
-import org.codehaus.groovy.intellij.language.GroovyLanguage;
+public class GroovyLanguageToolsFactory {
 
-public class GroovyElementType extends IElementType {
-
-    GroovyElementType(String debugName) {
-        super(debugName, GroovyLanguage.findOrCreate());
+    public Lexer createLexer() {
+        return new GroovyLexerAdapter();
     }
 
-    public String toString() {
-        return "[Groovy " + super.toString() + "]";
+    public PsiParser createParser() {
+        return new GroovyPsiParser();
     }
 }

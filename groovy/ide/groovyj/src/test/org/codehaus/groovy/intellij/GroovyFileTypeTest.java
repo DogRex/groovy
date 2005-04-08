@@ -22,61 +22,72 @@ import java.nio.charset.Charset;
 
 import junitx.framework.ObjectAssert;
 
-import com.intellij.ide.highlighter.JavaFileHighlighter;
+import org.intellij.openapi.testing.MockApplicationManager;
+
 import com.intellij.openapi.fileTypes.StdFileTypes;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
+import com.intellij.testFramework.MockVirtualFile;
 
 import org.jmock.Mock;
 import org.jmock.cglib.MockObjectTestCase;
 
 import org.codehaus.groovy.intellij.language.GroovyLanguage;
+import org.codehaus.groovy.intellij.language.editor.GroovyFileHighlighter;
 
 public class GroovyFileTypeTest extends MockObjectTestCase {
 
-    private GroovyFileType groovyFileType = new GroovyFileType(GroovyLanguage.createLanguage());
+    private GroovyFileType fileType;
+
+    protected void setUp() {
+        MockApplicationManager.reset();
+        fileType = new GroovyFileType(GroovyLanguage.findOrCreate());
+    }
 
     public void testDefinesAName() {
-        assertEquals("name", "Groovy", groovyFileType.getName());
+        assertEquals("name", "Groovy", fileType.getName());
     }
 
     public void testHasADescription() {
-        assertEquals("description", "Groovy Scripts and Classes", groovyFileType.getDescription());
+        assertEquals("description", "Groovy Scripts and Classes", fileType.getDescription());
     }
 
     public void testDefinesADefaultExtension() {
-        assertEquals("default extension", "groovy", groovyFileType.getDefaultExtension());
+        assertEquals("default extension", "groovy", fileType.getDefaultExtension());
     }
 
     public void testHasTheGroovyFileTypeIcon() {
-        assertSame("icon", Icons.SMALLEST, groovyFileType.getIcon());
+        assertSame("icon", Icons.SMALLEST, fileType.getIcon());
     }
 
     public void testDoesNotRepresentABinaryFile() {
-        assertEquals("is binary file", false, groovyFileType.isBinary());
+        assertEquals("is binary file", false, fileType.isBinary());
     }
 
     public void testIsNotAReadOnlyFileType() {
-        assertEquals("is binary file", false, groovyFileType.isReadOnly());
+        assertEquals("is binary file", false, fileType.isReadOnly());
     }
 
     public void testSupportsKeywordCompletion() {
-        assertEquals("supports keyword completion", true, groovyFileType.getSupportCapabilities().hasCompletion());
+        assertEquals("supports keyword completion", true, fileType.getSupportCapabilities().hasCompletion());
     }
 
     public void testSupportsSyntaxValidation() {
-        assertEquals("supports syntax validation", true, groovyFileType.getSupportCapabilities().hasValidation());
+        assertEquals("supports syntax validation", true, fileType.getSupportCapabilities().hasValidation());
     }
 
     public void testSupportsTheNavigationToGroovyElements() {
-        assertEquals("supports navigation", true, groovyFileType.getSupportCapabilities().hasNavigation());
+        assertEquals("supports navigation", true, fileType.getSupportCapabilities().hasNavigation());
     }
 
     public void testSupportsFindUsagesOnGroovyElements() {
-        assertEquals("supports find usages", true, groovyFileType.getSupportCapabilities().hasFindUsages());
+        assertEquals("supports find usages", true, fileType.getSupportCapabilities().hasFindUsages());
     }
 
     public void testSupportsTheRenamingOfGroovyElements() {
-        assertEquals("supports renaming", true, groovyFileType.getSupportCapabilities().hasRename());
+        assertEquals("supports renaming", true, fileType.getSupportCapabilities().hasRename());
     }
 
     public void testReturnsTheCharacterSetOfAGivenFileAsItsCharacterSet() {
@@ -85,17 +96,40 @@ public class GroovyFileTypeTest extends MockObjectTestCase {
         Mock mockVirtualFile = Mocks.createVirtualFileMock(this);
         mockVirtualFile.expects(once()).method("getCharset").will(returnValue(Charset.forName(expectedCharacterSetName)));
 
-        assertSame("character set", expectedCharacterSetName, groovyFileType.getCharset((VirtualFile) mockVirtualFile.proxy()));
+        assertSame("character set", expectedCharacterSetName, fileType.getCharset((VirtualFile) mockVirtualFile.proxy()));
     }
 
-    public void testTemporarilyUsesTheJavaFileHighlighterAsItsHighlighter() {
+    public void testUsesTheGroovyFileHighlighterAsItsHighlighter() {
         StdFileTypes.XML = Stubs.LANGUAGE_FILE_TYPE;
         StdFileTypes.JAVA = Stubs.LANGUAGE_FILE_TYPE;
 
-        ObjectAssert.assertInstanceOf("highlighter", JavaFileHighlighter.class, groovyFileType.getHighlighter(null));
+        ObjectAssert.assertInstanceOf("highlighter", GroovyFileHighlighter.class, fileType.getHighlighter(null));
     }
 
-    public void testDoesNotHaveARepresentationInTheStructuralTreeYet() {
-        assertSame("structural view builder", null, groovyFileType.getStructureViewBuilder(null, null));
+    public void testDoesNotCreateABuilderForTheStructuralTreeViewForAFileOutsideOfTheCurrentProject() {
+        Mock mockPsiManager = mock(PsiManager.class);
+
+        Project exectedProject = createStubbedProject((PsiManager) mockPsiManager.proxy());
+        VirtualFile expectedVirtualFile = new MockVirtualFile();
+
+        mockPsiManager.expects(once()).method("findFile").with(same(expectedVirtualFile)).will(returnValue(null));
+
+        assertSame("structural view builder", null, fileType.getStructureViewBuilder(expectedVirtualFile, exectedProject));
+    }
+
+    public void testDoesNotCreateABuilderForTheStructuralTreeViewForAFileInsideTheCurrentProject() {
+        Mock mockPsiManager = mock(PsiManager.class);
+        Project exectedProject = createStubbedProject((PsiManager) mockPsiManager.proxy());
+        VirtualFile expectedVirtualFile = new MockVirtualFile();
+
+        mockPsiManager.expects(once()).method("findFile").with(same(expectedVirtualFile)).will(returnValue(mock(PsiFile.class).proxy()));
+
+        assertSame("structural view builder", null, fileType.getStructureViewBuilder(expectedVirtualFile, exectedProject));
+    }
+
+    private Project createStubbedProject(PsiManager psiManager) {
+        Mock stubProject = mock(Project.class, "stubProject");
+        stubProject.stubs().method("getComponent").with(same(PsiManager.class)).will(returnValue(psiManager));
+        return (Project) stubProject.proxy();
     }
 }

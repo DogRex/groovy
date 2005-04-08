@@ -99,7 +99,7 @@ public class MockIridaApplication extends MockUserDataHolder implements MockAppl
     }
 
     public PicoContainer getPicoContainer() {
-        return null;
+        return componentManager.getPicoContainer();
     }
 
     public boolean hasComponent(Class aClass) {

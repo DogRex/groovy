@@ -29,7 +29,7 @@ import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
 
 import gnu.trove.TIntObjectHashMap;
 
-public final class GroovyTokenTypeToElementTypeMappings {
+public final class GroovyTokenTypeMappings {
 
     /** Internal ANTLR index. */
     public static final int BAD_CHARACTER = -1;
@@ -104,8 +104,8 @@ public final class GroovyTokenTypeToElementTypeMappings {
         TOKEN_TYPES.put(tokenTypeIndex, elementType);
 
         registerElementTypeIfApplicable("ASSIGN",  tokenTypeName, elementType, assignmentTypes);
-        registerElementTypeIfApplicable("LITERAL", tokenTypeName, elementType, literalTypes);
-        registerElementTypeIfApplicable("COMMENT", tokenTypeName, elementType, commentTypes);
+        registerElementTypeIfApplicable("LITERAL_", tokenTypeName, elementType, literalTypes);
+        registerElementTypeIfApplicable("_COMMENT", tokenTypeName, elementType, commentTypes);
     }
 
     private static void registerElementTypeIfApplicable(String keyword, String tokenTypeName, IElementType elementType, List elementTypeCategory) {

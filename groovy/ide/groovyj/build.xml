@@ -40,7 +40,7 @@
         <property name="clover.dir" value="clover"/>
         <property name="clover.lib.dir" value="${user.home}/.ant/lib"/>
         <property name="clover.reports" value="${build.dir}/clover-reports"/>
-        <property name="coverage.criteria" value="98%"/>
+        <property name="coverage.criteria" value="95%"/>
 
         <path id="clover.classpath">
             <pathelement location="${clover.lib.dir}/clover-1.3.5.jar"/>
@@ -135,7 +135,14 @@
         <delete dir="${build.dir}" failonerror="false"/>
     </target>
 
-    <target name="compile.irida" depends="irida.available">
+    <target name="antlr.parser" depends="irida.available">
+        <antlr glib="${src.java.dir}/org/codehaus/groovy/intellij/language/parser/groovy.g"
+               target="${src.java.dir}/org/codehaus/groovy/intellij/language/parser/groovy.psi.g">
+            <classpath refid="irida.compile.classpath"/>
+        </antlr>
+    </target>
+
+    <target name="compile.irida" depends="antlr.parser">
         <mkdir dir="${irida.classes.dir}"/>
         <javac srcdir="${src.java.dir}" destdir="${irida.classes.dir}" debug="on">
             <classpath refid="irida.compile.classpath"/>
@@ -194,7 +201,7 @@
         </delete>
 
         <clover-setup enabled="true" initString="${clover.dir}/clover.db">
-            <fileset dir="${src.java.dir}" includes="**/*.java"/>
+            <fileset dir="${src.java.dir}" includes="**/*.java" excludes="**/GroovyPsiRecognizer*.java"/>
         </clover-setup>
     </target>
 

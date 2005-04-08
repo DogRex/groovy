@@ -16,19 +16,20 @@
  */
 
 
-package org.codehaus.groovy.intellij.psi;
+package org.codehaus.groovy.intellij.language;
 
-import com.intellij.psi.tree.IElementType;
+import junit.framework.TestCase;
+import junitx.framework.ObjectAssert;
 
-import org.codehaus.groovy.intellij.language.GroovyLanguage;
+public class GroovyLanguageToolsFactoryTest extends TestCase {
 
-public class GroovyElementType extends IElementType {
+    private final GroovyLanguageToolsFactory languageToolsFactory = new GroovyLanguageToolsFactory();
 
-    GroovyElementType(String debugName) {
-        super(debugName, GroovyLanguage.findOrCreate());
+    public void testCreatesALexerForGroovy() {
+        ObjectAssert.assertInstanceOf("lexer", GroovyLexerAdapter.class, languageToolsFactory.createLexer());
     }
 
-    public String toString() {
-        return "[Groovy " + super.toString() + "]";
+    public void testCreatesAPsiParserForGroovy() {
+        ObjectAssert.assertInstanceOf("PSI parser", GroovyPsiParser.class, languageToolsFactory.createParser());
     }
 }

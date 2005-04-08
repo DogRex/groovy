@@ -18,48 +18,89 @@
 
 package org.codehaus.groovy.intellij.language;
 
+import junit.framework.TestCase;
 import junitx.framework.Assert;
 import junitx.framework.ObjectAssert;
 
-import com.intellij.openapi.project.Project;
+import org.intellij.openapi.testing.MockApplicationManager;
+
+import com.intellij.codeFormatting.PseudoTextBuilder;
+import com.intellij.lang.Commenter;
+import com.intellij.lang.PairedBraceMatcher;
+import com.intellij.lang.ParserDefinition;
+import com.intellij.lang.cacheBuilder.WordsScanner;
+import com.intellij.lang.folding.FoldingBuilder;
+import com.intellij.openapi.fileTypes.StdFileTypes;
+import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.psi.tree.IElementType;
 
-import org.jmock.cglib.MockObjectTestCase;
+import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
 
-public class GroovyLanguageTest extends MockObjectTestCase {
+import org.codehaus.groovy.intellij.Stubs;
+import org.codehaus.groovy.intellij.language.editor.GroovyFileHighlighter;
+import org.codehaus.groovy.intellij.language.editor.GroovyFoldingBuilder;
+import org.codehaus.groovy.intellij.language.editor.GroovyPseudoTextBuilder;
+import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
-    private final GroovyLanguage language = GroovyLanguage.createLanguage();
+public class GroovyLanguageTest extends TestCase {
+
+    static {
+        MockApplicationManager.reset();
+    }
+
+    private final GroovyLanguage language = GroovyLanguage.findOrCreate();
 
     public void testHasItsIdSetToGroovy() {
-        assertEquals("Language: " + GroovyLanguage.ID, language.toString());
+        assertEquals("Language: Groovy", language.toString());
     }
 
-    public void testDoesNotHaveAParserDefinitionYet() {
-        assertEquals("parser definition", null, language.getParserDefinition());
+    public void testCreatesAParserDefinitionForGroovy() {
+        ParserDefinition parserDefinition = language.getParserDefinition();
+        Assert.assertNotEquals("parser definition", null, parserDefinition);
+        ObjectAssert.assertInstanceOf("parser definition", GroovyParserDefinition.class, parserDefinition);
     }
 
-    public void testDoesNotProduceProjectSpecificSyntaxHighlightersYet() {
-        assertEquals("project syntax highlighter", null, language.getSyntaxHighlighter((Project) mock(Project.class).proxy()));
+    public void testProducesAProjectSpecificSyntaxHighlighterForGroovy() {
+        StdFileTypes.JAVA = Stubs.LANGUAGE_FILE_TYPE;
+        StdFileTypes.XML = Stubs.LANGUAGE_FILE_TYPE;
+
+        SyntaxHighlighter syntaxHighlighter = language.getSyntaxHighlighter(null);
+        Assert.assertNotEquals("project syntax highlighter", null, syntaxHighlighter);
+        ObjectAssert.assertInstanceOf("project syntax highlighter", GroovyFileHighlighter.class, syntaxHighlighter);
     }
 
-    public void testDoesNotProduceWordScannersYet() {
-        assertEquals("word scanner", null, language.getWordsScanner());
+    public void testProducesAWordScannerForGroovy() {
+        WordsScanner wordsScanner = language.getWordsScanner();
+        Assert.assertNotEquals("word scanner", null, wordsScanner);
+        ObjectAssert.assertInstanceOf("word scanner", GroovyWordsScanner.class, wordsScanner);
     }
 
-    public void testDoesNotFindReferencesToTokensYet() {
-        assertEquals("token references", false, language.mayHaveReferences(new IElementType(null, null)));
+    public void testDefinesThatGroovyIdentifiersMayHaveReferences() {
+        IElementType groovyIdentifierElementType = GroovyTokenTypeMappings.getType(GroovyTokenTypes.IDENT);
+        assertTrue("groovy identifiers may have references", language.mayHaveReferences(groovyIdentifierElementType));
     }
 
-    public void testDoesNotProduceFoldingBuildersYet() {
-        assertEquals("folding builder", null, language.getFoldingBuilder());
+    public void testDefinesThatTokensThatDoNotRepresentGroovyIdentifiersMayNotHaveReferences() {
+        IElementType notAGroovyIdentifierElementType = new IElementType(null, null);
+        assertFalse("tokens that are not groovy identifiers may not have references", language.mayHaveReferences(notAGroovyIdentifierElementType));
     }
 
-    public void testDoesNotProduceFormattersYet() {
-        assertEquals("formatter", null, language.getFormatter());
+    public void testProducesACodeFoldingBuilderForGroovy() {
+        FoldingBuilder foldingBuilder = language.getFoldingBuilder();
+        Assert.assertNotEquals("folding builder", null, foldingBuilder);
+        ObjectAssert.assertInstanceOf("folding builder", GroovyFoldingBuilder.class, foldingBuilder);
     }
 
-    public void testDoesNotProducePairedBraceMatchersYet() {
-        assertEquals("paired brace matcher", null, language.getPairedBraceMatcher());
+    public void testProducesAFormatterForGroovy() {
+        PseudoTextBuilder formatter = language.getFormatter();
+        Assert.assertNotEquals("formatter", null, formatter);
+        ObjectAssert.assertInstanceOf("formatter", GroovyPseudoTextBuilder.class, formatter);
+    }
+
+    public void testProducesAPairedBraceMatcherForGroovy() {
+        PairedBraceMatcher pairedBraceMatcher = language.getPairedBraceMatcher();
+        Assert.assertNotEquals("paired brace matcher", null, pairedBraceMatcher);
+        ObjectAssert.assertInstanceOf("paired brace matcher", GroovyPairedBraceMatcher.class, pairedBraceMatcher);
     }
 
     public void testDoesNotProduceAnnotatorsYet() {
@@ -67,7 +108,8 @@ public class GroovyLanguageTest extends MockObjectTestCase {
     }
 
     public void testProducesACommenterForGroovy() {
-        Assert.assertNotEquals("commenter", null, language.getCommenter());
-        ObjectAssert.assertInstanceOf("groovy has its own commenter", GroovyCommenter.class, language.getCommenter());
+        Commenter commenter = language.getCommenter();
+        Assert.assertNotEquals("commenter", null, commenter);
+        ObjectAssert.assertInstanceOf("groovy has its own commenter", GroovyCommenter.class, commenter);
     }
 }

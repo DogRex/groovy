@@ -20,23 +20,16 @@ package org.codehaus.groovy.intellij;
 
 import javax.swing.Icon;
 
-import com.intellij.ide.highlighter.JavaFileHighlighter;
-import com.intellij.ide.structureView.StructureViewBuilder;
-import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeSupportCapabilities;
-import com.intellij.openapi.fileTypes.SyntaxHighlighter;
-import com.intellij.openapi.project.Project;
+import com.intellij.openapi.fileTypes.LanguageFileType;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.pom.java.LanguageLevel;
 
 import org.codehaus.groovy.intellij.language.GroovyLanguage;
 
-public class GroovyFileType implements FileType {
-
-    private final GroovyLanguage language;
+public class GroovyFileType extends LanguageFileType {
 
     public GroovyFileType(GroovyLanguage language) {
-        this.language = language;
+        super(language);
     }
 
     public String getName() {
@@ -53,14 +46,6 @@ public class GroovyFileType implements FileType {
 
     public Icon getIcon() {
         return Icons.SMALLEST;
-    }
-
-    public boolean isBinary() {
-        return false;
-    }
-
-    public boolean isReadOnly() {
-        return false;
     }
 
     public FileTypeSupportCapabilities getSupportCapabilities() {
@@ -89,13 +74,5 @@ public class GroovyFileType implements FileType {
 
     public String getCharset(VirtualFile file) {
         return file.getCharset().name();
-    }
-
-    public SyntaxHighlighter getHighlighter(Project project) {
-        return new JavaFileHighlighter(LanguageLevel.HIGHEST);
-    }
-
-    public StructureViewBuilder getStructureViewBuilder(VirtualFile file, Project project) {
-        return null;
     }
 }

@@ -25,7 +25,7 @@ import com.intellij.lang.BracePair;
 
 import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
 
-import org.codehaus.groovy.intellij.psi.GroovyTokenTypeToElementTypeMappings;
+import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
 public class GroovyPairedBraceMatcherTest extends TestCase {
 
@@ -46,8 +46,8 @@ public class GroovyPairedBraceMatcherTest extends TestCase {
         assertEquals("left brace", leftBraceCharacter, actualBracePair.getLeftBraceChar());
         assertEquals("right brace", rightBraceCharacter, actualBracePair.getRightBraceChar());
 
-        assertSame("left brace type", GroovyTokenTypeToElementTypeMappings.getType(leftBraceTokenTypeIndex), actualBracePair.getLeftBraceType());
-        assertSame("right brace type", GroovyTokenTypeToElementTypeMappings.getType(rightBraceTokenTypeIndex), actualBracePair.getRightBraceType());
+        assertSame("left brace type", GroovyTokenTypeMappings.getType(leftBraceTokenTypeIndex), actualBracePair.getLeftBraceType());
+        assertSame("right brace type", GroovyTokenTypeMappings.getType(rightBraceTokenTypeIndex), actualBracePair.getRightBraceType());
     }
 
     private BracePair findBracePair(char leftBraceCharacter) {
