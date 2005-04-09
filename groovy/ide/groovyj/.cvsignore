@@ -4,3 +4,4 @@ dist
 *.ipr
 *.iws
 *-notes-*.txt
+build.number
