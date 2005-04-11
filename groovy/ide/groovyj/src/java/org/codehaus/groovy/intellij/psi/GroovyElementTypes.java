@@ -65,7 +65,7 @@ public final class GroovyElementTypes {
         public int getErrorsCount(CharSequence characterSequence, Project project) {
             Lexer lexer = getLanguage().getParserDefinition().createLexer(project);
             char[] characters = CharArrayUtil.fromSequence(characterSequence);
-            lexer.start(characters, 0, characters.length);
+            lexer.startMarker(characters, 0, characters.length);
 
             int numberOfErrors = 0;
             for (IElementType elementType = lexer.getTokenType(); elementType != null; lexer.advance()) {

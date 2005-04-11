@@ -22,12 +22,15 @@ header {
 package org.codehaus.groovy.intellij.language.parser;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.intellij.lang.PsiBuilder;
-import com.intellij.lang.impl.PsiBuilderImpl;
+import com.intellij.psi.tree.IElementType;
 
+import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
+import org.codehaus.groovy.intellij.language.GroovyPsiBuilder;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 }
 
@@ -225,10 +228,12 @@ options {
 
 {
     private PsiBuilder builder;
+    private IElementType rootElementType;
 
-    public GroovyPsiRecognizer(PsiBuilder builder, TokenStream tokenStream) {
-        this(tokenStream, 3);         // this is a LLkParser where k = 3
+    public GroovyPsiRecognizer(IElementType rootElementType, PsiBuilder builder, TokenStream tokenStream) {
+        this(tokenStream, 3);    // this is a LL(k) parser where k = 3
         this.builder = builder;
+        this.rootElementType = rootElementType;
     }
 
     boolean compatibilityMode = true;  // for now
@@ -336,19 +341,13 @@ options {
 // Compilation Unit: In Groovy, this is a single file or script. This is the start
 // rule for this parser
 compilationUnit
-        { PsiBuilder.Marker marker = null; }
+        {
+            PsiBuilder.Marker rootMarker = builder.mark();
+            builder.advanceLexer();
+        }
     :
         // The very first characters of the file may be "#!".  If so, ignore the first line.
-        (
-            {
-                marker = builder.mark();
-                builder.advanceLexer();
-            }
-            SH_COMMENT!
-            {
-                marker.done(GroovyTokenTypeMappings.getType(SH_COMMENT));
-            }
-        )?
+        (SH_COMMENT!)?
 
         // we can have comments at the top of a file
         nls!
@@ -362,7 +361,14 @@ compilationUnit
         // Semicolons and/or significant newlines serve as separators.
         ( sep! (statement[sepToken])? )*
         EOF!
+        {
+            rootMarker.done(rootElementType);
+        }
     ;
+    exception   // for the whole rule
+    catch [RecognitionException e] {
+        builder.error(e.getMessage());
+    }
 
 /** A Groovy script or simple expression.  Can be anything legal inside {...}. */
 snippetUnit
@@ -2760,6 +2766,809 @@ nlsWarn!
             ); }
         )?
         nls!
+    ;
+
+
+//----------------------------------------------------------------------------
+// The Groovy scanner
+//----------------------------------------------------------------------------
+class GroovyPsiLexer extends GroovyLexer;
+
+options {
+    testLiterals=false;             // don't automatically test for literals
+    k=4;                                    // four characters of lookahead
+    charVocabulary='\u0003'..'\uFFFF';
+    // without inlining some bitset tests, couldn't do unicode;
+    // I need to make ANTLR generate smaller bitsets; see
+    // bottom of GroovyLexer.java
+    codeGenBitsetTestThreshold=20;
+}
+
+{
+    /** flag for enabling the "assert" keyword */
+    private boolean assertEnabled = true;
+    /** flag for enabling the "enum" keyword */
+    private boolean enumEnabled = true;
+    /** flag for including whitespace tokens (for IDE preparsing) */
+    private boolean whitespaceIncluded = false;
+
+    private PsiBuilder builder;
+    public PsiBuilder getPsiBuilder() { return builder; }
+
+    public GroovyPsiLexer(PsiBuilder builder) {
+        this((Reader) null);
+        this.builder = builder;
+    }
+
+    /** Enable the "assert" keyword */
+    public void enableAssert(boolean shouldEnable) { assertEnabled = shouldEnable; }
+    /** Query the "assert" keyword state */
+    public boolean isAssertEnabled() { return assertEnabled; }
+    /** Enable the "enum" keyword */
+    public void enableEnum(boolean shouldEnable) { enumEnabled = shouldEnable; }
+    /** Query the "enum" keyword state */
+    public boolean isEnumEnabled() { return enumEnabled; }
+
+    /** Include whitespace tokens.  Note that this breaks the parser.   */
+    public void setWhitespaceIncluded(boolean z) { whitespaceIncluded = z; }
+    /** Are whitespace tokens included? */
+    public boolean isWhitespaceIncluded() { return whitespaceIncluded; }
+
+    {
+        // Initialization actions performed on construction.
+        setTabSize(1);  // get rid of special tab interpretation, for IDEs and general clarity
+    }
+
+/** Bumped when inside '[x]' or '(x)', reset inside '{x}'.  See ONE_NL.  */
+    protected int parenLevel = 0;
+    protected int suppressNewline = 0;  // be really mean to newlines inside strings
+    protected static final int SCS_TYPE = 3, SCS_VAL = 4, SCS_LIT = 8, SCS_LIMIT = 16;
+    protected static final int SCS_SQ_TYPE = 0, SCS_TQ_TYPE = 1, SCS_RE_TYPE = 2;
+    protected int stringCtorState = 0;  // hack string and regexp constructor boundaries
+    /** Push parenLevel here and reset whenever inside '{x}'. */
+    protected ArrayList parenLevelStack = new ArrayList();
+    protected int lastSigTokenType = EOF;  // last returned non-whitespace token
+
+    protected void pushParenLevel() {
+        parenLevelStack.add(new Integer(parenLevel*SCS_LIMIT + stringCtorState));
+        parenLevel = 0;
+        stringCtorState = 0;
+    }
+    protected void popParenLevel() {
+        int npl = parenLevelStack.size();
+        if (npl == 0)  return;
+        int i = ((Integer) parenLevelStack.remove(--npl)).intValue();
+        parenLevel      = i / SCS_LIMIT;
+        stringCtorState = i % SCS_LIMIT;
+    }
+
+    protected void restartStringCtor(boolean expectLiteral) {
+        if (stringCtorState != 0) {
+            stringCtorState = (expectLiteral? SCS_LIT: SCS_VAL) + (stringCtorState & SCS_TYPE);
+        }
+    }
+
+    protected boolean allowRegexpLiteral() {
+        return !isExpressionEndingToken(lastSigTokenType);
+    }
+
+    /** Return true for an operator or punctuation which can end an expression.
+     *  Return true for keywords, identifiers, and literals.
+     *  Return true for tokens which can end expressions (right brackets, ++, --).
+     *  Return false for EOF and all other operator and punctuation tokens.
+     *  Used to suppress the recognition of /foo/ as opposed to the simple division operator '/'.
+     */
+    // Cf. 'constant' and 'balancedBrackets' rules in the grammar.)
+    protected static boolean isExpressionEndingToken(int ttype) {
+        switch (ttype) {
+        case INC:               // x++ / y
+        case DEC:               // x-- / y
+        case RPAREN:            // (x) / y
+        case RBRACK:            // f[x] / y
+        case RCURLY:            // f{x} / y
+        case STRING_LITERAL:    // "x" / y
+        case STRING_CTOR_END:   // "$x" / y
+        case NUM_INT:           // 0 / y
+        case NUM_FLOAT:         // 0f / y
+        case NUM_LONG:          // 0l / y
+        case NUM_DOUBLE:        // 0.0 / y
+        case NUM_BIG_INT:       // 0g / y
+        case NUM_BIG_DECIMAL:   // 0.0g / y
+        case IDENT:             // x / y
+        // and a bunch of keywords (all of them; no sense picking and choosing):
+        case LITERAL_any:
+        case LITERAL_as:
+        case LITERAL_assert:
+        case LITERAL_boolean:
+        case LITERAL_break:
+        case LITERAL_byte:
+        case LITERAL_case:
+        case LITERAL_catch:
+        case LITERAL_char:
+        case LITERAL_class:
+        case LITERAL_continue:
+        case LITERAL_def:
+        case LITERAL_default:
+        case LITERAL_double:
+        case LITERAL_else:
+        case LITERAL_enum:
+        case LITERAL_extends:
+        case LITERAL_false:
+        case LITERAL_finally:
+        case LITERAL_float:
+        case LITERAL_for:
+        case LITERAL_if:
+        case LITERAL_implements:
+        case LITERAL_import:
+        case LITERAL_in:
+        case LITERAL_instanceof:
+        case LITERAL_int:
+        case LITERAL_interface:
+        case LITERAL_long:
+        case LITERAL_native:
+        case LITERAL_new:
+        case LITERAL_null:
+        case LITERAL_package:
+        case LITERAL_private:
+        case LITERAL_protected:
+        case LITERAL_public:
+        case LITERAL_return:
+        case LITERAL_short:
+        case LITERAL_static:
+        case LITERAL_super:
+        case LITERAL_switch:
+        case LITERAL_synchronized:
+        case LITERAL_this:
+        case LITERAL_threadsafe:
+        case LITERAL_throw:
+        case LITERAL_throws:
+        case LITERAL_transient:
+        case LITERAL_true:
+        case LITERAL_try:
+        case LITERAL_void:
+        case LITERAL_volatile:
+        case LITERAL_while:
+        case LITERAL_with:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    protected void newlineCheck() throws RecognitionException {
+        if (suppressNewline > 0) {
+            suppressNewline = 0;
+            require(suppressNewline == 0,
+                "end of line reached within a simple string 'x' or \"x\"",
+                "for multi-line literals, use triple quotes '''x''' or \"\"\"x\"\"\"");
+        }
+        newline();
+    }
+
+    protected boolean atValidDollarEscape() throws CharStreamException {
+        // '$' (('*')? ('{' | LETTER)) =>
+        int k = 1;
+        char lc = LA(k++);
+        if (lc != '$')  return false;
+        lc = LA(k++);
+        if (lc == '*')  lc = LA(k++);
+        return (lc == '{' || (lc != '$' && Character.isJavaIdentifierStart(lc)));
+    }
+
+    /** This is a bit of plumbing which resumes collection of string constructor bodies,
+     *  after an embedded expression has been parsed.
+     *  Usage:  new GroovyRecognizer(new GroovyLexer(in).plumb()).
+     */
+    public TokenStream plumb() {
+        return new TokenStream() {
+            public Token nextToken() throws TokenStreamException {
+                if (stringCtorState >= SCS_LIT) {
+                    // This goo is modeled upon the ANTLR code for nextToken:
+                    int quoteType = (stringCtorState & SCS_TYPE);
+                    stringCtorState = 0;  // get out of this mode, now
+                    resetText();
+                    try {
+                        switch (quoteType) {
+                        case SCS_SQ_TYPE:
+                            mSTRING_CTOR_END(true, /*fromStart:*/false, false); break;
+                        case SCS_TQ_TYPE:
+                            mSTRING_CTOR_END(true, /*fromStart:*/false, true); break;
+                        case SCS_RE_TYPE:
+                            mREGEXP_CTOR_END(true, /*fromStart:*/false); break;
+                        default:  assert(false);
+                        }
+                        lastSigTokenType = _returnToken.getType();
+                        return _returnToken;
+                    } catch (RecognitionException e) {
+                        throw new TokenStreamRecognitionException(e);
+                    } catch (CharStreamException cse) {
+                        if ( cse instanceof CharStreamIOException ) {
+                            throw new TokenStreamIOException(((CharStreamIOException)cse).io);
+                        }
+                        else {
+                            throw new TokenStreamException(cse.getMessage());
+                        }
+                    }
+                }
+                Token token = GroovyPsiLexer.this.nextToken();
+                int lasttype = token.getType();
+                if (whitespaceIncluded) {
+                    switch (lasttype) {  // filter out insignificant types
+                    case WS:
+                    case ONE_NL:
+                    case SL_COMMENT:
+                    case ML_COMMENT:
+                        lasttype = lastSigTokenType;  // back up!
+                    }
+                }
+                lastSigTokenType = lasttype;
+                return token;
+            }
+        };
+    }
+
+        // stuff to adjust ANTLR's tracing machinery
+    public static boolean tracing = false;  // only effective if antlr.Tool is run with -traceLexer
+    public void traceIn(String rname) throws CharStreamException {
+        if (!GroovyPsiLexer.tracing)  return;
+        super.traceIn(rname);
+    }
+    public void traceOut(String rname) throws CharStreamException {
+        if (!GroovyPsiLexer.tracing)  return;
+        if (_returnToken != null)  rname += tokenStringOf(_returnToken);
+        super.traceOut(rname);
+    }
+    private static java.util.HashMap ttypes;
+    private static String tokenStringOf(Token t) {
+        if (ttypes == null) {
+            java.util.HashMap map = new java.util.HashMap();
+            java.lang.reflect.Field[] fields = GroovyTokenTypes.class.getDeclaredFields();
+            for (int i = 0; i < fields.length; i++) {
+                if (fields[i].getType() != int.class)  continue;
+                try {
+                    map.put(fields[i].get(null), fields[i].getName());
+                } catch (IllegalAccessException ee) {
+                }
+            }
+            ttypes = map;
+        }
+        Integer tt = new Integer(t.getType());
+        Object ttn = ttypes.get(tt);
+        if (ttn == null)  ttn = "<"+tt+">";
+        return "["+ttn+",\""+t.getText()+"\"]";
+    }
+
+    protected GroovyPsiRecognizer parser;  // little-used link; TODO: get rid of
+    private void require(boolean z, String problem, String solution) throws SemanticException {
+        // TODO: Direct to a common error handler, rather than through the parser.
+        if (!z)  parser.requireFailed(problem, solution);
+    }
+}
+
+// Whitespace -- ignored
+WS
+options {
+    paraphrase="whitespace";
+}
+    :
+        (
+            options { greedy=true; }:
+            ' '
+        |   '\t'
+        |   '\f'
+        )+
+        { if (!whitespaceIncluded)  _ttype = Token.SKIP; }
+    ;
+
+protected
+ONE_NL!
+options {
+    paraphrase="a newline";
+}
+ :   // handle newlines, which are significant in Groovy
+        (   options {generateAmbigWarnings=false;}
+        :   "\r\n"  // Evil DOS
+        |   '\r'    // Macintosh
+        |   '\n'    // Unix (the right way)
+        )
+        {
+            // update current line number for error reporting
+            newlineCheck();
+        }
+    ;
+
+// Group any number of newlines (with comments and whitespace) into a single token.
+// This reduces the amount of parser lookahead required to parse around newlines.
+// It is an invariant that the parser never sees NLS tokens back-to-back.
+NLS
+options {
+    paraphrase="some newlines, whitespace or comments";
+}
+    :   ONE_NL
+        (   {!whitespaceIncluded}?
+            (ONE_NL | WS | SL_COMMENT | ML_COMMENT)+
+            // (gobble, gobble)*
+        )?
+        // Inside (...) and [...] but not {...}, ignore newlines.
+        {   if (whitespaceIncluded) {
+                // keep the token as-is
+            } else if (parenLevel != 0) {
+                // when directly inside parens, all newlines are ignored here
+                $setType(Token.SKIP);
+            } else {
+                // inside {...}, newlines must be explicitly matched as 'nls!'
+                $setText("<newline>");
+            }
+        }
+    ;
+
+// Single-line comments
+SL_COMMENT
+options {
+    paraphrase="a single line comment";
+}
+    :   "//"
+        (
+            options {  greedy = true;  }:
+            // '\uffff' means the EOF character.
+            // This will fix the issue GROOVY-766 (infinite loop).
+            ~('\n'|'\r'|'\uffff')
+        )*
+        { if (!whitespaceIncluded)  $setType(Token.SKIP); }
+        //This might be significant, so don't swallow it inside the comment:
+        //ONE_NL
+    ;
+
+// Script-header comments
+SH_COMMENT
+options {
+    paraphrase="a script header";
+}
+        {
+            PsiBuilder.Marker marker = builder.mark();
+        }
+    :   {getLine() == 1 && getColumn() == 1}?  "#!"
+        (
+            options {  greedy = true;  }:
+            // '\uffff' means the EOF character.
+            // This will fix the issue GROOVY-766 (infinite loop).
+            ~('\n'|'\r'|'\uffff')
+        )*
+        { if (!whitespaceIncluded)  $setType(Token.SKIP); }
+        //ONE_NL  //Never a significant newline, but might as well separate it.
+        {
+            marker.done(GroovyTokenTypeMappings.getType(SH_COMMENT));
+        }
+    ;
+
+// multiple-line comments
+ML_COMMENT
+options {
+    paraphrase="a comment";
+}
+    :   "/*"
+        (   /*  '\r' '\n' can be matched in one alternative or by matching
+                '\r' in one iteration and '\n' in another. I am trying to
+                handle any flavor of newline that comes in, but the language
+                that allows both "\r\n" and "\r" and "\n" to all be valid
+                newline is ambiguous. Consequently, the resulting grammar
+                must be ambiguous. I'm shutting this warning off.
+             */
+            options {
+                    generateAmbigWarnings=false;
+            }
+        :
+            ( '*' ~'/' ) => '*'
+        |   '\r' '\n'               {newlineCheck();}
+        |   '\r'                    {newlineCheck();}
+        |   '\n'                    {newlineCheck();}
+        |   ~('*'|'\n'|'\r'|'\uffff')
+        )*
+        "*/"
+        { if (!whitespaceIncluded)  $setType(Token.SKIP); }
+    ;
+
+
+// string literals
+STRING_LITERAL
+options {
+    paraphrase="a string literal";
+}
+        {int tt=0;}
+    :   ("'''") =>  //...shut off ambiguity warning
+        "'''"!
+        (   STRING_CH | ESC | '"' | '$' | STRING_NL[true]
+        |   ('\'' (~'\'' | '\'' ~'\'')) => '\''  // allow 1 or 2 close quotes
+        )*
+        "'''"!
+    |   '\''!
+                                {++suppressNewline;}
+        (   STRING_CH | ESC | '"' | '$'  )*
+                                {--suppressNewline;}
+        '\''!
+    |   ("\"\"\"") =>  //...shut off ambiguity warning
+        "\"\"\""!
+        tt=STRING_CTOR_END[true, /*tripleQuote:*/ true]
+        {$setType(tt);}
+    |   '"'!
+                                {++suppressNewline;}
+        tt=STRING_CTOR_END[true, /*tripleQuote:*/ false]
+        {$setType(tt);}
+    ;
+
+protected
+STRING_CTOR_END[boolean fromStart, boolean tripleQuote]
+returns [int tt=STRING_CTOR_END]
+options {
+    paraphrase="a string literal end";
+}
+        { boolean dollarOK = false; }
+    :
+        (
+            options {  greedy = true;  }:
+            STRING_CH | ESC | '\'' | STRING_NL[tripleQuote]
+        |   ('"' (~'"' | '"' ~'"'))=> {tripleQuote}? '"'  // allow 1 or 2 close quotes
+        )*
+        (   (   { !tripleQuote }? "\""!
+            |   {  tripleQuote }? "\"\"\""!
+            )
+            {
+                if (fromStart)      tt = STRING_LITERAL;  // plain string literal!
+                if (!tripleQuote)   {--suppressNewline;}
+                // done with string constructor!
+                //assert(stringCtorState == 0);
+            }
+        |   {dollarOK = atValidDollarEscape();}
+            '$'!
+            {
+                require(dollarOK,
+                    "illegal string body character after dollar sign",
+                    "either escape a literal dollar sign \"\\$5\" or bracket the value expression \"${5}\"");
+                // Yes, it's a string constructor, and we've got a value part.
+                tt = (fromStart ? STRING_CTOR_START : STRING_CTOR_MIDDLE);
+                stringCtorState = SCS_VAL + (tripleQuote? SCS_TQ_TYPE: SCS_SQ_TYPE);
+            }
+        )
+        {   $setType(tt);  }
+    ;
+
+protected
+STRING_CH
+options {
+    paraphrase="a string character";
+}
+     :  { if (LA(1) == EOF_CHAR) throw new MismatchedCharException(LA(1), EOF_CHAR, true, this);}
+       ~('"'|'\''|'\\'|'$'|'\n'|'\r')
+    ;
+
+REGEXP_LITERAL
+options {
+    paraphrase="a regular expression literal";
+}
+        {int tt=0;}
+    :   {allowRegexpLiteral()}?
+        '/'!
+        {++suppressNewline;}
+        //Do this, but require it to be non-trivial:  REGEXP_CTOR_END[true]
+        // There must be at least one symbol or $ escape, lest the regexp collapse to '//'.
+        // (This should be simpler, but I don't know how to do it w/o ANTLR warnings vs. '//' comments.)
+        (
+            REGEXP_SYMBOL
+            tt=REGEXP_CTOR_END[true]
+        |   {!atValidDollarEscape()}? '$'
+            tt=REGEXP_CTOR_END[true]
+        |   '$'!
+            {
+                // Yes, it's a regexp constructor, and we've got a value part.
+                tt = STRING_CTOR_START;
+                stringCtorState = SCS_VAL + SCS_RE_TYPE;
+            }
+        )
+        {$setType(tt);}
+
+    |   DIV                 {$setType(DIV);}
+    |   DIV_ASSIGN          {$setType(DIV_ASSIGN);}
+    ;
+
+protected
+REGEXP_CTOR_END[boolean fromStart]
+returns [int tt=STRING_CTOR_END]
+options {
+    paraphrase="a regular expression literal end";
+}
+    :
+        (
+            options {  greedy = true;  }:
+            REGEXP_SYMBOL
+        |
+            {!atValidDollarEscape()}? '$'
+        )*
+        (   '/'!
+            {
+                if (fromStart)      tt = STRING_LITERAL;  // plain regexp literal!
+                {--suppressNewline;}
+                // done with regexp constructor!
+                //assert(stringCtorState == 0);
+            }
+        |   '$'!
+            {
+                // Yes, it's a regexp constructor, and we've got a value part.
+                tt = (fromStart ? STRING_CTOR_START : STRING_CTOR_MIDDLE);
+                stringCtorState = SCS_VAL + SCS_RE_TYPE;
+            }
+        )
+        {   $setType(tt);  }
+    ;
+
+protected
+REGEXP_SYMBOL
+options {
+    paraphrase="a regular expression character";
+}
+    :
+        (
+            ~('*'|'/'|'$'|'\\'|'\n'|'\r')
+        |   '\\' ~('\n'|'\r')   // most backslashes are passed through unchanged
+        |!  '\\' ONE_NL         { $setText('\n'); }     // always normalize to newline
+        )
+        ('*')*      // stars handled specially to avoid ambig. on /**/
+    ;
+
+// escape sequence -- note that this is protected; it can only be called
+// from another lexer rule -- it will not ever directly return a token to
+// the parser
+// There are various ambiguities hushed in this rule. The optional
+// '0'...'9' digit matches should be matched here rather than letting
+// them go back to STRING_LITERAL to be matched. ANTLR does the
+// right thing by matching immediately; hence, it's ok to shut off
+// the FOLLOW ambig warnings.
+protected
+ESC
+options {
+    paraphrase="an escape sequence";
+}
+    :   '\\'!
+        (   'n'     {$setText("\n");}
+        |   'r'     {$setText("\r");}
+        |   't'     {$setText("\t");}
+        |   'b'     {$setText("\b");}
+        |   'f'     {$setText("\f");}
+        |   '"'
+        |   '\''
+        |   '\\'
+        |   '$'     //escape Groovy $ operator uniformly also
+        |   ('u')+ {$setText("");}
+            HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT
+            {char ch = (char)Integer.parseInt($getText,16); $setText(ch);}
+        |   '0'..'3'
+            (
+                options {
+                    warnWhenFollowAmbig = false;
+                }
+            :   '0'..'7'
+                (
+                    options {
+                        warnWhenFollowAmbig = false;
+                    }
+                :   '0'..'7'
+                )?
+            )?
+            {char ch = (char)Integer.parseInt($getText,8); $setText(ch);}
+        |   '4'..'7'
+            (
+                options {
+                    warnWhenFollowAmbig = false;
+                }
+            :   '0'..'7'
+            )?
+            {char ch = (char)Integer.parseInt($getText,8); $setText(ch);}
+        )
+    |!  '\\' ONE_NL
+    //|!  ONE_NL          { $setText('\n'); }             // always normalize to newline
+    ;
+
+protected
+STRING_NL[boolean allowNewline]
+options {
+    paraphrase="a newline inside a string";
+}
+    :  {if (!allowNewline) throw new MismatchedCharException('\n', '\n', true, this); }
+       ONE_NL { $setText('\n'); }
+    ;
+
+
+// hexadecimal digit (again, note it's protected!)
+protected
+HEX_DIGIT
+options {
+    paraphrase="a hexadecimal digit";
+}
+    :   ('0'..'9'|'A'..'F'|'a'..'f')
+    ;
+
+
+// a dummy rule to force vocabulary to be all characters (except special
+// ones that ANTLR uses internally (0 to 2)
+protected
+VOCAB
+options {
+    paraphrase="a character";
+}
+    :   '\3'..'\377'
+    ;
+
+
+// an identifier. Note that testLiterals is set to true! This means
+// that after we match the rule, we look in the literals table to see
+// if it's a literal or really an identifer
+IDENT
+options {
+    paraphrase="an identifier";
+}
+    //options {testLiterals=true;}  // Actually, this is done manually in the actions below.
+    :   LETTER(LETTER|DIGIT)*
+        {
+            if (stringCtorState != 0) {
+                if (LA(1) == '.' && LA(2) != '$' &&
+                        Character.isJavaIdentifierStart(LA(2))) {
+                    // pick up another name component before going literal again:
+                    restartStringCtor(false);
+                } else {
+                    // go back to the string
+                    restartStringCtor(true);
+                }
+            }
+            int ttype = testLiteralsTable(IDENT);
+        /* The grammar allows a few keywords to follow dot.
+         * TODO: Reinstate this logic if we change or remove keywordPropertyNames.
+            if (ttype != IDENT && lastSigTokenType == DOT) {
+                // A few keywords can follow a dot:
+                switch (ttype) {
+                case LITERAL_this: case LITERAL_super: case LITERAL_class:
+                    break;
+                default:
+                    ttype = LITERAL_in;  // the poster child for bad dotted names
+                }
+            }
+        */
+            $setType(ttype);
+
+            // check if "assert" keyword is enabled
+            if (assertEnabled && "assert".equals($getText)) {
+                $setType(LITERAL_assert); // set token type for the rule in the parser
+            }
+            // check if "enum" keyword is enabled
+            if (enumEnabled && "enum".equals($getText)) {
+                $setType(LITERAL_enum); // set token type for the rule in the parser
+            }
+        }
+    ;
+
+protected
+LETTER
+options {
+    paraphrase="a letter";
+}
+    :   'a'..'z'|'A'..'Z'|'_'
+    // TODO:  Recognize all the Java identifier starts here (except '$').
+    ;
+
+protected
+DIGIT
+options {
+    paraphrase="a digit";
+}
+    :   '0'..'9'
+    // TODO:  Recognize all the Java identifier parts here (except '$').
+    ;
+
+// a numeric literal
+NUM_INT
+options {
+    paraphrase="a numeric literal";
+}
+    {boolean isDecimal=false; Token t=null;}
+    :
+/*OBS*
+        '.' {_ttype = DOT;}
+        (
+            (('0'..'9')+ (EXPONENT)? (f1:FLOAT_SUFFIX {t=f1;})?
+            {
+                if (t != null && t.getText().toUpperCase().indexOf('F')>=0) {
+                    _ttype = NUM_FLOAT;
+                }
+                else {
+                    _ttype = NUM_DOUBLE; // assume double
+                }
+            })
+        |
+            // JDK 1.5 token for variable length arguments
+            (".." {_ttype = TRIPLE_DOT;})
+        )?
+    |
+*OBS*/
+        // TODO:  This complex pattern seems wrong.  Verify or fix.
+        (   '0' {isDecimal = true;} // special case for just '0'
+            (   ('x'|'X')
+                {isDecimal = false;}
+                (                                                                                   // hex
+                    // the 'e'|'E' and float suffix stuff look
+                    // like hex digits, hence the (...)+ doesn't
+                    // know when to stop: ambig. ANTLR resolves
+                    // it correctly by matching immediately. It
+                    // is therefor ok to hush warning.
+                    options {
+                        warnWhenFollowAmbig=false;
+                    }
+                :   HEX_DIGIT
+                )+
+
+            |   //float or double with leading zero
+                (('0'..'9')+ ('.'('0'..'9')|EXPONENT|FLOAT_SUFFIX)) => ('0'..'9')+
+
+            |   ('0'..'7')+                                                                     // octal
+                {isDecimal = false;}
+            )?
+        |   ('1'..'9') ('0'..'9')*  {isDecimal=true;}               // non-zero decimal
+        )
+        (   ('l'|'L') { _ttype = NUM_LONG; }
+        |   ('i'|'I') { _ttype = NUM_INT; }
+        |   BIG_SUFFIX { _ttype = NUM_BIG_INT; }
+
+        // only check to see if it's a float if looks like decimal so far
+        |
+            (~'.' | '.' ('0'..'9')) =>
+            {isDecimal}?
+            (   '.' ('0'..'9')+ (EXPONENT)? (f2:FLOAT_SUFFIX {t=f2;} | g2:BIG_SUFFIX {t=g2;})?
+            |   EXPONENT (f3:FLOAT_SUFFIX {t=f3;} | g3:BIG_SUFFIX {t=g3;})?
+            |   f4:FLOAT_SUFFIX {t=f4;}
+            )
+            {
+                String txt = (t == null ? "" : t.getText().toUpperCase());
+                if (txt.indexOf('F') >= 0) {
+                    _ttype = NUM_FLOAT;
+                } else if (txt.indexOf('G') >= 0) {
+                    _ttype = NUM_BIG_DECIMAL;
+                } else {
+                    _ttype = NUM_DOUBLE; // assume double
+                }
+            }
+        )?
+    ;
+
+// JDK 1.5 token for annotations and their declarations
+// also a groovy operator for actual field access e.g. 'telson.@age'
+AT
+options {
+    paraphrase="'@'";
+}
+    :   '@'
+    ;
+
+// a couple protected methods to assist in matching floating point numbers
+protected
+EXPONENT
+options {
+    paraphrase="an exponent";
+}
+    :   ('e'|'E') ('+'|'-')? ('0'..'9')+
+    ;
+
+
+protected
+FLOAT_SUFFIX
+options {
+    paraphrase="a float or double suffix";
+}
+    :   'f'|'F'|'d'|'D'
+    ;
+
+protected
+BIG_SUFFIX
+options {
+    paraphrase="a big decimal suffix";
+}
+    :   'g'|'G'
     ;
 
 // Note: Please don't use physical tabs.  Logical tabs for indent are width 4.

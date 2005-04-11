@@ -18,46 +18,30 @@
 
 package org.codehaus.groovy.intellij.language;
 
-import java.lang.reflect.Field;
-
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.PsiBuilder;
 import com.intellij.lang.PsiParser;
-import com.intellij.lang.impl.PsiBuilderImpl;
 import com.intellij.psi.tree.IElementType;
-
-import org.codehaus.groovy.antlr.AntlrParserPlugin;
 
 import org.codehaus.groovy.intellij.language.parser.GroovyPsiRecognizer;
 
 import antlr.RecognitionException;
+import antlr.TokenStream;
 import antlr.TokenStreamException;
 
-public class GroovyPsiParser extends AntlrParserPlugin implements PsiParser {
-///CLOVER:OFF
-    public ASTNode parse(IElementType root, final PsiBuilder builder) {
+public class GroovyPsiParser implements PsiParser {
+
+    public ASTNode parse(IElementType root, PsiBuilder builder) {
         System.out.println("in parse(IElementType " + root.toString() + ", PsiBuilder " + builder.getClass().getName() + ") ");
 
         try {
-            Field lexerField = PsiBuilderImpl.class.getDeclaredField("d");
-            lexerField.setAccessible(true);
-            Object o = lexerField.get(builder);
-
-            System.out.println("class: " + o.getClass().getName());
-
-            GroovyLexerAdapter lexerAdapter = (GroovyLexerAdapter) o;
-            new GroovyPsiRecognizer(builder, lexerAdapter.groovyLexer).compilationUnit();
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+            TokenStream tokenStream = GroovyLexerAdapter.currentGroovyPsiLexer().plumb();
+            new GroovyPsiRecognizer(root, builder, tokenStream).compilationUnit();
+            return builder.getTreeBuilt();
         } catch (TokenStreamException e) {
             throw new RuntimeException(e);
         } catch (RecognitionException e) {
             throw new RuntimeException(e);
         }
-
-        return builder.getTreeBuilt();
     }
-///CLOVER:ON
 }

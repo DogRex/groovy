@@ -144,7 +144,7 @@
 
     <target name="compile.irida" depends="antlr.parser">
         <mkdir dir="${irida.classes.dir}"/>
-        <javac srcdir="${src.java.dir}" destdir="${irida.classes.dir}" debug="on">
+        <javac srcdir="${src.java.dir}" destdir="${irida.classes.dir}" debug="on" source="1.4">
             <classpath refid="irida.compile.classpath"/>
         </javac>
         <copy todir="${irida.classes.dir}" overwrite="true" preservelastmodified="true">
@@ -154,7 +154,7 @@
 
     <target name="compile.tests.irida" depends="compile.irida">
         <mkdir dir="${irida.test.classes.dir}"/>
-        <javac srcdir="${src.test.dir}" destdir="${irida.test.classes.dir}" debug="on">
+        <javac srcdir="${src.test.dir}" destdir="${irida.test.classes.dir}" debug="on" source="1.4">
             <classpath refid="irida.test.classpath"/>
         </javac>
     </target>
@@ -201,7 +201,7 @@
         </delete>
 
         <clover-setup enabled="true" initString="${clover.dir}/clover.db">
-            <fileset dir="${src.java.dir}" includes="**/*.java" excludes="**/GroovyPsiRecognizer*.java"/>
+            <fileset dir="${src.java.dir}" includes="**/*.java" excludes="**/language/GroovyPsiBuilder.java, **/language/parser/*.java"/>
         </clover-setup>
     </target>
 

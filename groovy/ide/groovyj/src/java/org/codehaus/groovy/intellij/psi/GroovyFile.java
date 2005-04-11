@@ -18,22 +18,37 @@
 
 package org.codehaus.groovy.intellij.psi;
 
-import com.intellij.extapi.psi.PsiFileBase;
+import com.intellij.lang.Language;
+import com.intellij.lang.ParserDefinition;
+import com.intellij.lexer.Lexer;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElementVisitor;
+import com.intellij.psi.impl.source.PsiFileImpl;
+import com.intellij.psi.impl.source.tree.FileElement;
+import com.intellij.psi.tree.IElementType;
 
 import org.codehaus.groovy.intellij.GroovySupportLoader;
 import org.codehaus.groovy.intellij.language.GroovyLanguage;
+import org.codehaus.groovy.intellij.language.GroovyLexerAdapter;
+import org.codehaus.groovy.intellij.language.GroovyPsiBuilder;
 
-public class GroovyFile extends PsiFileBase implements GroovyElement {
+public class GroovyFile extends PsiFileImpl implements GroovyElement {
+
+    private static final Logger LOGGER = Logger.getInstance("#org.codehaus.groovy.intellij.psi.GroovyFile");
+
+    private static final IElementType FILE_TEXT_CHAMELEON = new IElementType("FILE_TEXT_CHAMELEON", null);
+
+    private static final Language LANGUAGE = GroovyLanguage.findOrCreate();
 
     public GroovyFile(Project project, VirtualFile file) {
-        super(project, file, GroovyLanguage.findOrCreate());
+        super(project, LANGUAGE.getParserDefinition().getFileNodeType(), FILE_TEXT_CHAMELEON, file);
     }
 
     public GroovyFile(Project project, String name, CharSequence text) {
-        super(project, name, text, GroovyLanguage.findOrCreate());
+        super(project, createFileElement(project, text), LANGUAGE.getParserDefinition().getFileNodeType(), FILE_TEXT_CHAMELEON, name);
     }
 
     public FileType getFileType() {
@@ -57,4 +72,30 @@ public class GroovyFile extends PsiFileBase implements GroovyElement {
         return true;
     }
 */
+
+    public Language getLanguage() {
+        return LANGUAGE;
+    }
+
+    public Lexer createLexer() {
+        return LANGUAGE.getParserDefinition().createLexer(getProject());
+    }
+
+    protected final FileElement createFileElement(CharSequence text) {
+        return createFileElement(getProject(), text);
+    }
+
+    private static FileElement createFileElement(Project project, CharSequence text) {
+        ParserDefinition parserDefinition = LANGUAGE.getParserDefinition();
+        IElementType root = parserDefinition.getFileNodeType();
+        GroovyPsiBuilder psiBuilder = new GroovyPsiBuilder(LANGUAGE, project, null, text);
+        ((GroovyLexerAdapter) parserDefinition.createLexer(project)).start(psiBuilder);
+        FileElement fileElement = (FileElement) parserDefinition.createParser(project).parse(root, psiBuilder);
+        LOGGER.assertTrue(fileElement.getElementType() == root, "Parsing file text returns rootElement with type different from declared in parser definition");
+        return fileElement;
+    }
+
+    public void accept(PsiElementVisitor psiElementVisitor) {
+        psiElementVisitor.visitFile(this);
+    }
 }

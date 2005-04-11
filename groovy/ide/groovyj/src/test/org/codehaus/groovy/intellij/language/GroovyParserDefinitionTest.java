@@ -98,7 +98,8 @@ public class GroovyParserDefinitionTest extends GroovyjTestCase {
     }
 
     public void testCreatesAGroovyFileFromAProjectANameAndACharacterSequence() {
-        mockLanguageToolsFactory.expects(once()).method("createLexer").will(returnValue(new GroovyLexerAdapter()));
+        GroovyLexerAdapter expectedLexer = new GroovyLexerAdapter();
+        mockLanguageToolsFactory.stubs().method("createLexer").will(returnValue(expectedLexer));
 
         Mock stubPsiParser = mock(PsiParser.class);
         mockLanguageToolsFactory.expects(once()).method("createParser").will(returnValue(stubPsiParser.proxy()));

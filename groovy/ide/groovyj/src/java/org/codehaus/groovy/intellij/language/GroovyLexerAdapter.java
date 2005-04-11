@@ -21,13 +21,14 @@ package org.codehaus.groovy.intellij.language;
 import java.io.Reader;
 import java.io.StringReader;
 
+import com.intellij.lang.PsiBuilder;
 import com.intellij.lexer.Lexer;
 import com.intellij.psi.tree.IElementType;
+import com.intellij.util.text.CharArrayUtil;
 
-import org.codehaus.groovy.antlr.UnicodeEscapingReader;
-import org.codehaus.groovy.antlr.parser.GroovyLexer;
 import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
 
+import org.codehaus.groovy.intellij.language.parser.GroovyPsiLexer;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
 import antlr.LexerSharedInputState;
@@ -36,23 +37,25 @@ import antlr.TokenStreamException;
 
 public class GroovyLexerAdapter implements Lexer {
 
-    // newlines seem to be normalized to \n in virtual files
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    private static final ThreadLocal groovyPsiLexer = new ThreadLocal();
 
-    public final GroovyLexer groovyLexer;
+    public static GroovyPsiLexer currentGroovyPsiLexer() {
+        return (GroovyPsiLexer) groovyPsiLexer.get();
+    }
 
     private char[] buffer;
-    private int bufferStart;
-    private int bufferEnd;
+    private int currentTokenStartOffset;
+    private int bufferEndOffset;
 
     private int currentLineStartPosition;
-    private int currentLineNumber;              // has yet to be used?
     private Token currentToken;
 
-    public GroovyLexerAdapter() {
-        groovyLexer = new GroovyLexer((Reader) null);
-        groovyLexer.setCaseSensitive(true);
-        groovyLexer.setWhitespaceIncluded(true);
+    public void start(PsiBuilder builder) {
+        GroovyPsiLexer adaptee = new GroovyPsiLexer(builder);
+        adaptee.setCaseSensitive(true);
+        adaptee.setWhitespaceIncluded(true);
+        groovyPsiLexer.set(adaptee);
+        start(CharArrayUtil.fromSequence(builder.getOriginalText()));
     }
 
     public void start(char[] buffer) {
@@ -64,28 +67,17 @@ public class GroovyLexerAdapter implements Lexer {
     }
 
     public void start(char[] buffer, int startOffset, int endOffset, int initialState) {
-        System.out.println("in start(char[] buffer, int startOffset, int endOffset, int initialState)");
-        System.out.println("buffer        = " + new String(buffer).toString());
-        System.out.println("buffer.length = " + buffer.length);
-        System.out.println("startOffset   = " + startOffset);
-        System.out.println("endOffset     = " + endOffset);
-        System.out.println("initialState  = " + initialState);
-
         this.buffer = buffer;
-        bufferStart = startOffset;              // index of the first character of the current token relative to the full buffer
-        bufferEnd = endOffset;                  // index of the last character of the current token relative to the full buffer
+        currentTokenStartOffset = startOffset;  // index of the first character of the current token relative to the full buffer
+        bufferEndOffset = endOffset;            // index of the last character in the full buffer
         currentLineStartPosition = startOffset; // index of the first character on the current line
-        currentLineNumber = 1;
-
-        try {
-            UnicodeEscapingReader reader = new UnicodeEscapingReader(new StringReader(new String(buffer, startOffset, endOffset - startOffset)));
-            reader.setLexer(groovyLexer);
-
-            groovyLexer.setInputState(new LexerSharedInputState(reader));
-            advance();
-        } catch (IndexOutOfBoundsException e) {
-            e.printStackTrace();
-        }
+/*
+        UnicodeEscapingReader reader = new UnicodeEscapingReader(new StringReader(new String(buffer, startOffset, endOffset - startOffset)));
+        reader.setLexer(groovyLexer);
+*/
+        Reader reader = new StringReader(new String(buffer, startOffset, endOffset - startOffset));
+        currentGroovyPsiLexer().setInputState(new LexerSharedInputState(reader));
+        advance();
     }
 
     public char[] getBuffer() {
@@ -93,7 +85,7 @@ public class GroovyLexerAdapter implements Lexer {
     }
 
     public int getBufferEnd() {
-        return bufferEnd;
+        return bufferEndOffset;
     }
 
     /*
@@ -114,44 +106,60 @@ public class GroovyLexerAdapter implements Lexer {
     }
 
     public int getTokenStart() {
-        return bufferStart;
+        return currentTokenStartOffset;
     }
 
     public int getTokenEnd() {
-        int result;
-        if (currentToken.getType() == GroovyTokenTypes.NLS) {
-            result = bufferStart + LINE_SEPARATOR.length();
-        } else {
-            result = bufferStart + currentToken.getText().length();
-        }
-        return result;
+        return currentToken.getType() == GroovyTokenTypes.NLS
+               ? currentTokenStartOffset + 1
+               : currentTokenStartOffset + currentToken.getText().length();
+    }
+
+    public Token getCurrentToken() {
+        return currentToken;
     }
 
     public void advance() {
-        if (currentToken != null && currentToken.getType() == GroovyTokenTypes.NLS) {
-            currentLineStartPosition = bufferStart + LINE_SEPARATOR.length();
-        }
-
-        if (currentToken != null && currentToken.getType() == GroovyTokenTypes.ML_COMMENT) {
-            // ML_COMMENTS may contain any number of NLS and may end with one
-            String text = currentToken.getText();
-            int lastLineSeparatorPosition = text.lastIndexOf(LINE_SEPARATOR);
-            if (lastLineSeparatorPosition > -1) {
-                currentLineStartPosition = bufferStart + lastLineSeparatorPosition + LINE_SEPARATOR.length();
+        if (currentToken != null) {
+            if (currentToken.getType() == GroovyTokenTypes.NLS) {
+                advanceNewLine();
+            } else if (currentToken.getType() == GroovyTokenTypes.ML_COMMENT) {
+                advanceMultiLineComment();
             }
         }
 
         try {
-            currentToken = groovyLexer.nextToken();
-            currentLineNumber = currentToken.getLine();
-            // columns start at 1, bufferStart starts at 0
-            bufferStart = currentLineStartPosition + currentToken.getColumn() - 1;
+            currentToken = currentGroovyPsiLexer().nextToken();
+            // columns start at 1, currentTokenStartOffset starts at 0
+            currentTokenStartOffset = currentLineStartPosition + currentToken.getColumn() - 1;
         } catch (TokenStreamException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
-    Token getCurrentToken() {
-        return currentToken;
+    private void advanceNewLine() {
+        currentLineStartPosition = currentTokenStartOffset + 1;
+    }
+
+    private void advanceMultiLineComment() {
+        // ML_COMMENTS may contain any number of NLS and may end with one
+        int lastLineSeparatorIndex = findLastIndexOfALineSeparator(currentToken.getText());
+        if (lastLineSeparatorIndex > -1) {
+            currentLineStartPosition = currentTokenStartOffset + lastLineSeparatorIndex + 1;
+        }
+    }
+
+    private int findLastIndexOfALineSeparator(String text) {
+        int lastIndexOfALineSeparator = text.lastIndexOf("\r\r\n");  // legacy Netscape line separator
+        if (lastIndexOfALineSeparator == -1) {
+            lastIndexOfALineSeparator = text.lastIndexOf("\r\n");    // Windows
+        }
+        if (lastIndexOfALineSeparator == -1) {
+            lastIndexOfALineSeparator = text.lastIndexOf("\r");      // Macintosh
+        }
+        if (lastIndexOfALineSeparator == -1) {
+            lastIndexOfALineSeparator = text.lastIndexOf("\n");      // Unix
+        }
+        return lastIndexOfALineSeparator;
     }
 }

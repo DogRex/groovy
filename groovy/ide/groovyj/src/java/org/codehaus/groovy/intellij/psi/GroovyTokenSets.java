@@ -153,6 +153,7 @@ public final class GroovyTokenSets {
 
 //    public static final TokenSet COMMENTS = TokenSet.create(GroovyTokenTypeMappings.getCommentTypes());
     public static final TokenSet COMMENTS = TokenSet.create(new IElementType[] {
+        GroovyTokenTypeMappings.getType(GroovyTokenTypes.SH_COMMENT),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.SL_COMMENT),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.ML_COMMENT)
     });
