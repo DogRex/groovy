@@ -24,25 +24,26 @@ import org.intellij.openapi.testing.MockApplicationManager;
 
 import com.intellij.lang.ParserDefinition;
 import com.intellij.lang.PsiBuilder;
-import com.intellij.lang.PsiParser;
-import com.intellij.lang.impl.PsiBuilderImpl;
-import com.intellij.psi.impl.source.CharTableImpl;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
 
 public class GroovyPsiParserTest extends TestCase {
 
-    public void testNoInformationKnownAboutThisTest() throws TokenStreamException, RecognitionException {
+    public void testParsesAGivenTokenStreamIntoATreeOfPsiNodes() throws TokenStreamException, RecognitionException {
+        String textToParse = "#! This is a script-header comment.\r\r\tdef f(){\n\t  return\r\n    }\r\r\n";
+
         MockApplicationManager.reset();
-
         ParserDefinition parserDefinition = GroovyLanguage.findOrCreate().getParserDefinition();
-        PsiParser psiParser = parserDefinition.createParser(null);
+        PsiBuilder psiBuilder = new GroovyPsiBuilder(GroovyLanguage.findOrCreate(), null, null, textToParse);
+        ((GroovyLexerAdapter) parserDefinition.createLexer(null)).start(psiBuilder);
+/*
+        FIXME: in progress!
 
-        String textToParse = "def f(){return }";
-        PsiBuilder psiBuilder = new PsiBuilderImpl(GroovyLanguage.findOrCreate(), null, new CharTableImpl(), textToParse);
-
-//        ASTNode astNode = psiParser.parse(parserDefinition.getFileNodeType(), psiBuilder);
-//        assertEquals("groovy idea ast", textToParse, astNode.getText());
+        ASTNode astNode = parserDefinition.createParser(null).parse(parserDefinition.getFileNodeType(), psiBuilder);
+        assertSame("file element type", GroovyElementTypes.FILE, astNode.getElementType());
+        assertSame("script header element type", GroovyTokenTypeMappings.getType(GroovyTokenTypes.SH_COMMENT), astNode.getFirstChildNode().getElementType());
+        assertEquals("PSI tree as text", textToParse, astNode.getText());
+*/
     }
 }
