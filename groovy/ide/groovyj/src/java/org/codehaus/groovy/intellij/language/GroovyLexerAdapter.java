@@ -77,7 +77,6 @@ public class GroovyLexerAdapter implements Lexer {
 */
         Reader reader = new StringReader(new String(buffer, startOffset, endOffset - startOffset));
         currentGroovyPsiLexer().setInputState(new LexerSharedInputState(reader));
-        advance();
     }
 
     public char[] getBuffer() {

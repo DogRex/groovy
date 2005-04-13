@@ -31,17 +31,17 @@ import antlr.TokenStreamException;
 
 public class GroovyPsiParser implements PsiParser {
 
-    public ASTNode parse(IElementType root, PsiBuilder builder) {
-        System.out.println("in parse(IElementType " + root.toString() + ", PsiBuilder " + builder.getClass().getName() + ") ");
-
+    public ASTNode parse(IElementType rootElementType, PsiBuilder builder) {
+        PsiBuilder.Marker rootMarker = builder.mark();
         try {
             TokenStream tokenStream = GroovyLexerAdapter.currentGroovyPsiLexer().plumb();
-            new GroovyPsiRecognizer(root, builder, tokenStream).compilationUnit();
-            return builder.getTreeBuilt();
+            new GroovyPsiRecognizer(rootElementType, builder, tokenStream).compilationUnit();
+            rootMarker.done(rootElementType);
         } catch (TokenStreamException e) {
-            throw new RuntimeException(e);
+            builder.error(e.toString());
         } catch (RecognitionException e) {
-            throw new RuntimeException(e);
+            builder.error(e.toString());
         }
+        return builder.getTreeBuilt();
     }
 }

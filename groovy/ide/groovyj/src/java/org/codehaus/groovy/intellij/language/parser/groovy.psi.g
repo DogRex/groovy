@@ -341,16 +341,24 @@ options {
 // Compilation Unit: In Groovy, this is a single file or script. This is the start
 // rule for this parser
 compilationUnit
-        {
-            PsiBuilder.Marker rootMarker = builder.mark();
-            builder.advanceLexer();
-        }
     :
         // The very first characters of the file may be "#!".  If so, ignore the first line.
-        (SH_COMMENT!)?
+        (
+            SH_COMMENT!
+            {
+                PsiBuilder.Marker marker = builder.mark();
+//                builder.advanceLexer();
+                marker.done(GroovyTokenTypeMappings.getType(SH_COMMENT));
+            }
+        )?
 
         // we can have comments at the top of a file
         nls!
+            {
+                PsiBuilder.Marker marker = builder.mark();
+//                builder.advanceLexer();
+                marker.done(GroovyTokenTypeMappings.getType(NLS));
+            }
 
         // A compilation unit starts with an optional package definition
         (   (annotationsOpt "package")=> packageDefinition
@@ -361,14 +369,7 @@ compilationUnit
         // Semicolons and/or significant newlines serve as separators.
         ( sep! (statement[sepToken])? )*
         EOF!
-        {
-            rootMarker.done(rootElementType);
-        }
     ;
-    exception   // for the whole rule
-    catch [RecognitionException e] {
-        builder.error(e.getMessage());
-    }
 
 /** A Groovy script or simple expression.  Can be anything legal inside {...}. */
 snippetUnit

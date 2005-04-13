@@ -140,7 +140,8 @@ public final class GroovyTokenSets {
 
     public static final TokenSet WHITESPACES = TokenSet.create(new IElementType[] {
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.ONE_NL),
-        GroovyTokenTypeMappings.getType(GroovyTokenTypes.WS)
+        GroovyTokenTypeMappings.getType(GroovyTokenTypes.WS),
+        GroovyTokenTypeMappings.getType(GroovyTokenTypes.NLS),
     });
 
     public static final TokenSet IDENTIFIERS = TokenSet.create(new IElementType[] {

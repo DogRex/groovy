@@ -266,6 +266,7 @@ import groovy.swing.SwingBuilder
         GroovyLexerAdapter lexer = (GroovyLexerAdapter) GroovyLanguage.findOrCreate().getParserDefinition().createLexer(null);
         PsiBuilder psiBuilder = new GroovyPsiBuilder(GroovyLanguage.findOrCreate(), null, null, input);
         lexer.start(psiBuilder);
+        lexer.advance();
         return lexer;
     }
 

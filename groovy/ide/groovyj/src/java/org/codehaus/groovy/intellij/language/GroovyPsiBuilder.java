@@ -220,9 +220,9 @@ public class GroovyPsiBuilder implements PsiBuilder {
             l = a(l, l1, nodeCopy);
             if (l != j1) {
                 j1 = l;
-                PsiErrorElementImpl psierrorelementimpl = new PsiErrorElementImpl();
-                psierrorelementimpl.setErrorDescription(((ErrorItem) productionMarker).message);
-                TreeUtil.addChildren((CompositeElement) nodeCopy, psierrorelementimpl);
+                PsiErrorElementImpl psiErrorElement = new PsiErrorElementImpl();
+                psiErrorElement.setErrorDescription(((ErrorItem) productionMarker).message);
+                TreeUtil.addChildren((CompositeElement) nodeCopy, psiErrorElement);
             }
         }
 
@@ -231,11 +231,11 @@ public class GroovyPsiBuilder implements PsiBuilder {
         return node;
     }
 
-    private int a(int k, int index, ASTNode astnode) {
+    private int a(int k, int index, ASTNode astNode) {
         for (index = Math.min(index, tokens.size()); k < index;) {
             Token token = (Token) tokens.get(k++);
             LeafPsiElement leafPsiElement = findLeafPsiElement(token);
-            TreeUtil.addChildren((CompositeElement) astnode, leafPsiElement);
+            TreeUtil.addChildren((CompositeElement) astNode, leafPsiElement);
         }
 
         return k;
