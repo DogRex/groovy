@@ -139,7 +139,6 @@ public final class GroovyTokenSets {
     });
 
     public static final TokenSet WHITESPACES = TokenSet.create(new IElementType[] {
-        GroovyTokenTypeMappings.getType(GroovyTokenTypes.ONE_NL),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.WS),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.NLS),
     });
@@ -152,10 +151,5 @@ public final class GroovyTokenSets {
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.STRING_LITERAL)
     });
 
-//    public static final TokenSet COMMENTS = TokenSet.create(GroovyTokenTypeMappings.getCommentTypes());
-    public static final TokenSet COMMENTS = TokenSet.create(new IElementType[] {
-        GroovyTokenTypeMappings.getType(GroovyTokenTypes.SH_COMMENT),
-        GroovyTokenTypeMappings.getType(GroovyTokenTypes.SL_COMMENT),
-        GroovyTokenTypeMappings.getType(GroovyTokenTypes.ML_COMMENT)
-    });
+    public static final TokenSet COMMENTS = TokenSet.create(GroovyTokenTypeMappings.getCommentTypes());
 }

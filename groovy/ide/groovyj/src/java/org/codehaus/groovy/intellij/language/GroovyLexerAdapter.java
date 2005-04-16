@@ -33,16 +33,12 @@ import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
 import antlr.LexerSharedInputState;
 import antlr.Token;
+import antlr.TokenStream;
 import antlr.TokenStreamException;
 
 public class GroovyLexerAdapter implements Lexer {
 
-    private static final ThreadLocal groovyPsiLexer = new ThreadLocal();
-
-    public static GroovyPsiLexer currentGroovyPsiLexer() {
-        return (GroovyPsiLexer) groovyPsiLexer.get();
-    }
-
+    private GroovyPsiLexer adaptee;
     private char[] buffer;
     private int currentTokenStartOffset;
     private int bufferEndOffset;
@@ -50,11 +46,10 @@ public class GroovyLexerAdapter implements Lexer {
     private int currentLineStartPosition;
     private Token currentToken;
 
-    public void start(PsiBuilder builder) {
-        GroovyPsiLexer adaptee = new GroovyPsiLexer(builder);
+    void bind(PsiBuilder builder) {
+        adaptee = new GroovyPsiLexer(builder);
         adaptee.setCaseSensitive(true);
         adaptee.setWhitespaceIncluded(true);
-        groovyPsiLexer.set(adaptee);
         start(CharArrayUtil.fromSequence(builder.getOriginalText()));
     }
 
@@ -76,7 +71,12 @@ public class GroovyLexerAdapter implements Lexer {
         reader.setLexer(groovyLexer);
 */
         Reader reader = new StringReader(new String(buffer, startOffset, endOffset - startOffset));
-        currentGroovyPsiLexer().setInputState(new LexerSharedInputState(reader));
+        adaptee.setInputState(new LexerSharedInputState(reader));
+        advance();
+    }
+
+    public TokenStream stream() {
+        return adaptee.plumb();
     }
 
     public char[] getBuffer() {
@@ -128,7 +128,7 @@ public class GroovyLexerAdapter implements Lexer {
         }
 
         try {
-            currentToken = currentGroovyPsiLexer().nextToken();
+            currentToken = adaptee.nextToken();
             // columns start at 1, currentTokenStartOffset starts at 0
             currentTokenStartOffset = currentLineStartPosition + currentToken.getColumn() - 1;
         } catch (TokenStreamException e) {

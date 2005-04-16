@@ -18,6 +18,8 @@
 
 package org.codehaus.groovy.intellij.psi;
 
+import org.intellij.openapi.testing.MockApplicationManager;
+
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.MockVirtualFile;
 
@@ -32,6 +34,7 @@ public class GroovyFileTest extends GroovyjTestCase {
     private GroovyFile groovyFile;
 
     protected void setUp() {
+        MockApplicationManager.reset();
         groovyFile = new GroovyFile(createStubbedProject(mockProject), new MockVirtualFile("path", "contents"));
     }
 

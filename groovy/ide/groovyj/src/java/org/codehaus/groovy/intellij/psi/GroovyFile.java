@@ -32,7 +32,6 @@ import com.intellij.psi.tree.IElementType;
 
 import org.codehaus.groovy.intellij.GroovySupportLoader;
 import org.codehaus.groovy.intellij.language.GroovyLanguage;
-import org.codehaus.groovy.intellij.language.GroovyLexerAdapter;
 import org.codehaus.groovy.intellij.language.GroovyPsiBuilder;
 
 public class GroovyFile extends PsiFileImpl implements GroovyElement {
@@ -88,9 +87,8 @@ public class GroovyFile extends PsiFileImpl implements GroovyElement {
     private static FileElement createFileElement(Project project, CharSequence text) {
         ParserDefinition parserDefinition = LANGUAGE.getParserDefinition();
         IElementType root = parserDefinition.getFileNodeType();
-        GroovyPsiBuilder psiBuilder = new GroovyPsiBuilder(LANGUAGE, project, null, text);
-        ((GroovyLexerAdapter) parserDefinition.createLexer(project)).start(psiBuilder);
-        FileElement fileElement = (FileElement) parserDefinition.createParser(project).parse(root, psiBuilder);
+        GroovyPsiBuilder builder = new GroovyPsiBuilder(LANGUAGE, project, null, text);
+        FileElement fileElement = (FileElement) parserDefinition.createParser(project).parse(root, builder);
         LOGGER.assertTrue(fileElement.getElementType() == root, "Parsing file text returns rootElement with type different from declared in parser definition");
         return fileElement;
     }

@@ -25,7 +25,6 @@ import com.intellij.lang.ASTNode;
 import com.intellij.lang.Language;
 import com.intellij.lang.ParserDefinition;
 import com.intellij.lang.PsiBuilder;
-import com.intellij.lexer.Lexer;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.impl.source.tree.CompositeElement;
@@ -60,19 +59,18 @@ public class GroovyPsiBuilder implements PsiBuilder {
         lexer = (GroovyLexerAdapter) parserDefinition.createLexer(project);
         whitespaceTokens = parserDefinition.getWhitespaceTokens();
         commentTokens = parserDefinition.getCommentTokens();
+
         this.charTable = charTable;
         charTableNotAvailable = charTable == null;
+
+        lexer.bind(this);
     }
 
-    private Marker preceed(StartMarker startMarker) {
-        int k = markers.lastIndexOf(startMarker);
-        LOGGER.assertTrue(k >= 0, "Cannot preceed dropped or rolled-back marker");
-        StartMarker startMarkerCopy = new StartMarker(startMarker.lexemIndex);
-        markers.add(k, startMarkerCopy);
-        return startMarkerCopy;
+    public void startLexer() {
+        findSemanticallySignificantToken();
     }
 
-    public Lexer getLexer() {
+    public GroovyLexerAdapter getLexer() {
         return lexer;
     }
 
@@ -82,12 +80,14 @@ public class GroovyPsiBuilder implements PsiBuilder {
 
     public void advanceLexer() {
         currentTokenIndex++;
-        lexer.advance();
+        findSemanticallySignificantToken();
     }
 
     public IElementType getTokenType() {
-        Token token = currentToken();
-        return token == null ? null : token.getTokenType();
+        Token token = findSemanticallySignificantToken();
+        IElementType tokenType = token != null ? token.getTokenType() : null;
+        LOGGER.assertTrue(!isWhitespaceOrComment(tokenType));
+        return tokenType;
     }
 
     public int getCurrentOffset() {
@@ -96,14 +96,38 @@ public class GroovyPsiBuilder implements PsiBuilder {
     }
 
     public Token getCurrentToken() {
-        Token token = currentToken();
-        return (token == null) ? null : token;
+        return findSemanticallySignificantToken();
+    }
+
+    private Token findSemanticallySignificantToken() {
+        do {
+            Token token = currentToken();
+            if (token == null) {
+                return null;
+            }
+            if (!isWhitespaceOrComment(token.getTokenType())) {
+                return token;
+            }
+            currentTokenIndex++;
+        } while (true);
+    }
+
+    private boolean isWhitespaceOrComment(IElementType tokenType) {
+        return whitespaceTokens.isInSet(tokenType) || commentTokens.isInSet(tokenType);
     }
 
     public Marker mark() {
         StartMarker startMarker = new StartMarker(currentTokenIndex);
         markers.add(startMarker);
         return startMarker;
+    }
+
+    private Marker preceed(StartMarker startMarker) {
+        int markerIndex = markers.lastIndexOf(startMarker);
+        LOGGER.assertTrue(markerIndex >= 0, "Cannot preceed dropped or rolled-back marker");
+        StartMarker startMarkerCopy = new StartMarker(startMarker.lexemIndex);
+        markers.add(markerIndex, startMarkerCopy);
+        return startMarkerCopy;
     }
 
     public boolean eof() {
@@ -119,6 +143,7 @@ public class GroovyPsiBuilder implements PsiBuilder {
                 return null;
             }
             tokens.add(new Token());
+            lexer.advance();
         }
         return (Token) tokens.get(currentTokenIndex);
     }
@@ -179,7 +204,10 @@ public class GroovyPsiBuilder implements PsiBuilder {
         for (int k = 1; k < markers.size() - 1; k++) {
             ProductionMarker productionMarker = (ProductionMarker) markers.get(k);
             if (productionMarker instanceof StartMarker) {
-                for (; productionMarker.lexemIndex < tokens.size() && whitespaceTokens.isInSet(((Token) tokens.get(productionMarker.lexemIndex)).getTokenType()); productionMarker.lexemIndex++);
+                for ( ;
+                     productionMarker.lexemIndex < tokens.size()
+                            && whitespaceTokens.isInSet(((Token) tokens.get(productionMarker.lexemIndex)).getTokenType());
+                     productionMarker.lexemIndex++);
                 continue;
             }
 
@@ -188,57 +216,60 @@ public class GroovyPsiBuilder implements PsiBuilder {
             }
 
             for (int i1 = ((ProductionMarker) markers.get(k - 1)).lexemIndex;
-                 productionMarker.lexemIndex > i1 && productionMarker.lexemIndex < tokens.size() && whitespaceTokens.isInSet(((Token) tokens.get(productionMarker.lexemIndex - 1)).getTokenType());
+                 productionMarker.lexemIndex > i1
+                        && productionMarker.lexemIndex < tokens.size()
+                        && whitespaceTokens.isInSet(((Token) tokens.get(productionMarker.lexemIndex - 1)).getTokenType());
                  productionMarker.lexemIndex--);
         }
 
         ASTNode nodeCopy = node;
-        int l = 0;
-        int j1 = -1;
-        for (int k = 1; k < markers.size(); k++) {
-            ProductionMarker productionMarker = (ProductionMarker) markers.get(k);
+        int numberOfProcessedTokens = 0;
+        int previousNumberOfProcessedTokens = -1;
+        for (int markerIndex = 1; markerIndex < markers.size(); markerIndex++) {
+            ProductionMarker productionMarker = (ProductionMarker) markers.get(markerIndex);
             LOGGER.assertTrue(nodeCopy != null, "Unexpected end of the production");
-            int l1 = productionMarker.lexemIndex;
+            int currentLexingIndex = productionMarker.lexemIndex;
             if (productionMarker instanceof StartMarker) {
                 StartMarker startMarker2 = (StartMarker) productionMarker;
-                l = a(l, l1, nodeCopy);
+                numberOfProcessedTokens = attachChildNodes(numberOfProcessedTokens, currentLexingIndex, nodeCopy);
                 CompositeElement compositeElement = new CompositeElement(startMarker2.elementType);
                 TreeUtil.addChildren((CompositeElement) nodeCopy, compositeElement);
                 nodeCopy = compositeElement;
                 continue;
             }
             if (productionMarker instanceof DoneMarker) {
-                DoneMarker donemarker = (DoneMarker) productionMarker;
-                l = a(l, l1, nodeCopy);
-                LOGGER.assertTrue(donemarker.startMarker.elementType == nodeCopy.getElementType());
+                DoneMarker doneMarker = (DoneMarker) productionMarker;
+                numberOfProcessedTokens = attachChildNodes(numberOfProcessedTokens, currentLexingIndex, nodeCopy);
+                LOGGER.assertTrue(doneMarker.startMarker.elementType == nodeCopy.getElementType());
                 nodeCopy = nodeCopy.getTreeParent();
                 continue;
             }
             if (!(productionMarker instanceof ErrorItem)) {
                 continue;
             }
-            l = a(l, l1, nodeCopy);
-            if (l != j1) {
-                j1 = l;
+            numberOfProcessedTokens = attachChildNodes(numberOfProcessedTokens, currentLexingIndex, nodeCopy);
+            if (numberOfProcessedTokens != previousNumberOfProcessedTokens) {
+                previousNumberOfProcessedTokens = numberOfProcessedTokens;
                 PsiErrorElementImpl psiErrorElement = new PsiErrorElementImpl();
                 psiErrorElement.setErrorDescription(((ErrorItem) productionMarker).message);
                 TreeUtil.addChildren((CompositeElement) nodeCopy, psiErrorElement);
             }
         }
 
-        LOGGER.assertTrue(l == tokens.size(), "Not all of the tokens inserted to the tree");
+        LOGGER.assertTrue(numberOfProcessedTokens == tokens.size(), "Not all of the tokens inserted to the tree");
         LOGGER.assertTrue(nodeCopy == null, "Unbalanced tree");
         return node;
     }
 
-    private int a(int k, int index, ASTNode astNode) {
-        for (index = Math.min(index, tokens.size()); k < index;) {
-            Token token = (Token) tokens.get(k++);
+    private int attachChildNodes(int numberOfProcessedTokens, int lexingIndex, ASTNode astNode) {
+//        for (index = Math.min(index, tokens.size()); k < index;) {
+        for (lexingIndex = tokens.size(); numberOfProcessedTokens < lexingIndex; ) {
+            Token token = (Token) tokens.get(numberOfProcessedTokens++);
             LeafPsiElement leafPsiElement = findLeafPsiElement(token);
             TreeUtil.addChildren((CompositeElement) astNode, leafPsiElement);
         }
 
-        return k;
+        return numberOfProcessedTokens;
     }
 
     private LeafPsiElement findLeafPsiElement(Token token) {
@@ -259,7 +290,7 @@ public class GroovyPsiBuilder implements PsiBuilder {
         }
     }
 
-    public class Token {
+    class Token {
 
         private final IElementType tokenType;
         private final int startOffset;
@@ -286,15 +317,20 @@ public class GroovyPsiBuilder implements PsiBuilder {
 
         int lexemIndex;
 
-        public ProductionMarker(int k) {
-            lexemIndex = k;
+        public ProductionMarker(int lexemIndex) {
+            this.lexemIndex = lexemIndex;
         }
     }
 
     private class StartMarker extends ProductionMarker implements Marker {
 
-        public IElementType elementType;
-        public DoneMarker doneMarker;
+        private IElementType elementType;
+        private DoneMarker doneMarker;
+
+        private StartMarker(int lexemIndex) {
+            super(lexemIndex);
+            doneMarker = null;
+        }
 
         public Marker preceed() {
             return GroovyPsiBuilder.this.preceed(this);
@@ -312,29 +348,24 @@ public class GroovyPsiBuilder implements PsiBuilder {
             this.elementType = elementType;
             GroovyPsiBuilder.this.done(this);
         }
-
-        public StartMarker(int k) {
-            super(k);
-            doneMarker = null;
-        }
     }
 
     private static class ErrorItem extends ProductionMarker {
 
         private final String message;
 
-        public ErrorItem(String message, int k) {
-            super(k);
+        private ErrorItem(String message, int lexemIndex) {
+            super(lexemIndex);
             this.message = message;
         }
     }
 
     private static class DoneMarker extends ProductionMarker {
 
-        public final StartMarker startMarker;
+        private final StartMarker startMarker;
 
-        public DoneMarker(StartMarker startMarker, int k) {
-            super(k);
+        private DoneMarker(StartMarker startMarker, int lexemIndex) {
+            super(lexemIndex);
             this.startMarker = startMarker;
         }
     }

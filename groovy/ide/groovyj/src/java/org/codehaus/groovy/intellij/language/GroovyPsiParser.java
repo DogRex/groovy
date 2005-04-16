@@ -26,7 +26,6 @@ import com.intellij.psi.tree.IElementType;
 import org.codehaus.groovy.intellij.language.parser.GroovyPsiRecognizer;
 
 import antlr.RecognitionException;
-import antlr.TokenStream;
 import antlr.TokenStreamException;
 
 public class GroovyPsiParser implements PsiParser {
@@ -34,8 +33,7 @@ public class GroovyPsiParser implements PsiParser {
     public ASTNode parse(IElementType rootElementType, PsiBuilder builder) {
         PsiBuilder.Marker rootMarker = builder.mark();
         try {
-            TokenStream tokenStream = GroovyLexerAdapter.currentGroovyPsiLexer().plumb();
-            new GroovyPsiRecognizer(rootElementType, builder, tokenStream).compilationUnit();
+            new GroovyPsiRecognizer((GroovyPsiBuilder) builder).compilationUnit();
             rootMarker.done(rootElementType);
         } catch (TokenStreamException e) {
             builder.error(e.toString());

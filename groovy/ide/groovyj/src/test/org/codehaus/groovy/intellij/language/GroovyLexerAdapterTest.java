@@ -23,9 +23,6 @@ import junitx.framework.ObjectAssert;
 
 import org.intellij.openapi.testing.MockApplicationManager;
 
-import com.intellij.lang.PsiBuilder;
-import com.intellij.psi.tree.IElementType;
-
 import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
 
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
@@ -35,30 +32,35 @@ import antlr.TokenStreamException;
 
 public class GroovyLexerAdapterTest extends TestCase {
 
-    protected void setUp() {
+    private GroovyPsiBuilder builder;
+    private GroovyLexerAdapter lexer;
+
+    private void startLexing(String input) {
         MockApplicationManager.reset();
+        builder = new GroovyPsiBuilder(GroovyLanguage.findOrCreate(), null, null, input);
+        lexer = builder.getLexer();
     }
 
     public void testReadsAnEmptyStringAndTerminatesTheLexicalAnalysis() {
-        GroovyLexerAdapter lexer = createLexer("");
+        startLexing("");
         assertNull(lexer.getTokenType());
     }
 
     public void testReadsTextContainingASingleTokenRepresentingAScriptHeaderCommentOnly() {
-        GroovyLexerAdapter lexer = createLexer("#!");
-        assertType(lexer, GroovyTokenTypes.SH_COMMENT, 0, 1, 1, "#!");  // TODO: report that this used to result in an OutOfMemoryError
-        assertEndOfFile(lexer);
+        startLexing("#!");
+        assertTokenAttributes(GroovyTokenTypes.SH_COMMENT, 1, 1, "#!");  // TODO: report that this used to result in an OutOfMemoryError
+        assertEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingASingleLineCommentOnly() {
-        GroovyLexerAdapter lexer = createLexer("//");
-        assertType(lexer, GroovyTokenTypes.SL_COMMENT, 0, 1, 1, "//");
-        assertEndOfFile(lexer);
+        startLexing("//");
+        assertTokenAttributes(GroovyTokenTypes.SL_COMMENT, 1, 1, "//");
+        assertEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingTheOpeningOfAMultiLineCommentOnly() {
         try {
-            createLexer("/*");                                          // TODO: report that this used to result in an OutOfMemoryError
+            startLexing("/*");                                   // TODO: report that this used to result in an OutOfMemoryError
             fail("Bad grammar - ANTLR lexer should have choked on EOF!");
         } catch (RuntimeException e) {
             ObjectAssert.assertInstanceOf("exception class", TokenStreamException.class, e.getCause());
@@ -67,136 +69,140 @@ public class GroovyLexerAdapterTest extends TestCase {
     }
 
     public void testReadsTextContainingASuccessionOfTokensThatResembleTheClosingOfAMultiLineCommentOnly() {
-        GroovyLexerAdapter lexer = createLexer("*/");
-        assertType(lexer, GroovyTokenTypes.STAR, 0, 1, 1, "*");
-//        assertNext(lexer, GroovyTokenTypes.DIV, 1, 2, 1, "/");      // TODO: report that this results in an OutOfMemoryError
+        startLexing("*/");
+        assertTokenAttributes(GroovyTokenTypes.STAR, 1, 1, "*");
+//        assertNextTokenAttributes(lexer, GroovyTokenTypes.DIV, 1, 2, 1, "/"); // TODO: report that this results in an OutOfMemoryError
 //        assertEndOfFile(lexer);
     }
 
     public void testReadsTextContainingASingleTokenRepresentingAWhitespace() {
-        GroovyLexerAdapter lexer = createLexer(" ");
-        assertType(lexer, GroovyTokenTypes.WS, 0, 1, 1, " ");
-        assertEndOfFile(lexer);
+        startLexing(" ");
+        assertTokenAttributes(GroovyTokenTypes.WS, 1, 1, " ");
+        assertEndOfFile();
     }
 
     public void testReadsTextContainingTwoNewLineTokens() {
-        GroovyLexerAdapter lexer = createLexer("\n\n");
-        assertType(lexer, GroovyTokenTypes.NLS, 0, 1, 1, "");
-        assertNext(lexer, GroovyTokenTypes.NLS, 1, 1, 2, "");
-        assertEndOfFile(lexer);
+        startLexing("\n\n");
+        assertTokenAttributes(GroovyTokenTypes.NLS, 1, 1, "\n");
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 1, 2, "\n");
+        assertEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingATabCharacter() {
-        GroovyLexerAdapter lexer = createLexer("\t");
-        assertType(lexer, GroovyTokenTypes.WS, 0, 1, 1, "\t");
-        assertEndOfFile(lexer);
+        startLexing("\t");
+        assertTokenAttributes(GroovyTokenTypes.WS, 1, 1, "\t");
+        assertEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingAKeyword() {
-        GroovyLexerAdapter lexer = createLexer("def");
-        assertType(lexer, GroovyTokenTypes.LITERAL_def, 0, 1, 1, "def");
-        assertEndOfFile(lexer);
+        startLexing("def");
+        assertTokenAttributes(GroovyTokenTypes.LITERAL_def, 1, 1, "def");
+        assertEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingAStringLiteralDelimitedBySingleQuotes() {
-        GroovyLexerAdapter lexer = createLexer("'some stuff'");
-        assertType(lexer, GroovyTokenTypes.STRING_LITERAL, 0, 1, 1, "some stuff");
-        assertEndOfFile(lexer);
+        String expectedString = "'some stuff'";
+        startLexing(expectedString);
+        assertTokenAttributes(GroovyTokenTypes.STRING_LITERAL, 1, 1, expectedString);
+        assertEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingAStringLiteralDelimitedByQuotes() {
-        GroovyLexerAdapter lexer = createLexer("\"some stuff\"");
-        assertType(lexer, GroovyTokenTypes.STRING_LITERAL, 0, 1, 1, "some stuff");
-        assertEndOfFile(lexer);
+        String expectedString = "\"some stuff\"";
+        startLexing(expectedString);
+        assertTokenAttributes(GroovyTokenTypes.STRING_LITERAL, 1, 1, expectedString);
+        assertEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingAPrimitiveDouble() {
-        GroovyLexerAdapter lexer = createLexer("0.1234D");
-        assertType(lexer, GroovyTokenTypes.NUM_DOUBLE, 0, 1, 1, "0.1234D");
-        assertEndOfFile(lexer);
+        startLexing("0.1234D");
+        assertTokenAttributes(GroovyTokenTypes.NUM_DOUBLE, 1, 1, "0.1234D");
+        assertEndOfFile();
     }
 
     public void testReadsThePositionOfAnIdentifierTokenConsecutiveToATabCharacter() {
-        GroovyLexerAdapter lexer = createLexer("\tfoo");
-        assertType(lexer, GroovyTokenTypes.WS, 0, 1, 1, "\t");
-        assertNext(lexer, GroovyTokenTypes.IDENT, 1, 2, 1, "foo");
-        assertEndOfFile(lexer);
+        startLexing("\tfoo");
+        assertTokenAttributes(GroovyTokenTypes.WS, 1, 1, "\t");
+        assertNextTokenAttributes(GroovyTokenTypes.IDENT, 2, 1, "foo");
+        assertEndOfFile();
     }
 
     public void testReadsTextContainingASingleLineComment() {
-        GroovyLexerAdapter lexer = createLexer("//foo\nfoo");
-        assertType(lexer, GroovyTokenTypes.SL_COMMENT, 0, 1, 1, "//foo");
-        assertNext(lexer, GroovyTokenTypes.NLS, 5, 6, 1, "");
-        assertNext(lexer, GroovyTokenTypes.IDENT, 6, 1, 2, "foo");
-        assertEndOfFile(lexer);
+        startLexing("//foo\nfoo");
+        assertTokenAttributes(GroovyTokenTypes.SL_COMMENT, 1, 1, "//foo");
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 6, 1, "\n");
+        assertNextTokenAttributes(GroovyTokenTypes.IDENT, 1, 2, "foo");
+        assertEndOfFile();
     }
 
     public void testReadsTextContainingAMultiLineComment() {
-        GroovyLexerAdapter lexer = createLexer("/*foo\nfoo*/foo");
-        assertType(lexer, GroovyTokenTypes.ML_COMMENT, 0, 1, 1, "/*foo\nfoo*/");
-        assertNext(lexer, GroovyTokenTypes.IDENT, 11, 6, 2, "foo");
-        assertEndOfFile(lexer);
+        startLexing("/*foo\nfoo*/foo");
+        assertTokenAttributes(GroovyTokenTypes.ML_COMMENT, 1, 1, "/*foo\nfoo*/");
+        assertNextTokenAttributes(GroovyTokenTypes.IDENT, 6, 2, "foo");
+        assertEndOfFile();
     }
 
     public void testReadsTextContainingVariousBlanks() {
-        GroovyLexerAdapter lexer = createLexer(" def\n ( ");
-        assertType(lexer, GroovyTokenTypes.WS, 0, 1, 1, " ");
-        assertNext(lexer, GroovyTokenTypes.LITERAL_def, 1, 2, 1, "def");
-        assertNext(lexer, GroovyTokenTypes.NLS, 4, 5, 1, "");
-        assertNext(lexer, GroovyTokenTypes.WS, 5, 1, 2, " ");
-        assertNext(lexer, GroovyTokenTypes.LPAREN, 6, 2, 2, "(");
-        assertNext(lexer, GroovyTokenTypes.WS, 7, 3, 2, " ");
-        assertEndOfFile(lexer);
+        startLexing(" def\n ( ");
+        assertTokenAttributes(GroovyTokenTypes.WS, 1, 1, " ");
+        assertNextTokenAttributes(GroovyTokenTypes.LITERAL_def, 2, 1, "def");
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 5, 1, "\n");
+        assertNextTokenAttributes(GroovyTokenTypes.WS, 1, 2, " ");
+        assertNextTokenAttributes(GroovyTokenTypes.LPAREN, 2, 2, "(");
+        assertNextTokenAttributes(GroovyTokenTypes.WS, 3, 2, " ");
+        assertEndOfFile();
     }
 
     public void testReadsTextContainingAMethodDefinition() {
-        GroovyLexerAdapter lexer = createLexer("def bla  ( ){\n}");
-        assertType(lexer, GroovyTokenTypes.LITERAL_def, 0, 1, 1, "def");
-        assertNext(lexer, GroovyTokenTypes.WS, 3, 4, 1, " ");
-        assertNext(lexer, GroovyTokenTypes.IDENT, 4, 5, 1, "bla");
-        assertNext(lexer, GroovyTokenTypes.WS, 7, 8, 1, "  ");
-        assertNext(lexer, GroovyTokenTypes.LPAREN, 9, 10, 1, "(");
-        assertNext(lexer, GroovyTokenTypes.WS, 10, 11, 1, " ");
-        assertNext(lexer, GroovyTokenTypes.RPAREN, 11, 12, 1, ")");
-        assertNext(lexer, GroovyTokenTypes.LCURLY, 12, 13, 1, "{");
-        assertNext(lexer, GroovyTokenTypes.NLS, 13, 14, 1, "");
-        assertNext(lexer, GroovyTokenTypes.RCURLY, 14, 1, 2, "}");
-        assertEndOfFile(lexer);
+        startLexing("def bla  ( ){\n}");
+        assertTokenAttributes(GroovyTokenTypes.LITERAL_def, 1, 1, "def");
+        assertNextTokenAttributes(GroovyTokenTypes.WS, 4, 1, " ");
+        assertNextTokenAttributes(GroovyTokenTypes.IDENT, 5, 1, "bla");
+        assertNextTokenAttributes(GroovyTokenTypes.WS, 8, 1, "  ");
+        assertNextTokenAttributes(GroovyTokenTypes.LPAREN, 10, 1, "(");
+        assertNextTokenAttributes(GroovyTokenTypes.WS, 11, 1, " ");
+        assertNextTokenAttributes(GroovyTokenTypes.RPAREN, 12, 1, ")");
+        assertNextTokenAttributes(GroovyTokenTypes.LCURLY, 13, 1, "{");
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 14, 1, "\n");
+        assertNextTokenAttributes(GroovyTokenTypes.RCURLY, 1, 2, "}");
+        assertEndOfFile();
     }
 
-    public void testReadsTextContainingAScriptHeaderCommentFollowedByImportStatementsAndAMultiLineComment() {
+    public void testReadsTextContainingAScriptHeaderCommentFollowedByImportStatementsAndAMultiLineCommentAndASingleLineComment() {
         /*
          * DO NOT attempt to break the following string into smaller chuncks BUT RATHER install the StringEditor plug-in
          * to get a more readable and editable view of this code snippet.
          */
-        GroovyLexerAdapter lexer = createLexer("#!/usr/bin/groovy\n\nimport javax.swing.JPanel\nimport groovy.swing.SwingBuilder\n\n/*\n * A multi-line comment.\r\n */\n");
+        startLexing("#!/usr/bin/groovy\n\nimport javax.swing.JPanel\nimport groovy.swing.SwingBuilder\n\n/*\n * A multi-line comment.\n */\n\t// single-line comment...");
 
-        assertType(lexer, GroovyTokenTypes.SH_COMMENT, 0, 1, 1, "#!/usr/bin/groovy");
-        assertNext(lexer, GroovyTokenTypes.NLS, 17, 18, 1, "");
-        assertNext(lexer, GroovyTokenTypes.NLS, 18, 1, 2, "");
+        assertTokenAttributes(GroovyTokenTypes.SH_COMMENT, 1, 1, "#!/usr/bin/groovy");
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 18, 1, "\n");
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 1, 2, "\n");
 
-        assertNext(lexer, GroovyTokenTypes.LITERAL_import, 19, 1, 3, "import");
-        assertNext(lexer, GroovyTokenTypes.WS, 25, 7, 3, " ");
-        assertNext(lexer, GroovyTokenTypes.IDENT, 26, 8, 3, "javax");
-        assertNext(lexer, GroovyTokenTypes.DOT, 31, 13, 3, ".");
-        assertNext(lexer, GroovyTokenTypes.IDENT, 32, 14, 3, "swing");
-        assertNext(lexer, GroovyTokenTypes.DOT, 37, 19, 3, ".");
-        assertNext(lexer, GroovyTokenTypes.IDENT, 38, 20, 3, "JPanel");
-        assertNext(lexer, GroovyTokenTypes.NLS, 44, 26, 3, "");
+        assertNextTokenAttributes(GroovyTokenTypes.LITERAL_import, 1, 3, "import");
+        assertNextTokenAttributes(GroovyTokenTypes.WS, 7, 3, " ");
+        assertNextTokenAttributes(GroovyTokenTypes.IDENT, 8, 3, "javax");
+        assertNextTokenAttributes(GroovyTokenTypes.DOT, 13, 3, ".");
+        assertNextTokenAttributes(GroovyTokenTypes.IDENT, 14, 3, "swing");
+        assertNextTokenAttributes(GroovyTokenTypes.DOT, 19, 3, ".");
+        assertNextTokenAttributes(GroovyTokenTypes.IDENT, 20, 3, "JPanel");
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 26, 3, "\n");
 
-        assertNext(lexer, GroovyTokenTypes.LITERAL_import, 45, 1, 4, "import");
-        assertNext(lexer, GroovyTokenTypes.WS, 51, 7, 4, " ");
-        assertNext(lexer, GroovyTokenTypes.IDENT, 52, 8, 4, "groovy");
-        assertNext(lexer, GroovyTokenTypes.DOT, 58, 14, 4, ".");
-        assertNext(lexer, GroovyTokenTypes.IDENT, 59, 15, 4, "swing");
-        assertNext(lexer, GroovyTokenTypes.DOT, 64, 20, 4, ".");
-        assertNext(lexer, GroovyTokenTypes.IDENT, 65, 21, 4, "SwingBuilder");
-        assertNext(lexer, GroovyTokenTypes.NLS, 77, 33, 4, "");
-        assertNext(lexer, GroovyTokenTypes.NLS, 78, 1, 5, "");
+        assertNextTokenAttributes(GroovyTokenTypes.LITERAL_import, 1, 4, "import");
+        assertNextTokenAttributes(GroovyTokenTypes.WS, 7, 4, " ");
+        assertNextTokenAttributes(GroovyTokenTypes.IDENT, 8, 4, "groovy");
+        assertNextTokenAttributes(GroovyTokenTypes.DOT, 14, 4, ".");
+        assertNextTokenAttributes(GroovyTokenTypes.IDENT, 15, 4, "swing");
+        assertNextTokenAttributes(GroovyTokenTypes.DOT, 20, 4, ".");
+        assertNextTokenAttributes(GroovyTokenTypes.IDENT, 21, 4, "SwingBuilder");
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 33, 4, "\n");
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 1, 5, "\n");
 
-        assertNext(lexer, GroovyTokenTypes.ML_COMMENT, 79, 1, 6, "/*\n * A multi-line comment.\r\n */");
-        assertNext(lexer, GroovyTokenTypes.NLS, 110, 4, 8, "");
-        assertEndOfFile(lexer);
+        assertNextTokenAttributes(GroovyTokenTypes.ML_COMMENT, 1, 6, "/*\n * A multi-line comment.\n */");
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 4, 8, "\n");
+        assertNextTokenAttributes(GroovyTokenTypes.WS, 1, 9, "\t");
+        assertNextTokenAttributes(GroovyTokenTypes.SL_COMMENT, 2, 9, "// single-line comment...");
+        assertEndOfFile();
     }
 
     /*
@@ -262,36 +268,23 @@ import groovy.swing.SwingBuilder
     }
 */
 
-    private GroovyLexerAdapter createLexer(String input) {
-        GroovyLexerAdapter lexer = (GroovyLexerAdapter) GroovyLanguage.findOrCreate().getParserDefinition().createLexer(null);
-        PsiBuilder psiBuilder = new GroovyPsiBuilder(GroovyLanguage.findOrCreate(), null, null, input);
-        lexer.start(psiBuilder);
+    private void assertNextTokenAttributes(int tokenTypeIndex, int column, int line, String text)  {
         lexer.advance();
-        return lexer;
+        assertTokenAttributes(tokenTypeIndex, column, line, text);
     }
 
-    private void assertNext(GroovyLexerAdapter lexer, int type, int offset, int column, int line, String text)  {
-        GroovyLexerAdapter.currentGroovyPsiLexer().getPsiBuilder().advanceLexer();
-        assertType(lexer, type, offset, column, line, text);
-    }
-
-    private void assertType(GroovyLexerAdapter lexer, int type, int offset, int column, int line, String text) {
-        IElementType elementType = GroovyTokenTypeMappings.getType(type);
-        PsiBuilder psiBuilder = GroovyLexerAdapter.currentGroovyPsiLexer().getPsiBuilder();
-        assertEquals("token type [GroovyPsiLexer]", elementType, lexer.getTokenType());
-        assertEquals("token type [PsiBuilder]", elementType, psiBuilder.getTokenType());    // advances the underlying lexer!
-        assertEquals("offset", offset, psiBuilder.getCurrentOffset());
+    private void assertTokenAttributes(int tokenTypeIndex, int column, int line, String text) {
+        assertEquals("token type [from adapter]", GroovyTokenTypeMappings.getType(tokenTypeIndex), lexer.getTokenType());
 
         Token currentToken = lexer.getCurrentToken();
+        assertEquals("token type", tokenTypeIndex, currentToken.getType());
+        assertEquals("token text", text, currentToken.getText());
         assertEquals("column number", column, currentToken.getColumn());
         assertEquals("line number", line, currentToken.getLine());
-        assertEquals("token", text, currentToken.getText());
     }
 
-    private void assertEndOfFile(GroovyLexerAdapter lexer) {
-        PsiBuilder psiBuilder = GroovyLexerAdapter.currentGroovyPsiLexer().getPsiBuilder();
-        psiBuilder.advanceLexer();
+    private void assertEndOfFile() {
+        lexer.advance();
         assertEquals("EOF token", null, lexer.getTokenType());
-        assertEquals("has PSI builder reached EOF?", true, psiBuilder.eof());
     }
 }

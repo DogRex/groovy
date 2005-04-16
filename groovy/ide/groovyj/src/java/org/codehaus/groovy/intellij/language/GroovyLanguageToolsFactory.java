@@ -23,14 +23,11 @@ import com.intellij.lexer.Lexer;
 
 public class GroovyLanguageToolsFactory {
 
-    private final GroovyLexerAdapter groovyLexerAdapter = new GroovyLexerAdapter();
-    private final GroovyPsiParser groovyPsiParser = new GroovyPsiParser();
-
     public Lexer createLexer() {
-        return groovyLexerAdapter;
+        return new GroovyLexerAdapter();
     }
 
     public PsiParser createParser() {
-        return groovyPsiParser;
+        return new GroovyPsiParser();
     }
 }

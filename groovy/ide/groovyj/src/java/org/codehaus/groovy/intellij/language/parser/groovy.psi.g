@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.intellij.lang.PsiBuilder;
-import com.intellij.psi.tree.IElementType;
 
 import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
 import org.codehaus.groovy.intellij.language.GroovyPsiBuilder;
@@ -210,10 +209,10 @@ import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
  *
  * Version 1.22.4.g.1.psi.1
  *    o Copied from groovy.g for Groovy 1.0 JSR-1
- *    o Removed GroovyLexer
- *    o Added usages of PsiBuilder.Marker
+ *    o Added usages of IntelliJ IDEA's com.intellij.lang.PsiBuilder API
+ *    o Updated a number of token production rules as and when needed by GroovyJ
  *
- * This grammar is in the PUBLIC DOMAIN
+ * This grammar is in the PUBLIC DOMAIN.
  */
 
 class GroovyPsiRecognizer extends GroovyRecognizer;
@@ -223,17 +222,15 @@ options {
     codeGenBitsetTestThreshold = 3;
     defaultErrorHandler = false;      // Don't generate parser error handlers
     buildAST = true;
-//  ASTLabelType = "GroovyAST";
 }
 
 {
     private PsiBuilder builder;
-    private IElementType rootElementType;
 
-    public GroovyPsiRecognizer(IElementType rootElementType, PsiBuilder builder, TokenStream tokenStream) {
-        this(tokenStream, 3);    // this is a LL(k) parser where k = 3
+    public GroovyPsiRecognizer(GroovyPsiBuilder builder) {
+        this(builder.getLexer().stream(), 3);    // this is a LL(k) parser where k = 3
         this.builder = builder;
-        this.rootElementType = rootElementType;
+        builder.startLexer();
     }
 
     boolean compatibilityMode = true;  // for now
@@ -343,22 +340,10 @@ options {
 compilationUnit
     :
         // The very first characters of the file may be "#!".  If so, ignore the first line.
-        (
-            SH_COMMENT!
-            {
-                PsiBuilder.Marker marker = builder.mark();
-//                builder.advanceLexer();
-                marker.done(GroovyTokenTypeMappings.getType(SH_COMMENT));
-            }
-        )?
+        (SH_COMMENT!)?
 
         // we can have comments at the top of a file
         nls!
-            {
-                PsiBuilder.Marker marker = builder.mark();
-//                builder.advanceLexer();
-                marker.done(GroovyTokenTypeMappings.getType(NLS));
-            }
 
         // A compilation unit starts with an optional package definition
         (   (annotationsOpt "package")=> packageDefinition
@@ -3062,7 +3047,7 @@ options {
     ;
 
 protected
-ONE_NL!
+ONE_NL
 options {
     paraphrase="a newline";
 }
@@ -3125,9 +3110,6 @@ SH_COMMENT
 options {
     paraphrase="a script header";
 }
-        {
-            PsiBuilder.Marker marker = builder.mark();
-        }
     :   {getLine() == 1 && getColumn() == 1}?  "#!"
         (
             options {  greedy = true;  }:
@@ -3137,9 +3119,6 @@ options {
         )*
         { if (!whitespaceIncluded)  $setType(Token.SKIP); }
         //ONE_NL  //Never a significant newline, but might as well separate it.
-        {
-            marker.done(GroovyTokenTypeMappings.getType(SH_COMMENT));
-        }
     ;
 
 // multiple-line comments
@@ -3182,16 +3161,16 @@ options {
         |   ('\'' (~'\'' | '\'' ~'\'')) => '\''  // allow 1 or 2 close quotes
         )*
         "'''"!
-    |   '\''!
+    |   '\''
                                 {++suppressNewline;}
         (   STRING_CH | ESC | '"' | '$'  )*
                                 {--suppressNewline;}
-        '\''!
+        '\''
     |   ("\"\"\"") =>  //...shut off ambiguity warning
         "\"\"\""!
         tt=STRING_CTOR_END[true, /*tripleQuote:*/ true]
         {$setType(tt);}
-    |   '"'!
+    |   '"'
                                 {++suppressNewline;}
         tt=STRING_CTOR_END[true, /*tripleQuote:*/ false]
         {$setType(tt);}
@@ -3210,7 +3189,7 @@ options {
             STRING_CH | ESC | '\'' | STRING_NL[tripleQuote]
         |   ('"' (~'"' | '"' ~'"'))=> {tripleQuote}? '"'  // allow 1 or 2 close quotes
         )*
-        (   (   { !tripleQuote }? "\""!
+        (   (   { !tripleQuote }? "\""
             |   {  tripleQuote }? "\"\"\""!
             )
             {

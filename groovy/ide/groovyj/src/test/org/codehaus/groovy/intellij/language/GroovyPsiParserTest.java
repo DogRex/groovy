@@ -24,58 +24,59 @@ import org.intellij.openapi.testing.MockApplicationManager;
 
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.ParserDefinition;
-import com.intellij.lang.PsiBuilder;
+import com.intellij.psi.TokenType;
+import com.intellij.psi.tree.IElementType;
+
+import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
 
 import org.codehaus.groovy.intellij.psi.GroovyElementTypes;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
-import antlr.RecognitionException;
-import antlr.TokenStreamException;
-
 public class GroovyPsiParserTest extends TestCase {
 
-    public void testParsesAGivenTokenStreamIntoATreeOfPsiNodes() throws TokenStreamException, RecognitionException {
-//        String textToParse = "#! A script-header comment.\r\r\tdef f(){\n\t  return\r\n    }\r\r\n";
-        String textToParse = "#! A script-header comment.\r\r";
+    // FIXME: work in progress!
+    public void testParsesAGivenScriptIntoATreeOfPsiNodes() {
+        /*
+         * DO NOT attempt to break the following string into smaller chuncks BUT RATHER install the StringEditor plug-in
+         * to get a more readable and editable view of this code snippet.
+         */
+//        String textToParse = "#!/usr/bin/groovy\n\nimport javax.swing.JPanel\nimport groovy.swing.SwingBuilder\n\n/*\n * A multi-line comment.\n */\n\ndef f(){\n\t// single-line comment...\n\treturn\n  }\n";
+        String textToParse = "#!/usr/bin/groovy\n\n";
 
         MockApplicationManager.reset();
         ParserDefinition parserDefinition = GroovyLanguage.findOrCreate().getParserDefinition();
+        GroovyPsiBuilder builder = new GroovyPsiBuilder(GroovyLanguage.findOrCreate(), null, null, textToParse);
 
-        GroovyLexerAdapter lexer = ((GroovyLexerAdapter) parserDefinition.createLexer(null));
-        PsiBuilder psiBuilder = new GroovyPsiBuilder(GroovyLanguage.findOrCreate(), null, null, textToParse);
-        lexer.start(psiBuilder);
-
-        System.out.println("token type: " + psiBuilder.getTokenType());
-
-        ASTNode rootNode = parserDefinition.createParser(null).parse(parserDefinition.getFileNodeType(), psiBuilder);
+        ASTNode rootNode = parserDefinition.createParser(null).parse(parserDefinition.getFileNodeType(), builder);
         assertSame("file element type", GroovyElementTypes.FILE, rootNode.getElementType());
 
-        // FIXME: in progress!
-/*
-        ASTNode firstChild = assertFirstChildNode(GroovyTokenTypes.SH_COMMENT, rootNode, "#! This is a script-header comment.");
-        ASTNode nextChild = assertNextNode(GroovyTokenTypes.NLS, firstChild, "\r");
-        nextChild = assertNextNode(GroovyTokenTypes.NLS, nextChild, "\r");
-        nextChild = assertNextNode(GroovyTokenTypes.WS, nextChild, "\t");
-        nextChild = assertNextNode(GroovyTokenTypes.METHOD_DEF, nextChild, "def f(){\n\t  return\r\n    }");
+        ASTNode node = assertFirstChildNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.SH_COMMENT), rootNode);
+        node = assertNextNode(TokenType.WHITE_SPACE, node);
+        node = assertNextNode(TokenType.WHITE_SPACE, node);
+        assertNodeHasNoChildrenAndNoNextSiblings(node);
 
         assertEquals("PSI tree as text", textToParse, rootNode.getText());
-*/
     }
 
-    private ASTNode assertFirstChildNode(int tokenTypeIndex, ASTNode astNode, String expectedText) {
-        ASTNode firstChild = astNode.getFirstChildNode();
-        assertNodeEquals(tokenTypeIndex, firstChild, expectedText);
+    private ASTNode assertFirstChildNode(IElementType elementType, ASTNode node) {
+        ASTNode firstChild = node.getFirstChildNode();
+        assertNodeAttributes(elementType, firstChild);
         return firstChild;
     }
 
-    private ASTNode assertNextNode(int tokenTypeIndex, ASTNode astNode, String expectedText) {
-        ASTNode nextNode = astNode.getTreeNext();
-        assertNodeEquals(tokenTypeIndex, nextNode, expectedText);
+    private ASTNode assertNextNode(IElementType elementType, ASTNode node) {
+        ASTNode nextNode = node.getTreeNext();
+        assertNodeAttributes(elementType, nextNode);
         return nextNode;
     }
 
-    private void assertNodeEquals(int tokenTypeIndex, ASTNode astNode, String expectedText) {
-        assertEquals("node type", GroovyTokenTypeMappings.getType(tokenTypeIndex), astNode.getElementType());
-        assertEquals("node text", expectedText, astNode.getText());
+    private void assertNodeAttributes(IElementType elementType, ASTNode node) {
+        assertSame("node type", elementType, node.getElementType());
+    }
+
+    private void assertNodeHasNoChildrenAndNoNextSiblings(ASTNode node) {
+        assertEquals("first child", null, node.getFirstChildNode());
+        assertEquals("last child", null, node.getLastChildNode());
+        assertEquals("next sibling", null, node.getTreeNext());
     }
 }
