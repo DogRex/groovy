@@ -1,0 +1,1172 @@
+Index: groovy-core/src/main/org/codehaus/groovy/antlr/groovy.g
+===================================================================
+RCS file: /home/projects/groovy/scm/groovy/groovy-core/src/main/org/codehaus/groovy/antlr/groovy.g,v
+retrieving revision 1.24
+diff -u -r1.24 groovy.g
+--- groovy-core/src/main/org/codehaus/groovy/antlr/groovy.g	13 Apr 2005 21:45:54 -0000	1.24
++++ groovy-core/src/main/org/codehaus/groovy/antlr/groovy.g	27 Apr 2005 22:48:25 -0000
+@@ -1,6 +1,25 @@
+ // Note: Please don't use physical tabs.  Logical tabs for indent are width 4.
++
+ header {
+-package org.codehaus.groovy.antlr.parser;
++/*
++ * $Id$
++ *
++ * Copyright (c) 2005 The Codehaus - http://groovy.codehaus.org
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
++ * the License. You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
++ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ *
++ * See the License for the specific language governing permissions and limitations under the License.
++ *
++ */
++
++
++package org.codehaus.groovy.intellij.language.parser;
+ import org.codehaus.groovy.antlr.*;
+ import java.util.*;
+ import java.io.InputStream;
+@@ -8,7 +27,7 @@
+ import antlr.InputBuffer;
+ import antlr.LexerSharedInputState;
+ }
+- 
++
+ /** JSR-241 Groovy Recognizer
+  *
+  * Run 'java Main [-showtree] directory-full-of-groovy-files'
+@@ -180,7 +199,7 @@
+  *    o I have taken java.g for Java1.5 from Michael Studman (1.22.4)
+  *      and have applied the groovy.diff from java.g (1.22) by John Rose
+  *      back onto the new root (1.22.4) - Jeremy Rayner (Jan 2005)
+- *    o for a map of the task see... 
++ *    o for a map of the task see...
+  *      http://groovy.javanicus.com/java-g.png
+  *
+  * This grammar is in the PUBLIC DOMAIN
+@@ -235,12 +254,12 @@
+     public static GroovyRecognizer make(Reader in) { return make(new GroovyLexer(in)); }
+     public static GroovyRecognizer make(InputBuffer in) { return make(new GroovyLexer(in)); }
+     public static GroovyRecognizer make(LexerSharedInputState in) { return make(new GroovyLexer(in)); }
+-    
++
+     private static GroovySourceAST dummyVariableToforceClassLoaderToFindASTClass = new GroovySourceAST();
+ 
+     List warningList;
+     public List getWarningList() { return warningList; }
+-    
++
+     boolean compatibilityMode = true;  // for now
+     public boolean isCompatibilityMode() { return compatibilityMode; }
+     public void setCompatibilityMode(boolean z) { compatibilityMode = z; }
+@@ -260,7 +279,7 @@
+         if (returnAST != null)  rname += returnAST.toStringList();
+         super.traceOut(rname);
+     }
+-        
++
+     // Error handling.  This is a funnel through which parser errors go, when the parser can suggest a solution.
+     public void requireFailed(String problem, String solution) throws SemanticException {
+         // TODO: Needs more work.
+@@ -341,7 +360,7 @@
+      * either GT, SR or BSR tokens.
+      */
+     private int ltCounter = 0;
+-    
++
+     /* This symbol is used to work around a known ANTLR limitation.
+      * In a loop with syntactic predicate, ANTLR needs help knowing
+      * that the loop exit is a second alternative.
+@@ -362,10 +381,10 @@
+ compilationUnit
+     :
+         // The very first characters of the file may be "#!".  If so, ignore the first line.
+-        (SH_COMMENT!)?
++        (SH_COMMENT)?
+ 
+         // we can have comments at the top of a file
+-        nls!
++        nls
+ 
+         // A compilation unit starts with an optional package definition
+         (   (annotationsOpt "package")=> packageDefinition
+@@ -387,7 +406,7 @@
+ // Package statement: optional annotations followed by "package" then the package identifier.
+ packageDefinition
+         //TODO? options {defaultErrorHandler = true;} // let ANTLR handle errors
+-    :   annotationsOpt p:"package"^ {#p.setType(PACKAGE_DEF);} identifier
++    :   annotationsOpt "package"! ^[PACKAGE_DEF, "package"]^ identifier
+     ;
+ 
+ 
+@@ -395,7 +414,7 @@
+ importStatement
+         //TODO? options {defaultErrorHandler = true;}
+         { boolean isStatic = false; }
+-    :   i:"import"^ {#i.setType(IMPORT);} ( "static"! {#i.setType(STATIC_IMPORT);} )? identifierStar
++    :   "import"! ^[IMPORT, "import"]^ ( "static"! ^[STATIC_IMPORT, "import"]^ )? identifierStar
+     ;
+ 
+ // TODO REMOVE
+@@ -430,7 +449,7 @@
+  *  AST effect: Create a separate Type/Var tree for each var in the var list.
+  *  Must be guarded, as in (declarationStart) => declaration.
+  */
+-declaration!
++declaration
+     :
+         // method/variable using a 'def' or a modifier; type is optional
+         m:modifiers
+@@ -451,7 +470,7 @@
+ /** A declaration with one declarator and no initialization, like a parameterDeclaration.
+  *  Used to parse loops like <code>for (int x in y)</code> (up to the <code>in</code> keyword).
+  */
+-singleDeclarationNoInit!
++singleDeclarationNoInit
+     :
+         // method/variable using a 'def' or a modifier; type is optional
+         m:modifiers
+@@ -470,7 +489,7 @@
+  *  lists and <code>while</code> statements.
+  */
+ singleDeclaration
+-    :   sd:singleDeclarationNoInit!
++    :   sd:singleDeclarationNoInit
+         { #singleDeclaration = #sd; }
+         (varInitializer)?
+     ;
+@@ -487,7 +506,7 @@
+  *  syntaxes, or to have the parser query the symbol table.  Parse-time queries are evil.
+  *  And we want both {String x} and {println x}.  So we need a syntactic razor-edge to slip
+  *  between 'println' and 'String'.)
+- *  
++ *
+  *   *TODO* The declarationStart production needs to be strengthened to recognize
+  *  things like {List<String> foo}.
+  *  Right now it only knows how to skip square brackets after the type, not
+@@ -495,7 +514,7 @@
+  *  This probably turns out to be tricky because of >> vs. > >. If so,
+  *  just put a TODO comment in.
+  */
+-declarationStart!
++declarationStart
+     :   "def"
+     |   modifier
+     |   AT IDENT  // IDENT != "interface"
+@@ -505,18 +524,18 @@
+         ) (LBRACK balancedTokens RBRACK)* IDENT
+     ;
+ 
+-/** Not yet used - but we could use something like this to look for fully qualified type names 
++/** Not yet used - but we could use something like this to look for fully qualified type names
+  */
+-qualifiedTypeName!
++qualifiedTypeName
+ 				 :
+ 				 			 IDENT (DOT IDENT)* DOT upperCaseIdent
+ 				 ;
+-	
+-/** Used to look ahead for a constructor 
++
++/** Used to look ahead for a constructor
+  */
+-constructorStart!
++constructorStart
+     :
+-        modifiersOpt! id:IDENT! {isConstructorIdent(id)}? nls! LPAREN! //...
++        modifiersOpt id:IDENT {isConstructorIdent(id)}? nls! LPAREN! //...
+     ;
+ 
+ 
+@@ -536,10 +555,10 @@
+ places: '@' ident '(' balancedTokens ')'.
+ */
+ 
+-typeDeclarationStart!
+-    :   modifiersOpt! ("class" | "interface" | "enum" | AT "interface")
++typeDeclarationStart
++    :   modifiersOpt ("class" | "interface" | "enum" | AT "interface")
+     ;
+-    
++
+ /** An IDENT token whose spelling is required to start with an uppercase letter.
+  *  In the case of a simple statement {UpperID name} the identifier is taken to be a type name, not a command name.
+  */
+@@ -563,7 +582,7 @@
+ //   (which would make it an array type).
+ // - generic type arguments after
+ classTypeSpec[boolean addImagNode]
+-    :   ct:classOrInterfaceType[false]!
++    :   ct:classOrInterfaceType[false]
+         declaratorBrackets[#ct]
+         {
+             if ( addImagNode ) {
+@@ -602,7 +621,7 @@
+ 
+ // Wildcard type indicating all types (with possible constraint)
+ wildcardType
+-    :   q:QUESTION^ {#q.setType(WILDCARD_TYPE);}
++    :   QUESTION! ^[WILDCARD_TYPE, "?"]^
+         (("extends" | "super")=> typeArgumentBounds)?
+     ;
+ 
+@@ -611,7 +630,7 @@
+ {int currentLtLevel = 0;}
+     :
+         {currentLtLevel = ltCounter;}
+-        LT! {ltCounter++;} nls!
++        LT {ltCounter++;} nls!
+         typeArgument
+         (   options{greedy=true;}: // match as many as possible
+             {inputState.guessing !=0 || ltCounter == currentLtLevel + 1}?
+@@ -634,16 +653,16 @@
+ // this gobbles up *some* amount of '>' characters, and counts how many
+ // it gobbled.
+ protected typeArgumentsOrParametersEnd
+-    :   GT! {ltCounter-=1;} nls!
+-    |   SR! {ltCounter-=2;} nls!
+-    |   BSR! {ltCounter-=3;} nls!
++    :   GT {ltCounter-=1;} nls!
++    |   SR {ltCounter-=2;} nls!
++    |   BSR {ltCounter-=3;} nls!
+     ;
+ 
+ // Restriction on wildcard types based on super class or derrived class
+ typeArgumentBounds
+     {boolean isUpperBounds = false;}
+     :
+-        ( "extends"! {isUpperBounds=true;} | "super"! ) nls! classOrInterfaceType[false] nls!
++        ( "extends" {isUpperBounds=true;} | "super" ) nls! classOrInterfaceType[false] nls!
+         {
+             if (isUpperBounds)
+             {
+@@ -658,9 +677,9 @@
+ 
+ // A builtin type array specification is a builtin type with brackets afterwards
+ builtInTypeArraySpec[boolean addImagNode]
+-    :   bt:builtInType!
++    :   bt:builtInType
+         (   (LBRACK)=>   // require at least one []
+-            declaratorBrackets[#bt] 
++            declaratorBrackets[#bt]
+         |   {require(false,
+                           "primitive type parameters not allowed here",
+                            "use the corresponding wrapper type, such as Integer for int"
+@@ -676,7 +695,7 @@
+ // A builtin type specification is a builtin type with possible brackets
+ // afterwards (which would make it an array type).
+ builtInTypeSpec[boolean addImagNode]
+-    :   bt:builtInType!
++    :   bt:builtInType
+         declaratorBrackets[#bt]
+         {
+             if ( addImagNode ) {
+@@ -735,7 +754,7 @@
+ 
+             // 'def' is an empty modifier, for disambiguating declarations
+             {seenDef++ == 0}?       // do not allow multiple "def" tokens
+-            "def"! nls!
++            "def" nls!
+         |
+             // Note: Duplication of modifiers is detected when walking the AST.
+             modifier nls!
+@@ -778,8 +797,8 @@
+     |   "strictfp"
+     ;
+ 
+-annotation!
+-    :   AT! i:identifier ( LPAREN! ( args:annotationArguments )? RPAREN! )?
++annotation
++    :   AT i:identifier ( LPAREN! ( args:annotationArguments )? RPAREN! )?
+         {#annotation = #(#[ANNOTATION,"ANNOTATION"], i, args);}
+     ;
+ 
+@@ -796,8 +815,8 @@
+     :   annotationMemberValuePair ( COMMA! nls! annotationMemberValuePair )*
+     ;
+ 
+-annotationMemberValuePair!
+-    :   i:IDENT ASSIGN! nls! v:annotationMemberValueInitializer
++annotationMemberValuePair
++    :   i:IDENT ASSIGN nls! v:annotationMemberValueInitializer
+             {#annotationMemberValuePair = #(#[ANNOTATION_MEMBER_VALUE_PAIR,"ANNOTATION_MEMBER_VALUE_PAIR"], i, v);}
+     ;
+ 
+@@ -808,7 +827,7 @@
+ /*OBS*
+ // This is an initializer used to set up an annotation member array.
+ annotationMemberArrayInitializer
+-    :   lc:LCURLY^ {#lc.setType(ANNOTATION_ARRAY_INIT);}
++    :   LCURLY! ^[ANNOTATION_ARRAY_INIT, "{"]^
+         (   annotationMemberArrayValueInitializer
+             (
+                 // CONFLICT: does a COMMA after an initializer start a new
+@@ -834,13 +853,13 @@
+     |   annotation nls!
+     ;
+ 
+-superClassClause!
++superClassClause
+     :   ( "extends" nls! c:classOrInterfaceType[false] nls! )?
+         {#superClassClause = #(#[EXTENDS_CLAUSE,"EXTENDS_CLAUSE"],c);}
+     ;
+ 
+ // Definition of a Java class
+-classDefinition![AST modifiers]
++classDefinition[AST modifiers]
+     { AST prevCurrentClass = currentClass; }
+     :   "class" IDENT nls!
+        { currentClass = #IDENT; }
+@@ -860,7 +879,7 @@
+ //TODO - where has superClassClause! production gone???
+ 
+ // Definition of a Java Interface
+-interfaceDefinition![AST modifiers]
++interfaceDefinition[AST modifiers]
+     :   "interface" IDENT nls!
+         // it _might_ have type paramaters
+         (tp:typeParameters)?
+@@ -872,7 +891,7 @@
+                                   modifiers,IDENT,tp,ie,ib);}
+     ;
+ 
+-enumDefinition![AST modifiers]
++enumDefinition[AST modifiers]
+     :   "enum" IDENT
+         // it might implement some interfaces...
+         ic:implementsClause
+@@ -882,7 +901,7 @@
+                              modifiers,IDENT,ic,eb);}
+     ;
+ 
+-annotationDefinition![AST modifiers]
++annotationDefinition[AST modifiers]
+     :   AT "interface" IDENT
+         // now parse the body of the annotation
+         ab:annotationBlock
+@@ -894,7 +913,7 @@
+ {int currentLtLevel = 0;}
+     :
+         {currentLtLevel = ltCounter;}
+-        LT! {ltCounter++;} nls!
++        LT {ltCounter++;} nls!
+         typeParameter (COMMA! nls! typeParameter)*
+         nls!
+         (typeArgumentsOrParametersEnd)?
+@@ -915,8 +934,8 @@
+ 
+ typeParameterBounds
+     :
+-        "extends"! nls! classOrInterfaceType[false]
+-        (BAND! nls! classOrInterfaceType[false])*
++        "extends" nls! classOrInterfaceType[false]
++        (BAND nls! classOrInterfaceType[false])*
+         {#typeParameterBounds = #(#[TYPE_UPPER_BOUNDS,"TYPE_UPPER_BOUNDS"], #typeParameterBounds);}
+     ;
+ 
+@@ -976,8 +995,8 @@
+     ;
+ 
+ // An annotation field
+-annotationField!
+-    :   mods:modifiersOpt!
++annotationField
++    :   mods:modifiersOpt
+         (   td:typeDefinitionInternal[#mods]
+             {#annotationField = #td;}
+         |   t:typeSpec[false]               // annotation field
+@@ -1007,7 +1026,7 @@
+ 
+ //An enum constant may have optional parameters and may have a
+ //a class body
+-enumConstant!
++enumConstant
+     :   an:annotationsOpt // Note:  Cannot start with "def" or another modifier.
+         i:IDENT
+         (   LPAREN!
+@@ -1029,10 +1048,10 @@
+ //An enum constant field is just like a class field but without
+ //the posibility of a constructor definition or a static initializer
+ 
+-// TODO - maybe allow 'declaration' production within this production, 
++// TODO - maybe allow 'declaration' production within this production,
+ // but how to disallow constructors and static initializers...
+-enumConstantField!
+-    :   mods:modifiersOpt!
++enumConstantField
++    :   mods:modifiersOpt
+         (   td:typeDefinitionInternal[#mods]
+             {#enumConstantField = #td;}
+         |   // A generic method has the typeParameters before the return type.
+@@ -1080,7 +1099,7 @@
+ // An interface can extend several other interfaces...
+ interfaceExtends
+     :   (
+-            e:"extends"! nls!
++            e:"extends" nls!
+             classOrInterfaceType[false] ( COMMA! nls! classOrInterfaceType[false] )* nls!
+         )?
+         {#interfaceExtends = #(#[EXTENDS_CLAUSE,"EXTENDS_CLAUSE"],
+@@ -1090,7 +1109,7 @@
+ // A class can implement several interfaces...
+ implementsClause
+     :   (
+-            i:"implements"! nls!
++            i:"implements" nls!
+             classOrInterfaceType[false] ( COMMA! nls! classOrInterfaceType[false] )* nls!
+         )?
+         {#implementsClause = #(#[IMPLEMENTS_CLAUSE,"IMPLEMENTS_CLAUSE"],
+@@ -1098,10 +1117,10 @@
+     ;
+ 
+ // Now the various things that can be defined inside a class
+-classField!
++classField
+     :   // method, constructor, or variable declaration
+         (constructorStart)=>
+-        mc:modifiersOpt! ctor:constructorDefinition[#mc]
++        mc:modifiersOpt ctor:constructorDefinition[#mc]
+         {#classField = #ctor;}
+     |
+         (declarationStart)=>
+@@ -1111,7 +1130,7 @@
+         //TODO - unify typeDeclaration and typeDefinitionInternal names
+         // type declaration
+         (typeDeclarationStart)=>
+-        mods:modifiersOpt!
++        mods:modifiersOpt
+         (   td:typeDefinitionInternal[#mods]
+                 {#classField = #td;}
+         )
+@@ -1126,7 +1145,7 @@
+     ;
+ 
+ // Now the various things that can be defined inside a interface
+-interfaceField!
++interfaceField
+     :   // method, constructor, or variable declaration
+         (declarationStart)=>
+         d:declaration
+@@ -1143,7 +1162,7 @@
+     ;
+ 
+ constructorBody
+-    :   lc:LCURLY^ nls!         {#lc.setType(SLIST);}
++    :   LCURLY! ^[SLIST, "{"]^ nls!
+         (   (explicitConstructorInvocation) =>   // Java compatibility hack
+                 explicitConstructorInvocation (sep! blockBody[sepToken])?
+             |   blockBody[EOF]
+@@ -1155,10 +1174,8 @@
+ /** Catch obvious constructor calls, but not the expr.super(...) calls */
+ explicitConstructorInvocation
+     :   (typeArguments)?
+-        (   "this"! lp1:LPAREN^ argList RPAREN!
+-            {#lp1.setType(CTOR_CALL);}
+-        |   "super"! lp2:LPAREN^ argList RPAREN!
+-            {#lp2.setType(SUPER_CTOR_CALL);}
++        (   "this"!  LPAREN! ^[CTOR_CALL, "("]^ argList RPAREN!
++        |   "super"! LPAREN! ^[SUPER_CTOR_CALL, "("]^ argList RPAREN!
+         )
+     ;
+ 
+@@ -1182,23 +1199,24 @@
+ 
+         (   id:IDENT
+         |   qid:STRING_LITERAL          {#qid.setType(IDENT);}  // use for operator defintions, etc.
++            // TODO: Add ^[IDENT, ????] tree construction syntax?
+         )
+ 
+         // parse the formal parameter declarations.
+-        LPAREN! param:parameterDeclarationList! RPAREN!
++        LPAREN! param:parameterDeclarationList RPAREN!
+ 
+         /*OBS*rt:declaratorBrackets[#t]*/
+ 
+         // get the list of exceptions that this method is
+         // declared to throw
+-        (   tc:throwsClause!  )? nlsWarn!
++        (   tc:throwsClause  )? nlsWarn!
+ 
+         // the method body is an open block
+         // but, it may have an optional constructor call (for constructors only)
+         // this constructor clause is only used for constructors using 'def'
+         // which look like method declarations
+         (
+-                mb:openBlock!
++                mb:openBlock
+         |   /*or nothing at all*/
+         )
+         {   if (#qid != null)  #id = #qid;
+@@ -1208,7 +1226,7 @@
+         }
+     ;
+ 
+-/** I've split out constructors separately; we could maybe integrate back into variableDefinitions 
++/** I've split out constructors separately; we could maybe integrate back into variableDefinitions
+  *  later on if we maybe simplified 'def' to be a type declaration?
+  */
+ constructorDefinition[AST mods]
+@@ -1216,13 +1234,13 @@
+         id:IDENT
+ 
+         // parse the formal parameter declarations.
+-        LPAREN! param:parameterDeclarationList! RPAREN!
++        LPAREN! param:parameterDeclarationList RPAREN!
+ 
+         /*OBS*rt:declaratorBrackets[#t]*/
+ 
+         // get the list of exceptions that this method is
+         // declared to throw
+-        (   tc:throwsClause!  )? nlsWarn!
++        (   tc:throwsClause  )? nlsWarn!
+ 
+         // the method body is an open block
+         // but, it may have an optional constructor call (for constructors only)
+@@ -1230,7 +1248,7 @@
+         // TODO assert that the id matches the class
+         { isConstructorIdent(id); }
+ 
+-        cb:constructorBody!
++        cb:constructorBody
+         {   #constructorDefinition =  #(#[CTOR_IDENT,"CTOR_IDENT"],  mods, param, tc, cb);
+         }
+      ;
+@@ -1239,7 +1257,7 @@
+  *  or a local variable in a method
+  *  It can also include possible initialization.
+  */
+-variableDeclarator![AST mods, AST t]
++variableDeclarator[AST mods, AST t]
+     :
+         id:variableName
+         /*OBS*d:declaratorBrackets[t]*/
+@@ -1248,7 +1266,7 @@
+     ;
+ 
+ /** Used in cases where a declaration cannot have commas, or ends with the "in" operator instead of '='. */
+-singleVariable![AST mods, AST t]
++singleVariable[AST mods, AST t]
+     :
+         id:variableName
+         {#singleVariable = #(#[VARIABLE_DEF,"VARIABLE_DEF"], mods, #(#[TYPE,"TYPE"],t), id);}
+@@ -1267,7 +1285,7 @@
+         (
+             // A following list constructor might conflict with index brackets; prefer the declarator.
+             options {greedy=true;} :
+-            lb:LBRACK^ {#lb.setType(ARRAY_DECLARATOR);} RBRACK!
++            LBRACK! ^[ARRAY_DECLARATOR, "["]^ RBRACK!
+         )*
+     ;
+ 
+@@ -1280,7 +1298,7 @@
+ /*OBS*
+ // This is an initializer used to set up an array.
+ arrayInitializer
+-    :   lc:LCURLY^ {#lc.setType(ARRAY_INIT);}
++    :   LCURLY! ^[ARRAY_INIT, "{"]^
+         (   initializer
+             (
+                 // CONFLICT: does a COMMA after an initializer start a new
+@@ -1348,7 +1366,7 @@
+     ;
+ 
+ /** A formal parameter for a method or closure. */
+-parameterDeclaration!
++parameterDeclaration
+         { boolean spreadParam = false; }
+     :
+         pm:parameterModifiersOpt
+@@ -1359,7 +1377,7 @@
+         // TODO:  What do formal parameters for keyword arguments look like?
+ 
+         // TODO:  Should this be SPREAD_ARG instead?
+-        ( TRIPLE_DOT! { spreadParam = true; } )?
++        ( TRIPLE_DOT { spreadParam = true; } )?
+ 
+         id:IDENT
+ 
+@@ -1392,7 +1410,7 @@
+  *  It is not confused by a lookahead of BOR.
+  *  DECIDE:  Is thie necessary, or do we change the closure-bar syntax?
+  */
+-simpleParameterDeclaration!
++simpleParameterDeclaration
+     :   ( options {greedy=true;} : t:typeSpec[false])?
+         id:IDENT
+         {#simpleParameterDeclaration = #(#[PARAMETER_DEF,"PARAMETER_DEF"],
+@@ -1414,7 +1432,7 @@
+         { int seenDef = 0; }
+         //final and/or def can appear amongst annotations in any order
+     :   (   {seenDef++ == 0}?       // do not allow multiple "def" tokens
+-            "def"!  nls!            // redundant, but allowed for symmetry
++            "def"   nls!            // redundant, but allowed for symmetry
+         |   "final" nls!
+         |   annotation nls!
+         )*
+@@ -1439,7 +1457,7 @@
+     ;
+ 
+ /** Lookahead to check whether a block begins with explicit closure arguments. */
+-closureParametersStart!
++closureParametersStart
+     :
+         {compatibilityMode}? (oldClosureParametersStart)=>
+         oldClosureParametersStart
+@@ -1450,10 +1468,10 @@
+ /** Provisional definition of old-style closure params based on BOR '|'.
+  *  Going away soon, perhaps... */
+ oldClosureParameters
+-    :   LOR! nls!  // '||' operator is a null param list
++    :   LOR nls!  // '||' operator is a null param list
+         {#oldClosureParameters = #(#[PARAMETERS,"PARAMETERS"]);}
+     |   (BOR nls BOR)=>
+-        BOR! nls! BOR! nls!
++        BOR nls! BOR nls!
+         {#oldClosureParameters = #(#[PARAMETERS,"PARAMETERS"]);}
+     |   ((BOR nls)? LPAREN parameterDeclarationList RPAREN nls BOR)=>
+         (BOR! nls!)? LPAREN! parameterDeclarationList RPAREN! nls! BOR! nls!
+@@ -1462,7 +1480,7 @@
+     ;
+ 
+ /** Lookahead for oldClosureParameters. */
+-oldClosureParametersStart!
++oldClosureParametersStart
+     :   BOR
+     |   LOR // for empty parameter declaration
+     |   LPAREN balancedTokens RPAREN nls BOR
+@@ -1471,8 +1489,8 @@
+     ;
+ 
+ /** Simple names, as in {x|...}, are completely equivalent to {(def x)|...}.  Build the right AST. */
+-closureParameter!
+-    :   id:IDENT!
++closureParameter
++    :   id:IDENT
+         {#closureParameter = #(#[PARAMETER_DEF,"PARAMETER_DEF"],
+                                #(#[MODIFIERS,"MODIFIERS"]), #([TYPE,"TYPE"]),
+                                id);}
+@@ -1494,7 +1512,7 @@
+ 
+ /** An open block is not allowed to have closure arguments. */
+ openBlock
+-    :   lc:LCURLY^ nls!     {#lc.setType(SLIST);}
++    :   LCURLY! ^[SLIST, "{"]^ nls!
+         // AST type of SLIST means "never gonna be a closure"
+         blockBody[EOF]
+         RCURLY!
+@@ -1502,7 +1520,7 @@
+ 
+ /** A block body is a parade of zero or more statements or expressions. */
+ blockBody[int prevToken]
+-    :   
++    :
+         (statement[prevToken])? (sep! (statement[sepToken])?)*
+     ;
+ 
+@@ -1511,7 +1529,7 @@
+  *  Only labeled, unparameterized blocks which occur directly as substatements are kept open.
+  */
+ closedBlock
+-    :   lc:LCURLY^ nls!     {#lc.setType(CLOSED_BLOCK);}
++    :   LCURLY! ^[CLOSED_BLOCK, "{"]^ nls!
+         closureParametersOpt[true]
+         blockBody[EOF]
+         RCURLY!
+@@ -1533,6 +1551,7 @@
+ openOrClosedBlock
+     :   lc:LCURLY^ nls!
+         cp:closureParametersOpt[false]
++        // TODO: use ^[SLIST, ???] or ^[CLOSED_BLOCK, ???] tree construction syntax?
+         {   if (#cp == null)    #lc.setType(SLIST);
+             else                #lc.setType(CLOSED_BLOCK);
+         }
+@@ -1571,7 +1590,7 @@
+     |    expressionStatement[prevToken]
+ 
+     // class definition
+-    |    m:modifiersOpt! typeDefinitionInternal[#m]
++    |    m:modifiersOpt typeDefinitionInternal[#m]
+ 
+     // If-else statement
+     |   "if"^ LPAREN! strictContextExpression RPAREN! nlsWarn! compatibleBodyStatement
+@@ -1583,9 +1602,9 @@
+                     warnWhenFollowAmbig = false;
+             }
+         :   // lookahead to check if we're entering an 'else' clause
+-            ( (sep!)? "else"! )=>
++            ( (sep!)? "else" )=>
+             (sep!)?  // allow SEMI here for compatibility with Java
+-            "else"! nlsWarn! compatibleBodyStatement
++            "else" nlsWarn! compatibleBodyStatement
+         )?
+ 
+     // For statement
+@@ -1604,7 +1623,7 @@
+ 
+     // Splice statement, meaningful only inside a "with" expression.
+     // PROPOSED, DECIDE.  Prevents the namespace pollution of a "text" method or some such.
+-    |   sp:STAR^ nls!                       {#sp.setType(SPREAD_ARG);}
++    |   STAR! ^[SPREAD_ARG, "*"]^ nls!
+         expressionStatement[EOF]
+     // Example:  with(htmlbuilder) { head{} body{ *"some text" } }
+     // Equivalent to:  { htmlbuilder.head{} htmlbuilder.body{ (htmlbuilder as Collection).add("some text") } }
+@@ -1626,7 +1645,7 @@
+ 
+     /*OBS*
+     // empty statement
+-    |   s:SEMI {#s.setType(EMPTY_STAT);}
++    |   SEMI ^[EMPTY_STAT, ";"]
+     *OBS*/
+ 
+     |   branchStatement
+@@ -1738,7 +1757,7 @@
+ /** A labeled statement, consisting of a vanilla identifier followed by a colon. */
+ // Note:  Always use this lookahead, to keep antlr from panicking: (IDENT COLON)=>
+ statementLabelPrefix
+-    :   IDENT c:COLON^ {#c.setType(LABELED_STAT);}
++    :   IDENT COLON! ^[LABELED_STAT, ":"]^
+     ;
+ 
+ /** An expression statement can be any general expression.
+@@ -1752,7 +1771,7 @@
+ //         positions where their value is not used, e.g., <code>{1+1;println}</code>
+ expressionStatement[int prevToken]
+         {   boolean isPathExpr = false;  }
+-    : 
++    :
+         (   (suspiciousExpressionStatementStart)=>
+             checkSuspiciousExpressionStatement[prevToken]
+         )?
+@@ -1762,12 +1781,12 @@
+         (
+             // A path expression (e.g., System.out.print) can take arguments.
+             {isPathExpr}?
+-            cmd:commandArguments[#head]!
++            cmd:commandArguments[#head]
+             {#expressionStatement = #cmd;}
+         )?
+         {#expressionStatement = #(#[EXPR,"EXPR"],#expressionStatement);}
+     ;
+-        
++
+ /**
+  *  If two statements are separated by newline (not SEMI), the second had
+  *  better not look like the latter half of an expression.  If it does, issue a warning.
+@@ -1910,6 +1929,7 @@
+         {
+             AST elist = #(#[ELIST,"ELIST"], #commandArguments);
+             AST headid = getASTFactory().dup(#head);
++            // TODO: possibly use ^[METHOD_CALL, ???] tree construction here?
+             headid.setType(METHOD_CALL);
+             headid.setText("<command>");
+             #commandArguments = #(headid, head, elist);
+@@ -1980,7 +2000,7 @@
+ pathExpression[int lc_stmt]
+         { AST prefix = null; }
+     :
+-        pre:primaryExpression!
++        pre:primaryExpression
+         { prefix = #pre; }
+ 
+         (
+@@ -1998,13 +2018,13 @@
+             // The lookahead is also necessary to reach across newline in foo \n {bar}.
+             // (Apparently antlr's basic approximate LL(k) lookahead is too weak for this.)
+         :   (pathElementStart)=>
+-            pe:pathElement[prefix]!
++            pe:pathElement[prefix]
+             { prefix = #pe; }
+         |
+             {lc_stmt == LC_STMT || lc_stmt == LC_INIT}?
+             (nls LCURLY)=>
+             nlsWarn!
+-            apb:appendedBlock[prefix]!
++            apb:appendedBlock[prefix]
+             { prefix = #apb; }
+         )*
+ 
+@@ -2030,17 +2050,17 @@
+         (typeArguments)?   // TODO: Java 5 type argument application via prefix x.<Integer>y
+         namePart
+     |
+-        mca:methodCallArgs[prefix]!
++        mca:methodCallArgs[prefix]
+         {   #pathElement = #mca;  }
+     |
+         // Can always append a block, as foo{bar}
+-        apb:appendedBlock[prefix]!
++        apb:appendedBlock[prefix]
+         {   #pathElement = #apb;  }
+     |
+         // Element selection is always an option, too.
+         // In Groovy, the stuff between brackets is a general argument list,
+         // since the bracket operator is transformed into a method call.
+-        ipa:indexPropertyArgs[prefix]!
++        ipa:indexPropertyArgs[prefix]
+         {   #pathElement = #ipa;  }
+ 
+ /*NYI*
+@@ -2048,10 +2068,9 @@
+ 
+     |   DOT^ nls! "super"
+         (   // (new Outer()).super()  (create enclosing instance)
+-            lp3:LPAREN^ argList RPAREN!
+-            {#lp3.setType(SUPER_CTOR_CALL);}
++            LPAREN! ^[SUPER_CTOR_CALL, "("]^ argList RPAREN!
+         |   DOT^ IDENT
+-            (   lps:LPAREN^ {#lps.setType(METHOD_CALL);}
++            (   LPAREN! ^[METHOD_CALL, "("]^
+                 argList
+                 RPAREN!
+             )?
+@@ -2060,7 +2079,7 @@
+ *NYI*/
+     ;
+ 
+-pathElementStart!
++pathElementStart
+     :   DOT
+     |   SPREAD_DOT
+     |   OPTIONAL_DOT
+@@ -2081,7 +2100,7 @@
+         (   IDENT
+         |   sl:STRING_LITERAL {#sl.setType(IDENT);}
+             // foo.'bar' is in all ways same as foo.bar, except that bar can have an arbitrary spelling
+-        |   dn:dynamicMemberName!
++        |   dn:dynamicMemberName
+             { #namePart = #(#[DYNAMIC_MEMBER, "DYNAMIC_MEMBER"], #dn); }
+             // DECIDE PROPOSAL:  foo.(bar), x.(p?'a':'b') means dynamic lookup on a dynamic name
+         |
+@@ -2105,7 +2124,7 @@
+                 // This helps the user recover from ruined Java identifiers, as in System.'in'.
+                 // DECIDE: Shall we just define foo.in to DTRT automagically, or do we want the syntax check?
+             }
+-*/                        
++*/
+         )
+ 
+         // (No, x.&@y is not needed; just say x.&y as Slot or some such.)
+@@ -2121,7 +2140,7 @@
+         )
+         { #keywordPropertyNames.setType(IDENT); }
+     ;
+-                                                
++
+ /** If a dot is followed by a parenthesized or quoted expression, the member is computed dynamically,
+  *  and the member selection is done only at runtime.  This forces a statically unchecked member access.
+  */
+@@ -2160,7 +2179,7 @@
+ methodCallArgs[AST callee]
+     :
+         {#methodCallArgs = callee;}
+-        lp:LPAREN^ {#lp.setType(METHOD_CALL);}
++        LPAREN! ^[METHOD_CALL, "("]^
+         argList
+         RPAREN!
+     ;
+@@ -2197,7 +2216,7 @@
+ indexPropertyArgs[AST indexee]
+     :
+         {#indexPropertyArgs = indexee;}
+-        lb:LBRACK^ {#lb.setType(INDEX_OP);}
++        LBRACK! ^[INDEX_OP, "["]^
+         argList
+         RBRACK!
+     ;
+@@ -2301,7 +2320,7 @@
+             ((SL^ | SR^ | BSR^)
+             |   RANGE_INCLUSIVE^
+             |   RANGE_EXCLUSIVE^
+-            |   td:TRIPLE_DOT^ {#td.setType(RANGE_EXCLUSIVE);} /* backward compat: FIXME REMOVE */
++            |   TRIPLE_DOT! ^[RANGE_EXCLUSIVE, "..."]^ /* backward compat: FIXME REMOVE */
+             )
+             nls!
+             additiveExpression[0]
+@@ -2325,8 +2344,8 @@
+ multiplicativeExpression[int lc_stmt]
+     :    ( INC^ nls!  powerExpression[0] ((STAR^ | DIV^ | MOD^ )  nls!  powerExpression[0])* )
+     |    ( DEC^ nls!  powerExpression[0] ((STAR^ | DIV^ | MOD^ )  nls!  powerExpression[0])* )
+-    |    ( MINUS^ {#MINUS.setType(UNARY_MINUS);} nls!   powerExpression[0] ((STAR^ | DIV^ | MOD^ )  nls!  powerExpression[0])* )
+-    |    ( PLUS^ {#PLUS.setType(UNARY_PLUS);} nls!   powerExpression[0] ((STAR^ | DIV^ | MOD^ )  nls!  powerExpression[0])* )
++    |    ( MINUS! ^[UNARY_MINUS, "-"]^ nls! powerExpression[0] ((STAR^ | DIV^ | MOD^ )  nls!  powerExpression[0])* )
++    |    ( PLUS!  ^[UNARY_PLUS,  "+"]^ nls! powerExpression[0] ((STAR^ | DIV^ | MOD^ )  nls!  powerExpression[0])* )
+     |    (  powerExpression[lc_stmt] ((STAR^ | DIV^ | MOD^ )  nls!  powerExpression[0])* )
+     ;
+ 
+@@ -2339,8 +2358,8 @@
+ unaryExpression[int lc_stmt]
+     :   INC^ nls! unaryExpression[0]
+     |   DEC^ nls! unaryExpression[0]
+-    |   MINUS^   {#MINUS.setType(UNARY_MINUS);}   nls! unaryExpression[0]
+-    |   PLUS^    {#PLUS.setType(UNARY_PLUS);}     nls! unaryExpression[0]
++    |   MINUS! ^[UNARY_MINUS, "-"]^ nls! unaryExpression[0]
++    |   PLUS!  ^[UNARY_PLUS,  "+"]^ nls! unaryExpression[0]
+     |   unaryExpressionNotPlusMinus[lc_stmt]
+     ;
+ 
+@@ -2382,11 +2401,11 @@
+             options {greedy=true;} :
+             // possibly add on a post-increment or post-decrement.
+             // allows INC/DEC on too much, but semantics can check
+-            in:INC^ {#in.setType(POST_INC);}
+-        |   de:DEC^ {#de.setType(POST_DEC);}
++            INC! ^[POST_INC, "++"]^
++        |   DEC! ^[POST_DEC, "--"]^
+         )?
+     ;
+-    
++
+ // TODO:  Move pathExpression to this point in the file.
+ 
+ // the basic element of an expression
+@@ -2421,7 +2440,7 @@
+     ;
+ 
+ scopeEscapeExpression
+-    :   DOLLAR^  {#DOLLAR.setType(SCOPE_ESCAPE);} (IDENT | scopeEscapeExpression)
++    :   DOLLAR! ^[SCOPE_ESCAPE, "$"]^ (IDENT | scopeEscapeExpression)
+         // PROPOSE: The SCOPE_ESCAPE operator pops its operand out of the scope of a "with" block.
+         // If not within a "with" block, it pops the operand out of the static global scope,
+         // into whatever dynamic (unchecked) global scope is available when the script is run,
+@@ -2471,7 +2490,7 @@
+     :
+     (
+         // PROPOSE: allow spread markers on string constructor arguments
+-        sp:STAR^                        {#sp.setType(SPREAD_ARG);}
++        STAR! ^[SPREAD_ARG, "*"]^
+     )?
+     (   identifier
+     |   openOrClosedBlock
+@@ -2546,7 +2565,7 @@
+                 // limitation of linear approximate lookahead.
+                 greedy=true;
+             }
+-        :   (   lp:LPAREN^ {#lp.setType(METHOD_CALL);}
++        :   (   LPAREN! ^[METHOD_CALL, "("]^
+                 // if the input is valid, only the last IDENT may
+                 // have preceding typeArguments... rather hacky, this is...
+                 {if (#ta2 != null) astFactory.addASTChild(currentAST, #ta2);}
+@@ -2554,7 +2573,7 @@
+                 argList RPAREN!
+             )
+         |   (    options {greedy=true;} :
+-                lbc:LBRACK^ {#lbc.setType(ARRAY_DECLARATOR);} RBRACK!
++                LBRACK! ^[ARRAY_DECLARATOR, "["]^ RBRACK!
+             )+
+         )?
+     ;
+@@ -2611,17 +2630,17 @@
+  */
+ newExpression
+     :   "new"^ (typeArguments)? type
+-        (   mca:methodCallArgs[null]!
++        (   mca:methodCallArgs[null]
+ 
+             (
+                 options { greedy=true; }:
+-                apb1:appendedBlock[#mca]!
++                apb1:appendedBlock[#mca]
+                 { #mca = #apb1; }
+             )?
+ 
+             {#newExpression.addChild(#mca.getFirstChild());}
+         |
+-            apb:appendedBlock[null]!
++            apb:appendedBlock[null]
+             // FIXME:  This node gets dropped, somehow.
+ 
+             {#newExpression.addChild(#apb.getFirstChild());}
+@@ -2680,15 +2699,15 @@
+         // Optional argument label.
+         // Usage:  Specifies a map key, or a keyworded argument.
+         (   (argumentLabelStart) =>
+-            argumentLabel c:COLON^          {#c.setType(LABELED_ARG);}
++            argumentLabel COLON!          ^[LABELED_ARG, ":"]^
+ 
+             {   hasLabel = true;  }  // signal to caller the presence of a label
+ 
+         |   // Spread operator:  f(*[a,b,c])  ===  f(a,b,c);  f(1,*null,2)  ===  f(1,2).
+-            sp:STAR^                        {#sp.setType(SPREAD_ARG);}
++            STAR!                         ^[SPREAD_ARG, "*"]^
+             // spread maps are marked, as f(*:m) for f(a:x, b:y) if m==[a:x, b:y]
+             (
+-                COLON!                      {#sp.setType(SPREAD_MAP_ARG);}
++                COLON                      {#sp.setType(SPREAD_MAP_ARG);}
+                 { hasLabel = true; }  // signal to caller the presence of a label
+             )?
+         )?
+@@ -2712,7 +2731,7 @@
+     ;
+ 
+ /** For lookahead only.  Fast approximate parse of an argumentLabel followed by a colon. */
+-argumentLabelStart!
++argumentLabelStart
+         // allow number and string literals as labels for maps
+     :   (
+             IDENT | keywordPropertyNames
+@@ -2733,7 +2752,7 @@
+                 warnWhenFollowAmbig = false;
+             }
+         :
+-            lb:LBRACK^ {#lb.setType(ARRAY_DECLARATOR);}
++            LBRACK! ^[ARRAY_DECLARATOR, "["]^
+                 (expression[0])?
+             RBRACK!
+         )+
+@@ -2759,21 +2778,21 @@
+     ;
+ 
+ /** Fast lookahead across balanced brackets of all sorts. */
+-balancedBrackets!
++balancedBrackets
+     :   LPAREN balancedTokens RPAREN
+     |   LBRACK balancedTokens RBRACK
+     |   LCURLY balancedTokens RCURLY
+     |   STRING_CTOR_START balancedTokens STRING_CTOR_END
+     ;
+ 
+-balancedTokens!
++balancedTokens
+     :   (   balancedBrackets
+         |   ~(LPAREN|LBRACK|LCURLY | STRING_CTOR_START
+              |RPAREN|RBRACK|RCURLY | STRING_CTOR_END)
+         )*
+     ;
+ 
+-/** A statement separator is either a semicolon or a significant newline. 
++/** A statement separator is either a semicolon or a significant newline.
+  *  Any number of additional (insignificant) newlines may accompany it.
+  */
+ //  (All the '!' signs simply suppress the default AST building.)
+@@ -2793,14 +2812,16 @@
+     ;
+ 
+ /** Zero or more insignificant newlines, all gobbled up and thrown away. */
+-nls!
++nls
++        { lexer.setWhitespaceIncluded(false); }
+     :
+-        (options { greedy=true; }: NLS!)?
++        (options { greedy=true; }: NLS)?
+         // Note:  Use '?' rather than '*', relying on the fact that the lexer collapses
+         // adjacent NLS tokens, always.  This lets the parser use its LL(3) lookahead
+         // to "see through" sequences of newlines.  If there were a '*' here, the lookahead
+         // would be weaker, since the parser would have to be prepared for long sequences
+         // of NLS tokens.
++        { lexer.setWhitespaceIncluded(true); }
+     ;
+ 
+ /** Zero or more insignificant newlines, all gobbled up and thrown away,
+@@ -2855,7 +2876,7 @@
+     public void setWhitespaceIncluded(boolean z) { whitespaceIncluded = z; }
+     /** Are whitespace tokens included? */
+     public boolean isWhitespaceIncluded() { return whitespaceIncluded; }
+-    
++
+     {
+         // Initialization actions performed on construction.
+         setTabSize(1);  // get rid of special tab interpretation, for IDEs and general clarity
+@@ -2889,7 +2910,7 @@
+             stringCtorState = (expectLiteral? SCS_LIT: SCS_VAL) + (stringCtorState & SCS_TYPE);
+         }
+     }
+-    
++
+     protected boolean allowRegexpLiteral() {
+         return !isExpressionEndingToken(lastSigTokenType);
+     }
+@@ -2986,7 +3007,7 @@
+         }
+         newline();
+     }
+-    
++
+     protected boolean atValidDollarEscape() throws CharStreamException {
+         // '$' (('*')? ('{' | LETTER)) =>
+         int k = 1;
+@@ -3084,7 +3105,7 @@
+     private void require(boolean z, String problem, String solution) throws SemanticException {
+         // TODO: Direct to a common error handler, rather than through the parser.
+         if (!z)  parser.requireFailed(problem, solution);
+-    }    
++    }
+ }
+ 
+ // TODO:  Borneo-style ops.
+@@ -3184,7 +3205,7 @@
+             newlineCheck(check);
+         }
+     ;
+-        
++
+ // Group any number of newlines (with comments and whitespace) into a single token.
+ // This reduces the amount of parser lookahead required to parse around newlines.
+ // It is an invariant that the parser never sees NLS tokens back-to-back.
+@@ -3205,7 +3226,7 @@
+                 $setType(Token.SKIP);
+             } else {
+                 // inside {...}, newlines must be explicitly matched as 'nls!'
+-                $setText("<newline>");
++//                $setText("<newline>");
+             }
+         }
+     ;
+@@ -3281,16 +3302,16 @@
+         |   ('\'' (~'\'' | '\'' ~'\'')) => '\''  // allow 1 or 2 close quotes
+         )*
+         "'''"!
+-    |   '\''!
++    |   '\''
+                                 {++suppressNewline;}
+         (   STRING_CH | ESC | '"' | '$'  )*
+                                 {--suppressNewline;}
+-        '\''!
++        '\''
+     |   ("\"\"\"") =>  //...shut off ambiguity warning
+         "\"\"\""!
+         tt=STRING_CTOR_END[true, /*tripleQuote:*/ true]
+         {$setType(tt);}
+-    |   '"'!
++    |   '"'
+                                 {++suppressNewline;}
+         tt=STRING_CTOR_END[true, /*tripleQuote:*/ false]
+         {$setType(tt);}
+@@ -3309,7 +3330,7 @@
+             STRING_CH | ESC | '\'' | STRING_NL[tripleQuote]
+         |   ('"' (~'"' | '"' ~'"'))=> {tripleQuote}? '"'  // allow 1 or 2 close quotes
+         )*
+-        (   (   { !tripleQuote }? "\""!
++        (   (   { !tripleQuote }? "\""
+             |   {  tripleQuote }? "\"\"\""!
+             )
+             {
+@@ -3466,12 +3487,12 @@
+     //|!  ONE_NL[true]          { $setText('\n'); }             // always normalize to newline
+     ;
+ 
+-protected 
++protected
+ STRING_NL[boolean allowNewline]
+ options {
+     paraphrase="a newline inside a string";
+ }
+-    :  {if (!allowNewline) throw new MismatchedCharException('\n', '\n', true, this); } 
++    :  {if (!allowNewline) throw new MismatchedCharException('\n', '\n', true, this); }
+        ONE_NL[false] { $setText('\n'); }
+     ;
+ 
+@@ -3636,7 +3657,7 @@
+     ;
+ 
+ // JDK 1.5 token for annotations and their declarations
+-// also a groovy operator for actual field access e.g. 'telson.@age' 
++// also a groovy operator for actual field access e.g. 'telson.@age'
+ AT
+ options {
+     paraphrase="'@'";
