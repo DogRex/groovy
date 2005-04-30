@@ -1,10 +1,10 @@
 Index: groovy-core/src/main/org/codehaus/groovy/antlr/groovy.g
 ===================================================================
 RCS file: /home/projects/groovy/scm/groovy/groovy-core/src/main/org/codehaus/groovy/antlr/groovy.g,v
-retrieving revision 1.24
-diff -u -r1.24 groovy.g
---- groovy-core/src/main/org/codehaus/groovy/antlr/groovy.g	13 Apr 2005 21:45:54 -0000	1.24
-+++ groovy-core/src/main/org/codehaus/groovy/antlr/groovy.g	27 Apr 2005 22:48:25 -0000
+retrieving revision 1.26
+diff -u -r1.26 groovy.g
+--- groovy-core/src/main/org/codehaus/groovy/antlr/groovy.g	29 Apr 2005 04:39:06 -0000	1.26
++++ groovy-core/src/main/org/codehaus/groovy/antlr/groovy.g	30 Apr 2005 23:07:52 -0000
 @@ -1,6 +1,25 @@
  // Note: Please don't use physical tabs.  Logical tabs for indent are width 4.
 +
@@ -834,7 +834,7 @@ diff -u -r1.24 groovy.g
      :   DOT
      |   SPREAD_DOT
      |   OPTIONAL_DOT
-@@ -2081,7 +2100,7 @@
+@@ -2082,7 +2101,7 @@
          (   IDENT
          |   sl:STRING_LITERAL {#sl.setType(IDENT);}
              // foo.'bar' is in all ways same as foo.bar, except that bar can have an arbitrary spelling
@@ -843,7 +843,7 @@ diff -u -r1.24 groovy.g
              { #namePart = #(#[DYNAMIC_MEMBER, "DYNAMIC_MEMBER"], #dn); }
              // DECIDE PROPOSAL:  foo.(bar), x.(p?'a':'b') means dynamic lookup on a dynamic name
          |
-@@ -2105,7 +2124,7 @@
+@@ -2106,7 +2125,7 @@
                  // This helps the user recover from ruined Java identifiers, as in System.'in'.
                  // DECIDE: Shall we just define foo.in to DTRT automagically, or do we want the syntax check?
              }
@@ -852,7 +852,7 @@ diff -u -r1.24 groovy.g
          )
  
          // (No, x.&@y is not needed; just say x.&y as Slot or some such.)
-@@ -2121,7 +2140,7 @@
+@@ -2122,7 +2141,7 @@
          )
          { #keywordPropertyNames.setType(IDENT); }
      ;
@@ -861,7 +861,7 @@ diff -u -r1.24 groovy.g
  /** If a dot is followed by a parenthesized or quoted expression, the member is computed dynamically,
   *  and the member selection is done only at runtime.  This forces a statically unchecked member access.
   */
-@@ -2160,7 +2179,7 @@
+@@ -2161,7 +2180,7 @@
  methodCallArgs[AST callee]
      :
          {#methodCallArgs = callee;}
@@ -870,7 +870,7 @@ diff -u -r1.24 groovy.g
          argList
          RPAREN!
      ;
-@@ -2197,7 +2216,7 @@
+@@ -2198,7 +2217,7 @@
  indexPropertyArgs[AST indexee]
      :
          {#indexPropertyArgs = indexee;}
@@ -879,7 +879,7 @@ diff -u -r1.24 groovy.g
          argList
          RBRACK!
      ;
-@@ -2301,7 +2320,7 @@
+@@ -2302,7 +2321,7 @@
              ((SL^ | SR^ | BSR^)
              |   RANGE_INCLUSIVE^
              |   RANGE_EXCLUSIVE^
@@ -888,7 +888,7 @@ diff -u -r1.24 groovy.g
              )
              nls!
              additiveExpression[0]
-@@ -2325,8 +2344,8 @@
+@@ -2326,8 +2345,8 @@
  multiplicativeExpression[int lc_stmt]
      :    ( INC^ nls!  powerExpression[0] ((STAR^ | DIV^ | MOD^ )  nls!  powerExpression[0])* )
      |    ( DEC^ nls!  powerExpression[0] ((STAR^ | DIV^ | MOD^ )  nls!  powerExpression[0])* )
@@ -899,7 +899,7 @@ diff -u -r1.24 groovy.g
      |    (  powerExpression[lc_stmt] ((STAR^ | DIV^ | MOD^ )  nls!  powerExpression[0])* )
      ;
  
-@@ -2339,8 +2358,8 @@
+@@ -2340,14 +2359,14 @@
  unaryExpression[int lc_stmt]
      :   INC^ nls! unaryExpression[0]
      |   DEC^ nls! unaryExpression[0]
@@ -910,7 +910,14 @@ diff -u -r1.24 groovy.g
      |   unaryExpressionNotPlusMinus[lc_stmt]
      ;
  
-@@ -2382,11 +2401,11 @@
+ // ~(BNOT)/!(LNOT)/(type casting) (level 1)
+ unaryExpressionNotPlusMinus[int lc_stmt]
+-    :   BAND^    {#BAND.setType(MEMBER_POINTER_DEFAULT);}   nls!  namePart
++    :   BAND! ^[MEMBER_POINTER_DEFAULT, "&"]^ nls!  namePart
+     |   BNOT^ nls! unaryExpression[0]
+     |   LNOT^ nls! unaryExpression[0]
+     |   (   // subrule allows option to shut off warnings
+@@ -2384,11 +2403,11 @@
              options {greedy=true;} :
              // possibly add on a post-increment or post-decrement.
              // allows INC/DEC on too much, but semantics can check
@@ -925,7 +932,7 @@ diff -u -r1.24 groovy.g
  // TODO:  Move pathExpression to this point in the file.
  
  // the basic element of an expression
-@@ -2421,7 +2440,7 @@
+@@ -2423,7 +2442,7 @@
      ;
  
  scopeEscapeExpression
@@ -934,7 +941,7 @@ diff -u -r1.24 groovy.g
          // PROPOSE: The SCOPE_ESCAPE operator pops its operand out of the scope of a "with" block.
          // If not within a "with" block, it pops the operand out of the static global scope,
          // into whatever dynamic (unchecked) global scope is available when the script is run,
-@@ -2471,7 +2490,7 @@
+@@ -2473,7 +2492,7 @@
      :
      (
          // PROPOSE: allow spread markers on string constructor arguments
@@ -943,7 +950,7 @@ diff -u -r1.24 groovy.g
      )?
      (   identifier
      |   openOrClosedBlock
-@@ -2546,7 +2565,7 @@
+@@ -2548,7 +2567,7 @@
                  // limitation of linear approximate lookahead.
                  greedy=true;
              }
@@ -952,7 +959,7 @@ diff -u -r1.24 groovy.g
                  // if the input is valid, only the last IDENT may
                  // have preceding typeArguments... rather hacky, this is...
                  {if (#ta2 != null) astFactory.addASTChild(currentAST, #ta2);}
-@@ -2554,7 +2573,7 @@
+@@ -2556,7 +2575,7 @@
                  argList RPAREN!
              )
          |   (    options {greedy=true;} :
@@ -961,7 +968,7 @@ diff -u -r1.24 groovy.g
              )+
          )?
      ;
-@@ -2611,17 +2630,17 @@
+@@ -2613,17 +2632,17 @@
   */
  newExpression
      :   "new"^ (typeArguments)? type
@@ -982,7 +989,7 @@ diff -u -r1.24 groovy.g
              // FIXME:  This node gets dropped, somehow.
  
              {#newExpression.addChild(#apb.getFirstChild());}
-@@ -2680,15 +2699,15 @@
+@@ -2682,15 +2701,15 @@
          // Optional argument label.
          // Usage:  Specifies a map key, or a keyworded argument.
          (   (argumentLabelStart) =>
@@ -993,7 +1000,7 @@ diff -u -r1.24 groovy.g
  
          |   // Spread operator:  f(*[a,b,c])  ===  f(a,b,c);  f(1,*null,2)  ===  f(1,2).
 -            sp:STAR^                        {#sp.setType(SPREAD_ARG);}
-+            STAR!                         ^[SPREAD_ARG, "*"]^
++            sp:STAR!                         ^[SPREAD_ARG, "*"]^
              // spread maps are marked, as f(*:m) for f(a:x, b:y) if m==[a:x, b:y]
              (
 -                COLON!                      {#sp.setType(SPREAD_MAP_ARG);}
@@ -1001,7 +1008,7 @@ diff -u -r1.24 groovy.g
                  { hasLabel = true; }  // signal to caller the presence of a label
              )?
          )?
-@@ -2712,7 +2731,7 @@
+@@ -2714,7 +2733,7 @@
      ;
  
  /** For lookahead only.  Fast approximate parse of an argumentLabel followed by a colon. */
@@ -1010,7 +1017,7 @@ diff -u -r1.24 groovy.g
          // allow number and string literals as labels for maps
      :   (
              IDENT | keywordPropertyNames
-@@ -2733,7 +2752,7 @@
+@@ -2735,7 +2754,7 @@
                  warnWhenFollowAmbig = false;
              }
          :
@@ -1019,7 +1026,7 @@ diff -u -r1.24 groovy.g
                  (expression[0])?
              RBRACK!
          )+
-@@ -2759,21 +2778,21 @@
+@@ -2761,21 +2780,21 @@
      ;
  
  /** Fast lookahead across balanced brackets of all sorts. */
@@ -1044,26 +1051,19 @@ diff -u -r1.24 groovy.g
   *  Any number of additional (insignificant) newlines may accompany it.
   */
  //  (All the '!' signs simply suppress the default AST building.)
-@@ -2793,14 +2812,16 @@
+@@ -2795,9 +2814,9 @@
      ;
  
  /** Zero or more insignificant newlines, all gobbled up and thrown away. */
 -nls!
 +nls
-+        { lexer.setWhitespaceIncluded(false); }
      :
 -        (options { greedy=true; }: NLS!)?
 +        (options { greedy=true; }: NLS)?
          // Note:  Use '?' rather than '*', relying on the fact that the lexer collapses
          // adjacent NLS tokens, always.  This lets the parser use its LL(3) lookahead
          // to "see through" sequences of newlines.  If there were a '*' here, the lookahead
-         // would be weaker, since the parser would have to be prepared for long sequences
-         // of NLS tokens.
-+        { lexer.setWhitespaceIncluded(true); }
-     ;
- 
- /** Zero or more insignificant newlines, all gobbled up and thrown away,
-@@ -2855,7 +2876,7 @@
+@@ -2857,7 +2876,7 @@
      public void setWhitespaceIncluded(boolean z) { whitespaceIncluded = z; }
      /** Are whitespace tokens included? */
      public boolean isWhitespaceIncluded() { return whitespaceIncluded; }
@@ -1072,7 +1072,7 @@ diff -u -r1.24 groovy.g
      {
          // Initialization actions performed on construction.
          setTabSize(1);  // get rid of special tab interpretation, for IDEs and general clarity
-@@ -2889,7 +2910,7 @@
+@@ -2891,7 +2910,7 @@
              stringCtorState = (expectLiteral? SCS_LIT: SCS_VAL) + (stringCtorState & SCS_TYPE);
          }
      }
@@ -1081,7 +1081,7 @@ diff -u -r1.24 groovy.g
      protected boolean allowRegexpLiteral() {
          return !isExpressionEndingToken(lastSigTokenType);
      }
-@@ -2986,7 +3007,7 @@
+@@ -2988,7 +3007,7 @@
          }
          newline();
      }
@@ -1090,7 +1090,7 @@ diff -u -r1.24 groovy.g
      protected boolean atValidDollarEscape() throws CharStreamException {
          // '$' (('*')? ('{' | LETTER)) =>
          int k = 1;
-@@ -3084,7 +3105,7 @@
+@@ -3086,7 +3105,7 @@
      private void require(boolean z, String problem, String solution) throws SemanticException {
          // TODO: Direct to a common error handler, rather than through the parser.
          if (!z)  parser.requireFailed(problem, solution);
@@ -1099,7 +1099,16 @@ diff -u -r1.24 groovy.g
  }
  
  // TODO:  Borneo-style ops.
-@@ -3184,7 +3205,7 @@
+@@ -3171,7 +3190,7 @@
+     ;
+ 
+ protected
+-ONE_NL![boolean check]
++ONE_NL[boolean check]
+ options {
+     paraphrase="a newline";
+ }
+@@ -3186,7 +3205,7 @@
              newlineCheck(check);
          }
      ;
@@ -1108,16 +1117,7 @@ diff -u -r1.24 groovy.g
  // Group any number of newlines (with comments and whitespace) into a single token.
  // This reduces the amount of parser lookahead required to parse around newlines.
  // It is an invariant that the parser never sees NLS tokens back-to-back.
-@@ -3205,7 +3226,7 @@
-                 $setType(Token.SKIP);
-             } else {
-                 // inside {...}, newlines must be explicitly matched as 'nls!'
--                $setText("<newline>");
-+//                $setText("<newline>");
-             }
-         }
-     ;
-@@ -3281,16 +3302,16 @@
+@@ -3283,16 +3302,16 @@
          |   ('\'' (~'\'' | '\'' ~'\'')) => '\''  // allow 1 or 2 close quotes
          )*
          "'''"!
@@ -1137,7 +1137,7 @@ diff -u -r1.24 groovy.g
                                  {++suppressNewline;}
          tt=STRING_CTOR_END[true, /*tripleQuote:*/ false]
          {$setType(tt);}
-@@ -3309,7 +3330,7 @@
+@@ -3311,7 +3330,7 @@
              STRING_CH | ESC | '\'' | STRING_NL[tripleQuote]
          |   ('"' (~'"' | '"' ~'"'))=> {tripleQuote}? '"'  // allow 1 or 2 close quotes
          )*
@@ -1146,7 +1146,7 @@ diff -u -r1.24 groovy.g
              |   {  tripleQuote }? "\"\"\""!
              )
              {
-@@ -3466,12 +3487,12 @@
+@@ -3468,12 +3487,12 @@
      //|!  ONE_NL[true]          { $setText('\n'); }             // always normalize to newline
      ;
  
@@ -1161,7 +1161,7 @@ diff -u -r1.24 groovy.g
         ONE_NL[false] { $setText('\n'); }
      ;
  
-@@ -3636,7 +3657,7 @@
+@@ -3638,7 +3657,7 @@
      ;
  
  // JDK 1.5 token for annotations and their declarations

@@ -1380,6 +1380,8 @@ pathElementStart
 	|
 		OPTIONAL_DOT
 	|
+		MEMBER_POINTER_DEFAULT
+	|
 		MEMBER_POINTER
 	|
 		LBRACK
@@ -2412,9 +2414,14 @@ unaryExpression
 unaryExpressionNotPlusMinus
 	:
 	#( 
-		LNOT
+		BNOT
 		unaryExpression
 	)
+	|
+		#( 
+			LNOT
+			unaryExpression
+		)
 	|
 		#( 
 			LPAREN
@@ -2429,8 +2436,8 @@ unaryExpressionNotPlusMinus
 		)
 	|
 		#( 
-			BNOT
-			unaryExpression
+			MEMBER_POINTER_DEFAULT
+			namePart
 		)
 	;
 
