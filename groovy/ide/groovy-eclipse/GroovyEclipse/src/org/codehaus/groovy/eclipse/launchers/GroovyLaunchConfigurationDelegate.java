@@ -4,14 +4,13 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
 import org.eclipse.jdt.debug.core.IJavaDebugTarget;
-import org.eclipse.jdt.internal.launching.JavaLocalApplicationLaunchConfigurationDelegate;
+import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
 /**
  * @see ILaunchConfigurationDelegate
  */
-public class GroovyLaunchConfigurationDelegate extends JavaLocalApplicationLaunchConfigurationDelegate  {
+public class GroovyLaunchConfigurationDelegate extends JavaLaunchDelegate  {
 
 	/**
 	 * @see ILaunchConfigurationDelegate#launch
