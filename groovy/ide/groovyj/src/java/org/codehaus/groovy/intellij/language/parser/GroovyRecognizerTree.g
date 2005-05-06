@@ -17,7 +17,6 @@ compilationUnit
 	(
 		SH_COMMENT
 	)?
-	nls
 	(
 		packageDefinition
 		|
@@ -140,13 +139,11 @@ qualifiedTypeName
 
 constructorStart
 	:
-	modifiersOpt
 	IDENT
 	;
 
 typeDeclarationStart
 	:
-	modifiersOpt
 	(
 		"class"
 		|
@@ -243,7 +240,6 @@ wildcardType
 
 typeArguments
 	:
-	LT
 	typeArgument
 	(
 		typeArgument
@@ -251,15 +247,6 @@ typeArguments
 	(
 		typeArgumentsOrParametersEnd
 	)?
-	;
-
-typeArgumentsOrParametersEnd
-	:
-	GT
-	|
-		SR
-	|
-		BSR
 	;
 
 typeArgumentBounds
@@ -445,7 +432,6 @@ modifier
 
 annotation
 	:
-	AT
 	identifier
 	(
 		(
@@ -479,7 +465,6 @@ anntotationMemberValuePairs
 annotationMemberValuePair
 	:
 	IDENT
-	ASSIGN
 	annotationMemberValueInitializer
 	;
 
@@ -546,7 +531,6 @@ annotationDefinition
 
 typeParameters
 	:
-	LT
 	typeParameter
 	(
 		typeParameter
@@ -571,7 +555,6 @@ typeParameterBounds
 	"extends"
 	classOrInterfaceType
 	(
-		BAND
 		classOrInterfaceType
 	)*
 	;
@@ -652,7 +635,6 @@ enumConstants
 
 annotationField
 	:
-	modifiersOpt
 	(
 		typeDefinitionInternal
 		|
@@ -695,7 +677,6 @@ enumConstantBlock
 
 enumConstantField
 	:
-	modifiersOpt
 	(
 		typeDefinitionInternal
 		|
@@ -744,12 +725,10 @@ implementsClause
 
 classField
 	:
-	modifiersOpt
 	constructorDefinition
 	|
 		declaration
 	|
-		modifiersOpt
 		(
 			typeDefinitionInternal
 		)
@@ -1048,7 +1027,6 @@ statement
 	|
 		expressionStatement
 	|
-		modifiersOpt
 		typeDefinitionInternal
 	|
 		forStatement
@@ -1108,7 +1086,7 @@ traditionalForClause
 forInClause
 	:
 	#( 
-		"in"
+		FOR_IN_ITERABLE
 		(
 			singleDeclarationNoInit
 			|
@@ -1118,7 +1096,7 @@ forInClause
 	)
 	|
 		#( 
-			COLON
+			FOR_IN_ITERABLE
 			(
 				singleDeclarationNoInit
 				|
@@ -2424,13 +2402,13 @@ unaryExpressionNotPlusMinus
 		)
 	|
 		#( 
-			LPAREN
+			TYPECAST
 			builtInTypeSpec
 			unaryExpression
 		)
 	|
 		#( 
-			LPAREN
+			TYPECAST
 			classTypeSpec
 			unaryExpressionNotPlusMinus
 		)
@@ -2547,7 +2525,7 @@ stringConstructorValuePart
 
 listOrMapConstructorExpression
 	:
-	LBRACK
+	MAP_CONSTRUCTOR
 	|
 		#( 
 			LBRACK

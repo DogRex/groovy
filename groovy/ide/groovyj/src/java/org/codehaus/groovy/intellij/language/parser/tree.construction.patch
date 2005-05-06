@@ -4,7 +4,7 @@ RCS file: /home/projects/groovy/scm/groovy/groovy-core/src/main/org/codehaus/gro
 retrieving revision 1.26
 diff -u -r1.26 groovy.g
 --- groovy-core/src/main/org/codehaus/groovy/antlr/groovy.g	29 Apr 2005 04:39:06 -0000	1.26
-+++ groovy-core/src/main/org/codehaus/groovy/antlr/groovy.g	30 Apr 2005 23:07:52 -0000
++++ groovy-core/src/main/org/codehaus/groovy/antlr/groovy.g	5 May 2005 21:24:11 -0000
 @@ -1,6 +1,25 @@
  // Note: Please don't use physical tabs.  Logical tabs for indent are width 4.
 +
@@ -83,7 +83,7 @@ diff -u -r1.26 groovy.g
      /* This symbol is used to work around a known ANTLR limitation.
       * In a loop with syntactic predicate, ANTLR needs help knowing
       * that the loop exit is a second alternative.
-@@ -362,10 +381,10 @@
+@@ -362,7 +381,7 @@
  compilationUnit
      :
          // The very first characters of the file may be "#!".  If so, ignore the first line.
@@ -91,11 +91,7 @@ diff -u -r1.26 groovy.g
 +        (SH_COMMENT)?
  
          // we can have comments at the top of a file
--        nls!
-+        nls
- 
-         // A compilation unit starts with an optional package definition
-         (   (annotationsOpt "package")=> packageDefinition
+         nls!
 @@ -387,7 +406,7 @@
  // Package statement: optional annotations followed by "package" then the package identifier.
  packageDefinition
@@ -180,7 +176,7 @@ diff -u -r1.26 groovy.g
 +constructorStart
      :
 -        modifiersOpt! id:IDENT! {isConstructorIdent(id)}? nls! LPAREN! //...
-+        modifiersOpt id:IDENT {isConstructorIdent(id)}? nls! LPAREN! //...
++        modifiersOpt! id:IDENT {isConstructorIdent(id)}? nls! LPAREN! //...
      ;
  
  
@@ -189,9 +185,8 @@ diff -u -r1.26 groovy.g
  */
  
 -typeDeclarationStart!
--    :   modifiersOpt! ("class" | "interface" | "enum" | AT "interface")
 +typeDeclarationStart
-+    :   modifiersOpt ("class" | "interface" | "enum" | AT "interface")
+     :   modifiersOpt! ("class" | "interface" | "enum" | AT "interface")
      ;
 -    
 +
@@ -216,28 +211,7 @@ diff -u -r1.26 groovy.g
          (("extends" | "super")=> typeArgumentBounds)?
      ;
  
-@@ -611,7 +630,7 @@
- {int currentLtLevel = 0;}
-     :
-         {currentLtLevel = ltCounter;}
--        LT! {ltCounter++;} nls!
-+        LT {ltCounter++;} nls!
-         typeArgument
-         (   options{greedy=true;}: // match as many as possible
-             {inputState.guessing !=0 || ltCounter == currentLtLevel + 1}?
-@@ -634,16 +653,16 @@
- // this gobbles up *some* amount of '>' characters, and counts how many
- // it gobbled.
- protected typeArgumentsOrParametersEnd
--    :   GT! {ltCounter-=1;} nls!
--    |   SR! {ltCounter-=2;} nls!
--    |   BSR! {ltCounter-=3;} nls!
-+    :   GT {ltCounter-=1;} nls!
-+    |   SR {ltCounter-=2;} nls!
-+    |   BSR {ltCounter-=3;} nls!
-     ;
- 
- // Restriction on wildcard types based on super class or derrived class
+@@ -643,7 +662,7 @@
  typeArgumentBounds
      {boolean isUpperBounds = false;}
      :
@@ -276,28 +250,24 @@ diff -u -r1.26 groovy.g
          |
              // Note: Duplication of modifiers is detected when walking the AST.
              modifier nls!
-@@ -778,8 +797,8 @@
+@@ -778,7 +797,7 @@
      |   "strictfp"
      ;
  
 -annotation!
--    :   AT! i:identifier ( LPAREN! ( args:annotationArguments )? RPAREN! )?
 +annotation
-+    :   AT i:identifier ( LPAREN! ( args:annotationArguments )? RPAREN! )?
+     :   AT! i:identifier ( LPAREN! ( args:annotationArguments )? RPAREN! )?
          {#annotation = #(#[ANNOTATION,"ANNOTATION"], i, args);}
      ;
- 
-@@ -796,8 +815,8 @@
+@@ -796,7 +815,7 @@
      :   annotationMemberValuePair ( COMMA! nls! annotationMemberValuePair )*
      ;
  
 -annotationMemberValuePair!
--    :   i:IDENT ASSIGN! nls! v:annotationMemberValueInitializer
 +annotationMemberValuePair
-+    :   i:IDENT ASSIGN nls! v:annotationMemberValueInitializer
+     :   i:IDENT ASSIGN! nls! v:annotationMemberValueInitializer
              {#annotationMemberValuePair = #(#[ANNOTATION_MEMBER_VALUE_PAIR,"ANNOTATION_MEMBER_VALUE_PAIR"], i, v);}
      ;
- 
 @@ -808,7 +827,7 @@
  /*OBS*
  // This is an initializer used to set up an annotation member array.
@@ -350,37 +320,24 @@ diff -u -r1.26 groovy.g
      :   AT "interface" IDENT
          // now parse the body of the annotation
          ab:annotationBlock
-@@ -894,7 +913,7 @@
- {int currentLtLevel = 0;}
-     :
-         {currentLtLevel = ltCounter;}
--        LT! {ltCounter++;} nls!
-+        LT {ltCounter++;} nls!
-         typeParameter (COMMA! nls! typeParameter)*
-         nls!
-         (typeArgumentsOrParametersEnd)?
-@@ -915,8 +934,8 @@
+@@ -915,7 +934,7 @@
  
  typeParameterBounds
      :
 -        "extends"! nls! classOrInterfaceType[false]
--        (BAND! nls! classOrInterfaceType[false])*
 +        "extends" nls! classOrInterfaceType[false]
-+        (BAND nls! classOrInterfaceType[false])*
+         (BAND! nls! classOrInterfaceType[false])*
          {#typeParameterBounds = #(#[TYPE_UPPER_BOUNDS,"TYPE_UPPER_BOUNDS"], #typeParameterBounds);}
      ;
- 
-@@ -976,8 +995,8 @@
+@@ -976,7 +995,7 @@
      ;
  
  // An annotation field
 -annotationField!
--    :   mods:modifiersOpt!
 +annotationField
-+    :   mods:modifiersOpt
+     :   mods:modifiersOpt!
          (   td:typeDefinitionInternal[#mods]
              {#annotationField = #td;}
-         |   t:typeSpec[false]               // annotation field
 @@ -1007,7 +1026,7 @@
  
  //An enum constant may have optional parameters and may have a
@@ -390,7 +347,7 @@ diff -u -r1.26 groovy.g
      :   an:annotationsOpt // Note:  Cannot start with "def" or another modifier.
          i:IDENT
          (   LPAREN!
-@@ -1029,10 +1048,10 @@
+@@ -1029,9 +1048,9 @@
  //An enum constant field is just like a class field but without
  //the posibility of a constructor definition or a static initializer
  
@@ -398,12 +355,10 @@ diff -u -r1.26 groovy.g
 +// TODO - maybe allow 'declaration' production within this production,
  // but how to disallow constructors and static initializers...
 -enumConstantField!
--    :   mods:modifiersOpt!
 +enumConstantField
-+    :   mods:modifiersOpt
+     :   mods:modifiersOpt!
          (   td:typeDefinitionInternal[#mods]
              {#enumConstantField = #td;}
-         |   // A generic method has the typeParameters before the return type.
 @@ -1080,7 +1099,7 @@
  // An interface can extend several other interfaces...
  interfaceExtends
@@ -422,7 +377,7 @@ diff -u -r1.26 groovy.g
              classOrInterfaceType[false] ( COMMA! nls! classOrInterfaceType[false] )* nls!
          )?
          {#implementsClause = #(#[IMPLEMENTS_CLAUSE,"IMPLEMENTS_CLAUSE"],
-@@ -1098,10 +1117,10 @@
+@@ -1098,7 +1117,7 @@
      ;
  
  // Now the various things that can be defined inside a class
@@ -430,20 +385,7 @@ diff -u -r1.26 groovy.g
 +classField
      :   // method, constructor, or variable declaration
          (constructorStart)=>
--        mc:modifiersOpt! ctor:constructorDefinition[#mc]
-+        mc:modifiersOpt ctor:constructorDefinition[#mc]
-         {#classField = #ctor;}
-     |
-         (declarationStart)=>
-@@ -1111,7 +1130,7 @@
-         //TODO - unify typeDeclaration and typeDefinitionInternal names
-         // type declaration
-         (typeDeclarationStart)=>
--        mods:modifiersOpt!
-+        mods:modifiersOpt
-         (   td:typeDefinitionInternal[#mods]
-                 {#classField = #td;}
-         )
+         mc:modifiersOpt! ctor:constructorDefinition[#mc]
 @@ -1126,7 +1145,7 @@
      ;
  
@@ -686,27 +628,6 @@ diff -u -r1.26 groovy.g
          {   if (#cp == null)    #lc.setType(SLIST);
              else                #lc.setType(CLOSED_BLOCK);
          }
-@@ -1571,7 +1590,7 @@
-     |    expressionStatement[prevToken]
- 
-     // class definition
--    |    m:modifiersOpt! typeDefinitionInternal[#m]
-+    |    m:modifiersOpt typeDefinitionInternal[#m]
- 
-     // If-else statement
-     |   "if"^ LPAREN! strictContextExpression RPAREN! nlsWarn! compatibleBodyStatement
-@@ -1583,9 +1602,9 @@
-                     warnWhenFollowAmbig = false;
-             }
-         :   // lookahead to check if we're entering an 'else' clause
--            ( (sep!)? "else"! )=>
-+            ( (sep!)? "else" )=>
-             (sep!)?  // allow SEMI here for compatibility with Java
--            "else"! nlsWarn! compatibleBodyStatement
-+            "else" nlsWarn! compatibleBodyStatement
-         )?
- 
-     // For statement
 @@ -1604,7 +1623,7 @@
  
      // Splice statement, meaningful only inside a "with" expression.
@@ -725,6 +646,24 @@ diff -u -r1.26 groovy.g
      *OBS*/
  
      |   branchStatement
+@@ -1669,7 +1688,7 @@
+         |   IDENT
+         )
+         (
+-            i:"in"^         {#i.setType(FOR_IN_ITERABLE);}
++            "in"!         ^[FOR_IN_ITERABLE, "in"]^
+             shiftExpression[0]
+         |
+             { addWarning(
+@@ -1682,7 +1701,7 @@
+                 "Use the 'in' keyword, as for (x in y) {...}"
+                 );
+             }
+-            c:COLON^         {#c.setType(FOR_IN_ITERABLE);}
++            COLON!         ^[FOR_IN_ITERABLE, ":"]^
+             expression[0]
+         )
+     ;
 @@ -1738,7 +1757,7 @@
  /** A labeled statement, consisting of a vanilla identifier followed by a colon. */
  // Note:  Always use this lookahead, to keep antlr from panicking: (IDENT COLON)=>
@@ -917,6 +856,24 @@ diff -u -r1.26 groovy.g
      |   BNOT^ nls! unaryExpression[0]
      |   LNOT^ nls! unaryExpression[0]
      |   (   // subrule allows option to shut off warnings
+@@ -2360,7 +2379,7 @@
+             // Have to backtrack to see if operator follows
+             // FIXME: DECIDE: This syntax is wormy.  Can we deprecate or remove?
+             (LPAREN builtInTypeSpec[true] RPAREN unaryExpression[0])=>
+-            lpb:LPAREN^ {#lpb.setType(TYPECAST);} builtInTypeSpec[true] RPAREN!
++            lpb:LPAREN! ^[TYPECAST, "("]^ builtInTypeSpec[true] RPAREN!
+             unaryExpression[0]
+ 
+             // Have to backtrack to see if operator follows. If no operator
+@@ -2369,7 +2388,7 @@
+             // FIXME: DECIDE: This syntax is wormy.  Can we deprecate or remove?
+             // TODO:  Rework this mess for Groovy.
+         |   (LPAREN classTypeSpec[true] RPAREN unaryExpressionNotPlusMinus[0])=>
+-            lp:LPAREN^ {#lp.setType(TYPECAST);} classTypeSpec[true] RPAREN!
++            lp:LPAREN! ^[TYPECAST, "("]^ classTypeSpec[true] RPAREN!
+             unaryExpressionNotPlusMinus[0]
+ 
+         |   postfixExpression[lc_stmt]
 @@ -2384,11 +2403,11 @@
              options {greedy=true;} :
              // possibly add on a post-increment or post-decrement.
@@ -950,6 +907,15 @@ diff -u -r1.26 groovy.g
      )?
      (   identifier
      |   openOrClosedBlock
+@@ -2508,7 +2527,7 @@
+         { #lcon.setType(hasLabels ? MAP_CONSTRUCTOR : LIST_CONSTRUCTOR); }
+     |
+         /* Special case:  [:] is an empty map constructor. */
+-        emcon:LBRACK^ COLON! RBRACK!   {#emcon.setType(MAP_CONSTRUCTOR);}
++        LBRACK! ^[MAP_CONSTRUCTOR, "["]^ COLON! RBRACK!
+     ;
+ 
+ /*OBS*
 @@ -2548,7 +2567,7 @@
                  // limitation of linear approximate lookahead.
                  greedy=true;
