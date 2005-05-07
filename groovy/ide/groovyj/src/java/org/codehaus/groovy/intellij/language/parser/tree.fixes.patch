@@ -1,0 +1,2856 @@
+Index: ide/groovyj/src/java/org/codehaus/groovy/intellij/language/parser/GroovyRecognizerTree.baseline.g
+===================================================================
+RCS file: /home/projects/groovy/scm/groovy/ide/groovyj/src/java/org/codehaus/groovy/intellij/language/parser/GroovyRecognizerTree.baseline.g,v
+retrieving revision 1.1
+diff -u -r1.1 GroovyRecognizerTree.baseline.g
+--- ide/groovyj/src/java/org/codehaus/groovy/intellij/language/parser/GroovyRecognizerTree.baseline.g	7 May 2005 00:54:14 -0000	1.1
++++ ide/groovyj/src/java/org/codehaus/groovy/intellij/language/parser/GroovyRecognizerTree.baseline.g	7 May 2005 00:48:22 -0000
+@@ -1,33 +1,44 @@
+ // ANTLR generated tree grammar
+ 
++header {
++/*
++ * $Id$
++ *
++ * Copyright (c) 2005 The Codehaus - http://groovy.codehaus.org
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
++ * the License. You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
++ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ *
++ * See the License for the specific language governing permissions and limitations under the License.
++ *
++ */
+ 
+ 
+-
+-header {
++package org.codehaus.groovy.intellij.language.parser;
+ }
+ 
+ class GroovyRecognizerTree extends TreeParser;
+ options {
+-	buildAST = false;
++	defaultErrorHandler = false;
++	buildAST = true;
+ }
+ 
+-
+ compilationUnit
+ 	:
+ 	(
+ 		SH_COMMENT
+ 	)?
++	nls
+ 	(
+ 		packageDefinition
+-		|
+-			(
+-				statement
+-			)?
+-	)
++	)?
+ 	(
+-		(
+-			statement
+-		)?
++		statement
+ 	)*
+ 	;
+ 
+@@ -38,30 +49,19 @@
+ 
+ packageDefinition
+ 	:
+-	#( 
+-		PACKAGE_DEF
+-		annotationsOpt
+-		identifier
+-	)
++	#( PACKAGE_DEF annotationsOpt identifier )
+ 	;
+ 
+ importStatement
+ 	:
+-	#( 
+-		STATIC_IMPORT
+-		IMPORT
+-		identifierStar
+-	)
++		#( STATIC_IMPORT identifierStar )
+ 	|
+-		#( 
+-			IMPORT
+-			identifierStar
+-		)
++		#( IMPORT identifierStar )
+ 	;
+ 
+ typeDefinitionInternal
+ 	:
+-	classDefinition
++		classDefinition
+ 	|
+ 		interfaceDefinition
+ 	|
+@@ -72,39 +72,24 @@
+ 
+ declaration
+ 	:
+-	modifiers
+ 	(
+-		typeSpec
++		modifiers
+ 	)?
+-	variableDefinitions
+-	|
+-		typeSpec
+-		variableDefinitions
+-	;
+-
+-singleDeclarationNoInit
+-	:
+-	modifiers
++	typeSpec
+ 	(
+-		typeSpec
+-	)?
+-	singleVariable
+-	|
+-		typeSpec
+-		singleVariable
++		variableDefinition
++	)+
+ 	;
+ 
+ singleDeclaration
+ 	:
+-	singleDeclarationNoInit
+-	(
+-		varInitializer
+-	)?
++	singleVariable
++	varInitializer
+ 	;
+ 
+ declarationStart
+ 	:
+-	"def"
++		"def"
+ 	|
+ 		modifier
+ 	|
+@@ -112,8 +97,6 @@
+ 		IDENT
+ 	|
+ 		(
+-			upperCaseIdent
+-			|
+ 				builtInType
+ 			|
+ 				qualifiedTypeName
+@@ -133,17 +116,17 @@
+ 		DOT
+ 		IDENT
+ 	)*
+-	DOT
+-	upperCaseIdent
+ 	;
+ 
+ constructorStart
+ 	:
++	modifiersOpt
+ 	IDENT
+ 	;
+ 
+ typeDeclarationStart
+ 	:
++	modifiersOpt
+ 	(
+ 		"class"
+ 		|
+@@ -156,11 +139,6 @@
+ 	)
+ 	;
+ 
+-upperCaseIdent
+-	:
+-	IDENT
+-	;
+-
+ typeSpec
+ 	:
+ 	classTypeSpec
+@@ -176,40 +154,14 @@
+ 
+ classOrInterfaceType0a
+ 	:
+-	#( 
+-		IDENT
+-		(
+-			typeArguments
+-		)?
+-	)
++		#( IDENT (typeArguments)? )
+ 	|
+-		#( 
+-			DOT
+-			classOrInterfaceType0a
+-			IDENT
+-			(
+-				typeArguments
+-			)?
+-		)
++		#( DOT classOrInterfaceType0a IDENT (typeArguments)? )
+ 	;
+ 
+ classOrInterfaceType
+ 	:
+-	#( 
+-		DOT
+-		classOrInterfaceType0a
+-		IDENT
+-		(
+-			typeArguments
+-		)?
+-	)
+-	|
+-		#( 
+-			IDENT
+-			(
+-				typeArguments
+-			)?
+-		)
++	classOrInterfaceType0a
+ 	;
+ 
+ typeArgumentSpec
+@@ -221,38 +173,30 @@
+ 
+ typeArgument
+ 	:
+-	(
+-		typeArgumentSpec
+-		|
++	#(
++		TYPE_ARGUMENT
++		(
++			typeArgumentSpec
++				|
+ 			wildcardType
++		)
+ 	)
+ 	;
+ 
+ wildcardType
+ 	:
+-	#( 
+-		WILDCARD_TYPE
+-		(
+-			typeArgumentBounds
+-		)?
+-	)
++	#( WILDCARD_TYPE (typeArgumentBounds)? )
+ 	;
+ 
+ typeArguments
+ 	:
+-	typeArgument
+-	(
+-		typeArgument
+-	)*
+-	(
+-		typeArgumentsOrParametersEnd
+-	)?
++	#( TYPE_ARGUMENTS (typeArgument)+ )
+ 	;
+ 
+ typeArgumentBounds
+ 	:
+ 	(
+-		"extends"
++			"extends"
+ 		|
+ 			"super"
+ 	)
+@@ -264,7 +208,10 @@
+ 	builtInType
+ 	(
+ 		declaratorBrackets
++/*
+ 		|
++			// add warning?
++*/
+ 	)
+ 	;
+ 
+@@ -276,14 +223,14 @@
+ 
+ type
+ 	:
+-	classOrInterfaceType
++		classOrInterfaceType
+ 	|
+ 		builtInType
+ 	;
+ 
+ builtInType
+ 	:
+-	"void"
++		"void"
+ 	|
+ 		"boolean"
+ 	|
+@@ -308,7 +255,7 @@
+ 	:
+ 	IDENT
+ 	|
+-		#( 
++		#(
+ 			DOT
+ 			identifier0a
+ 			IDENT
+@@ -317,7 +264,7 @@
+ 
+ identifier
+ 	:
+-	#( 
++	#(
+ 		DOT
+ 		identifier0a
+ 		IDENT
+@@ -328,62 +275,22 @@
+ 
+ identifierStar0a
+ 	:
+-	IDENT
++		IDENT
+ 	|
+-		#( 
+-			DOT
+-			identifierStar0a
+-			IDENT
+-		)
++		#( DOT identifierStar0a IDENT )
+ 	;
+ 
+ identifierStar
+ 	:
+-	#( 
+-		DOT
+-		#( 
+-			DOT
+-			identifierStar0a
+-			IDENT
+-		)
+-		STAR
+-	)
++		identifierStar0a
+ 	|
+-		#( 
+-			"as"
+-			#( 
+-				DOT
+-				identifierStar0a
+-				IDENT
+-			)
+-			IDENT
+-		)
+-	|
+-		#( 
+-			DOT
+-			identifierStar0a
+-			IDENT
+-		)
+-	|
+-		#( 
+-			DOT
+-			IDENT
+-			STAR
+-		)
+-	|
+-		#( 
+-			"as"
+-			IDENT
+-			IDENT
+-		)
+-	|
+-		IDENT
++		#( "as" identifierStar0a IDENT )
+ 	;
+ 
+ modifiersInternal
+ 	:
+ 	(
+-		"def"
++			"def"
+ 		|
+ 			modifier
+ 		|
+@@ -393,19 +300,17 @@
+ 
+ modifiers
+ 	:
+-	modifiersInternal
++	#( MODIFIERS modifiersInternal )
+ 	;
+ 
+ modifiersOpt
+ 	:
+-	(
+-		modifiersInternal
+-	)?
++	#( MODIFIERS (modifiersInternal)? )
+ 	;
+ 
+ modifier
+ 	:
+-	"private"
++		"private"
+ 	|
+ 		"public"
+ 	|
+@@ -432,19 +337,12 @@
+ 
+ annotation
+ 	:
+-	identifier
+-	(
+-		(
+-			annotationArguments
+-		)?
+-	)?
++	#( ANNOTATION identifier (annotationArguments)? )
+ 	;
+ 
+ annotationsOpt
+ 	:
+-	(
+-		annotation
+-	)*
++	#( ANNOTATIONS (annotation)* )
+ 	;
+ 
+ annotationArguments
+@@ -456,16 +354,14 @@
+ 
+ anntotationMemberValuePairs
+ 	:
+-	annotationMemberValuePair
+ 	(
+ 		annotationMemberValuePair
+-	)*
++	)+
+ 	;
+ 
+ annotationMemberValuePair
+ 	:
+-	IDENT
+-	annotationMemberValueInitializer
++	#( ANNOTATION_MEMBER_VALUE_PAIR IDENT annotationMemberValueInitializer )
+ 	;
+ 
+ annotationMemberValueInitializer
+@@ -484,207 +380,106 @@
+ 
+ superClassClause
+ 	:
+-	(
+-		"extends"
+-		classOrInterfaceType
+-	)?
++	#( EXTENDS_CLAUSE classOrInterfaceType )
+ 	;
+ 
+ classDefinition
+ 	:
+-	"class"
+-	IDENT
+-	(
+-		typeParameters
+-	)?
+-	superClassClause
+-	implementsClause
+-	classBlock
++	#( CLASS_DEF modifiers IDENT (typeParameters)? superClassClause implementsClause classBlock )
+ 	;
+ 
+ interfaceDefinition
+ 	:
+-	"interface"
+-	IDENT
+-	(
+-		typeParameters
+-	)?
+-	interfaceExtends
+-	interfaceBlock
++	#( INTERFACE_DEF modifiers IDENT (typeParameters)? interfaceExtends interfaceBlock )
+ 	;
+ 
+ enumDefinition
+ 	:
+-	"enum"
+-	IDENT
+-	implementsClause
+-	enumBlock
++	#(ENUM_DEF modifiers IDENT implementsClause enumBlock )
+ 	;
+ 
+ annotationDefinition
+ 	:
+-	AT
+-	"interface"
+-	IDENT
+-	annotationBlock
++	#(ANNOTATION_DEF modifiers IDENT annotationBlock )
+ 	;
+ 
+ typeParameters
+ 	:
+-	typeParameter
+-	(
+-		typeParameter
+-	)*
+-	(
+-		typeArgumentsOrParametersEnd
+-	)?
++	#( TYPE_PARAMETERS (typeParameter)+ )
+ 	;
+ 
+ typeParameter
+ 	:
+-	(
+-		IDENT
+-	)
+-	(
+-		typeParameterBounds
+-	)?
++	#( TYPE_PARAMETER IDENT (typeParameterBounds)? )
+ 	;
+ 
+ typeParameterBounds
+ 	:
+-	"extends"
+-	classOrInterfaceType
+-	(
+-		classOrInterfaceType
+-	)*
++	#( TYPE_UPPER_BOUNDS (classOrInterfaceType)+ )
+ 	;
+ 
+ classBlock
+ 	:
+-	(
+-		classField
+-	)?
+-	(
+-		(
+-			classField
+-		)?
+-	)*
++	#( OBJBLOCK (classField)* )
+ 	;
+ 
+ interfaceBlock
+ 	:
+-	(
+-		interfaceField
+-	)?
+-	(
+-		(
+-			interfaceField
+-		)?
+-	)*
++	#( OBJBLOCK (interfaceField)* )
+ 	;
+ 
+ annotationBlock
+ 	:
+-	(
+-		annotationField
+-	)?
+-	(
+-		(
+-			annotationField
+-		)?
+-	)*
++	#( OBJBLOCK (annotationField)* )
+ 	;
+ 
+ enumBlock
+ 	:
+-	(
+-		enumConstants
+-		|
+-			(
+-				classField
+-			)?
+-	)
+-	(
+-		(
+-			classField
+-		)?
+-	)*
+-	;
+-
+-enumConstantsStart
+-	:
+-	enumConstant
+-	(
+-		COMMA
+-		|
+-			SEMI
+-		|
+-			NLS
+-		|
+-			RCURLY
+-	)
++	#( OBJBLOCK (enumConstants)? (classField)* )
+ 	;
+ 
+ enumConstants
+ 	:
+-	enumConstant
+ 	(
+ 		enumConstant
+-	)*
++	)+
+ 	;
+ 
+ annotationField
+ 	:
+-	(
+ 		typeDefinitionInternal
+-		|
+-			typeSpec
+-			(
+-				IDENT
+-				(
+-					"default"
+-					annotationMemberValueInitializer
+-				)?
+-				|
+-					variableDefinitions
+-			)
+-	)
++	|
++		#( ANNOTATION_FIELD_DEF modifiersOpt typeSpec IDENT ( "default" annotationMemberValueInitializer )? )
++	|
++		variableDefinition
+ 	;
+ 
+ enumConstant
+ 	:
+-	annotationsOpt
+-	IDENT
+-	(
+-		argList
+-	)?
+-	(
+-		enumConstantBlock
+-	)?
++	#( ENUM_CONSTANT_DEF annotationsOpt IDENT argList (enumConstantBlock)? )
+ 	;
+ 
+ enumConstantBlock
+ 	:
+-	(
+-		enumConstantField
+-	)?
+-	(
+-		(
+-			enumConstantField
+-		)?
+-	)*
++	#( OBJBLOCK (enumConstantField)* )
+ 	;
+ 
+ enumConstantField
+ 	:
+-	(
+ 		typeDefinitionInternal
+-		|
+-			(
+-				typeParameters
+-			)?
+-			typeSpec
+-			(
++	|
++		(
++			options {
++				generateAmbigWarnings = false;
++			}
++		:
++			#(
++				METHOD_DEF
++				modifiersOpt
++				(
++					typeParameters
++				)?
++				typeSpec
+ 				IDENT
+ 				parameterDeclarationList
+ 				(
+@@ -693,45 +488,31 @@
+ 				(
+ 					compoundStatement
+ 				)?
+-				|
+-					variableDefinitions
+ 			)
+-	)
++		|
++			variableDefinition
++		)
+ 	|
+-		compoundStatement
++		#( INSTANCE_INIT compoundStatement )
+ 	;
+ 
+ interfaceExtends
+ 	:
+-	(
+-		"extends"
+-		classOrInterfaceType
+-		(
+-			classOrInterfaceType
+-		)*
+-	)?
++	#( EXTENDS_CLAUSE (classOrInterfaceType)* )
+ 	;
+ 
+ implementsClause
+ 	:
+-	(
+-		"implements"
+-		classOrInterfaceType
+-		(
+-			classOrInterfaceType
+-		)*
+-	)?
++	#( IMPLEMENTS_CLAUSE (classOrInterfaceType)* )
+ 	;
+ 
+ classField
+ 	:
+-	constructorDefinition
++		constructorDefinition
+ 	|
+ 		declaration
+ 	|
+-		(
+-			typeDefinitionInternal
+-		)
++		typeDefinitionInternal
+ 	|
+ 		"static"
+ 		compoundStatement
+@@ -741,237 +522,125 @@
+ 
+ interfaceField
+ 	:
+-	declaration
++		declaration
+ 	|
+-		modifiersOpt
+-		(
+-			typeDefinitionInternal
+-		)
++		typeDefinitionInternal
+ 	;
+ 
+ constructorBody
+ 	:
+-	#( 
+-		SLIST
+-		(
+-			explicitConstructorInvocation
+-			(
+-				blockBody
+-			)?
+-			|
+-				blockBody
+-		)
+-	)
++	#( SLIST explicitConstructorInvocation blockBody )
+ 	;
+ 
+ explicitConstructorInvocation
+ 	:
+-	#( 
+-		CTOR_CALL
+-		(
+-			typeArguments
+-		)?
+-		argList
+-	)
++		#( CTOR_CALL (typeArguments)? argList )
+ 	|
+-		#( 
+-			SUPER_CTOR_CALL
+-			(
+-				typeArguments
+-			)?
+-			argList
+-		)
++		#( SUPER_CTOR_CALL (typeArguments)? argList )
+ 	;
+ 
+-variableDefinitions
++constructorDefinition
+ 	:
+-	variableDeclarator
+-	(
+-		variableDeclarator
+-	)*
+-	|
+-		(
+-			IDENT
+-			|
+-				STRING_LITERAL
+-		)
+-		parameterDeclarationList
+-		(
+-			throwsClause
+-		)?
+-		(
+-			openBlock
+-			|
+-		)
++	#( CTOR_IDENT IDENT parameterDeclarationList (throwsClause)? constructorBody )
+ 	;
+ 
+-constructorDefinition
++variableDefinition
+ 	:
+-	IDENT
+-	parameterDeclarationList
+-	(
+-		throwsClause
+-	)?
+-	constructorBody
++	#( VARIABLE_DEF modifiers typeSpec variableDeclarator varInitializer )
+ 	;
+ 
+ variableDeclarator
+ 	:
+-	variableName
+-	(
+-		varInitializer
+-	)?
++		IDENT
++	|
++		LBRACK variableDeclarator
+ 	;
+ 
+ singleVariable
+ 	:
+-	variableName
+-	;
+-
+-variableName
+-	:
+-	IDENT
++	#( VARIABLE_DEF modifiers typeSpec IDENT )
+ 	;
+ 
+ declaratorBrackets0a
+ 	:
+-	#( 
+-		ARRAY_DECLARATOR
+-		declaratorBrackets0a
+-	)
+-	|
++	#( ARRAY_DECLARATOR declaratorBrackets0a )
+ 	;
+ 
+ declaratorBrackets
+ 	:
+-	#( 
+-		ARRAY_DECLARATOR
+-		declaratorBrackets0a
+-	)
+-	|
++	declaratorBrackets0a
+ 	;
+ 
+ varInitializer
+ 	:
+-	#( 
+-		ASSIGN
+-		expression
+-	)
++	#( ASSIGN expression )
++	;
++
++parameterDefinition
++	:
++	#( PARAMETER_DEF modifiers typeSpec IDENT )
+ 	;
+ 
+ throwsClause
+ 	:
+-	#( 
+-		"throws"
+-		identifier
+-		(
+-			identifier
+-		)*
+-	)
++	#( "throws" (identifier)+ )
+ 	;
+ 
+ parameterDeclarationList
+ 	:
+-	(
+-		parameterDeclaration
+-		(
+-			parameterDeclaration
+-		)*
+-	)?
++	#( PARAMETERS (parameterDeclaration)* )
+ 	;
+ 
+ parameterDeclaration
+ 	:
+-	parameterModifiersOpt
+-	(
+-		typeSpec
+-	)?
+-	(
+-		TRIPLE_DOT
+-	)?
+-	IDENT
+-	(
+-		varInitializer
+-	)?
++		#( VARIABLE_PARAMETER_DEF parameterModifiersOpt typeSpec (TRIPLE_DOT)? IDENT varInitializer )
++	|
++		#( PARAMETER_DEF parameterModifiersOpt typeSpec (TRIPLE_DOT)? IDENT varInitializer )
+ 	;
+ 
+ simpleParameterDeclaration
+ 	:
+-	(
+-		typeSpec
+-	)?
+-	IDENT
++	#( PARAMETER_DEF modifiers typeSpec IDENT )
+ 	;
+ 
+ simpleParameterDeclarationList
+ 	:
+-	simpleParameterDeclaration
+-	(
+-		simpleParameterDeclaration
+-	)*
++	#( PARAMETERS (simpleParameterDeclaration)+ )
+ 	;
+ 
+ parameterModifiersOpt
+ 	:
+-	(
+-		"def"
++	#(
++		MODIFIERS
++		(
++			"def"
+ 		|
+ 			"final"
+ 		|
+ 			annotation
+-	)*
++		)*
++	)
+ 	;
+ 
+ closureParametersOpt
+ 	:
+-	parameterDeclarationList
+-	|
+-		oldClosureParameters
+-	|
+-		implicitParameters
+-	|
+-	;
+-
+-closureParametersStart
+-	:
+-	oldClosureParametersStart
+-	|
+ 		parameterDeclarationList
+-		nls
+-		CLOSURE_OP
++//	|
++//		oldClosureParameters
+ 	;
+ 
++/*
+ oldClosureParameters
+ 	:
+-	LOR
+-	|
+-		BOR
+-		BOR
+-	|
+ 		parameterDeclarationList
+ 	|
+ 		simpleParameterDeclarationList
+ 	;
+-
+-oldClosureParametersStart
+-	:
+-	BOR
+-	|
+-		LOR
+-	|
+-		LPAREN
+-		balancedTokens
+-		RPAREN
+-		nls
+-		BOR
+-	|
+-		simpleParameterDeclarationList
+-		BOR
+-	;
++*/
+ 
+ closureParameter
+ 	:
+-	IDENT
++	#( PARAMETER_DEF IDENT )
+ 	;
+ 
+ compoundStatement
+@@ -981,49 +650,33 @@
+ 
+ openBlock
+ 	:
+-	#( 
+-		SLIST
+-		blockBody
+-	)
++	#( SLIST blockBody )
+ 	;
+ 
+ blockBody
+ 	:
+ 	(
+ 		statement
+-	)?
+-	(
+-		(
+-			statement
+-		)?
+ 	)*
+ 	;
+ 
+ closedBlock
+ 	:
+-	#( 
+-		CLOSED_BLOCK
+-		closureParametersOpt
+-		blockBody
+-	)
++	#( CLOSED_BLOCK closureParametersOpt blockBody )
+ 	;
+ 
+ openOrClosedBlock
+ 	:
+-	#( 
+-		LCURLY
+-		closureParametersOpt
+-		blockBody
+-	)
++	#( LCURLY closureParametersOpt blockBody )
+ 	;
+ 
+-statement
++statementList
+ 	:
+-	(
+-		openOrClosedBlock
+-		|
+-			statement
+-	)
++	#( SLIST (statement)* )
++	;
++
++statement
++	:   openOrClosedBlock
+ 	|
+ 		expressionStatement
+ 	|
+@@ -1031,32 +684,17 @@
+ 	|
+ 		forStatement
+ 	|
+-		#( 
+-			"while"
+-			strictContextExpression
+-			compatibleBodyStatement
+-		)
++		#( "while" strictContextExpression compatibleBodyStatement )
+ 	|
+-		#( 
+-			"with"
+-			strictContextExpression
+-			compoundStatement
+-		)
++		#( "with" strictContextExpression compoundStatement )
+ 	|
+-		#( 
+-			SPREAD_ARG
+-			expressionStatement
+-		)
++		#( SPREAD_ARG expressionStatement )
+ 	|
+ 		importStatement
+ 	|
+ 		tryBlock
+ 	|
+-		#( 
+-			"synchronized"
+-			strictContextExpression
+-			compoundStatement
+-		)
++		#( "synchronized" strictContextExpression compoundStatement )
+ 	|
+ 		branchStatement
+ 	|
+@@ -1065,10 +703,10 @@
+ 
+ forStatement
+ 	:
+-	#( 
++	#(
+ 		"for"
+ 		(
+-			traditionalForClause
++				traditionalForClause
+ 			|
+ 				forInClause
+ 		)
+@@ -1078,212 +716,94 @@
+ 
+ traditionalForClause
+ 	:
+-	forInit
+-	forCond
+-	forIter
++	forInit forCond forIter
+ 	;
+ 
+ forInClause
+ 	:
+-	#( 
+-		FOR_IN_ITERABLE
+-		(
+-			singleDeclarationNoInit
+-			|
+-				IDENT
+-		)
+-		shiftExpression
+-	)
+-	|
+-		#( 
+-			FOR_IN_ITERABLE
+-			(
+-				singleDeclarationNoInit
+-				|
+-					IDENT
+-			)
+-			expression
+-		)
++	#( FOR_IN_ITERABLE variableDefinition expression )
+ 	;
+ 
+ compatibleBodyStatement
+ 	:
+-	compoundStatement
++		compoundStatement
+ 	|
+ 		statement
+ 	;
+ 
+ branchStatement
+ 	:
+-	#( 
+-		"break"
+-		(
+-			statementLabelPrefix
+-		)?
+-		(
+-			expression
+-		)?
+-	)
++		#( "break" (statementLabelPrefix)? (expression)? )
+ 	|
+-		#( 
+-			"continue"
+-			(
+-				statementLabelPrefix
+-			)?
+-			(
+-				expression
+-			)?
+-		)
++		#( "continue" (statementLabelPrefix)? (expression)? )
+ 	|
+-		#( 
+-			"throw"
+-			expression
+-		)
++		#( "throw" expression )
+ 	|
+-		#( 
+-			"assert"
+-			expression
+-			(
+-				expression
+-			)?
+-		)
++		#( "assert" expression (expression)? )
+ 	|
+-		#( 
+-			"return"
+-			(
+-				expression
+-			)?
+-		)
++		#( "return" (expression)? )
+ 	;
+ 
+ statementLabelPrefix
+ 	:
+-	#( 
+-		LABELED_STAT
+-		IDENT
+-	)
++	#( LABELED_STAT IDENT )
+ 	;
+ 
+ expressionStatement
+ 	:
+-	(
+-		checkSuspiciousExpressionStatement
+-	)?
+-	expression
+-	(
+-		commandArguments
+-	)?
+-	;
+-
+-suspiciousExpressionStatementStart
+-	:
+-	(
+-		(
+-			PLUS
+-			|
+-				MINUS
+-		)
+-		|
+-			(
+-				LBRACK
+-				|
+-					LPAREN
+-				|
+-					LCURLY
+-			)
+-	)
++	#( EXPR expression (commandArguments)? )
+ 	;
+ 
+ casesGroup
+ 	:
+-	(
+-		aCase
+-	)+
+-	caseSList
++	#( CASE_GROUP (aCase)+ caseSList )
+ 	;
+ 
+ aCase
+ 	:
+-	#( 
+-		"case"
+-		expression
+-	)
++		#( "case" expression )
+ 	|
+-		(
+-			"default"
+-		)
++		"default"
+ 	;
+ 
+ caseSList
+ 	:
+-	statement
+-	(
+-		(
+-			statement
+-		)?
+-	)*
++	#( SLIST (statement)+ )
+ 	;
+ 
+ forInit
+ 	:
+-	declaration
+-	|
+-		(
+-			controlExpressionList
+-		)?
++	#( FOR_INIT ( declaration | (controlExpressionList)? ) )
+ 	;
+ 
+ forCond
+ 	:
+-	(
+-		strictContextExpression
+-	)?
++	#( FOR_CONDITION (strictContextExpression)? )
+ 	;
+ 
+ forIter
+ 	:
+-	(
+-		controlExpressionList
+-	)?
++	#( FOR_ITERATOR (controlExpressionList)? )
+ 	;
+ 
+ tryBlock
+ 	:
+-	#( 
+-		"try"
+-		compoundStatement
+-		(
+-			handler
+-		)*
+-		(
+-			finallyClause
+-		)?
+-	)
++	#( "try" compoundStatement (handler)* (finallyClause)? )
+ 	;
+ 
+ finallyClause
+ 	:
+-	#( 
+-		"finally"
+-		compoundStatement
+-	)
++	#( "finally" compoundStatement )
+ 	;
+ 
+ handler
+ 	:
+-	#( 
+-		"catch"
+-		parameterDeclaration
+-		compoundStatement
+-	)
++	#( "catch" parameterDeclaration compoundStatement )
+ 	;
+ 
+ commandArguments
+ 	:
+-	expression
+-	(
+-		expression
+-	)*
++	#( METHOD_CALL #( ELIST (expression)+ ) )
+ 	;
+ 
+ expression
+@@ -1293,10 +813,7 @@
+ 
+ controlExpressionList
+ 	:
+-	strictContextExpression
+-	(
+-		strictContextExpression
+-	)*
++	#( ELIST (strictContextExpression)+ )
+ 	;
+ 
+ pathExpression
+@@ -1304,87 +821,42 @@
+ 	primaryExpression
+ 	(
+ 		pathElement
+-		|
+-			appendedBlock
+ 	)*
+ 	;
+ 
+ pathElement
+ 	:
+-	methodCallArgs
++		methodCallArgs
+ 	|
+ 		appendedBlock
+ 	|
+ 		indexPropertyArgs
+ 	|
+-		#( 
+-			SPREAD_DOT
+-			(
+-				typeArguments
+-			)?
+-			namePart
+-		)
++		#( SPREAD_DOT (typeArguments)? namePart )
+ 	|
+-		#( 
+-			OPTIONAL_DOT
+-			(
+-				typeArguments
+-			)?
+-			namePart
+-		)
++		#( OPTIONAL_DOT (typeArguments)? namePart )
+ 	|
+-		#( 
+-			MEMBER_POINTER
+-			(
+-				typeArguments
+-			)?
+-			namePart
+-		)
++		#( MEMBER_POINTER (typeArguments)? namePart )
+ 	|
+-		#( 
+-			DOT
+-			(
+-				typeArguments
+-			)?
+-			namePart
+-		)
+-	;
+-
+-pathElementStart
+-	:
+-	DOT
+-	|
+-		SPREAD_DOT
+-	|
+-		OPTIONAL_DOT
+-	|
+-		MEMBER_POINTER_DEFAULT
+-	|
+-		MEMBER_POINTER
+-	|
+-		LBRACK
+-	|
+-		LPAREN
+-	|
+-		LCURLY
++		#( DOT (typeArguments)? namePart )
+ 	;
+ 
+ namePart
+ 	:
+-	#( 
+-		AT
+-		(
+-			IDENT
+-			|
+-				STRING_LITERAL
+-			|
+-				dynamicMemberName
+-			|
+-				openBlock
+-			|
+-				keywordPropertyNames
++		#(
++			AT
++			(
++					IDENT
++				|
++					STRING_LITERAL
++				|
++					dynamicMemberName
++				|
++					openBlock
++				|
++					keywordPropertyNames
++			)
+ 		)
+-	)
+ 	|
+ 		(
+ 			IDENT
+@@ -1434,19 +906,12 @@
+ 
+ dynamicMemberName
+ 	:
+-	(
+-		parenthesizedExpression
+-		|
+-			stringConstructorExpression
+-	)
++	#( DYNAMIC_MEMBER ( parenthesizedExpression | stringConstructorExpression ) )
+ 	;
+ 
+ methodCallArgs
+ 	:
+-	#( 
+-		METHOD_CALL
+-		argList
+-	)
++	#( METHOD_CALL argList )
+ 	;
+ 
+ appendedBlock
+@@ -1456,112 +921,52 @@
+ 
+ indexPropertyArgs
+ 	:
+-	#( 
+-		INDEX_OP
+-		argList
+-	)
++	#( INDEX_OP argList )
+ 	;
+ 
+ assignmentExpression
+ 	:
+-	#( 
+-		ASSIGN
+-		conditionalExpression
+-		assignmentExpression
+-	)
++		#( ASSIGN conditionalExpression assignmentExpression )
+ 	|
+-		#( 
+-			PLUS_ASSIGN
+-			conditionalExpression
+-			assignmentExpression
+-		)
++		#( PLUS_ASSIGN conditionalExpression assignmentExpression )
+ 	|
+-		#( 
+-			MINUS_ASSIGN
+-			conditionalExpression
+-			assignmentExpression
+-		)
++		#( MINUS_ASSIGN conditionalExpression assignmentExpression )
+ 	|
+-		#( 
+-			STAR_ASSIGN
+-			conditionalExpression
+-			assignmentExpression
+-		)
++		#( STAR_ASSIGN conditionalExpression assignmentExpression )
+ 	|
+-		#( 
+-			DIV_ASSIGN
+-			conditionalExpression
+-			assignmentExpression
+-		)
++		#( DIV_ASSIGN conditionalExpression assignmentExpression )
+ 	|
+-		#( 
+-			MOD_ASSIGN
+-			conditionalExpression
+-			assignmentExpression
+-		)
++		#( MOD_ASSIGN conditionalExpression assignmentExpression )
+ 	|
+-		#( 
+-			SR_ASSIGN
+-			conditionalExpression
+-			assignmentExpression
+-		)
++		#( SR_ASSIGN conditionalExpression assignmentExpression )
+ 	|
+-		#( 
+-			BSR_ASSIGN
+-			conditionalExpression
+-			assignmentExpression
+-		)
++		#( BSR_ASSIGN conditionalExpression assignmentExpression )
+ 	|
+-		#( 
+-			SL_ASSIGN
+-			conditionalExpression
+-			assignmentExpression
+-		)
++		#( SL_ASSIGN conditionalExpression assignmentExpression )
+ 	|
+-		#( 
+-			BAND_ASSIGN
+-			conditionalExpression
+-			assignmentExpression
+-		)
++		#( BAND_ASSIGN conditionalExpression assignmentExpression )
+ 	|
+-		#( 
+-			BXOR_ASSIGN
+-			conditionalExpression
+-			assignmentExpression
+-		)
++		#( BXOR_ASSIGN conditionalExpression assignmentExpression )
+ 	|
+-		#( 
+-			BOR_ASSIGN
+-			conditionalExpression
+-			assignmentExpression
+-		)
++		#( BOR_ASSIGN conditionalExpression assignmentExpression )
+ 	|
+-		#( 
+-			STAR_STAR_ASSIGN
+-			conditionalExpression
+-			assignmentExpression
+-		)
++		#( STAR_STAR_ASSIGN conditionalExpression assignmentExpression )
+ 	|
+ 		conditionalExpression
+ 	;
+ 
+ conditionalExpression
+ 	:
+-	#( 
+-		QUESTION
+-		logicalOrExpression
+-		assignmentExpression
+-		conditionalExpression
+-	)
++		#( QUESTION logicalOrExpression assignmentExpression conditionalExpression )
+ 	|
+ 		logicalOrExpression
+ 	;
+ 
+ logicalOrExpression0a
+ 	:
+-	logicalAndExpression
++		logicalAndExpression
+ 	|
+-		#( 
++		#(
+ 			LOR
+ 			logicalOrExpression0a
+ 			logicalAndExpression
+@@ -1570,20 +975,20 @@
+ 
+ logicalOrExpression
+ 	:
+-	#( 
+-		LOR
+-		logicalOrExpression0a
+-		logicalAndExpression
+-	)
++		#(
++			LOR
++			logicalOrExpression0a
++			logicalAndExpression
++		)
+ 	|
+ 		logicalAndExpression
+ 	;
+ 
+ logicalAndExpression0a
+ 	:
+-	inclusiveOrExpression
++		inclusiveOrExpression
+ 	|
+-		#( 
++		#(
+ 			LAND
+ 			logicalAndExpression0a
+ 			inclusiveOrExpression
+@@ -1592,20 +997,20 @@
+ 
+ logicalAndExpression
+ 	:
+-	#( 
+-		LAND
+-		logicalAndExpression0a
+-		inclusiveOrExpression
+-	)
++		#(
++			LAND
++			logicalAndExpression0a
++			inclusiveOrExpression
++		)
+ 	|
+ 		inclusiveOrExpression
+ 	;
+ 
+ inclusiveOrExpression0a
+ 	:
+-	exclusiveOrExpression
++		exclusiveOrExpression
+ 	|
+-		#( 
++		#(
+ 			BOR
+ 			inclusiveOrExpression0a
+ 			exclusiveOrExpression
+@@ -1614,20 +1019,20 @@
+ 
+ inclusiveOrExpression
+ 	:
+-	#( 
+-		BOR
+-		inclusiveOrExpression0a
+-		exclusiveOrExpression
+-	)
++		#(
++			BOR
++			inclusiveOrExpression0a
++			exclusiveOrExpression
++		)
+ 	|
+ 		exclusiveOrExpression
+ 	;
+ 
+ exclusiveOrExpression0a
+ 	:
+-	andExpression
++		andExpression
+ 	|
+-		#( 
++		#(
+ 			BXOR
+ 			exclusiveOrExpression0a
+ 			andExpression
+@@ -1636,20 +1041,20 @@
+ 
+ exclusiveOrExpression
+ 	:
+-	#( 
+-		BXOR
+-		exclusiveOrExpression0a
+-		andExpression
+-	)
++		#(
++			BXOR
++			exclusiveOrExpression0a
++			andExpression
++		)
+ 	|
+ 		andExpression
+ 	;
+ 
+ andExpression0a
+ 	:
+-	regexExpression
++		regexExpression
+ 	|
+-		#( 
++		#(
+ 			BAND
+ 			andExpression0a
+ 			regexExpression
+@@ -1658,26 +1063,26 @@
+ 
+ andExpression
+ 	:
+-	#( 
+-		BAND
+-		andExpression0a
+-		regexExpression
+-	)
++		#(
++			BAND
++			andExpression0a
++			regexExpression
++		)
+ 	|
+ 		regexExpression
+ 	;
+ 
+ regexExpression0a
+ 	:
+-	equalityExpression
++		equalityExpression
+ 	|
+-		#( 
++		#(
+ 			REGEX_FIND
+ 			regexExpression0a
+ 			equalityExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			REGEX_MATCH
+ 			regexExpression0b
+ 			equalityExpression
+@@ -1686,15 +1091,15 @@
+ 
+ regexExpression0b
+ 	:
+-	equalityExpression
++		equalityExpression
+ 	|
+-		#( 
++		#(
+ 			REGEX_FIND
+ 			regexExpression0a
+ 			equalityExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			REGEX_MATCH
+ 			regexExpression0b
+ 			equalityExpression
+@@ -1703,13 +1108,13 @@
+ 
+ regexExpression
+ 	:
+-	#( 
+-		REGEX_FIND
+-		regexExpression0a
+-		equalityExpression
+-	)
++		#(
++			REGEX_FIND
++			regexExpression0a
++			equalityExpression
++		)
+ 	|
+-		#( 
++		#(
+ 			REGEX_MATCH
+ 			regexExpression0b
+ 			equalityExpression
+@@ -1720,21 +1125,21 @@
+ 
+ equalityExpression0a
+ 	:
+-	relationalExpression
++		relationalExpression
+ 	|
+-		#( 
++		#(
+ 			NOT_EQUAL
+ 			equalityExpression0a
+ 			relationalExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			EQUAL
+ 			equalityExpression0b
+ 			relationalExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			COMPARE_TO
+ 			equalityExpression0c
+ 			relationalExpression
+@@ -1743,21 +1148,21 @@
+ 
+ equalityExpression0b
+ 	:
+-	relationalExpression
++		relationalExpression
+ 	|
+-		#( 
++		#(
+ 			NOT_EQUAL
+ 			equalityExpression0a
+ 			relationalExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			EQUAL
+ 			equalityExpression0b
+ 			relationalExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			COMPARE_TO
+ 			equalityExpression0c
+ 			relationalExpression
+@@ -1766,21 +1171,21 @@
+ 
+ equalityExpression0c
+ 	:
+-	relationalExpression
++		relationalExpression
+ 	|
+-		#( 
++		#(
+ 			NOT_EQUAL
+ 			equalityExpression0a
+ 			relationalExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			EQUAL
+ 			equalityExpression0b
+ 			relationalExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			COMPARE_TO
+ 			equalityExpression0c
+ 			relationalExpression
+@@ -1789,19 +1194,19 @@
+ 
+ equalityExpression
+ 	:
+-	#( 
+-		NOT_EQUAL
+-		equalityExpression0a
+-		relationalExpression
+-	)
++		#(
++			NOT_EQUAL
++			equalityExpression0a
++			relationalExpression
++		)
+ 	|
+-		#( 
++		#(
+ 			EQUAL
+ 			equalityExpression0b
+ 			relationalExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			COMPARE_TO
+ 			equalityExpression0c
+ 			relationalExpression
+@@ -1812,349 +1217,244 @@
+ 
+ relationalExpression
+ 	:
+-	#( 
+-		LT
+-		shiftExpression
+-		shiftExpression
+-	)
++		#( LT shiftExpression shiftExpression )
+ 	|
+-		#( 
+-			GT
+-			shiftExpression
+-			shiftExpression
+-		)
++		#( GT shiftExpression shiftExpression )
+ 	|
+-		#( 
+-			LE
+-			shiftExpression
+-			shiftExpression
+-		)
++		#( LE shiftExpression shiftExpression )
+ 	|
+-		#( 
+-			GE
+-			shiftExpression
+-			shiftExpression
+-		)
++		#( GE shiftExpression shiftExpression )
+ 	|
+-		#( 
+-			"in"
+-			shiftExpression
+-			shiftExpression
+-		)
++		#( "in" shiftExpression shiftExpression )
+ 	|
+ 		shiftExpression
+ 	|
+-		#( 
+-			"instanceof"
+-			shiftExpression
+-			typeSpec
+-		)
++		#( "instanceof" shiftExpression typeSpec )
+ 	|
+-		#( 
+-			"as"
+-			shiftExpression
+-			typeSpec
+-		)
++		#( "as" shiftExpression typeSpec )
+ 	;
+ 
+ shiftExpression0a
+ 	:
+-	additiveExpression
++		additiveExpression
+ 	|
+-		#( 
++		#(
+ 			SL
+ 			shiftExpression0a
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			SR
+ 			shiftExpression0b
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			BSR
+ 			shiftExpression0c
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			RANGE_INCLUSIVE
+ 			shiftExpression0d
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			RANGE_EXCLUSIVE
+ 			shiftExpression0e
+ 			additiveExpression
+ 		)
+-	|
+-		#( 
+-			RANGE_EXCLUSIVE
+-			shiftExpression0f
+-			additiveExpression
+-		)
+ 	;
+ 
+ shiftExpression0b
+ 	:
+-	additiveExpression
++		additiveExpression
+ 	|
+-		#( 
++		#(
+ 			SL
+ 			shiftExpression0a
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			SR
+ 			shiftExpression0b
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			BSR
+ 			shiftExpression0c
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			RANGE_INCLUSIVE
+ 			shiftExpression0d
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			RANGE_EXCLUSIVE
+ 			shiftExpression0e
+ 			additiveExpression
+ 		)
+-	|
+-		#( 
+-			RANGE_EXCLUSIVE
+-			shiftExpression0f
+-			additiveExpression
+-		)
+ 	;
+ 
+ shiftExpression0c
+ 	:
+-	additiveExpression
++		additiveExpression
+ 	|
+-		#( 
++		#(
+ 			SL
+ 			shiftExpression0a
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			SR
+ 			shiftExpression0b
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			BSR
+ 			shiftExpression0c
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			RANGE_INCLUSIVE
+ 			shiftExpression0d
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			RANGE_EXCLUSIVE
+ 			shiftExpression0e
+ 			additiveExpression
+ 		)
+-	|
+-		#( 
+-			RANGE_EXCLUSIVE
+-			shiftExpression0f
+-			additiveExpression
+-		)
+ 	;
+ 
+ shiftExpression0d
+ 	:
+-	additiveExpression
++		additiveExpression
+ 	|
+-		#( 
++		#(
+ 			SL
+ 			shiftExpression0a
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			SR
+ 			shiftExpression0b
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			BSR
+ 			shiftExpression0c
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			RANGE_INCLUSIVE
+ 			shiftExpression0d
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			RANGE_EXCLUSIVE
+ 			shiftExpression0e
+ 			additiveExpression
+ 		)
+-	|
+-		#( 
+-			RANGE_EXCLUSIVE
+-			shiftExpression0f
+-			additiveExpression
+-		)
+ 	;
+ 
+ shiftExpression0e
+ 	:
+-	additiveExpression
++		additiveExpression
+ 	|
+-		#( 
++		#(
+ 			SL
+ 			shiftExpression0a
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			SR
+ 			shiftExpression0b
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			BSR
+ 			shiftExpression0c
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			RANGE_INCLUSIVE
+ 			shiftExpression0d
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			RANGE_EXCLUSIVE
+ 			shiftExpression0e
+ 			additiveExpression
+ 		)
+-	|
+-		#( 
+-			RANGE_EXCLUSIVE
+-			shiftExpression0f
+-			additiveExpression
+-		)
+ 	;
+ 
+-shiftExpression0f
++shiftExpression
+ 	:
+-	additiveExpression
++		additiveExpression
+ 	|
+-		#( 
++		#(
+ 			SL
+ 			shiftExpression0a
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
+-			SR
+-			shiftExpression0b
+-			additiveExpression
+-		)
+-	|
+-		#( 
+-			BSR
+-			shiftExpression0c
+-			additiveExpression
+-		)
+-	|
+-		#( 
+-			RANGE_INCLUSIVE
+-			shiftExpression0d
+-			additiveExpression
+-		)
+-	|
+-		#( 
+-			RANGE_EXCLUSIVE
+-			shiftExpression0e
+-			additiveExpression
+-		)
+-	|
+-		#( 
+-			RANGE_EXCLUSIVE
+-			shiftExpression0f
+-			additiveExpression
+-		)
+-	;
+-
+-shiftExpression
+-	:
+-	#( 
+-		SL
+-		shiftExpression0a
+-		additiveExpression
+-	)
+-	|
+-		#( 
++		#(
+ 			SR
+ 			shiftExpression0b
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			BSR
+ 			shiftExpression0c
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			RANGE_INCLUSIVE
+ 			shiftExpression0d
+ 			additiveExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			RANGE_EXCLUSIVE
+ 			shiftExpression0e
+ 			additiveExpression
+ 		)
+-	|
+-		#( 
+-			RANGE_EXCLUSIVE
+-			shiftExpression0f
+-			additiveExpression
+-		)
+-	|
+-		additiveExpression
+ 	;
+ 
+ additiveExpression0a
+ 	:
+-	multiplicativeExpression
++		multiplicativeExpression
+ 	|
+-		#( 
++		#(
+ 			PLUS
+ 			additiveExpression0a
+ 			multiplicativeExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			MINUS
+ 			additiveExpression0b
+ 			multiplicativeExpression
+@@ -2163,15 +1463,15 @@
+ 
+ additiveExpression0b
+ 	:
+-	multiplicativeExpression
++		multiplicativeExpression
+ 	|
+-		#( 
++		#(
+ 			PLUS
+ 			additiveExpression0a
+ 			multiplicativeExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			MINUS
+ 			additiveExpression0b
+ 			multiplicativeExpression
+@@ -2180,13 +1480,13 @@
+ 
+ additiveExpression
+ 	:
+-	#( 
+-		PLUS
+-		additiveExpression0a
+-		multiplicativeExpression
+-	)
++		#(
++			PLUS
++			additiveExpression0a
++			multiplicativeExpression
++		)
+ 	|
+-		#( 
++		#(
+ 			MINUS
+ 			additiveExpression0b
+ 			multiplicativeExpression
+@@ -2197,24 +1497,21 @@
+ 
+ multiplicativeExpression0a
+ 	:
+-	#( 
+-		INC
+-		powerExpression
+-	)
++		#( INC powerExpression )
+ 	|
+-		#( 
++		#(
+ 			STAR
+ 			multiplicativeExpression0a
+ 			powerExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			DIV
+ 			multiplicativeExpression0b
+ 			powerExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			MOD
+ 			multiplicativeExpression0c
+ 			powerExpression
+@@ -2223,24 +1520,21 @@
+ 
+ multiplicativeExpression0b
+ 	:
+-	#( 
+-		INC
+-		powerExpression
+-	)
++		#( INC powerExpression )
+ 	|
+-		#( 
++		#(
+ 			STAR
+ 			multiplicativeExpression0a
+ 			powerExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			DIV
+ 			multiplicativeExpression0b
+ 			powerExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			MOD
+ 			multiplicativeExpression0c
+ 			powerExpression
+@@ -2249,24 +1543,21 @@
+ 
+ multiplicativeExpression0c
+ 	:
+-	#( 
+-		INC
+-		powerExpression
+-	)
++		#( INC powerExpression )
+ 	|
+-		#( 
++		#(
+ 			STAR
+ 			multiplicativeExpression0a
+ 			powerExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			DIV
+ 			multiplicativeExpression0b
+ 			powerExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			MOD
+ 			multiplicativeExpression0c
+ 			powerExpression
+@@ -2275,168 +1566,89 @@
+ 
+ multiplicativeExpression
+ 	:
+-	#( 
+-		STAR
+-		multiplicativeExpression0a
+-		powerExpression
+-	)
+-	|
+-		#( 
+-			DIV
+-			multiplicativeExpression0b
+-			powerExpression
+-		)
+-	|
+-		#( 
+-			MOD
+-			multiplicativeExpression0c
+-			powerExpression
+-		)
+-	|
+-		#( 
+-			STAR
+-			multiplicativeExpression1a
+-			powerExpression
+-		)
+-	|
+-		#( 
+-			DIV
+-			multiplicativeExpression1b
+-			powerExpression
+-		)
+-	|
+-		#( 
+-			MOD
+-			multiplicativeExpression1c
+-			powerExpression
+-		)
+-	|
+-		#( 
++		#(
+ 			STAR
+-			multiplicativeExpression4a
++			multiplicativeExpression0a
+ 			powerExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			DIV
+-			multiplicativeExpression4b
++			multiplicativeExpression0b
+ 			powerExpression
+ 		)
+ 	|
+-		#( 
++		#(
+ 			MOD
+-			multiplicativeExpression4c
++			multiplicativeExpression0c
+ 			powerExpression
+ 		)
+ 	|
+-		#( 
+-			DEC
+-			powerExpression
+-		)
++		#( DEC powerExpression )
+ 	|
+ 		powerExpression
+ 	|
+-		#( 
+-			INC
+-			powerExpression
+-		)
++		#( INC powerExpression )
+ 	;
+ 
+ powerExpression0a
+ 	:
+-	unaryExpressionNotPlusMinus
++		unaryExpressionNotPlusMinus
+ 	|
+-		#( 
+-			STAR_STAR
+-			powerExpression0a
+-			unaryExpression
+-		)
++		#( STAR_STAR powerExpression0a unaryExpression )
+ 	;
+ 
+ powerExpression
+ 	:
+-	#( 
+-		STAR_STAR
+-		powerExpression0a
+-		unaryExpression
+-	)
++		#( STAR_STAR powerExpression0a unaryExpression )
+ 	|
+ 		unaryExpressionNotPlusMinus
+ 	;
+ 
+ unaryExpression
+ 	:
+-	#( 
+-		DEC
+-		unaryExpression
+-	)
++		#( DEC unaryExpression )
+ 	|
+-		#( 
+-			UNARY_MINUS
+-			unaryExpression
+-		)
++		#( UNARY_MINUS unaryExpression )
+ 	|
+-		#( 
+-			UNARY_PLUS
+-			unaryExpression
+-		)
++		#( UNARY_PLUS unaryExpression )
+ 	|
+ 		unaryExpressionNotPlusMinus
+ 	|
+-		#( 
+-			INC
+-			unaryExpression
+-		)
++		#( INC unaryExpression )
+ 	;
+ 
+ unaryExpressionNotPlusMinus
+ 	:
+-	#( 
+-		BNOT
+-		unaryExpression
+-	)
+-	|
+-		#( 
+-			LNOT
+-			unaryExpression
+-		)
++		#( MEMBER_POINTER_DEFAULT namePart )
+ 	|
+-		#( 
+-			TYPECAST
+-			builtInTypeSpec
+-			unaryExpression
+-		)
++		#( BNOT unaryExpression )
+ 	|
+-		#( 
+-			TYPECAST
+-			classTypeSpec
+-			unaryExpressionNotPlusMinus
+-		)
++		#( LNOT unaryExpression )
+ 	|
+-		#( 
+-			MEMBER_POINTER_DEFAULT
+-			namePart
++		(
++			options {
++				generateAmbigWarnings = false;
++			}
++		:
++				#( TYPECAST builtInTypeSpec unaryExpression )
++			|
++				#( TYPECAST classTypeSpec unaryExpressionNotPlusMinus )
+ 		)
+ 	;
+ 
+ postfixExpression
+ 	:
+-	#( 
+-		POST_INC
+-		pathExpression
+-	)
++		#( POST_INC pathExpression )
+ 	|
+-		#( 
+-			POST_DEC
+-			pathExpression
+-		)
++		#( POST_DEC pathExpression )
+ 	|
+ 		pathExpression
+ 	;
+ 
+ primaryExpression
+ 	:
+-	IDENT
++		IDENT
+ 	|
+ 		constant
+ 	|
+@@ -2466,10 +1678,10 @@
+ 
+ scopeEscapeExpression
+ 	:
+-	#( 
++	#(
+ 		SCOPE_ESCAPE
+ 		(
+-			IDENT
++				IDENT
+ 			|
+ 				scopeEscapeExpression
+ 		)
+@@ -2479,7 +1691,7 @@
+ strictContextExpression
+ 	:
+ 	(
+-		singleDeclaration
++			singleDeclaration
+ 		|
+ 			expression
+ 		|
+@@ -2507,17 +1719,17 @@
+ 
+ stringConstructorValuePart
+ 	:
+-	#( 
+-		SPREAD_ARG
+-		(
+-			identifier
+-			|
+-				openOrClosedBlock
++		#(
++			SPREAD_ARG
++			(
++					identifier
++				|
++					openOrClosedBlock
++			)
+ 		)
+-	)
+ 	|
+ 		(
+-			identifier
++				identifier
+ 			|
+ 				openOrClosedBlock
+ 		)
+@@ -2525,17 +1737,22 @@
+ 
+ listOrMapConstructorExpression
+ 	:
+-	MAP_CONSTRUCTOR
+-	|
+-		#( 
+-			LBRACK
+-			argList
+-		)
++	(
++		options {
++			generateAmbigWarnings = false;
++		}
++		:
++			#( MAP_CONSTRUCTOR argList )
++		|
++			#( LIST_CONSTRUCTOR argList )
++		|
++			#( MAP_CONSTRUCTOR COLON )
++	)
+ 	;
+ 
+ newExpression
+ 	:
+-	#( 
++	#(
+ 		"new"
+ 		(
+ 			typeArguments
+@@ -2558,83 +1775,38 @@
+ 	:
+ 	(
+ 		argument
+-		(
+-			argument
+-		)*
+-		|
+-	)
++	)*
+ 	;
+ 
+ argument
+ 	:
+-	#( 
+-		LABELED_ARG
+-		argumentLabel
+-		strictContextExpression
+-	)
++		#( LABELED_ARG argumentLabel strictContextExpression )
+ 	|
+-		#( 
+-			SPREAD_ARG
+-			(
+-				COLON
+-			)?
+-			strictContextExpression
+-		)
++		#( SPREAD_ARG strictContextExpression )
++	|
++		#( SPREAD_MAP_ARG COLON strictContextExpression )
+ 	|
+ 		strictContextExpression
+ 	;
+ 
+ argumentLabel
+ 	:
+-	IDENT
+-	|
+-		keywordPropertyNames
+-	|
+-		primaryExpression
+-	;
+-
+-argumentLabelStart
+-	:
+-	(
+-		IDENT
+-		|
+-			keywordPropertyNames
+-		|
+-			constantNumber
+-		|
+-			STRING_LITERAL
+-		|
+-			balancedBrackets
+-	)
+-	COLON
++	primaryExpression
+ 	;
+ 
+ newArrayDeclarator0a
+ 	:
+-	#( 
+-		ARRAY_DECLARATOR
+-		newArrayDeclarator0a
+-		(
+-			expression
+-		)?
+-	)
+-	|
++	#( ARRAY_DECLARATOR newArrayDeclarator0a (expression)? )
+ 	;
+ 
+ newArrayDeclarator
+ 	:
+-	#( 
+-		ARRAY_DECLARATOR
+-		newArrayDeclarator0a
+-		(
+-			expression
+-		)?
+-	)
++	newArrayDeclarator0a
+ 	;
+ 
+ constant
+ 	:
+-	constantNumber
++		constantNumber
+ 	|
+ 		STRING_LITERAL
+ 	|
+@@ -2647,7 +1819,7 @@
+ 
+ constantNumber
+ 	:
+-	NUM_INT
++		NUM_INT
+ 	|
+ 		NUM_FLOAT
+ 	|
+@@ -2662,9 +1834,9 @@
+ 
+ balancedBrackets
+ 	:
+-	LPAREN
+-	balancedTokens
+-	RPAREN
++		LPAREN
++		balancedTokens
++		RPAREN
+ 	|
+ 		LBRACK
+ 		balancedTokens
+@@ -2683,7 +1855,8 @@
+ 	:
+ 	(
+ 		balancedBrackets
+-		|
++		|   ~(LPAREN|LBRACK|LCURLY | STRING_CTOR_START
++			 |RPAREN|RBRACK|RCURLY | STRING_CTOR_END)
+ 	)*
+ 	;
+ 

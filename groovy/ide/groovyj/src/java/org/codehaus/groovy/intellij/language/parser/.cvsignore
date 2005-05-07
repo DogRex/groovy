@@ -1,6 +1,6 @@
-expandedgroovy.psi.g
-
-GroovyPsiLexer.java
-GroovyPsiRecognizer.java
-
-GroovyPsi*TokenTypes.*
+groovy.g
+groovy.patched.g
+Groovy*.txt
+GroovyRecognizerTree.g
+GroovyRecognizerTree.patched.g
+treeGrammar.g
