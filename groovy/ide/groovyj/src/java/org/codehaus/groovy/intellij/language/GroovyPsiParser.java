@@ -22,8 +22,10 @@ import com.intellij.lang.ASTNode;
 import com.intellij.lang.PsiBuilder;
 import com.intellij.lang.PsiParser;
 import com.intellij.psi.tree.IElementType;
+import com.intellij.util.text.CharSequenceReader;
 
-import org.codehaus.groovy.intellij.language.parser.GroovyPsiRecognizer;
+import org.codehaus.groovy.intellij.language.parser.GroovyLexer;
+import org.codehaus.groovy.intellij.language.parser.GroovyRecognizer;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
@@ -31,14 +33,17 @@ import antlr.TokenStreamException;
 public class GroovyPsiParser implements PsiParser {
 
     public ASTNode parse(IElementType rootElementType, PsiBuilder builder) {
-        PsiBuilder.Marker rootMarker = builder.mark();
+//        UnicodeEscapingReader reader = new UnicodeEscapingReader(new CharSequenceReader(builder.getOriginalText()));
+        CharSequenceReader reader = new CharSequenceReader(builder.getOriginalText());
+        GroovyLexer lexer = new GroovyLexer(reader);
+//        reader.setLexer(lexer);
+        GroovyRecognizer parser = GroovyRecognizer.make(lexer);
+//        GroovyRecognizerTree treeParser = new GroovyRecognizerTree(builder);
+
         try {
-            new GroovyPsiRecognizer((GroovyPsiBuilder) builder).compilationUnit();
-            rootMarker.done(rootElementType);
+            parser.compilationUnit();
         } catch (TokenStreamException e) {
-            builder.error(e.toString());
         } catch (RecognitionException e) {
-            builder.error(e.toString());
         }
         return builder.getTreeBuilt();
     }

@@ -23,8 +23,7 @@ import junitx.framework.ObjectAssert;
 
 import org.intellij.openapi.testing.MockApplicationManager;
 
-import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
-
+import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
 import antlr.Token;
@@ -32,35 +31,34 @@ import antlr.TokenStreamException;
 
 public class GroovyLexerAdapterTest extends TestCase {
 
-    private GroovyPsiBuilder builder;
     private GroovyLexerAdapter lexer;
 
-    private void startLexing(String input) {
+    private void initialiseLexer(String input) {
         MockApplicationManager.reset();
-        builder = new GroovyPsiBuilder(GroovyLanguage.findOrCreate(), null, null, input);
-        lexer = builder.getLexer();
+        lexer = new GroovyPsiBuilder(GroovyLanguage.findOrCreate(), null, null, input).getLexer();
     }
 
     public void testReadsAnEmptyStringAndTerminatesTheLexicalAnalysis() {
-        startLexing("");
-        assertNull(lexer.getTokenType());
+        initialiseLexer("");
+        assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingAScriptHeaderCommentOnly() {
-        startLexing("#!");
-        assertTokenAttributes(GroovyTokenTypes.SH_COMMENT, 1, 1, "#!");  // TODO: report that this used to result in an OutOfMemoryError
-        assertEndOfFile();
+        initialiseLexer("#!");
+        assertNextTokenAttributes(GroovyTokenTypes.SH_COMMENT, 1, 1, "#!"); // TODO: report that this used to result in an OutOfMemoryError?
+        assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingASingleLineCommentOnly() {
-        startLexing("//");
-        assertTokenAttributes(GroovyTokenTypes.SL_COMMENT, 1, 1, "//");
-        assertEndOfFile();
+        initialiseLexer("//");
+        assertNextTokenAttributes(GroovyTokenTypes.SL_COMMENT, 1, 1, "//");
+        assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingTheOpeningOfAMultiLineCommentOnly() {
+        initialiseLexer("/*");
         try {
-            startLexing("/*");                                   // TODO: report that this used to result in an OutOfMemoryError
+            lexer.advance();                                                // TODO: report that this used to result in an OutOfMemoryError?
             fail("Bad grammar - ANTLR lexer should have choked on EOF!");
         } catch (RuntimeException e) {
             ObjectAssert.assertInstanceOf("exception class", TokenStreamException.class, e.getCause());
@@ -69,93 +67,96 @@ public class GroovyLexerAdapterTest extends TestCase {
     }
 
     public void testReadsTextContainingASuccessionOfTokensThatResembleTheClosingOfAMultiLineCommentOnly() {
-        startLexing("*/");
-        assertTokenAttributes(GroovyTokenTypes.STAR, 1, 1, "*");
-//        assertNextTokenAttributes(lexer, GroovyTokenTypes.DIV, 1, 2, 1, "/"); // TODO: report that this results in an OutOfMemoryError
-//        assertEndOfFile(lexer);
+        initialiseLexer("*/");
+        assertNextTokenAttributes(GroovyTokenTypes.STAR, 1, 1, "*");
+        assertNextTokenAttributes(GroovyTokenTypes.DIV, 2, 1, "/");         // TODO: report that this used to result in an OutOfMemoryError?
+        assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingAWhitespace() {
-        startLexing(" ");
-        assertTokenAttributes(GroovyTokenTypes.WS, 1, 1, " ");
-        assertEndOfFile();
+        String input = "    ";
+        initialiseLexer(input);
+        assertNextTokenAttributes(GroovyTokenTypes.WS, 1, 1, input);
+        assertNextTokenIsEndOfFile();
     }
 
-    public void testReadsTextContainingTwoNewLineTokens() {
-        startLexing("\n\n");
-        assertTokenAttributes(GroovyTokenTypes.NLS, 1, 1, "\n");
-        assertNextTokenAttributes(GroovyTokenTypes.NLS, 1, 2, "\n");
-        assertEndOfFile();
+    public void testReadsTextContainingNewLineTokens() {
+        initialiseLexer("\n\r\n\r\r");
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 1, 1, "\n");
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 1, 2, "\r\n");
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 1, 3, "\r");
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 1, 4, "\r");
+        assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingATabCharacter() {
-        startLexing("\t");
-        assertTokenAttributes(GroovyTokenTypes.WS, 1, 1, "\t");
-        assertEndOfFile();
+        initialiseLexer("\t");
+        assertNextTokenAttributes(GroovyTokenTypes.WS, 1, 1, "\t");
+        assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingAKeyword() {
-        startLexing("def");
-        assertTokenAttributes(GroovyTokenTypes.LITERAL_def, 1, 1, "def");
-        assertEndOfFile();
+        initialiseLexer("def");
+        assertNextTokenAttributes(GroovyTokenTypes.LITERAL_def, 1, 1, "def");
+        assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingAStringLiteralDelimitedBySingleQuotes() {
         String expectedString = "'some stuff'";
-        startLexing(expectedString);
-        assertTokenAttributes(GroovyTokenTypes.STRING_LITERAL, 1, 1, expectedString);
-        assertEndOfFile();
+        initialiseLexer(expectedString);
+        assertNextTokenAttributes(GroovyTokenTypes.STRING_LITERAL, 1, 1, expectedString);
+        assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingAStringLiteralDelimitedByQuotes() {
         String expectedString = "\"some stuff\"";
-        startLexing(expectedString);
-        assertTokenAttributes(GroovyTokenTypes.STRING_LITERAL, 1, 1, expectedString);
-        assertEndOfFile();
+        initialiseLexer(expectedString);
+        assertNextTokenAttributes(GroovyTokenTypes.STRING_LITERAL, 1, 1, expectedString);
+        assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingAPrimitiveDouble() {
-        startLexing("0.1234D");
-        assertTokenAttributes(GroovyTokenTypes.NUM_DOUBLE, 1, 1, "0.1234D");
-        assertEndOfFile();
+        initialiseLexer("0.1234D");
+        assertNextTokenAttributes(GroovyTokenTypes.NUM_DOUBLE, 1, 1, "0.1234D");
+        assertNextTokenIsEndOfFile();
     }
 
     public void testReadsThePositionOfAnIdentifierTokenConsecutiveToATabCharacter() {
-        startLexing("\tfoo");
-        assertTokenAttributes(GroovyTokenTypes.WS, 1, 1, "\t");
+        initialiseLexer("\tfoo");
+        assertNextTokenAttributes(GroovyTokenTypes.WS, 1, 1, "\t");
         assertNextTokenAttributes(GroovyTokenTypes.IDENT, 2, 1, "foo");
-        assertEndOfFile();
+        assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleLineComment() {
-        startLexing("//foo\nfoo");
-        assertTokenAttributes(GroovyTokenTypes.SL_COMMENT, 1, 1, "//foo");
+        initialiseLexer("//foo\nfoo");
+        assertNextTokenAttributes(GroovyTokenTypes.SL_COMMENT, 1, 1, "//foo");
         assertNextTokenAttributes(GroovyTokenTypes.NLS, 6, 1, "\n");
         assertNextTokenAttributes(GroovyTokenTypes.IDENT, 1, 2, "foo");
-        assertEndOfFile();
+        assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingAMultiLineComment() {
-        startLexing("/*foo\nfoo*/foo");
-        assertTokenAttributes(GroovyTokenTypes.ML_COMMENT, 1, 1, "/*foo\nfoo*/");
+        initialiseLexer("/*foo\nfoo*/foo");
+        assertNextTokenAttributes(GroovyTokenTypes.ML_COMMENT, 1, 1, "/*foo\nfoo*/");
         assertNextTokenAttributes(GroovyTokenTypes.IDENT, 6, 2, "foo");
-        assertEndOfFile();
+        assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingVariousBlanks() {
-        startLexing(" def\n ( ");
-        assertTokenAttributes(GroovyTokenTypes.WS, 1, 1, " ");
+        initialiseLexer(" def\n ( ");
+        assertNextTokenAttributes(GroovyTokenTypes.WS, 1, 1, " ");
         assertNextTokenAttributes(GroovyTokenTypes.LITERAL_def, 2, 1, "def");
         assertNextTokenAttributes(GroovyTokenTypes.NLS, 5, 1, "\n");
         assertNextTokenAttributes(GroovyTokenTypes.WS, 1, 2, " ");
         assertNextTokenAttributes(GroovyTokenTypes.LPAREN, 2, 2, "(");
         assertNextTokenAttributes(GroovyTokenTypes.WS, 3, 2, " ");
-        assertEndOfFile();
+        assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingAMethodDefinition() {
-        startLexing("def bla  ( ){\n}");
-        assertTokenAttributes(GroovyTokenTypes.LITERAL_def, 1, 1, "def");
+        initialiseLexer("def bla  ( ){\n}");
+        assertNextTokenAttributes(GroovyTokenTypes.LITERAL_def, 1, 1, "def");
         assertNextTokenAttributes(GroovyTokenTypes.WS, 4, 1, " ");
         assertNextTokenAttributes(GroovyTokenTypes.IDENT, 5, 1, "bla");
         assertNextTokenAttributes(GroovyTokenTypes.WS, 8, 1, "  ");
@@ -165,7 +166,7 @@ public class GroovyLexerAdapterTest extends TestCase {
         assertNextTokenAttributes(GroovyTokenTypes.LCURLY, 13, 1, "{");
         assertNextTokenAttributes(GroovyTokenTypes.NLS, 14, 1, "\n");
         assertNextTokenAttributes(GroovyTokenTypes.RCURLY, 1, 2, "}");
-        assertEndOfFile();
+        assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingAScriptHeaderCommentFollowedByImportStatementsAndAMultiLineCommentAndASingleLineComment() {
@@ -173,9 +174,9 @@ public class GroovyLexerAdapterTest extends TestCase {
          * DO NOT attempt to break the following string into smaller chuncks BUT RATHER install the StringEditor plug-in
          * to get a more readable and editable view of this code snippet.
          */
-        startLexing("#!/usr/bin/groovy\n\nimport javax.swing.JPanel\nimport groovy.swing.SwingBuilder\n\n/*\n * A multi-line comment.\n */\n\t// single-line comment...");
+        initialiseLexer("#!/usr/bin/groovy\n\nimport javax.swing.JPanel\nimport groovy.swing.SwingBuilder\n\n/*\n * A multi-line comment.\n */\n\t// single-line comment...");
 
-        assertTokenAttributes(GroovyTokenTypes.SH_COMMENT, 1, 1, "#!/usr/bin/groovy");
+        assertNextTokenAttributes(GroovyTokenTypes.SH_COMMENT, 1, 1, "#!/usr/bin/groovy");
         assertNextTokenAttributes(GroovyTokenTypes.NLS, 18, 1, "\n");
         assertNextTokenAttributes(GroovyTokenTypes.NLS, 1, 2, "\n");
 
@@ -202,78 +203,11 @@ public class GroovyLexerAdapterTest extends TestCase {
         assertNextTokenAttributes(GroovyTokenTypes.NLS, 4, 8, "\n");
         assertNextTokenAttributes(GroovyTokenTypes.WS, 1, 9, "\t");
         assertNextTokenAttributes(GroovyTokenTypes.SL_COMMENT, 2, 9, "// single-line comment...");
-        assertEndOfFile();
+        assertNextTokenIsEndOfFile();
     }
-
-    /*
-     * DO NOT attempt to break the following string into smaller chuncks BUT RATHER install the StringEditor plug-in
-     * to get a more readable and editable view of this code snippet.
-     */
-    private static final String FULL_SCRIPT =
-            "#!/usr/bin/groovy\n\nimport javax.swing.JPanel\nimport groovy.swing.SwingBuilder\n                               Bad characters: \\n #\n/**\n * Doc comments for <code>SomeClass</code>.\n *\n * @author The Codehaus\n *\n * @see GroovyTestCase#setUp\n */\n@Annotation (name=value)\npublic class SomeClass extends GroovyTestCase { // some comment\n\n    /* Block comment */\n    @Property def author = \"Joe Bloggs\"\n    @Property Long random = 1101001010010110L;\n\n    private String field = \"Hello World\";\n    private double unusedField = 12345.67890;\n    private UnknownType anotherString = \"Another\\nStrin\\g\";\n    private int[] array = new int[] { 1, 2, 3 };\n    public static int staticField = 0;\n\n    public SomeClass(AnInterface param) {\n        //TODO: something\n        int localVar = \"IntelliJ\"; // Error, incompatible types\n        System.out.println(anotherString + field + localVar);\n        long time = Date.parse(\"1.2.3\"); // Method is deprecated\n        int value = this.staticField; \n    }\n\n    interface AnInterface {\n        int CONSTANT = 2;\n    }\n\n    void testDoesANumberOfRandomThings(int count) {/*  block\n                     comment */\n        new SomeClass();\n\n        def quadraticClosure = { a, b :: Math.pow(a, 2) + (2 * a * b) + Math.pow(b, 2) }\n        quadraticClosure.applyTo(3, 5)\n\n        List aList = [ 3, 5 ]\n        assert [ 9, 25 ] == aList.collect { i :: Math.pow(i, 2) }, 'assertion failed'\n\n        count++\n    }\n}\n";
-
-/*
- *  TODO: add a test for the following:
- *
-
-#!/usr/bin/groovy
-
-import javax.swing.JPanel
-import groovy.swing.SwingBuilder
-                               Bad characters: \n #
-/**
- * Doc comments for <code>SomeClass</code>.
- *
- * @author The Codehaus
- *
- * @see GroovyTestCase#setUp
- * /
-    @Annotation (name=value)
-    public class SomeClass extends GroovyTestCase { // some comment
-
-        /* Block comment * /
-        @Property def author = "Joe Bloggs"
-        @Property Long random = 1101001010010110L;
-
-        private String field = "Hello World";
-        private double unusedField = 12345.67890;
-        private UnknownType anotherString = "Another\nStrin\g";
-        private int[] array = new int[] { 1, 2, 3 };
-        public static int staticField = 0;
-
-        public SomeClass(AnInterface param) {
-            //TODO: something
-            int localVar = "IntelliJ"; // Error, incompatible types
-            System.out.println(anotherString + field + localVar);
-            long time = Date.parse("1.2.3"); // Method is deprecated
-            int value = this.staticField;
-        }
-
-        interface AnInterface {
-            int CONSTANT = 2;
-        }
-
-        void testDoesANumberOfRandomThings(int count) {/*  block
-                         comment * /
-            new SomeClass();
-
-            def quadraticClosure = { a, b -> Math.pow(a, 2) + (2 * a * b) + Math.pow(b, 2) }
-            quadraticClosure.applyTo(3, 5)
-
-            List aList = [ 3, 5 ]
-            assert [ 9, 25 ] == aList.collect { i -> Math.pow(i, 2) }, 'assertion failed'
-
-            count++
-        }
-    }
-*/
 
     private void assertNextTokenAttributes(int tokenTypeIndex, int column, int line, String text)  {
         lexer.advance();
-        assertTokenAttributes(tokenTypeIndex, column, line, text);
-    }
-
-    private void assertTokenAttributes(int tokenTypeIndex, int column, int line, String text) {
         assertEquals("token type [from adapter]", GroovyTokenTypeMappings.getType(tokenTypeIndex), lexer.getTokenType());
 
         Token currentToken = lexer.getCurrentToken();
@@ -283,7 +217,7 @@ import groovy.swing.SwingBuilder
         assertEquals("line number", line, currentToken.getLine());
     }
 
-    private void assertEndOfFile() {
+    private void assertNextTokenIsEndOfFile() {
         lexer.advance();
         assertEquals("EOF token", null, lexer.getTokenType());
     }

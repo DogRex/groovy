@@ -42,6 +42,7 @@ public class GroovyPsiBuilder implements PsiBuilder {
 
     private static final Logger LOGGER = Logger.getInstance("#org.codehaus.groovy.intellij.language.GroovyPsiBuilder");
 
+    private final CharSequence originalText;
     private final List tokens = new ArrayList();
     private final ListWithRemovableRange markers = new ListWithRemovableRange();
     private final GroovyLexerAdapter lexer;
@@ -50,7 +51,6 @@ public class GroovyPsiBuilder implements PsiBuilder {
     private final TokenSet commentTokens;
     private CharTable charTable;
     private int currentTokenIndex;
-    private CharSequence originalText;
 
     public GroovyPsiBuilder(Language language, Project project, CharTable charTable, CharSequence originalText) {
         this.originalText = originalText;
@@ -66,9 +66,7 @@ public class GroovyPsiBuilder implements PsiBuilder {
         lexer.bind(this);
     }
 
-    public void startLexer() {
-        findSemanticallySignificantToken();
-    }
+    // Lexer support API -----------------------------------------------------------------------------------------------
 
     public GroovyLexerAdapter getLexer() {
         return lexer;
@@ -79,42 +77,33 @@ public class GroovyPsiBuilder implements PsiBuilder {
     }
 
     public void advanceLexer() {
+        lexer.advance();
+    }
+
+    void addToken(IElementType tokenType, int startOffset, int endOffset, String tokenAsText) {
+        tokens.add(new Token(tokenType, startOffset, endOffset, tokenAsText));
         currentTokenIndex++;
-        findSemanticallySignificantToken();
+    }
+
+    public boolean eof() {
+        return getLexer().getTokenType() == null;
     }
 
     public IElementType getTokenType() {
-        Token token = findSemanticallySignificantToken();
-        IElementType tokenType = token != null ? token.getTokenType() : null;
-        LOGGER.assertTrue(!isWhitespaceOrComment(tokenType));
-        return tokenType;
+        Token currentToken = getCurrentToken();
+        return currentToken == null ? null : currentToken.getTokenType();
     }
 
     public int getCurrentOffset() {
-        Token token = currentToken();
-        return (token == null) ? getOriginalText().length() : token.startOffset;
+        Token currentToken = getCurrentToken();
+        return currentToken == null ? getOriginalText().length() : currentToken.startOffset;
     }
 
     public Token getCurrentToken() {
-        return findSemanticallySignificantToken();
+        return (Token) (tokens.size() == 0 || eof() ? null : tokens.get(tokens.size() - 1));
     }
 
-    private Token findSemanticallySignificantToken() {
-        do {
-            Token token = currentToken();
-            if (token == null) {
-                return null;
-            }
-            if (!isWhitespaceOrComment(token.getTokenType())) {
-                return token;
-            }
-            currentTokenIndex++;
-        } while (true);
-    }
-
-    private boolean isWhitespaceOrComment(IElementType tokenType) {
-        return whitespaceTokens.isInSet(tokenType) || commentTokens.isInSet(tokenType);
-    }
+    // Marker support API ----------------------------------------------------------------------------------------------
 
     public Marker mark() {
         StartMarker startMarker = new StartMarker(currentTokenIndex);
@@ -128,24 +117,6 @@ public class GroovyPsiBuilder implements PsiBuilder {
         StartMarker startMarkerCopy = new StartMarker(startMarker.lexemIndex);
         markers.add(markerIndex, startMarkerCopy);
         return startMarkerCopy;
-    }
-
-    public boolean eof() {
-        if (currentTokenIndex + 1 < tokens.size()) {
-            return false;
-        }
-        return currentToken() == null;
-    }
-
-    private Token currentToken() {
-        if (currentTokenIndex >= tokens.size()) {
-            if (lexer.getTokenType() == null) {
-                return null;
-            }
-            tokens.add(new Token());
-            lexer.advance();
-        }
-        return (Token) tokens.get(currentTokenIndex);
     }
 
     public void rollbackTo(Marker marker) {
@@ -262,17 +233,16 @@ public class GroovyPsiBuilder implements PsiBuilder {
     }
 
     private int attachChildNodes(int numberOfProcessedTokens, int lexingIndex, ASTNode astNode) {
-//        for (index = Math.min(index, tokens.size()); k < index;) {
+//        for (lexingIndex = Math.min(lexingIndex, tokens.size()); numberOfProcessedTokens < lexingIndex;) {
         for (lexingIndex = tokens.size(); numberOfProcessedTokens < lexingIndex; ) {
             Token token = (Token) tokens.get(numberOfProcessedTokens++);
-            LeafPsiElement leafPsiElement = findLeafPsiElement(token);
-            TreeUtil.addChildren((CompositeElement) astNode, leafPsiElement);
+            TreeUtil.addChildren((CompositeElement) astNode, buildLeafPsiElement(token));
         }
 
         return numberOfProcessedTokens;
     }
 
-    private LeafPsiElement findLeafPsiElement(Token token) {
+    private LeafPsiElement buildLeafPsiElement(Token token) {
         IElementType elementType = token.getTokenType();
         if (whitespaceTokens.isInSet(elementType)) {
             return new PsiWhiteSpaceImpl(lexer.getBuffer(), token.startOffset, token.endOffset, token.state, charTable);
@@ -290,18 +260,20 @@ public class GroovyPsiBuilder implements PsiBuilder {
         }
     }
 
-    class Token {
+    static class Token {
 
         private final IElementType tokenType;
         private final int startOffset;
         private final int endOffset;
+        private final String text;
         private final int state;
 
-        public Token() {
-            tokenType = lexer.getTokenType();
-            startOffset = lexer.getTokenStart();
-            endOffset = lexer.getTokenEnd();
-            state = lexer.getState();
+        private Token(IElementType tokenType, int startOffset, int endOffset, String text) {
+            this.tokenType = tokenType;
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+            this.text = text;
+            this.state = 0;
         }
 
         public IElementType getTokenType() {
@@ -309,7 +281,7 @@ public class GroovyPsiBuilder implements PsiBuilder {
         }
 
         public String getTokenText() {
-            return new String(lexer.getBuffer(), startOffset, endOffset - startOffset);
+            return text;
         }
     }
 

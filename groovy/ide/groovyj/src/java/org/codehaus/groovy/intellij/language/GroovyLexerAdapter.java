@@ -21,24 +21,23 @@ package org.codehaus.groovy.intellij.language;
 import java.io.Reader;
 import java.io.StringReader;
 
-import com.intellij.lang.PsiBuilder;
 import com.intellij.lexer.Lexer;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.text.CharArrayUtil;
 
 import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
 
-import org.codehaus.groovy.intellij.language.parser.GroovyPsiLexer;
+import org.codehaus.groovy.intellij.language.parser.GroovyLexer;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
 import antlr.LexerSharedInputState;
 import antlr.Token;
-import antlr.TokenStream;
 import antlr.TokenStreamException;
 
 public class GroovyLexerAdapter implements Lexer {
 
-    private GroovyPsiLexer adaptee;
+    private GroovyPsiBuilder builder;
+    private GroovyLexer adaptee;
     private char[] buffer;
     private int currentTokenStartOffset;
     private int bufferEndOffset;
@@ -46,8 +45,9 @@ public class GroovyLexerAdapter implements Lexer {
     private int currentLineStartPosition;
     private Token currentToken;
 
-    void bind(PsiBuilder builder) {
-        adaptee = new GroovyPsiLexer(builder);
+    void bind(GroovyPsiBuilder builder) {
+        this.builder = builder;
+        adaptee = new GroovyLexer((Reader) null);
         adaptee.setCaseSensitive(true);
         adaptee.setWhitespaceIncluded(true);
         start(CharArrayUtil.fromSequence(builder.getOriginalText()));
@@ -72,11 +72,10 @@ public class GroovyLexerAdapter implements Lexer {
 */
         Reader reader = new StringReader(new String(buffer, startOffset, endOffset - startOffset));
         adaptee.setInputState(new LexerSharedInputState(reader));
-        advance();
     }
 
-    public TokenStream stream() {
-        return adaptee.plumb();
+    public GroovyLexer getAdaptedLexer() {
+        return adaptee;
     }
 
     public char[] getBuffer() {
@@ -87,11 +86,8 @@ public class GroovyLexerAdapter implements Lexer {
         return bufferEndOffset;
     }
 
-    /*
-     * Seems to be called after getTokenEnd() and before advance().
-     * This may be to allow a pushback mechanism. Not used here.
-     */
-    public int getState() {                     // leftover from JFlex it seems...
+    // Never used - possibly a leftover from JFlex...
+    public int getState() {
         return 0;
     }
 
@@ -119,6 +115,14 @@ public class GroovyLexerAdapter implements Lexer {
     }
 
     public void advance() {
+        try {
+            lexerAdvanced(adaptee.nextToken());
+        } catch (TokenStreamException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void lexerAdvanced(Token nextToken) {
         if (currentToken != null) {
             if (currentToken.getType() == GroovyTokenTypes.NLS) {
                 advanceNewLine();
@@ -127,17 +131,19 @@ public class GroovyLexerAdapter implements Lexer {
             }
         }
 
-        try {
-            currentToken = adaptee.nextToken();
-            // columns start at 1, currentTokenStartOffset starts at 0
-            currentTokenStartOffset = currentLineStartPosition + currentToken.getColumn() - 1;
-        } catch (TokenStreamException e) {
-            throw new RuntimeException(e);
+        currentToken = nextToken;
+        // columns start at 1, currentTokenStartOffset starts at 0
+        currentTokenStartOffset = currentLineStartPosition + currentToken.getColumn() - 1;
+
+        if (nextToken.getType() != GroovyTokenTypes.EOF) {
+            String tokenAsText = new String(getBuffer(), getTokenStart(), getTokenEnd() - getTokenStart());
+            builder.addToken(getTokenType(), getTokenStart(), getTokenEnd(), tokenAsText);
         }
     }
 
     private void advanceNewLine() {
-        currentLineStartPosition = currentTokenStartOffset + 1;
+        int lastLineSeparatorIndex = findLastIndexOfALineSeparator(currentToken.getText());
+        currentLineStartPosition = currentTokenStartOffset + lastLineSeparatorIndex + 1;
     }
 
     private void advanceMultiLineComment() {
@@ -149,10 +155,7 @@ public class GroovyLexerAdapter implements Lexer {
     }
 
     private int findLastIndexOfALineSeparator(String text) {
-        int lastIndexOfALineSeparator = text.lastIndexOf("\r\r\n");  // legacy Netscape line separator
-        if (lastIndexOfALineSeparator == -1) {
-            lastIndexOfALineSeparator = text.lastIndexOf("\r\n");    // Windows
-        }
+        int lastIndexOfALineSeparator = text.lastIndexOf("\r\n");    // Windows
         if (lastIndexOfALineSeparator == -1) {
             lastIndexOfALineSeparator = text.lastIndexOf("\r");      // Macintosh
         }
