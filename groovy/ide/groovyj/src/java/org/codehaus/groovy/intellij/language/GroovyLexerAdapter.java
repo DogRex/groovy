@@ -18,13 +18,13 @@
 
 package org.codehaus.groovy.intellij.language;
 
-import java.io.Reader;
 import java.io.StringReader;
 
 import com.intellij.lexer.Lexer;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.text.CharArrayUtil;
 
+import org.codehaus.groovy.antlr.UnicodeEscapingReader;
 import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
 
 import org.codehaus.groovy.intellij.language.parser.GroovyLexer;
@@ -47,7 +47,7 @@ public class GroovyLexerAdapter implements Lexer {
 
     void bind(GroovyPsiBuilder builder) {
         this.builder = builder;
-        adaptee = new GroovyLexer((Reader) null);
+        adaptee = new GroovyLexer(builder);
         adaptee.setCaseSensitive(true);
         adaptee.setWhitespaceIncluded(true);
         start(CharArrayUtil.fromSequence(builder.getOriginalText()));
@@ -66,11 +66,10 @@ public class GroovyLexerAdapter implements Lexer {
         currentTokenStartOffset = startOffset;  // index of the first character of the current token relative to the full buffer
         bufferEndOffset = endOffset;            // index of the last character in the full buffer
         currentLineStartPosition = startOffset; // index of the first character on the current line
-/*
-        UnicodeEscapingReader reader = new UnicodeEscapingReader(new StringReader(new String(buffer, startOffset, endOffset - startOffset)));
-        reader.setLexer(groovyLexer);
-*/
-        Reader reader = new StringReader(new String(buffer, startOffset, endOffset - startOffset));
+
+        String input = new String(buffer, startOffset, endOffset - startOffset);
+        UnicodeEscapingReader reader = new UnicodeEscapingReader(new StringReader(input));
+        reader.setLexer(adaptee);
         adaptee.setInputState(new LexerSharedInputState(reader));
     }
 
@@ -105,9 +104,7 @@ public class GroovyLexerAdapter implements Lexer {
     }
 
     public int getTokenEnd() {
-        return currentToken.getType() == GroovyTokenTypes.NLS
-               ? currentTokenStartOffset + 1
-               : currentTokenStartOffset + currentToken.getText().length();
+        return currentTokenStartOffset + currentToken.getText().length();
     }
 
     public Token getCurrentToken() {

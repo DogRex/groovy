@@ -18,12 +18,13 @@
 
 package org.codehaus.groovy.intellij.language;
 
-import junit.framework.TestCase;
 import junitx.framework.ObjectAssert;
 
 import org.intellij.openapi.testing.MockApplicationManager;
 
+import com.intellij.lang.ASTNode;
 import com.intellij.lang.PsiBuilder;
+import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
 
 import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
@@ -33,7 +34,7 @@ import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
 import antlr.TokenStreamException;
 
-public class GroovyPsiBuilderTest extends TestCase {
+public class GroovyPsiBuilderTest extends PsiTreeTestCase {
 
     private GroovyPsiBuilder builder;
 
@@ -48,22 +49,24 @@ public class GroovyPsiBuilderTest extends TestCase {
     }
 
     public void testReadsTextContainingASingleTokenRepresentingAScriptHeaderCommentOnly() {
-        initialiseLexer("#!");
-        assertNextTokenAttributes(GroovyTokenTypes.SH_COMMENT, 0, "#!");
+        String input = "#!";
+        initialiseLexer(input);
+        assertNextTokenAttributes(GroovyTokenTypes.SH_COMMENT, 0, input);
         assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingASingleLineCommentOnly() {
-        initialiseLexer("//");
-        assertNextTokenAttributes(GroovyTokenTypes.SL_COMMENT, 0, "//");
+        String input = "//";
+        initialiseLexer(input);
+        assertNextTokenAttributes(GroovyTokenTypes.SL_COMMENT, 0, input);
         assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingTheOpeningOfAMultiLineCommentOnly() {
-        initialiseLexer("/*");
+        String input = "/*";
+        initialiseLexer(input);
         try {
-            assertNextTokenAttributes(GroovyTokenTypes.ML_COMMENT, 0, "/*");
-            initialiseLexer("/*");
+            assertNextTokenAttributes(GroovyTokenTypes.ML_COMMENT, 0, input);
             fail("Bad grammar - ANTLR lexer should have choked on EOF!");
         } catch (RuntimeException e) {
             ObjectAssert.assertInstanceOf("exception class", TokenStreamException.class, e.getCause());
@@ -72,47 +75,51 @@ public class GroovyPsiBuilderTest extends TestCase {
     }
 
     public void testReadsTextContainingASingleTokenRepresentingWhitespaces() {
-        initialiseLexer("   ");
-        assertNextTokenAttributes(GroovyTokenTypes.WS, 0, "   ");
+        String input = "   ";
+        initialiseLexer(input);
+        assertNextTokenAttributes(GroovyTokenTypes.WS, 0, input);
         assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingTwoNewLineTokens() {
-        initialiseLexer("\n\n");
-        assertNextTokenAttributes(GroovyTokenTypes.NLS, 0, "\n");
-        assertNextTokenAttributes(GroovyTokenTypes.NLS, 1, "\n");
+        String input = "\n\n";
+        initialiseLexer(input);
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 0, input);
         assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingATabCharacter() {
-        initialiseLexer("\t");
-        assertNextTokenAttributes(GroovyTokenTypes.WS, 0, "\t");
+        String input = "\t";
+        initialiseLexer(input);
+        assertNextTokenAttributes(GroovyTokenTypes.WS, 0, input);
         assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingAKeyword() {
-        initialiseLexer("def");
-        assertNextTokenAttributes(GroovyTokenTypes.LITERAL_def, 0, "def");
+        String input = "def";
+        initialiseLexer(input);
+        assertNextTokenAttributes(GroovyTokenTypes.LITERAL_def, 0, input);
         assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingAStringLiteralDelimitedBySingleQuotes() {
-        String expectedString = "'some stuff'";
-        initialiseLexer(expectedString);
-        assertNextTokenAttributes(GroovyTokenTypes.STRING_LITERAL, 0, expectedString);
+        String input = "'some stuff'";
+        initialiseLexer(input);
+        assertNextTokenAttributes(GroovyTokenTypes.STRING_LITERAL, 0, input);
         assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingAStringLiteralDelimitedByQuotes() {
-        String expectedString = "\"some stuff\"";
-        initialiseLexer(expectedString);
-        assertNextTokenAttributes(GroovyTokenTypes.STRING_LITERAL, 0, expectedString);
+        String input = "\"some stuff\"";
+        initialiseLexer(input);
+        assertNextTokenAttributes(GroovyTokenTypes.STRING_LITERAL, 0, input);
         assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingAPrimitiveDouble() {
-        initialiseLexer("0.1234D");
-        assertNextTokenAttributes(GroovyTokenTypes.NUM_DOUBLE, 0, "0.1234D");
+        String input = "0.1234D";
+        initialiseLexer(input);
+        assertNextTokenAttributes(GroovyTokenTypes.NUM_DOUBLE, 0, input);
         assertNextTokenIsEndOfFile();
     }
 
@@ -142,8 +149,7 @@ public class GroovyPsiBuilderTest extends TestCase {
         initialiseLexer(" def\n ( ");
         assertNextTokenAttributes(GroovyTokenTypes.WS, 0, " ");
         assertNextTokenAttributes(GroovyTokenTypes.LITERAL_def, 1, "def");
-        assertNextTokenAttributes(GroovyTokenTypes.NLS, 4, "\n");
-        assertNextTokenAttributes(GroovyTokenTypes.WS, 5, " ");
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 4, "\n ");
         assertNextTokenAttributes(GroovyTokenTypes.LPAREN, 6, "(");
         assertNextTokenAttributes(GroovyTokenTypes.WS, 7, " ");
         assertNextTokenIsEndOfFile();
@@ -174,8 +180,7 @@ public class GroovyPsiBuilderTest extends TestCase {
 
         PsiBuilder.Marker rootMarker = builder.mark();
         assertNextTokenAttributes(GroovyTokenTypes.SH_COMMENT, 0, "#!/usr/bin/groovy");
-        assertNextTokenAttributes(GroovyTokenTypes.NLS, 17, "\n");
-        assertNextTokenAttributes(GroovyTokenTypes.NLS, 18, "\n");
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 17, "\n\n");
 
         PsiBuilder.Marker importStatementMarker = builder.mark();
         assertNextTokenAttributes(GroovyTokenTypes.LITERAL_import, 19, "import");
@@ -199,12 +204,10 @@ public class GroovyPsiBuilderTest extends TestCase {
         assertNextTokenAttributes(GroovyTokenTypes.IDENT, 65, "SwingBuilder");
         importStatementMarker.done(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IMPORT));
 
-        assertNextTokenAttributes(GroovyTokenTypes.NLS, 77, "\r");
-        assertNextTokenAttributes(GroovyTokenTypes.NLS, 78, "\r");
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 77, "\r\r");
 
         assertNextTokenAttributes(GroovyTokenTypes.ML_COMMENT, 79, "/*\n * A multi-line comment.\n */");
-        assertNextTokenAttributes(GroovyTokenTypes.NLS, 110, "\n");
-        assertNextTokenAttributes(GroovyTokenTypes.WS, 111, "\t");
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 110, "\n\t");
 
         assertNextTokenAttributes(GroovyTokenTypes.SL_COMMENT, 112, "// single-line comment...");
         assertNextTokenAttributes(GroovyTokenTypes.NLS, 137, "\r");
@@ -212,7 +215,45 @@ public class GroovyPsiBuilderTest extends TestCase {
         rootMarker.done(GroovyElementTypes.FILE);
         assertNextTokenIsEndOfFile();
 
+        assertPsiTreeIsBuiltFromTextContainingAScriptHeaderCommentFollowedByImportStatementsAndAMultiLineCommentAndASingleLineComment();
         assertEquals("PSI tree as text", expectedText, builder.getTreeBuilt().getText());
+    }
+
+    private void assertPsiTreeIsBuiltFromTextContainingAScriptHeaderCommentFollowedByImportStatementsAndAMultiLineCommentAndASingleLineComment() {
+        ASTNode rootNode = builder.getTreeBuilt();
+        assertSame("file element type", GroovyElementTypes.FILE, rootNode.getElementType());
+
+        ASTNode rootChildNode = assertFirstChildNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.SH_COMMENT), rootNode);
+        rootChildNode = assertNextNode(TokenType.WHITE_SPACE, rootChildNode);
+        rootChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IMPORT), rootChildNode);
+
+        ASTNode importStatement1ChildNode = assertFirstChildNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.LITERAL_import), rootChildNode);
+        importStatement1ChildNode = assertNextNode(TokenType.WHITE_SPACE, importStatement1ChildNode);
+        importStatement1ChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IDENT), importStatement1ChildNode);
+        importStatement1ChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.DOT), importStatement1ChildNode);
+        importStatement1ChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IDENT), importStatement1ChildNode);
+        importStatement1ChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.DOT), importStatement1ChildNode);
+        importStatement1ChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IDENT), importStatement1ChildNode);
+        assertNodeHasNoChildrenAndNoNextSiblings(importStatement1ChildNode);
+
+        rootChildNode = assertNextNode(TokenType.WHITE_SPACE, rootChildNode);
+        rootChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IMPORT), rootChildNode);
+
+        ASTNode importStatement2ChildNode = assertFirstChildNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.LITERAL_import), rootChildNode);
+        importStatement2ChildNode = assertNextNode(TokenType.WHITE_SPACE, importStatement2ChildNode);
+        importStatement2ChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IDENT), importStatement2ChildNode);
+        importStatement2ChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.DOT), importStatement2ChildNode);
+        importStatement2ChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IDENT), importStatement2ChildNode);
+        importStatement2ChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.DOT), importStatement2ChildNode);
+        importStatement2ChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IDENT), importStatement2ChildNode);
+        assertNodeHasNoChildrenAndNoNextSiblings(importStatement2ChildNode);
+
+        rootChildNode = assertNextNode(TokenType.WHITE_SPACE, rootChildNode);
+        rootChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.ML_COMMENT), rootChildNode);
+        rootChildNode = assertNextNode(TokenType.WHITE_SPACE, rootChildNode);
+        rootChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.SL_COMMENT), rootChildNode);
+        rootChildNode = assertNextNode(TokenType.WHITE_SPACE, rootChildNode);
+        assertNodeHasNoChildrenAndNoNextSiblings(rootChildNode);
     }
 
     private void assertNextTokenAttributes(int tokenTypeIndex, int offset, String text)  {

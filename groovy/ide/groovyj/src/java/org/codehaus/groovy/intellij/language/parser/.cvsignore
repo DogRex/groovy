@@ -1,6 +1,9 @@
 groovy.g
 groovy.patched.g
 Groovy*.txt
+GroovyLexer.java
+GroovyRecognizer.java
 GroovyRecognizerTree.g
 GroovyRecognizerTree.patched.g
+GroovyTokenTypes.java
 treeGrammar.g

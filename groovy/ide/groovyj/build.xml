@@ -174,7 +174,19 @@
         </antlr>
     </target>
 
-    <target name="compile.irida" depends="irida.available">
+    <target name="tree.walker" depends="irida.available">
+        <antlr target="${src.java.dir}/org/codehaus/groovy/intellij/language/parser/groovy.tree.g" fork="yes">
+            <classpath refid="irida.compile.classpath"/>
+        </antlr>
+    </target>
+
+    <target name="antlr.psi" depends="irida.available">
+        <antlr target="${src.java.dir}/org/codehaus/groovy/intellij/language/parser/groovy.psi.g" fork="yes">
+            <classpath refid="irida.compile.classpath"/>
+        </antlr>
+    </target>
+
+    <target name="compile.irida" depends="antlr.psi">
         <mkdir dir="${irida.classes.dir}"/>
         <javac srcdir="${src.java.dir}" destdir="${irida.classes.dir}" debug="on" source="1.4">
             <classpath refid="irida.compile.classpath"/>

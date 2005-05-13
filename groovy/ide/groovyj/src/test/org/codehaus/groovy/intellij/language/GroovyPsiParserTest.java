@@ -18,17 +18,18 @@
 
 package org.codehaus.groovy.intellij.language;
 
-import junit.framework.TestCase;
-
 import org.intellij.openapi.testing.MockApplicationManager;
 
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.ParserDefinition;
-import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.TokenType;
 
-public class GroovyPsiParserTest extends TestCase {
+import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
+import org.codehaus.groovy.intellij.psi.GroovyElementTypes;
+import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
-    // FIXME: work in progress!
+public class GroovyPsiParserTest extends PsiTreeTestCase {
+
     public void testParsesAGivenScriptIntoATreeOfPsiNodes() {
         String textToParse = "#!/usr/bin/groovy\n\nimport java.util.Collections\n\n";
 
@@ -36,24 +37,26 @@ public class GroovyPsiParserTest extends TestCase {
         ParserDefinition parserDefinition = GroovyLanguage.findOrCreate().getParserDefinition();
         GroovyPsiBuilder builder = new GroovyPsiBuilder(GroovyLanguage.findOrCreate(), null, null, textToParse);
 
-/*
         ASTNode rootNode = parserDefinition.createParser(null).parse(parserDefinition.getFileNodeType(), builder);
         assertSame("file element type", GroovyElementTypes.FILE, rootNode.getElementType());
 
-        ASTNode node = assertFirstChildNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.SH_COMMENT), rootNode);
-        node = assertNextNode(TokenType.WHITE_SPACE, node);
-        node = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.LITERAL_import), node);
-        node = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IDENT), node);
-        node = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.DOT), node);
-        node = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IDENT), node);
-        node = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.DOT), node);
-        node = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IDENT), node);
-        node = assertNextNode(TokenType.WHITE_SPACE, node);
-        node = assertNextNode(GroovyElementTypes.IMPORT_STATEMENT, node);
-        assertNodeHasNoChildrenAndNoNextSiblings(node);
+        ASTNode rootChildNode = assertFirstChildNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.SH_COMMENT), rootNode);
+        rootChildNode = assertNextNode(TokenType.WHITE_SPACE, rootChildNode);
+        rootChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IMPORT), rootChildNode);
+
+        ASTNode importStatementChildNode = assertFirstChildNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.LITERAL_import), rootChildNode);
+        importStatementChildNode = assertNextNode(TokenType.WHITE_SPACE, importStatementChildNode);
+        importStatementChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IDENT), importStatementChildNode);
+        importStatementChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.DOT), importStatementChildNode);
+        importStatementChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IDENT), importStatementChildNode);
+        importStatementChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.DOT), importStatementChildNode);
+        importStatementChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IDENT), importStatementChildNode);
+        assertNodeHasNoChildrenAndNoNextSiblings(importStatementChildNode);
+
+        rootChildNode = assertNextNode(TokenType.WHITE_SPACE, rootChildNode);
+        assertNodeHasNoNextSibling(rootChildNode);
 
         assertEquals("PSI tree as text", textToParse, rootNode.getText());
-*/
     }
 
     /*
@@ -118,26 +121,4 @@ import groovy.swing.SwingBuilder
         }
     }
 */
-
-    private ASTNode assertFirstChildNode(IElementType elementType, ASTNode node) {
-        ASTNode firstChild = node.getFirstChildNode();
-        assertNodeAttributes(elementType, firstChild);
-        return firstChild;
-    }
-
-    private ASTNode assertNextNode(IElementType elementType, ASTNode node) {
-        ASTNode nextNode = node.getTreeNext();
-        assertNodeAttributes(elementType, nextNode);
-        return nextNode;
-    }
-
-    private void assertNodeAttributes(IElementType elementType, ASTNode node) {
-        assertSame("node type", elementType, node.getElementType());
-    }
-
-    private void assertNodeHasNoChildrenAndNoNextSiblings(ASTNode node) {
-        assertEquals("first child", null, node.getFirstChildNode());
-        assertEquals("last child", null, node.getLastChildNode());
-        assertEquals("next sibling", null, node.getTreeNext());
-    }
 }

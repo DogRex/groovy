@@ -24,10 +24,6 @@ public final class GroovyElementTypes {
 
     public static final IElementType FILE = new GroovyElementType("File");
 
-    public static final IElementType IMPORT_STATEMENT = new GroovyElementType("IMPORT_STATEMENT");
-
-    public static final IElementType STATIC_IMPORT_STATEMENT = new GroovyElementType("STATIC_IMPORT_STATEMENT");
-
 /*
     public static final IElementType GROOVY_FILE = new IChameleonElementType("GROOVY_FILE_TEXT", GroovyLanguage.findOrCreate()) {
         public ASTNode parseContents(ASTNode astNode) {

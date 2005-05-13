@@ -44,14 +44,16 @@ public class GroovyLexerAdapterTest extends TestCase {
     }
 
     public void testReadsTextContainingASingleTokenRepresentingAScriptHeaderCommentOnly() {
-        initialiseLexer("#!");
-        assertNextTokenAttributes(GroovyTokenTypes.SH_COMMENT, 1, 1, "#!"); // TODO: report that this used to result in an OutOfMemoryError?
+        String input = "#!";
+        initialiseLexer(input);
+        assertNextTokenAttributes(GroovyTokenTypes.SH_COMMENT, 1, 1, input); // TODO: report that this used to result in an OutOfMemoryError?
         assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingASingleLineCommentOnly() {
-        initialiseLexer("//");
-        assertNextTokenAttributes(GroovyTokenTypes.SL_COMMENT, 1, 1, "//");
+        String input = "//";
+        initialiseLexer(input);
+        assertNextTokenAttributes(GroovyTokenTypes.SL_COMMENT, 1, 1, input);
         assertNextTokenIsEndOfFile();
     }
 
@@ -81,43 +83,44 @@ public class GroovyLexerAdapterTest extends TestCase {
     }
 
     public void testReadsTextContainingNewLineTokens() {
-        initialiseLexer("\n\r\n\r\r");
-        assertNextTokenAttributes(GroovyTokenTypes.NLS, 1, 1, "\n");
-        assertNextTokenAttributes(GroovyTokenTypes.NLS, 1, 2, "\r\n");
-        assertNextTokenAttributes(GroovyTokenTypes.NLS, 1, 3, "\r");
-        assertNextTokenAttributes(GroovyTokenTypes.NLS, 1, 4, "\r");
+        String input = "\n\r\n\r\r";
+        initialiseLexer(input);
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 1, 1, input);
         assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingATabCharacter() {
-        initialiseLexer("\t");
-        assertNextTokenAttributes(GroovyTokenTypes.WS, 1, 1, "\t");
+        String input = "\t";
+        initialiseLexer(input);
+        assertNextTokenAttributes(GroovyTokenTypes.WS, 1, 1, input);
         assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingAKeyword() {
-        initialiseLexer("def");
-        assertNextTokenAttributes(GroovyTokenTypes.LITERAL_def, 1, 1, "def");
+        String input = "def";
+        initialiseLexer(input);
+        assertNextTokenAttributes(GroovyTokenTypes.LITERAL_def, 1, 1, input);
         assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingAStringLiteralDelimitedBySingleQuotes() {
-        String expectedString = "'some stuff'";
-        initialiseLexer(expectedString);
-        assertNextTokenAttributes(GroovyTokenTypes.STRING_LITERAL, 1, 1, expectedString);
+        String input = "'some stuff'";
+        initialiseLexer(input);
+        assertNextTokenAttributes(GroovyTokenTypes.STRING_LITERAL, 1, 1, input);
         assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingAStringLiteralDelimitedByQuotes() {
-        String expectedString = "\"some stuff\"";
-        initialiseLexer(expectedString);
-        assertNextTokenAttributes(GroovyTokenTypes.STRING_LITERAL, 1, 1, expectedString);
+        String input = "\"some stuff\"";
+        initialiseLexer(input);
+        assertNextTokenAttributes(GroovyTokenTypes.STRING_LITERAL, 1, 1, input);
         assertNextTokenIsEndOfFile();
     }
 
     public void testReadsTextContainingASingleTokenRepresentingAPrimitiveDouble() {
-        initialiseLexer("0.1234D");
-        assertNextTokenAttributes(GroovyTokenTypes.NUM_DOUBLE, 1, 1, "0.1234D");
+        String input = "0.1234D";
+        initialiseLexer(input);
+        assertNextTokenAttributes(GroovyTokenTypes.NUM_DOUBLE, 1, 1, input);
         assertNextTokenIsEndOfFile();
     }
 
@@ -147,8 +150,7 @@ public class GroovyLexerAdapterTest extends TestCase {
         initialiseLexer(" def\n ( ");
         assertNextTokenAttributes(GroovyTokenTypes.WS, 1, 1, " ");
         assertNextTokenAttributes(GroovyTokenTypes.LITERAL_def, 2, 1, "def");
-        assertNextTokenAttributes(GroovyTokenTypes.NLS, 5, 1, "\n");
-        assertNextTokenAttributes(GroovyTokenTypes.WS, 1, 2, " ");
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 5, 1, "\n ");
         assertNextTokenAttributes(GroovyTokenTypes.LPAREN, 2, 2, "(");
         assertNextTokenAttributes(GroovyTokenTypes.WS, 3, 2, " ");
         assertNextTokenIsEndOfFile();
@@ -177,8 +179,7 @@ public class GroovyLexerAdapterTest extends TestCase {
         initialiseLexer("#!/usr/bin/groovy\n\nimport javax.swing.JPanel\nimport groovy.swing.SwingBuilder\n\n/*\n * A multi-line comment.\n */\n\t// single-line comment...");
 
         assertNextTokenAttributes(GroovyTokenTypes.SH_COMMENT, 1, 1, "#!/usr/bin/groovy");
-        assertNextTokenAttributes(GroovyTokenTypes.NLS, 18, 1, "\n");
-        assertNextTokenAttributes(GroovyTokenTypes.NLS, 1, 2, "\n");
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 18, 1, "\n\n");
 
         assertNextTokenAttributes(GroovyTokenTypes.LITERAL_import, 1, 3, "import");
         assertNextTokenAttributes(GroovyTokenTypes.WS, 7, 3, " ");
@@ -196,12 +197,10 @@ public class GroovyLexerAdapterTest extends TestCase {
         assertNextTokenAttributes(GroovyTokenTypes.IDENT, 15, 4, "swing");
         assertNextTokenAttributes(GroovyTokenTypes.DOT, 20, 4, ".");
         assertNextTokenAttributes(GroovyTokenTypes.IDENT, 21, 4, "SwingBuilder");
-        assertNextTokenAttributes(GroovyTokenTypes.NLS, 33, 4, "\n");
-        assertNextTokenAttributes(GroovyTokenTypes.NLS, 1, 5, "\n");
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 33, 4, "\n\n");
 
         assertNextTokenAttributes(GroovyTokenTypes.ML_COMMENT, 1, 6, "/*\n * A multi-line comment.\n */");
-        assertNextTokenAttributes(GroovyTokenTypes.NLS, 4, 8, "\n");
-        assertNextTokenAttributes(GroovyTokenTypes.WS, 1, 9, "\t");
+        assertNextTokenAttributes(GroovyTokenTypes.NLS, 4, 8, "\n\t");
         assertNextTokenAttributes(GroovyTokenTypes.SL_COMMENT, 2, 9, "// single-line comment...");
         assertNextTokenIsEndOfFile();
     }

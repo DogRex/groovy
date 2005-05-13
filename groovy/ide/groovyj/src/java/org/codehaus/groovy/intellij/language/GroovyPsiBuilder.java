@@ -233,8 +233,7 @@ public class GroovyPsiBuilder implements PsiBuilder {
     }
 
     private int attachChildNodes(int numberOfProcessedTokens, int lexingIndex, ASTNode astNode) {
-//        for (lexingIndex = Math.min(lexingIndex, tokens.size()); numberOfProcessedTokens < lexingIndex;) {
-        for (lexingIndex = tokens.size(); numberOfProcessedTokens < lexingIndex; ) {
+        for (lexingIndex = Math.min(lexingIndex, tokens.size()); numberOfProcessedTokens < lexingIndex;) {
             Token token = (Token) tokens.get(numberOfProcessedTokens++);
             TreeUtil.addChildren((CompositeElement) astNode, buildLeafPsiElement(token));
         }
