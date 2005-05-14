@@ -221,7 +221,7 @@
 
         <junit fork="true" forkmode="once" errorProperty="tests.failed" failureProperty="tests.failed"
                haltonfailure="false" haltonerror="false" showoutput="true" printsummary="withOutAndErr"
-               includeantruntime="true" newenvironment="false">
+               dir="${basedir}" includeantruntime="true" newenvironment="false">
 
             <jvmarg value="-Xbootclasspath/p:${irida.home}/lib/boot.jar"/>
             <classpath refid="irida.test.classpath"/>
