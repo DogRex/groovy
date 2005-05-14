@@ -18,9 +18,9 @@
 
 package org.codehaus.groovy.intellij.psi;
 
-import junit.framework.TestCase;
+import org.codehaus.groovy.intellij.GroovyjTestCase;
 
-public class GroovyElementTypeTest extends TestCase {
+public class GroovyElementTypeTest extends GroovyjTestCase {
 
     public void testDerivesTheTextRepresentationOfItselfUsingItsDebugName() {
         String debugName = "Random Element";

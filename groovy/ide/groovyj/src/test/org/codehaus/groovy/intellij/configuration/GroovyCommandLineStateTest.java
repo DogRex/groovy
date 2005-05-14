@@ -18,9 +18,13 @@
 
 package org.codehaus.groovy.intellij.configuration;
 
+import org.intellij.openapi.testing.MockApplicationManager;
+
+import com.intellij.application.options.PathMacrosImpl;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.JavaParameters;
 import com.intellij.execution.configurations.ParametersList;
+import com.intellij.openapi.application.PathMacros;
 
 import groovy.lang.GroovyShell;
 
@@ -45,9 +49,7 @@ public class GroovyCommandLineStateTest extends GroovyConfigurationTestCase {
                                        "-dir C:\\WINDOWS -enableWarnings",
                                        "C:\\Documents and Settings\\All Users\\.groovy");
 
-        GroovyCommandLineState commandLineState = new GroovyCommandLineState(runConfiguration, null, null);
-        JavaParameters javaParameters = commandLineState.createJavaParameters();
-
+        JavaParameters javaParameters = createJavaParameters(runConfiguration);
         assertEquals("main class", GroovyShell.class.getName(), javaParameters.getMainClass());
         assertEquals("VM parameters", runConfiguration.getVmParameters(), javaParameters.getVMParametersList().getParametersString().trim());
 
@@ -59,5 +61,13 @@ public class GroovyCommandLineStateTest extends GroovyConfigurationTestCase {
                      groovyShellParameters.getParametersString().trim());
 
         assertEquals("working directory path", runConfiguration.getWorkingDirectoryPath(), javaParameters.getWorkingDirectory());
+    }
+
+    private JavaParameters createJavaParameters(GroovyRunConfiguration runConfiguration) throws ExecutionException {
+        GroovyCommandLineState commandLineState = new GroovyCommandLineState(runConfiguration, null, null);
+        MockApplicationManager.getMockApplication().registerComponent(PathMacros.class, new PathMacrosImpl());
+        JavaParameters javaParameters = commandLineState.createJavaParameters();
+        MockApplicationManager.getMockApplication().removeComponent(PathMacros.class);
+        return javaParameters;
     }
 }

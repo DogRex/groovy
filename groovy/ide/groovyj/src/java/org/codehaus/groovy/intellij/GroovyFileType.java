@@ -65,10 +65,6 @@ public class GroovyFileType extends LanguageFileType {
             public boolean hasNavigation() {
                 return true;
             }
-
-            public boolean hasRename() {
-                return true;
-            }
         };
     }
 

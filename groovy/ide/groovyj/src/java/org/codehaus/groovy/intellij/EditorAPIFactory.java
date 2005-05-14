@@ -21,8 +21,8 @@ package org.codehaus.groovy.intellij;
 import java.lang.reflect.Constructor;
 
 import com.intellij.openapi.application.ApplicationInfo;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.components.ApplicationComponent;
+import com.intellij.openapi.project.Project;
 
 public class EditorAPIFactory implements ApplicationComponent {
 

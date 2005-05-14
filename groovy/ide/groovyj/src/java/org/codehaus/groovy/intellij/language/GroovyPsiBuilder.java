@@ -99,6 +99,10 @@ public class GroovyPsiBuilder implements PsiBuilder {
         return currentToken == null ? getOriginalText().length() : currentToken.startOffset;
     }
 
+    public String getTokenText() {
+        return getCurrentToken().getTokenText();
+    }
+
     public Token getCurrentToken() {
         return (Token) (tokens.size() == 0 || eof() ? null : tokens.get(tokens.size() - 1));
     }

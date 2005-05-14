@@ -20,9 +20,9 @@ package org.codehaus.groovy.intellij.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataConstants;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.module.Module;
 
 import org.codehaus.groovy.intellij.GroovyJProjectComponent;
 

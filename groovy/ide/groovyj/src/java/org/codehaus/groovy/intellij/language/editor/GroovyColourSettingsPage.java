@@ -78,8 +78,8 @@ public class GroovyColourSettingsPage implements ColorSettingsPage {
             new AttributesDescriptor("Class", CodeInsightAttributes.CLASS_NAME_ATTRIBUTES),
             new AttributesDescriptor("Interface", CodeInsightAttributes.INTERFACE_NAME_ATTRIBUTES),
             new AttributesDescriptor("Local variable", CodeInsightAttributes.LOCAL_VARIABLE_ATTRIBUTES),
-            new AttributesDescriptor("Mutable local variable", CodeInsightAttributes.MUTABLE_LOCAL_VARIABLE_ATTRIBUTES),
-            new AttributesDescriptor("Mutable parameter", CodeInsightAttributes.MUTABLE_PARAMETER_ATTRIBUTES),
+            new AttributesDescriptor("Reassigned local variable", CodeInsightColors.REASSIGNED_LOCAL_VARIABLE_ATTRIBUTES),
+            new AttributesDescriptor("Reassigned parameter", CodeInsightColors.REASSIGNED_PARAMETER_ATTRIBUTES),
             new AttributesDescriptor("Instance field", CodeInsightAttributes.INSTANCE_FIELD_ATTRIBUTES),
             new AttributesDescriptor("Static field", CodeInsightAttributes.STATIC_FIELD_ATTRIBUTES),
             new AttributesDescriptor("Parameter", CodeInsightAttributes.PARAMETER_ATTRIBUTES),
@@ -107,8 +107,8 @@ public class GroovyColourSettingsPage implements ColorSettingsPage {
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("warning", CodeInsightAttributes.WARNING_ATTRIBUTES);
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("unknownType", CodeInsightAttributes.WRONG_REFERENCE_ATTRIBUTES);
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("localVar", CodeInsightAttributes.LOCAL_VARIABLE_ATTRIBUTES);
-        ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("mutableLocalVar", CodeInsightAttributes.MUTABLE_LOCAL_VARIABLE_ATTRIBUTES);
-        ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("mutableParameter", CodeInsightAttributes.MUTABLE_PARAMETER_ATTRIBUTES);
+        ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("reassignedLocalVar", CodeInsightColors.REASSIGNED_LOCAL_VARIABLE_ATTRIBUTES);
+        ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("reassignedParameter", CodeInsightColors.REASSIGNED_PARAMETER_ATTRIBUTES);
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("static", CodeInsightAttributes.STATIC_FIELD_ATTRIBUTES);
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("deprecated", CodeInsightAttributes.DEPRECATED_ATTRIBUTES);
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("constructorCall", CodeInsightAttributes.CONSTRUCTOR_CALL_ATTRIBUTES);

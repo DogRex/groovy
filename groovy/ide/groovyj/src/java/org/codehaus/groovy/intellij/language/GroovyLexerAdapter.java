@@ -20,7 +20,7 @@ package org.codehaus.groovy.intellij.language;
 
 import java.io.StringReader;
 
-import com.intellij.lexer.Lexer;
+import com.intellij.lexer.LexerBase;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.text.CharArrayUtil;
 
@@ -34,7 +34,7 @@ import antlr.LexerSharedInputState;
 import antlr.Token;
 import antlr.TokenStreamException;
 
-public class GroovyLexerAdapter implements Lexer {
+public class GroovyLexerAdapter extends LexerBase {
 
     private GroovyPsiBuilder builder;
     private GroovyLexer adaptee;

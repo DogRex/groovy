@@ -39,8 +39,6 @@ import org.codehaus.groovy.intellij.GroovyjTestCase;
 public class GroovyPseudoTextBuilderTest extends GroovyjTestCase {
 
     public void testBuildsAPseudoTextFrom() {
-        MockApplicationManager.reset();
-
         MockApplication application = MockApplicationManager.getMockApplication();
         application.registerComponent(PseudoTextElementFactory.class, new PseudoTextElementFactoryImpl());
 
@@ -56,7 +54,6 @@ public class GroovyPseudoTextBuilderTest extends GroovyjTestCase {
         Mock stubContainingFile = mock(PsiFile.class, "stubContainingFile");
         stubSource.stubs().method("getContainingFile").will(returnValue(stubContainingFile.proxy()));
         stubContainingFile.stubs().method("getNode").will(returnValue(new JavaFileElement()));  // TODO: replace with GroovyFileElement later
-
         return (PsiElement) stubSource.proxy();
     }
 }

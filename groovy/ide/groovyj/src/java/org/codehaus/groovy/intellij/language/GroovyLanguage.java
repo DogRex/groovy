@@ -45,7 +45,7 @@ public class GroovyLanguage extends Language {
     private static final String ID = "Groovy";
 
     public static GroovyLanguage findOrCreate() {
-        GroovyLanguage language = (GroovyLanguage) Language.findByID(GroovyLanguage.ID);
+        GroovyLanguage language = Language.findInstance(GroovyLanguage.class);
         return (language == null) ? new GroovyLanguage() : language;
     }
 

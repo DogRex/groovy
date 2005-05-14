@@ -23,12 +23,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.MockVirtualFile;
 
 import org.jmock.Mock;
-import org.jmock.cglib.MockObjectTestCase;
 
 import org.codehaus.groovy.intellij.EditorAPIFactory;
 import org.codehaus.groovy.intellij.Mocks;
 
-public class GroovyConfigurationFactoryTest extends MockObjectTestCase {
+public class GroovyConfigurationFactoryTest extends GroovyConfigurationTestCase {
 
     private final Mock mockEditorApiFactory = mock(EditorAPIFactory.class);
 

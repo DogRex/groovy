@@ -18,9 +18,9 @@
 
 package org.codehaus.groovy.intellij.language;
 
-import junit.framework.TestCase;
+import org.codehaus.groovy.intellij.GroovyjTestCase;
 
-public class GroovyCommenterTest extends TestCase {
+public class GroovyCommenterTest extends GroovyjTestCase {
 
     private final GroovyCommenter commenter = new GroovyCommenter();
 

@@ -18,12 +18,12 @@
 
 package org.codehaus.groovy.intellij.language;
 
-import junit.framework.TestCase;
-
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.tree.IElementType;
 
-public class PsiTreeTestCase extends TestCase {
+import org.codehaus.groovy.intellij.GroovyjTestCase;
+
+public abstract class PsiTreeTestCase extends GroovyjTestCase {
 
     protected ASTNode assertFirstChildNode(IElementType elementType, ASTNode node) {
         ASTNode firstChild = node.getFirstChildNode();

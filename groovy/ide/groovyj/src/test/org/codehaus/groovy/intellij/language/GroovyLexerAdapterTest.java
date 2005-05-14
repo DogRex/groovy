@@ -18,23 +18,20 @@
 
 package org.codehaus.groovy.intellij.language;
 
-import junit.framework.TestCase;
 import junitx.framework.ObjectAssert;
 
-import org.intellij.openapi.testing.MockApplicationManager;
-
+import org.codehaus.groovy.intellij.GroovyjTestCase;
 import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
 import antlr.Token;
 import antlr.TokenStreamException;
 
-public class GroovyLexerAdapterTest extends TestCase {
+public class GroovyLexerAdapterTest extends GroovyjTestCase {
 
     private GroovyLexerAdapter lexer;
 
     private void initialiseLexer(String input) {
-        MockApplicationManager.reset();
         lexer = new GroovyPsiBuilder(GroovyLanguage.findOrCreate(), null, null, input).getLexer();
     }
 

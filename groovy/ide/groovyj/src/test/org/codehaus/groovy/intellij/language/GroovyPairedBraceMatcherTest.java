@@ -18,16 +18,16 @@
 
 package org.codehaus.groovy.intellij.language;
 
-import junit.framework.TestCase;
 import junitx.framework.Assert;
 
 import com.intellij.lang.BracePair;
 
 import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
 
+import org.codehaus.groovy.intellij.GroovyjTestCase;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
-public class GroovyPairedBraceMatcherTest extends TestCase {
+public class GroovyPairedBraceMatcherTest extends GroovyjTestCase {
 
     private final BracePair[] actualBracePairs = new GroovyPairedBraceMatcher().getPairs();
 

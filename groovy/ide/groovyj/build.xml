@@ -1,5 +1,16 @@
 <project name="GroovyJ" default="build.all" basedir=".">
 
+    <target name="check.java.version">
+        <echo taskname="java.version" message="${java.version}"/>
+        <condition property="java.version.ok">
+            <contains string="${java.version}" substring="1.5" casesensitive="false"/>
+        </condition>
+    </target>
+
+    <target name="java.version.pass" depends="check.java.version" unless="java.version.ok">
+        <fail>This build script requires JDK 1.5 or later.</fail>
+    </target>
+
     <target name="check.ant.version">
         <echo taskname="ant.version" message="${ant.version}"/>
         <condition property="ant.version.ok">
@@ -13,7 +24,7 @@
         <fail>This build script requires Ant 1.6.2 or later.</fail>
     </target>
 
-    <target name="initialise" depends="ant.version.pass">
+    <target name="initialise" depends="java.version.pass, ant.version.pass">
         <property file="project.properties"/>
         <property name="distfile.name" value="${project.name}-${project.version}"/>
         <property name="binary.extensions" value="**/*.png, **/*.jpg, **/*.jpeg, **/*.gif"/>
@@ -43,7 +54,7 @@
         <property name="coverage.criteria" value="95%"/>
 
         <path id="clover.classpath">
-            <pathelement location="${clover.lib.dir}/clover-1.3.5.jar"/>
+            <pathelement location="${clover.lib.dir}/clover-1.3.7.jar"/>
         </path>
 
         <condition property="clover.available">
@@ -121,8 +132,10 @@
 
     <target name="irida.available" depends="check.irida.available" unless="irida.available">
         <fail>IntelliJ IDEA (Irida) is not available. Please either start with 'ant -Dirida.home=/path/to/irida' or copy
+        $IDEA_HOME/lib/boot.jar,
         $IDEA_HOME/lib/extensions.jar,
         $IDEA_HOME/lib/forms_rt.jar,
+        $IDEA_HOME/lib/icons.jar,
         $IDEA_HOME/lib/idea.jar,
         $IDEA_HOME/lib/openapi.jar,
         $IDEA_HOME/lib/picocontainer.jar and
@@ -188,7 +201,7 @@
 
     <target name="compile.irida" depends="antlr.psi">
         <mkdir dir="${irida.classes.dir}"/>
-        <javac srcdir="${src.java.dir}" destdir="${irida.classes.dir}" debug="on" source="1.4">
+        <javac srcdir="${src.java.dir}" destdir="${irida.classes.dir}" debug="on" source="1.5">
             <classpath refid="irida.compile.classpath"/>
         </javac>
         <copy todir="${irida.classes.dir}" overwrite="true" preservelastmodified="true">
@@ -198,7 +211,7 @@
 
     <target name="compile.tests.irida" depends="compile.irida">
         <mkdir dir="${irida.test.classes.dir}"/>
-        <javac srcdir="${src.test.dir}" destdir="${irida.test.classes.dir}" debug="on" source="1.4">
+        <javac srcdir="${src.test.dir}" destdir="${irida.test.classes.dir}" debug="on" source="1.5">
             <classpath refid="irida.test.classpath"/>
         </javac>
     </target>
@@ -210,6 +223,7 @@
                haltonfailure="false" haltonerror="false" showoutput="true" printsummary="withOutAndErr"
                includeantruntime="true" newenvironment="false">
 
+            <jvmarg value="-Xbootclasspath/p:${irida.home}/lib/boot.jar"/>
             <classpath refid="irida.test.classpath"/>
             <formatter type="brief" usefile="false"/>
 

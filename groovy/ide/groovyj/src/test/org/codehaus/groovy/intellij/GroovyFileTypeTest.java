@@ -22,8 +22,6 @@ import java.nio.charset.Charset;
 
 import junitx.framework.ObjectAssert;
 
-import org.intellij.openapi.testing.MockApplicationManager;
-
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -32,19 +30,13 @@ import com.intellij.psi.PsiManager;
 import com.intellij.testFramework.MockVirtualFile;
 
 import org.jmock.Mock;
-import org.jmock.cglib.MockObjectTestCase;
 
 import org.codehaus.groovy.intellij.language.GroovyLanguage;
 import org.codehaus.groovy.intellij.language.editor.GroovyFileHighlighter;
 
-public class GroovyFileTypeTest extends MockObjectTestCase {
+public class GroovyFileTypeTest extends GroovyjTestCase {
 
-    private GroovyFileType fileType;
-
-    protected void setUp() {
-        MockApplicationManager.reset();
-        fileType = new GroovyFileType(GroovyLanguage.findOrCreate());
-    }
+    private GroovyFileType fileType = new GroovyFileType(GroovyLanguage.findOrCreate());
 
     public void testDefinesAName() {
         assertEquals("name", "Groovy", fileType.getName());
@@ -84,10 +76,6 @@ public class GroovyFileTypeTest extends MockObjectTestCase {
 
     public void testSupportsFindUsagesOnGroovyElements() {
         assertEquals("supports find usages", true, fileType.getSupportCapabilities().hasFindUsages());
-    }
-
-    public void testSupportsTheRenamingOfGroovyElements() {
-        assertEquals("supports renaming", true, fileType.getSupportCapabilities().hasRename());
     }
 
     public void testReturnsTheCharacterSetOfAGivenFileAsItsCharacterSet() {

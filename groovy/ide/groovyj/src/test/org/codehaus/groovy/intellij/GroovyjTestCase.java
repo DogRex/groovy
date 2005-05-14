@@ -18,6 +18,8 @@
 
 package org.codehaus.groovy.intellij;
 
+import org.intellij.openapi.testing.MockApplicationManager;
+
 import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.openapi.module.JavaModuleType;
@@ -36,7 +38,11 @@ import org.jmock.cglib.MockObjectTestCase;
 import org.codehaus.groovy.intellij.configuration.GroovyConfigurationFactory;
 import org.codehaus.groovy.intellij.configuration.GroovyRunConfiguration;
 
-public class GroovyjTestCase extends MockObjectTestCase {
+public abstract class GroovyjTestCase extends MockObjectTestCase {
+
+    static {
+        MockApplicationManager.reset();
+    }
 
     protected Project createStubbedProject() {
         return createStubbedProject(mock(Project.class, "stubProject#" + TestUtil.nextAbsRandomInt()));

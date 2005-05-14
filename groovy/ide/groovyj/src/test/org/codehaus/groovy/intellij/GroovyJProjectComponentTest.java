@@ -22,11 +22,10 @@ import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.project.Project;
 
 import org.jmock.Mock;
-import org.jmock.cglib.MockObjectTestCase;
 
 import org.codehaus.groovy.intellij.compiler.GroovyCompiler;
 
-public class GroovyJProjectComponentTest extends MockObjectTestCase {
+public class GroovyJProjectComponentTest extends GroovyjTestCase {
 
     private final Mock mockCompilerManager = mock(CompilerManager.class);
     private final Mock mockProject = mock(Project.class);

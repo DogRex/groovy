@@ -18,8 +18,6 @@
 
 package org.codehaus.groovy.intellij.language.editor;
 
-import org.intellij.openapi.testing.MockApplicationManager;
-
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.folding.FoldingDescriptor;
 import com.intellij.openapi.util.TextRange;
@@ -35,10 +33,6 @@ import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 public class GroovyFoldingBuilderTest extends GroovyjTestCase {
 
     private final GroovyFoldingBuilder foldingBuilder = new GroovyFoldingBuilder();
-
-    protected void setUp() {
-        MockApplicationManager.reset();
-    }
 
     public void testBuildsDescriptorsOfFoldingRegionsForARootAstNodeIncludingCodeBlocksAndMultiLineComments() {
         ASTNode methodBodyNode = createAstNode(GroovyTokenTypes.BLOCK);

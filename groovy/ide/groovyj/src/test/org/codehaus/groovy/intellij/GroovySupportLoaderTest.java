@@ -25,11 +25,10 @@ import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.options.colors.ColorSettingsPages;
 
 import org.jmock.Mock;
-import org.jmock.cglib.MockObjectTestCase;
 
 import org.codehaus.groovy.intellij.language.editor.GroovyColourSettingsPage;
 
-public class GroovySupportLoaderTest extends MockObjectTestCase {
+public class GroovySupportLoaderTest extends GroovyjTestCase {
 
     private final GroovySupportLoader groovySupportLoader = new GroovySupportLoader();
 
@@ -59,7 +58,6 @@ public class GroovySupportLoaderTest extends MockObjectTestCase {
     }
 
     private void setExpectationsForInitialisationByIntellijIdea() {
-        MockApplicationManager.reset();
         MockApplication application = MockApplicationManager.getMockApplication();
 
         Mock mockFileTypeManager = mock(FileTypeManager.class);

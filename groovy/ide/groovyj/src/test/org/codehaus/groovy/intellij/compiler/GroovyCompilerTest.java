@@ -42,17 +42,17 @@ import org.codehaus.groovy.control.messages.WarningMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
 
 import org.jmock.Mock;
-import org.jmock.cglib.MockObjectTestCase;
 import org.jmock.core.Constraint;
 
 import org.codehaus.groovy.intellij.GroovyController;
 import org.codehaus.groovy.intellij.GroovySupportLoader;
+import org.codehaus.groovy.intellij.GroovyjTestCase;
 import org.codehaus.groovy.intellij.Mocks;
 import org.codehaus.groovy.intellij.TestUtil;
 
 import antlr.RecognitionException;
 
-public class GroovyCompilerTest extends MockObjectTestCase {
+public class GroovyCompilerTest extends GroovyjTestCase {
 
     private final Mock mockGroovyController = Mocks.createGroovyControllerMock(this);
     private final Mock mockFileTypeManager = mock(FileTypeManager.class);

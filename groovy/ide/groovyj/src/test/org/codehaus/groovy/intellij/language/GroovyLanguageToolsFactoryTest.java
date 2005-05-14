@@ -18,10 +18,11 @@
 
 package org.codehaus.groovy.intellij.language;
 
-import junit.framework.TestCase;
 import junitx.framework.ObjectAssert;
 
-public class GroovyLanguageToolsFactoryTest extends TestCase {
+import org.codehaus.groovy.intellij.GroovyjTestCase;
+
+public class GroovyLanguageToolsFactoryTest extends GroovyjTestCase {
 
     private final GroovyLanguageToolsFactory languageToolsFactory = new GroovyLanguageToolsFactory();
 

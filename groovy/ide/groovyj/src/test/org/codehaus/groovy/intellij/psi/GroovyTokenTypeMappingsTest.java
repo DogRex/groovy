@@ -21,7 +21,6 @@ package org.codehaus.groovy.intellij.psi;
 import java.util.Arrays;
 import java.util.List;
 
-import junit.framework.TestCase;
 import junitx.framework.Assert;
 import junitx.framework.ListAssert;
 import junitx.framework.StringAssert;
@@ -30,7 +29,9 @@ import com.intellij.psi.tree.IElementType;
 
 import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
 
-public class GroovyTokenTypeMappingsTest extends TestCase {
+import org.codehaus.groovy.intellij.GroovyjTestCase;
+
+public class GroovyTokenTypeMappingsTest extends GroovyjTestCase {
 
     public void testIncludesTheBadCharacterFromAntlrAsAGroovyElementType() {
         assertEquals("element type index", -1, GroovyTokenTypeMappings.BAD_CHARACTER);

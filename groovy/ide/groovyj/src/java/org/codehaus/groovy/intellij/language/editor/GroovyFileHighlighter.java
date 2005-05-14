@@ -64,7 +64,8 @@ public class GroovyFileHighlighter extends SyntaxHighlighterBase {
         fillMap(levelOneElementTypeToTextAttributeKeyMap, GroovyTokenSets.NUMBERS, SyntacticAttributes.GROOVY_NUMBER);
 
         levelOneElementTypeToTextAttributeKeyMap.put(StringEscapesTokenTypes.VALID_STRING_ESCAPE_TOKEN, SyntacticAttributes.GROOVY_VALID_STRING_ESCAPE);
-        levelOneElementTypeToTextAttributeKeyMap.put(StringEscapesTokenTypes.INVALID_STRING_ESCAPE_TOKEN, SyntacticAttributes.GROOVY_INVALID_STRING_ESCAPE);
+        levelOneElementTypeToTextAttributeKeyMap.put(StringEscapesTokenTypes.INVALID_CHARACTER_ESCAPE_TOKEN, SyntacticAttributes.GROOVY_INVALID_STRING_ESCAPE);
+        levelOneElementTypeToTextAttributeKeyMap.put(StringEscapesTokenTypes.INVALID_UNICODE_ESCAPE_TOKEN, SyntacticAttributes.GROOVY_INVALID_STRING_ESCAPE);
 
         levelOneElementTypeToTextAttributeKeyMap.put(GroovyTokenTypeMappings.getType(GroovyTokenTypes.STRING_CH), SyntacticAttributes.GROOVY_STRING);
         levelOneElementTypeToTextAttributeKeyMap.put(GroovyTokenTypeMappings.getType(GroovyTokenTypes.STRING_LITERAL), SyntacticAttributes.GROOVY_STRING);

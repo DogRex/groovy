@@ -49,8 +49,6 @@ public class GroovyRunConfigurationTest extends GroovyConfigurationTestCase {
     }
 
     public void testCreatesAConfigurationEditorForAnyGivenProject() {
-        MockApplicationManager.reset();
-
         Mock mockActionManager = mock(ActionManager.class);
         MockApplicationManager.getMockApplication().registerComponent(ActionManager.class, mockActionManager.proxy());
         mockActionManager.expects(atLeastOnce()).method("createActionPopupMenu").withAnyArguments().will(returnValue(null));
@@ -97,7 +95,6 @@ public class GroovyRunConfigurationTest extends GroovyConfigurationTestCase {
     }
 
     public void testCreatesACommandLineStateAsTheRunProfileState() {
-        MockApplicationManager.reset();
         MockApplicationManager.getMockApplication().registerComponent(TextConsoleBuidlerFactory.class, new TextConsoleBuidlerFactoryImpl());
 
         mockEditorApi.expects(once()).method("getModuleAndDependentModules").withAnyArguments().will(returnValue(Module.EMPTY_ARRAY));

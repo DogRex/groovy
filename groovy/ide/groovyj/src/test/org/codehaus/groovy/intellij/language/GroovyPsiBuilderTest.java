@@ -20,8 +20,6 @@ package org.codehaus.groovy.intellij.language;
 
 import junitx.framework.ObjectAssert;
 
-import org.intellij.openapi.testing.MockApplicationManager;
-
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.PsiBuilder;
 import com.intellij.psi.TokenType;
@@ -39,7 +37,6 @@ public class GroovyPsiBuilderTest extends PsiTreeTestCase {
     private GroovyPsiBuilder builder;
 
     private void initialiseLexer(String input) {
-        MockApplicationManager.reset();
         builder = new GroovyPsiBuilder(GroovyLanguage.findOrCreate(), null, null, input);
     }
 

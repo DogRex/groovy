@@ -18,11 +18,8 @@
 
 package org.codehaus.groovy.intellij.language.editor;
 
-import junit.framework.TestCase;
 import junitx.framework.Assert;
 import junitx.framework.ObjectAssert;
-
-import org.intellij.openapi.testing.MockApplicationManager;
 
 import com.intellij.lexer.Lexer;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
@@ -31,16 +28,15 @@ import com.intellij.psi.tree.IElementType;
 
 import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
 
+import org.codehaus.groovy.intellij.GroovyjTestCase;
 import org.codehaus.groovy.intellij.Stubs;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
-public class GroovyFileHighlighterTest extends TestCase {
+public class GroovyFileHighlighterTest extends GroovyjTestCase {
 
     private GroovyFileHighlighter fileHighlighter;
 
     protected void setUp() {
-        MockApplicationManager.reset();
-
         StdFileTypes.XML = Stubs.LANGUAGE_FILE_TYPE;
         StdFileTypes.JAVA = Stubs.LANGUAGE_FILE_TYPE;
 

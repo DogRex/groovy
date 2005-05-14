@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
-import org.intellij.openapi.testing.MockApplicationManager;
-
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ModuleFileIndex;
 import com.intellij.openapi.roots.ModuleRootManager;
@@ -36,11 +34,10 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.Phases;
 
 import org.jmock.Mock;
-import org.jmock.cglib.MockObjectTestCase;
 
 import groovy.lang.GroovyShell;
 
-public class GroovyControllerTest extends MockObjectTestCase {
+public class GroovyControllerTest extends GroovyjTestCase {
 
     private static final String FILE_NAME = "foo.groovy";
 
@@ -95,7 +92,6 @@ public class GroovyControllerTest extends MockObjectTestCase {
         Mock mockModuleFileIndex = mock(ModuleFileIndex.class);
         mockModuleRootManager.stubs().method("getFileIndex").will(returnValue(mockModuleFileIndex.proxy()));
 
-        MockApplicationManager.reset();
         mockModuleFileIndex.expects(once()).method("isInTestSourceContent").with(same(mockVirtualFile.proxy())).will(returnValue(false));
         mockModuleRootManager.expects(once()).method("getCompilerOutputPathUrl").will(returnValue("file://" + targetDirectoryPath));
 

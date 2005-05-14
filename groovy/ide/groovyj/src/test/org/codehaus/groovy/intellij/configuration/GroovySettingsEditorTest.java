@@ -44,8 +44,6 @@ public class GroovySettingsEditorTest extends GroovyConfigurationTestCase {
     private GroovySettingsEditor.ModuleComboBoxRenderer moduleComboBoxRenderer;
 
     protected void setUp() {
-        MockApplicationManager.reset();
-
         Mock mockActionManager = mock(ActionManager.class);
         MockApplicationManager.getMockApplication().registerComponent(ActionManager.class, mockActionManager.proxy());
 

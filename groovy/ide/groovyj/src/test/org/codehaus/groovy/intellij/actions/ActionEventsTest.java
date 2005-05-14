@@ -22,16 +22,16 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataConstants;
 import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 
 import org.jmock.Mock;
-import org.jmock.cglib.MockObjectTestCase;
 
 import org.codehaus.groovy.intellij.GroovyJProjectComponent;
+import org.codehaus.groovy.intellij.GroovyjTestCase;
 import org.codehaus.groovy.intellij.Mocks;
 
-public class ActionEventsTest extends MockObjectTestCase {
+public class ActionEventsTest extends GroovyjTestCase {
 
     private final Mock mockDataContext = mock(DataContext.class);
     private final Mock mockVirtualFile = Mocks.createVirtualFileMock(this);

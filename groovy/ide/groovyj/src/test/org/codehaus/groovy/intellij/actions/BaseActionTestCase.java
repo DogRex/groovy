@@ -27,11 +27,11 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.Presentation;
 
 import org.jmock.Mock;
-import org.jmock.cglib.MockObjectTestCase;
 
+import org.codehaus.groovy.intellij.GroovyjTestCase;
 import org.codehaus.groovy.intellij.Mocks;
 
-public abstract class BaseActionTestCase extends MockObjectTestCase {
+public abstract class BaseActionTestCase extends GroovyjTestCase {
 
     private static final KeyEvent NULL_KEY_EVENT = new KeyEvent(new Container(), 0, 0, 0, 0, ' ');
 

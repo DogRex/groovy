@@ -18,8 +18,6 @@
 
 package org.codehaus.groovy.intellij.language;
 
-import org.intellij.openapi.testing.MockApplicationManager;
-
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.ParserDefinition;
 import com.intellij.psi.TokenType;
@@ -33,7 +31,6 @@ public class GroovyPsiParserTest extends PsiTreeTestCase {
     public void testParsesAGivenScriptIntoATreeOfPsiNodes() {
         String textToParse = "#!/usr/bin/groovy\n\nimport java.util.Collections\n\n";
 
-        MockApplicationManager.reset();
         ParserDefinition parserDefinition = GroovyLanguage.findOrCreate().getParserDefinition();
         GroovyPsiBuilder builder = new GroovyPsiBuilder(GroovyLanguage.findOrCreate(), null, null, textToParse);
 

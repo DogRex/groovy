@@ -22,8 +22,6 @@ import javax.swing.Icon;
 
 import junitx.framework.ObjectAssert;
 
-import org.intellij.openapi.testing.MockApplicationManager;
-
 import com.intellij.execution.Location;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.ConfigurationFactory;
@@ -46,10 +44,6 @@ import org.codehaus.groovy.intellij.Mocks;
 public class GroovyConfigurationTypeTest extends GroovyConfigurationTestCase {
 
     private final GroovyConfigurationType configurationType = new GroovyConfigurationType(null);
-
-    protected void setUp() {
-        MockApplicationManager.reset();
-    }
 
     public void testHasAComponentName() {
         assertEquals("groovy.configuration.type", configurationType.getComponentName());

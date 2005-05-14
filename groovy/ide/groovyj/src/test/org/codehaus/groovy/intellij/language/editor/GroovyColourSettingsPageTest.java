@@ -40,12 +40,12 @@ import com.intellij.openapi.options.colors.ColorDescriptor;
 import com.intellij.openapi.options.colors.pages.JavaColorSettingsPage;
 
 import org.jmock.Mock;
-import org.jmock.cglib.MockObjectTestCase;
 
 import org.codehaus.groovy.intellij.GroovySupportLoader;
+import org.codehaus.groovy.intellij.GroovyjTestCase;
 import org.codehaus.groovy.intellij.Stubs;
 
-public class GroovyColourSettingsPageTest extends MockObjectTestCase {
+public class GroovyColourSettingsPageTest extends GroovyjTestCase {
 
     private final JavaColorSettingsPage javaColourSettingsPage = new JavaColorSettingsPage();
 

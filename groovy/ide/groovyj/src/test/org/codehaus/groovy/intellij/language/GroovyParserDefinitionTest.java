@@ -48,8 +48,6 @@ public class GroovyParserDefinitionTest extends GroovyjTestCase {
     private MutablePicoContainer picoContainer;
 
     protected void setUp() {
-        MockApplicationManager.reset();
-
         picoContainer = (MutablePicoContainer) MockApplicationManager.getMockApplication().getPicoContainer();
         picoContainer.unregisterComponent(GroovyLanguageToolsFactory.class);
         picoContainer.registerComponentInstance(GroovyLanguageToolsFactory.class, mockLanguageToolsFactory.proxy());

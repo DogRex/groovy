@@ -18,11 +18,8 @@
 
 package org.codehaus.groovy.intellij.language;
 
-import junit.framework.TestCase;
 import junitx.framework.Assert;
 import junitx.framework.ObjectAssert;
-
-import org.intellij.openapi.testing.MockApplicationManager;
 
 import com.intellij.codeFormatting.PseudoTextBuilder;
 import com.intellij.lang.Commenter;
@@ -36,17 +33,14 @@ import com.intellij.psi.tree.IElementType;
 
 import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
 
+import org.codehaus.groovy.intellij.GroovyjTestCase;
 import org.codehaus.groovy.intellij.Stubs;
 import org.codehaus.groovy.intellij.language.editor.GroovyFileHighlighter;
 import org.codehaus.groovy.intellij.language.editor.GroovyFoldingBuilder;
 import org.codehaus.groovy.intellij.language.editor.GroovyPseudoTextBuilder;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
-public class GroovyLanguageTest extends TestCase {
-
-    static {
-        MockApplicationManager.reset();
-    }
+public class GroovyLanguageTest extends GroovyjTestCase {
 
     private final GroovyLanguage language = GroovyLanguage.findOrCreate();
 
