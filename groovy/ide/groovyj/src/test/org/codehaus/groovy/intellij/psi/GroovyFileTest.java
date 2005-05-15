@@ -18,18 +18,14 @@
 
 package org.codehaus.groovy.intellij.psi;
 
-import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.MockVirtualFile;
-
-import org.jmock.Mock;
 
 import org.codehaus.groovy.intellij.GroovySupportLoader;
 import org.codehaus.groovy.intellij.GroovyjTestCase;
 
 public class GroovyFileTest extends GroovyjTestCase {
 
-    private final Mock mockProject = mock(Project.class);
-    private GroovyFile groovyFile = new GroovyFile(createStubbedProject(mockProject), new MockVirtualFile("path", "contents"));
+    private final GroovyFile groovyFile = new GroovyFile(createStubbedProject(), new MockVirtualFile("path", "contents"));
 
     public void testHasTheGroovyFileType() {
         assertSame("file type", GroovySupportLoader.GROOVY, groovyFile.getFileType());

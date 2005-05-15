@@ -121,6 +121,9 @@
                 <available classname="com.intellij.lang.Language"
                            classpathref="irida.compile.classpath"/>
 
+                <available classname="com.intellij.lexer.LexerBase"
+                           classpathref="irida.compile.classpath"/>
+
                 <available classname="org.picocontainer.defaults.DefaultPicoContainer"
                            classpathref="irida.compile.classpath"/>
 
@@ -297,8 +300,8 @@
         <copy todir="${irida.classes.dir}" overwrite="true" preservelastmodified="true">
             <fileset dir="${src.etc.dir}" excludes="styles/**/*, ${binary.extensions}, **/*.xcf"/>
             <filterset>
-                <filter token="PROJECT.IDEA.SINCE-BUILD" value="3273"/>
-                <filter token="PROJECT.IDEA.UNTIL-BUILD" value="3273"/>
+                <filter token="PROJECT.IDEA.SINCE-BUILD" value="3326"/>
+                <filter token="PROJECT.IDEA.UNTIL-BUILD" value="3326"/>
             </filterset>
             <filterset refid="project.variables"/>
             <filterset refid="timestamp.variables"/>

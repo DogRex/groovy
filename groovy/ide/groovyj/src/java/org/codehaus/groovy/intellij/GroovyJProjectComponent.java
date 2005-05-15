@@ -29,7 +29,7 @@ import org.codehaus.groovy.intellij.compiler.GroovyCompiler;
 
 public class GroovyJProjectComponent implements ProjectComponent {
 
-    private static final Map INSTANCES = new HashMap();
+    private static final Map<Project, GroovyJProjectComponent> INSTANCES = new HashMap<Project, GroovyJProjectComponent>();
 
     private Project project;
     private EditorAPIFactory editorApiFactory;
@@ -49,7 +49,7 @@ public class GroovyJProjectComponent implements ProjectComponent {
     }
 
     public static GroovyJProjectComponent getInstance(Project project) {
-        return (GroovyJProjectComponent) INSTANCES.get(project);
+        return INSTANCES.get(project);
     }
 
     public void projectOpened() {

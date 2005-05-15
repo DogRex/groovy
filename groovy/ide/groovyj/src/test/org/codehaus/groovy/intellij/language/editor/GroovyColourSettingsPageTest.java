@@ -34,6 +34,7 @@ import com.intellij.openapi.editor.colors.ColorKey;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
+import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.options.colors.AttributesDescriptor;
 import com.intellij.openapi.options.colors.ColorDescriptor;
@@ -79,7 +80,7 @@ public class GroovyColourSettingsPageTest extends GroovyjTestCase {
         assertTrue("should have a greater or equal number of attribute descriptors than the Java page",
                    groovyAttributeDescriptors.length >= javaAttributeDescriptors.length);
 
-        List groovyAttributeDescriptorAttributes = new ArrayList();
+        List<TextAttributes> groovyAttributeDescriptorAttributes = new ArrayList<TextAttributes>();
         for (int i = 0; i < groovyAttributeDescriptors.length; i++) {
             groovyAttributeDescriptorAttributes.add(groovyAttributeDescriptors[i].getKey().getDefaultAttributes());
         }

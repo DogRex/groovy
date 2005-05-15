@@ -46,11 +46,11 @@ public class MockIridaApplication extends MockUserDataHolder implements MockAppl
         return null;
     }
 
-    public Object runReadAction(Computable computation) {
+    public <T> T runReadAction(Computable<T> computation) {
         return computation.compute();
     }
 
-    public Object runWriteAction(Computable computation) {
+    public <T> T runWriteAction(Computable<T> computation) {
         return computation.compute();
     }
 
@@ -78,7 +78,7 @@ public class MockIridaApplication extends MockUserDataHolder implements MockAppl
 
     public void exit() {}
 
-    public Object getUserData(Key key) {
+    public <T> T getUserData(Key<T> key) {
         return null;
     }
 
@@ -86,16 +86,16 @@ public class MockIridaApplication extends MockUserDataHolder implements MockAppl
         return null;
     }
 
-    public Object getComponent(Class aClass) {
-        return componentManager.getComponent(aClass);
+    public <T> T getComponent(Class<T> componentClass) {
+        return componentManager.getComponent(componentClass);
     }
 
     public Class[] getComponentInterfaces() {
         return componentManager.getComponentInterfaces();
     }
 
-    public Object[] getComponents(Class aClass) {
-        return componentManager.getComponents(aClass);
+    public <T> T[] getComponents(Class<T> interfaceClass) {
+        return componentManager.getComponents(interfaceClass);
     }
 
     public PicoContainer getPicoContainer() {
@@ -148,11 +148,12 @@ public class MockIridaApplication extends MockUserDataHolder implements MockAppl
         return false;
     }
 
-    public Object getComponent(Class aClass, Object o) {
+    public <T> T getComponent(Class<T> componentClass, T componentInstance) {
         return null;
     }
 
-    public boolean runProcessWithProgressSynchronously(Runnable runnable, String s, boolean b, Project project) {
+    public boolean runProcessWithProgressSynchronously(Runnable process, String progressTitle, boolean cancellable,
+                                                       Project project) {
         return false;
     }
 }

@@ -38,23 +38,24 @@ import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
 public class GroovyFileHighlighter extends SyntaxHighlighterBase {
 
-    private static final Map LEVEL_1_ELEMENT_TYPE_TO_TEXT_ATTRIBUTE_KEY_MAP = new HashMap();
-    private static final Map LEVEL_2_ELEMENT_TYPE_TO_TEXT_ATTRIBUTE_KEY_MAP = new HashMap();
+    private static final Map<IElementType, TextAttributesKey> LEVEL_1_ELEMENT_TYPE_TO_TEXT_ATTRIBUTE_KEY_MAP = new HashMap<IElementType, TextAttributesKey>();
+    private static final Map<IElementType, TextAttributesKey> LEVEL_2_ELEMENT_TYPE_TO_TEXT_ATTRIBUTE_KEY_MAP = new HashMap<IElementType, TextAttributesKey>();
 
     static {
         fillElementTypeToTextAttributeKeyMaps(LEVEL_1_ELEMENT_TYPE_TO_TEXT_ATTRIBUTE_KEY_MAP, LEVEL_2_ELEMENT_TYPE_TO_TEXT_ATTRIBUTE_KEY_MAP);
     }
 
     public TextAttributesKey[] getTokenHighlights(IElementType elementType) {
-        return pack((TextAttributesKey) LEVEL_1_ELEMENT_TYPE_TO_TEXT_ATTRIBUTE_KEY_MAP.get(elementType),
-                    (TextAttributesKey) LEVEL_2_ELEMENT_TYPE_TO_TEXT_ATTRIBUTE_KEY_MAP.get(elementType));
+        return pack(LEVEL_1_ELEMENT_TYPE_TO_TEXT_ATTRIBUTE_KEY_MAP.get(elementType),
+                    LEVEL_2_ELEMENT_TYPE_TO_TEXT_ATTRIBUTE_KEY_MAP.get(elementType));
     }
 
     public Lexer getHighlightingLexer() {
         return new GroovyHighlightingLexer();
     }
 
-    private static void fillElementTypeToTextAttributeKeyMaps(Map levelOneElementTypeToTextAttributeKeyMap, Map levelTwoElementTypeToTextAttributeKeyMap) {
+    private static void fillElementTypeToTextAttributeKeyMaps(Map<IElementType, TextAttributesKey> levelOneElementTypeToTextAttributeKeyMap,
+                                                              Map<IElementType, TextAttributesKey> levelTwoElementTypeToTextAttributeKeyMap) {
         fillMap(levelOneElementTypeToTextAttributeKeyMap, GroovyTokenSets.KEYWORDS, SyntacticAttributes.GROOVY_KEYWORD);
         fillMap(levelOneElementTypeToTextAttributeKeyMap, GroovyTokenSets.ASSIGNMENT_OPERATIONS, SyntacticAttributes.GROOVY_OPERATION_SIGN);
         fillMap(levelOneElementTypeToTextAttributeKeyMap, GroovyTokenSets.OPERATIONS, SyntacticAttributes.GROOVY_OPERATION_SIGN);

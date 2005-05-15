@@ -71,7 +71,7 @@ public class GroovyRunConfigurationExternaliser {
     }
 
     static Map buildOptionsByName(List listOfOptionElements) {
-        Map optionMap = new HashMap();
+        Map<String, String> optionMap = new HashMap<String, String>();
 
         for (Iterator optionElements = listOfOptionElements.iterator(); optionElements.hasNext(); ) {
             Element optionElement = (Element) optionElements.next();

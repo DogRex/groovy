@@ -36,7 +36,7 @@ public final class GroovyTokenTypeMappings {
 
     private static final GroovyTokenTypes GROOVY_TOKEN_TYPES = new GroovyTokenTypes() {};
 
-    private static final TIntObjectHashMap TOKEN_TYPES = new TIntObjectHashMap();
+    private static final TIntObjectHashMap<IElementType> TOKEN_TYPES = new TIntObjectHashMap<IElementType>();
 
     private static IElementType[] ASSIGNMENT_TYPES = IElementType.EMPTY_ARRAY;
     private static IElementType[] LITERAL_TYPES = IElementType.EMPTY_ARRAY;
@@ -64,14 +64,14 @@ public final class GroovyTokenTypeMappings {
     }
 
     public static IElementType getType(int tokenTypeIndex) {
-        return (IElementType) TOKEN_TYPES.get(tokenTypeIndex);
+        return TOKEN_TYPES.get(tokenTypeIndex);
     }
 
     private static void loadGroovyTokenTypeMappings() throws IllegalAccessException {
         Field[] fields = GroovyTokenTypes.class.getDeclaredFields();
-        List assignmentTypes = new ArrayList();
-        List literalTypes = new ArrayList();
-        List commentTypes = new ArrayList();
+        List<IElementType> assignmentTypes = new ArrayList<IElementType>();
+        List<IElementType> literalTypes = new ArrayList<IElementType>();
+        List<IElementType> commentTypes = new ArrayList<IElementType>();
 
         for (int i = 0; i < fields.length; i++) {
             Field field = fields[i];
@@ -80,9 +80,9 @@ public final class GroovyTokenTypeMappings {
             }
         }
 
-        ASSIGNMENT_TYPES = (IElementType[]) assignmentTypes.toArray(IElementType.EMPTY_ARRAY);
-        LITERAL_TYPES = (IElementType[]) literalTypes.toArray(IElementType.EMPTY_ARRAY);
-        COMMENT_TYPES = (IElementType[]) commentTypes.toArray(IElementType.EMPTY_ARRAY);
+        ASSIGNMENT_TYPES = assignmentTypes.toArray(IElementType.EMPTY_ARRAY);
+        LITERAL_TYPES = literalTypes.toArray(IElementType.EMPTY_ARRAY);
+        COMMENT_TYPES = commentTypes.toArray(IElementType.EMPTY_ARRAY);
     }
 
     private static boolean isPublicStaticFinalIntegerPrimitive(Field field) {
@@ -96,8 +96,9 @@ public final class GroovyTokenTypeMappings {
         TOKEN_TYPES.put(BAD_CHARACTER, new GroovyElementType("BAD_CHARACTER"));
     }
 
-    private static void addTokenTypeMapping(Field field, List assignmentTypes, List literalTypes, List commentTypes) throws IllegalAccessException {
-        int tokenTypeIndex = field.getInt(GROOVY_TOKEN_TYPES);
+    private static void addTokenTypeMapping(Field field, List<IElementType> assignmentTypes, List<IElementType> literalTypes,
+                                            List<IElementType> commentTypes) throws IllegalAccessException {
+    int tokenTypeIndex = field.getInt(GROOVY_TOKEN_TYPES);
         String tokenTypeName = field.getName();
         IElementType elementType = new GroovyElementType(tokenTypeName);
 
@@ -108,7 +109,8 @@ public final class GroovyTokenTypeMappings {
         registerElementTypeIfApplicable("_COMMENT", tokenTypeName, elementType, commentTypes);
     }
 
-    private static void registerElementTypeIfApplicable(String keyword, String tokenTypeName, IElementType elementType, List elementTypeCategory) {
+    private static void registerElementTypeIfApplicable(String keyword, String tokenTypeName, IElementType elementType,
+                                                        List<IElementType> elementTypeCategory) {
         if (tokenTypeName != null && tokenTypeName.indexOf(keyword) > -1) {
             elementTypeCategory.add(elementType);
         }

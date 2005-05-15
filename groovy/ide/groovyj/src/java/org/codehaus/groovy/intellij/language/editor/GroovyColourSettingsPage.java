@@ -27,6 +27,7 @@ import com.intellij.codeInsight.CodeInsightColors;
 import com.intellij.debugger.settings.DebuggerColors;
 import com.intellij.openapi.editor.HighlighterColors;
 import com.intellij.openapi.editor.colors.ColorKey;
+import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.openapi.options.colors.AttributesDescriptor;
 import com.intellij.openapi.options.colors.ColorDescriptor;
@@ -39,7 +40,7 @@ public class GroovyColourSettingsPage implements ColorSettingsPage {
     private static final AttributesDescriptor[] ATTRIBUTES_DESCRIPTORS;
     private static final ColorDescriptor[] COLOR_DESCRIPTORS;
 
-    private static final Map ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP = new HashMap();
+    private static final Map<String, TextAttributesKey> ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP = new HashMap<String, TextAttributesKey>();
 
     /*
      * DO NOT attempt to break the following string into smaller chuncks BUT RATHER install the StringEditor plug-in
@@ -143,7 +144,7 @@ public class GroovyColourSettingsPage implements ColorSettingsPage {
         return COLOR_DESCRIPTORS;
     }
 
-    public Map getAdditionalHighlightingTagToDescriptorMap() {
+    public Map<String, TextAttributesKey> getAdditionalHighlightingTagToDescriptorMap() {
         return ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP;
     }
 

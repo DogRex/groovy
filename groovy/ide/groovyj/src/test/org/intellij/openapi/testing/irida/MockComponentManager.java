@@ -12,23 +12,23 @@ import org.picocontainer.defaults.DefaultPicoContainer;
 
 public class MockComponentManager implements ComponentManager {
 
-    private final Map componentRegistry = new HashMap();
+    private final Map<Class, Object> componentRegistry = new HashMap<Class, Object>();
     private final PicoContainer picoContainer = new DefaultPicoContainer();
 
-    public void registerComponent(Class aClass, Object component) {
-        componentRegistry.put(aClass, component);
+    public void registerComponent(Class componentClass, Object component) {
+        componentRegistry.put(componentClass, component);
     }
 
     public void removeComponent(Class componentClass) {
         componentRegistry.remove(componentClass);
     }
 
-    public boolean hasComponent(Class aClass) {
+    public boolean hasComponent(Class componentClass) {
         return false;
     }
 
-    public Object[] getComponents(Class aClass) {
-        return new Object[0];
+    public <T> T[] getComponents(Class<T> interfaceClass) {
+        return null;
     }
 
     public PicoContainer getPicoContainer() {
@@ -43,17 +43,17 @@ public class MockComponentManager implements ComponentManager {
         return null;
     }
 
-    public Object getComponent(Class aClass) {
-        return componentRegistry.get(aClass);
+    public <T> T getComponent(Class<T> interfaceClass) {
+        return (T) componentRegistry.get(interfaceClass);
     }
 
-    public Object getComponent(Class interfaceClass, Object defaultImplementationIfAbsent) {
+    public <T> T getComponent(Class<T> interfaceClass, T defaultImplementationIfAbsent) {
         return null;
     }
 
-    public Object getUserData(Key key) {
+    public <T> T getUserData(Key<T> key) {
         return null;
     }
 
-    public void putUserData(Key key, Object value) {}
+    public <T> void putUserData(Key<T> key, T value) {}
 }

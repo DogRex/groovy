@@ -43,8 +43,8 @@ public class GroovyPsiBuilder implements PsiBuilder {
     private static final Logger LOGGER = Logger.getInstance("#org.codehaus.groovy.intellij.language.GroovyPsiBuilder");
 
     private final CharSequence originalText;
-    private final List tokens = new ArrayList();
-    private final ListWithRemovableRange markers = new ListWithRemovableRange();
+    private final List<Token> tokens = new ArrayList<Token>();
+    private final ListWithRemovableRange<ProductionMarker> markers = new ListWithRemovableRange<ProductionMarker>();
     private final GroovyLexerAdapter lexer;
     private final boolean charTableNotAvailable;
     private final TokenSet whitespaceTokens;
@@ -104,7 +104,7 @@ public class GroovyPsiBuilder implements PsiBuilder {
     }
 
     public Token getCurrentToken() {
-        return (Token) (tokens.size() == 0 || eof() ? null : tokens.get(tokens.size() - 1));
+        return tokens.size() == 0 || eof() ? null : tokens.get(tokens.size() - 1);
     }
 
     // Marker support API ----------------------------------------------------------------------------------------------
@@ -142,7 +142,7 @@ public class GroovyPsiBuilder implements PsiBuilder {
         LOGGER.assertTrue(markerIndex >= 0, "Marker has never been added.");
 
         for (int i = markers.size() - 1; i > markerIndex; i--) {
-            ProductionMarker productionMarker = (ProductionMarker) markers.get(i);
+            ProductionMarker productionMarker = markers.get(i);
             if (!(productionMarker instanceof Marker)) {
                 continue;
             }
@@ -158,7 +158,7 @@ public class GroovyPsiBuilder implements PsiBuilder {
     }
 
     public void error(String message) {
-        if ((ProductionMarker) markers.get(markers.size() - 1) instanceof ErrorItem) {
+        if (markers.get(markers.size() - 1) instanceof ErrorItem) {
             return;
         }
         markers.add(new ErrorItem(message, currentTokenIndex));
@@ -177,11 +177,11 @@ public class GroovyPsiBuilder implements PsiBuilder {
         }
 
         for (int k = 1; k < markers.size() - 1; k++) {
-            ProductionMarker productionMarker = (ProductionMarker) markers.get(k);
+            ProductionMarker productionMarker = markers.get(k);
             if (productionMarker instanceof StartMarker) {
                 for ( ;
                      productionMarker.lexemIndex < tokens.size()
-                            && whitespaceTokens.isInSet(((Token) tokens.get(productionMarker.lexemIndex)).getTokenType());
+                            && whitespaceTokens.isInSet(tokens.get(productionMarker.lexemIndex).getTokenType());
                      productionMarker.lexemIndex++);
                 continue;
             }
@@ -193,7 +193,7 @@ public class GroovyPsiBuilder implements PsiBuilder {
             for (int i1 = ((ProductionMarker) markers.get(k - 1)).lexemIndex;
                  productionMarker.lexemIndex > i1
                         && productionMarker.lexemIndex < tokens.size()
-                        && whitespaceTokens.isInSet(((Token) tokens.get(productionMarker.lexemIndex - 1)).getTokenType());
+                        && whitespaceTokens.isInSet(tokens.get(productionMarker.lexemIndex - 1).getTokenType());
                  productionMarker.lexemIndex--);
         }
 
@@ -201,7 +201,7 @@ public class GroovyPsiBuilder implements PsiBuilder {
         int numberOfProcessedTokens = 0;
         int previousNumberOfProcessedTokens = -1;
         for (int markerIndex = 1; markerIndex < markers.size(); markerIndex++) {
-            ProductionMarker productionMarker = (ProductionMarker) markers.get(markerIndex);
+            ProductionMarker productionMarker = markers.get(markerIndex);
             LOGGER.assertTrue(nodeCopy != null, "Unexpected end of the production");
             int currentLexingIndex = productionMarker.lexemIndex;
             if (productionMarker instanceof StartMarker) {
@@ -238,7 +238,7 @@ public class GroovyPsiBuilder implements PsiBuilder {
 
     private int attachChildNodes(int numberOfProcessedTokens, int lexingIndex, ASTNode astNode) {
         for (lexingIndex = Math.min(lexingIndex, tokens.size()); numberOfProcessedTokens < lexingIndex;) {
-            Token token = (Token) tokens.get(numberOfProcessedTokens++);
+            Token token = tokens.get(numberOfProcessedTokens++);
             TreeUtil.addChildren((CompositeElement) astNode, buildLeafPsiElement(token));
         }
 
@@ -256,7 +256,7 @@ public class GroovyPsiBuilder implements PsiBuilder {
         return new LeafPsiElement(elementType, lexer.getBuffer(), token.startOffset, token.endOffset, token.state, charTable);
     }
 
-    private static class ListWithRemovableRange extends ArrayList {
+    private static class ListWithRemovableRange<T> extends ArrayList<T> {
 
         public void removeRange(int fromIndex, int toIndex) {
             super.removeRange(fromIndex, toIndex);

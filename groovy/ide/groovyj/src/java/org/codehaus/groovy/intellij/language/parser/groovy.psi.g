@@ -264,14 +264,13 @@ tokens {
         parser.lexer = lexer;
         lexer.parser = parser;
         parser.setASTNodeClass("org.codehaus.groovy.antlr.GroovySourceAST");
-        parser.warningList = new ArrayList();
         return parser;
     }
 
     private static GroovySourceAST dummyVariableToforceClassLoaderToFindASTClass = new GroovySourceAST();
 
-    List warningList;
-    public List getWarningList() { return warningList; }
+    private final List<Map<String, Object>> warningList = new ArrayList<Map<String, Object>>();
+    public List<Map<String, Object>> getWarningList() { return warningList; }
 
     boolean compatibilityMode = true;  // for now
     public boolean isCompatibilityMode() { return compatibilityMode; }
@@ -311,7 +310,7 @@ tokens {
         catch (TokenStreamException ee) { }
         if (lt == null)  lt = Token.badToken;
 
-        Map row = new HashMap();
+        Map<String, Object> row = new HashMap<String, Object>();
         row.put("warning" ,warning);
         row.put("solution",solution);
         row.put("filename",getFilename());
@@ -2923,7 +2922,7 @@ options {
     protected static final int SCS_SQ_TYPE = 0, SCS_TQ_TYPE = 1, SCS_RE_TYPE = 2;
     protected int stringCtorState = 0;  // hack string and regexp constructor boundaries
     /** Push parenLevel here and reset whenever inside '{x}'. */
-    protected ArrayList parenLevelStack = new ArrayList();
+    protected List<Integer> parenLevelStack = new ArrayList<Integer>();
     protected int lastSigTokenType = EOF;  // last returned non-whitespace token
 
     protected void pushParenLevel() {
@@ -3115,11 +3114,11 @@ options {
         if (_returnToken != null)  rname += tokenStringOf(_returnToken);
         super.traceOut(rname);
     }
-    private static java.util.HashMap ttypes;
+    private static Map<Object, String> ttypes;
     private static String tokenStringOf(Token t) {
         if (ttypes == null) {
-            java.util.HashMap map = new java.util.HashMap();
-            java.lang.reflect.Field[] fields = GroovyTokenTypes.class.getDeclaredFields();
+            Map<Object, String> map = new HashMap<Object, String>();
+            Field[] fields = GroovyTokenTypes.class.getDeclaredFields();
             for (int i = 0; i < fields.length; i++) {
                 if (fields[i].getType() != int.class)  continue;
                 try {

@@ -38,7 +38,7 @@ import com.intellij.openapi.ui.LabeledComponent;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.RawCommandLineEditor;
 
-public class GroovySettingsEditor extends SettingsEditor {
+public class GroovySettingsEditor extends SettingsEditor<GroovyRunConfiguration> {
 
     private final Project project;
 
@@ -56,8 +56,7 @@ public class GroovySettingsEditor extends SettingsEditor {
         editor = createSettingsEditor();
     }
 
-    protected void resetEditorFrom(Object source) {
-        GroovyRunConfiguration runConfiguration = (GroovyRunConfiguration) source;
+    protected void resetEditorFrom(GroovyRunConfiguration runConfiguration) {
         scriptPathTextField.setText(runConfiguration.getScriptPath());
         vmParameterEditor.setText(runConfiguration.getVmParameters());
         scriptParametersEditor.setText(runConfiguration.getScriptParameters());
@@ -65,8 +64,7 @@ public class GroovySettingsEditor extends SettingsEditor {
         moduleComboBox.setSelectedItem(runConfiguration.getModule());
     }
 
-    protected void applyEditorTo(Object target) {
-        GroovyRunConfiguration runConfiguration = (GroovyRunConfiguration) target;
+    protected void applyEditorTo(GroovyRunConfiguration runConfiguration) {
         runConfiguration.setScriptPath(scriptPathTextField.getText());
         runConfiguration.setVmParameters(vmParameterEditor.getText());
         runConfiguration.setScriptParameters(scriptParametersEditor.getText());
@@ -96,7 +94,7 @@ public class GroovySettingsEditor extends SettingsEditor {
         scriptChooserDescriptor.setTitle(title);
         scriptPathTextField.addBrowseFolderListener(title, null, project, scriptChooserDescriptor);
 
-        LabeledComponent scriptPathComponent = new LabeledComponent();
+        LabeledComponent<TextFieldWithBrowseButton> scriptPathComponent = new LabeledComponent<TextFieldWithBrowseButton>();
         scriptPathComponent.setComponent(scriptPathTextField);
         scriptPathComponent.setText("Groovy &Script:");
         return scriptPathComponent;
@@ -105,7 +103,7 @@ public class GroovySettingsEditor extends SettingsEditor {
     private LabeledComponent createVmParametersComponent() {
         vmParameterEditor.setDialodCaption("VM Parameters");
 
-        LabeledComponent vmParametersComponent = new LabeledComponent();
+        LabeledComponent<RawCommandLineEditor> vmParametersComponent = new LabeledComponent<RawCommandLineEditor>();
         vmParametersComponent.setText("&VM Parameters:");
         vmParametersComponent.setComponent(vmParameterEditor);
         return vmParametersComponent;
@@ -114,7 +112,7 @@ public class GroovySettingsEditor extends SettingsEditor {
     private LabeledComponent createScriptParametersComponent() {
         scriptParametersEditor.setDialodCaption("Script Parameters");
 
-        LabeledComponent programParametersComponent = new LabeledComponent();
+        LabeledComponent<RawCommandLineEditor> programParametersComponent = new LabeledComponent<RawCommandLineEditor>();
         programParametersComponent.setText("Script Pa&rameters:");
         programParametersComponent.setComponent(scriptParametersEditor);
         return programParametersComponent;
@@ -127,7 +125,7 @@ public class GroovySettingsEditor extends SettingsEditor {
         workingDirectoryChooserDescriptor.setTitle(title);
         workingDirectoryPathTextField.addBrowseFolderListener(title, null, project, workingDirectoryChooserDescriptor);
 
-        LabeledComponent workingDirectoryPathComponent = new LabeledComponent();
+        LabeledComponent<TextFieldWithBrowseButton> workingDirectoryPathComponent = new LabeledComponent<TextFieldWithBrowseButton>();
         workingDirectoryPathComponent.setComponent(workingDirectoryPathTextField);
         workingDirectoryPathComponent.setOpaque(true);
         workingDirectoryPathComponent.setText("&Working Directory:");
@@ -137,7 +135,7 @@ public class GroovySettingsEditor extends SettingsEditor {
     private LabeledComponent createModuleClasspathComponent() {
         moduleComboBox.setRenderer(new ModuleComboBoxRenderer());
 
-        LabeledComponent moduleClasspathComponent = new LabeledComponent();
+        LabeledComponent<JComboBox> moduleClasspathComponent = new LabeledComponent<JComboBox>();
         moduleClasspathComponent.setComponent(moduleComboBox);
         moduleClasspathComponent.setText("Use classpath and JDK of m&odule:");
         return moduleClasspathComponent;

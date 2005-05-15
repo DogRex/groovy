@@ -36,7 +36,7 @@ import org.codehaus.groovy.intellij.language.editor.GroovyFileHighlighter;
 
 public class GroovyFileTypeTest extends GroovyjTestCase {
 
-    private GroovyFileType fileType = new GroovyFileType(GroovyLanguage.findOrCreate());
+    private final GroovyFileType fileType = new GroovyFileType(GroovyLanguage.findOrCreate());
 
     public void testDefinesAName() {
         assertEquals("name", "Groovy", fileType.getName());

@@ -121,7 +121,7 @@ public class GroovyRunConfiguration extends RuntimeConfiguration {
 
     // RunConfiguration ------------------------------------------------------------------------------------------------
 
-    public SettingsEditor getConfigurationEditor() {
+    public SettingsEditor<GroovyRunConfiguration> getConfigurationEditor() {
         return new GroovySettingsEditor(getProject());
     }
 

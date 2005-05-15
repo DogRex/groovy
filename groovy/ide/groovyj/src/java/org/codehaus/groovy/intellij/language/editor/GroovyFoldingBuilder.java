@@ -33,12 +33,12 @@ import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 public class GroovyFoldingBuilder implements FoldingBuilder {
 
     public FoldingDescriptor[] buildFoldRegions(ASTNode node, Document document) {
-        List descriptors = new ArrayList();
+        List<FoldingDescriptor> descriptors = new ArrayList<FoldingDescriptor>();
         appendDescriptors(node, document, descriptors);
-        return (FoldingDescriptor[]) descriptors.toArray(new FoldingDescriptor[descriptors.size()]);
+        return descriptors.toArray(new FoldingDescriptor[descriptors.size()]);
     }
 
-    private void appendDescriptors(ASTNode node, Document document, List descriptors) {
+    private void appendDescriptors(ASTNode node, Document document, List<FoldingDescriptor> descriptors) {
         if (isCodeBlock(node) || isMultiLineComment(node)) {
             descriptors.add(new FoldingDescriptor(node, node.getTextRange()));
         }

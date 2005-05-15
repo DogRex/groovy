@@ -60,8 +60,8 @@ public class GroovyCompiler implements TranslatingCompiler {
     }
 
     public ExitStatus compile(final CompileContext context, final VirtualFile[] filesToCompile) {
-        final List compiledFiles = new ArrayList();
-        final List filesToRecompile = new ArrayList();
+        final List<OutputItem> compiledFiles = new ArrayList<OutputItem>();
+        final List<VirtualFile> filesToRecompile = new ArrayList<VirtualFile>();
 
         ApplicationManager.getApplication().runReadAction(new Runnable() {
             public void run() {
@@ -69,11 +69,11 @@ public class GroovyCompiler implements TranslatingCompiler {
             }
         });
 
-        return new ExitStatusImpl((OutputItem[]) compiledFiles.toArray(TranslatingCompiler.EMPTY_OUTPUT_ITEM_ARRAY),
-                                  (VirtualFile[]) filesToRecompile.toArray(VirtualFile.EMPTY_ARRAY));
+        return new ExitStatusImpl(compiledFiles.toArray(TranslatingCompiler.EMPTY_OUTPUT_ITEM_ARRAY),
+                                  filesToRecompile.toArray(VirtualFile.EMPTY_ARRAY));
     }
 
-    private void compile(CompileContext context, VirtualFile[] filesToCompile, List compiledFiles, List filesToRecompile) {
+    private void compile(CompileContext context, VirtualFile[] filesToCompile, List<OutputItem> compiledFiles, List<VirtualFile> filesToRecompile) {
         for (int i = 0; i < filesToCompile.length; i++) {
             if (context.getProgressIndicator().isCanceled()) {
                 break;
@@ -84,7 +84,7 @@ public class GroovyCompiler implements TranslatingCompiler {
         }
     }
 
-    private void compile(CompileContext context, VirtualFile fileToCompile, List compiledFiles, List filesToRecompile) {
+    private void compile(CompileContext context, VirtualFile fileToCompile, List<OutputItem> compiledFiles, List<VirtualFile> filesToRecompile) {
         Module module = context.getModuleByFile(fileToCompile);
         CompilationUnit compilationUnit = controller.createCompilationUnit(fileToCompile, module);
         compilationUnit.addSource(new File(fileToCompile.getPath()));
@@ -99,7 +99,7 @@ public class GroovyCompiler implements TranslatingCompiler {
         }
     }
 
-    private void addCompiledFile(VirtualFile compiledFile, List compiledFiles, File targetDirectory) throws IOException {
+    private void addCompiledFile(VirtualFile compiledFile, List<OutputItem> compiledFiles, File targetDirectory) throws IOException {
         String outputRootDirectory = targetDirectory.getParentFile().getCanonicalPath();
         String outputPath = targetDirectory.getCanonicalPath();
         compiledFiles.add(new OutputItemImpl(outputRootDirectory, outputPath, compiledFile));
@@ -112,7 +112,7 @@ public class GroovyCompiler implements TranslatingCompiler {
         }
     }
 
-    private void processCompilationException(Exception exception, VirtualFile fileToCompile, List filesToRecompile, CompileContext context) {
+    private void processCompilationException(Exception exception, VirtualFile fileToCompile, List<VirtualFile> filesToRecompile, CompileContext context) {
         if (exception instanceof CompilationFailedException) {
             CompilationFailedException compilationFailureException = (CompilationFailedException) exception;
             ProcessingUnit unit = compilationFailureException.getUnit();
@@ -124,7 +124,7 @@ public class GroovyCompiler implements TranslatingCompiler {
         }
     }
 
-    private void processException(Exception exception, CompileContext context, List filesToRecompile, VirtualFile fileToCompile) {
+    private void processException(Exception exception, CompileContext context, List<VirtualFile> filesToRecompile, VirtualFile fileToCompile) {
         int line = -1;
         int column = -1;
 
