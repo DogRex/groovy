@@ -154,7 +154,8 @@
     <target name="antlr.clean" depends="initialise">
         <delete verbose="true" failonerror="true">
             <fileset dir="${src.java.dir}/org/codehaus/groovy/intellij/language/parser"
-                     includes="groovy.g, groovy.patched.g, treeGrammar.g, Groovy*.txt, GroovyRecognizerTree.g, GroovyRecognizerTree.patched.g"/>
+                     includes="groovy.g, groovy.patched.g, treeGrammar.g, Groovy*.txt, GroovyRecognizerTree.g,
+                        GroovyRecognizerTree.patched.g, GroovyPsiRecognizer.java, GroovyPsiLexer.java"/>
         </delete>
     </target>
 
@@ -327,7 +328,7 @@
     </target>
 
     <target name="build.all" description="Creates all installable plug-in distributions"
-            depends="clean, with.clover, test.reports.irida, coverage.reports, coverage.check, without.clover, zip.irida">
+            depends="clean, antlr.clean, with.clover, test.reports.irida, coverage.reports, coverage.check, without.clover, zip.irida">
         <buildnumber/>
     </target>
 
