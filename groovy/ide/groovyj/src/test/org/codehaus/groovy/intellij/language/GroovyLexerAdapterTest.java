@@ -40,21 +40,21 @@ public class GroovyLexerAdapterTest extends GroovyjTestCase {
         assertNextTokenIsEndOfFile();
     }
 
-    public void testReadsTextContainingASingleTokenRepresentingAScriptHeaderCommentOnly() {
+    public void testReadsTextRepresentingAScriptHeaderCommentOnly() {
         String input = "#!";
         initialiseLexer(input);
         assertNextTokenAttributes(GroovyTokenTypes.SH_COMMENT, 1, 1, input); // TODO: report that this used to result in an OutOfMemoryError?
         assertNextTokenIsEndOfFile();
     }
 
-    public void testReadsTextContainingASingleTokenRepresentingASingleLineCommentOnly() {
+    public void testReadsTextRepresentingASingleLineCommentOnly() {
         String input = "//";
         initialiseLexer(input);
         assertNextTokenAttributes(GroovyTokenTypes.SL_COMMENT, 1, 1, input);
         assertNextTokenIsEndOfFile();
     }
 
-    public void testReadsTextContainingASingleTokenRepresentingTheOpeningOfAMultiLineCommentOnly() {
+    public void testReadsTextRepresentingTheOpeningOfAMultiLineCommentOnly() {
         initialiseLexer("/*");
         try {
             lexer.advance();                                                // TODO: report that this used to result in an OutOfMemoryError?
@@ -72,7 +72,7 @@ public class GroovyLexerAdapterTest extends GroovyjTestCase {
         assertNextTokenIsEndOfFile();
     }
 
-    public void testReadsTextContainingASingleTokenRepresentingAWhitespace() {
+    public void testReadsTextContainingAWhitespace() {
         String input = "    ";
         initialiseLexer(input);
         assertNextTokenAttributes(GroovyTokenTypes.WS, 1, 1, input);
@@ -86,49 +86,49 @@ public class GroovyLexerAdapterTest extends GroovyjTestCase {
         assertNextTokenIsEndOfFile();
     }
 
-    public void testReadsTextContainingASingleTokenRepresentingATabCharacter() {
+    public void testReadsTextContainingATabCharacter() {
         String input = "\t";
         initialiseLexer(input);
         assertNextTokenAttributes(GroovyTokenTypes.WS, 1, 1, input);
         assertNextTokenIsEndOfFile();
     }
 
-    public void testReadsTextContainingASingleTokenRepresentingAKeyword() {
+    public void testReadsTextContainingAKeyword() {
         String input = "def";
         initialiseLexer(input);
         assertNextTokenAttributes(GroovyTokenTypes.LITERAL_def, 1, 1, input);
         assertNextTokenIsEndOfFile();
     }
 
-    public void testReadsTextContainingASingleTokenRepresentingAStringLiteralDelimitedBySingleQuotes() {
+    public void testReadsTextContainingAStringLiteralDelimitedBySingleQuotes() {
         String input = "'some stuff'";
         initialiseLexer(input);
         assertNextTokenAttributes(GroovyTokenTypes.STRING_LITERAL, 1, 1, input);
         assertNextTokenIsEndOfFile();
     }
 
-    public void testReadsTextContainingASingleTokenRepresentingAStringLiteralContainingEscapedCharactersAndDelimitedBySingleQuotes() {
-        String input = "'line 1\\nline 2\\rline 3\\tline 4\\bline 5\\fline 6\\'line 7\\\"line 8\\\\line 9'";
-        initialiseLexer(input);
-        assertNextTokenAttributes(GroovyTokenTypes.STRING_LITERAL, 1, 1, input);
-        assertNextTokenIsEndOfFile();
-    }
-
-    public void testReadsTextContainingASingleTokenRepresentingAStringLiteralDelimitedByQuotes() {
+    public void testReadsTextContainingAStringLiteralDelimitedByDoubleQuotes() {
         String input = "\"some stuff\"";
         initialiseLexer(input);
         assertNextTokenAttributes(GroovyTokenTypes.STRING_LITERAL, 1, 1, input);
         assertNextTokenIsEndOfFile();
     }
 
-    public void testReadsTextContainingASingleTokenRepresentingAStringLiteralContainingEscapedCharactersAndDelimitedByQuotes() {
+    public void testReadsTextContainingAStringLiteralWithEscapedCharactersAndDelimitedBySingleQuotes() {
+        String input = "'line 1\\nline 2\\rline 3\\tline 4\\bline 5\\fline 6\\'line 7\\\"line 8\\\\line 9'";
+        initialiseLexer(input);
+        assertNextTokenAttributes(GroovyTokenTypes.STRING_LITERAL, 1, 1, input);
+        assertNextTokenIsEndOfFile();
+    }
+
+    public void testReadsTextContainingAStringLiteralWithEscapedCharactersAndDelimitedByDoubleQuotes() {
         String input = "\"line 1\\nline 2\\rline 3\\tline 4\\bline 5\\fline 6\\'line 7\\\"line 8\\\\line 9\"";
         initialiseLexer(input);
         assertNextTokenAttributes(GroovyTokenTypes.STRING_LITERAL, 1, 1, input);
         assertNextTokenIsEndOfFile();
     }
 
-    public void testReadsTextContainingASingleTokenRepresentingAPrimitiveDouble() {
+    public void testReadsTextRepresentingAPrimitiveDouble() {
         String input = "0.1234D";
         initialiseLexer(input);
         assertNextTokenAttributes(GroovyTokenTypes.NUM_DOUBLE, 1, 1, input);
