@@ -22,9 +22,8 @@ import junitx.framework.Assert;
 
 import com.intellij.lang.BracePair;
 
-import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
-
 import org.codehaus.groovy.intellij.GroovyjTestCase;
+import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
 public class GroovyPairedBraceMatcherTest extends GroovyjTestCase {

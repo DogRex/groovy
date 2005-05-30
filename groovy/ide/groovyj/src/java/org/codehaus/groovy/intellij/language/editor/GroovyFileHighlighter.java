@@ -31,8 +31,7 @@ import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.java.IJavaDocElementType;
 import com.intellij.psi.xml.XmlTokenType;
 
-import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
-
+import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
 import org.codehaus.groovy.intellij.psi.GroovyTokenSets;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 

@@ -38,9 +38,8 @@ public class GroovyPsiParser implements PsiParser {
             builder.error(e.toString());
         } catch (RecognitionException e) {
             builder.error(e.toString());
-        } finally {
-            rootMarker.done(rootElementType);
         }
+        rootMarker.done(rootElementType);
         return builder.getTreeBuilt();
     }
 }

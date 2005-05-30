@@ -26,8 +26,7 @@ import com.intellij.lang.folding.FoldingBuilder;
 import com.intellij.lang.folding.FoldingDescriptor;
 import com.intellij.openapi.editor.Document;
 
-import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
-
+import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
 public class GroovyFoldingBuilder implements FoldingBuilder {

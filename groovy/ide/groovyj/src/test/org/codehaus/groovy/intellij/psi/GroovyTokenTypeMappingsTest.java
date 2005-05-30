@@ -27,9 +27,8 @@ import junitx.framework.StringAssert;
 
 import com.intellij.psi.tree.IElementType;
 
-import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
-
 import org.codehaus.groovy.intellij.GroovyjTestCase;
+import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
 
 public class GroovyTokenTypeMappingsTest extends GroovyjTestCase {
 

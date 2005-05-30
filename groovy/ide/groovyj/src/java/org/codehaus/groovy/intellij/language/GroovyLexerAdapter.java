@@ -19,19 +19,22 @@
 package org.codehaus.groovy.intellij.language;
 
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.intellij.lexer.LexerBase;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.text.CharArrayUtil;
 
+import org.codehaus.groovy.antlr.SourceBuffer;
 import org.codehaus.groovy.antlr.UnicodeEscapingReader;
-import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
 
 import org.codehaus.groovy.intellij.language.parser.GroovyLexer;
+import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
+import antlr.CommonHiddenStreamToken;
 import antlr.LexerSharedInputState;
-import antlr.Token;
 import antlr.TokenStreamException;
 
 public class GroovyLexerAdapter extends LexerBase {
@@ -41,15 +44,20 @@ public class GroovyLexerAdapter extends LexerBase {
     private char[] buffer;
     private int currentTokenStartOffset;
     private int bufferEndOffset;
+    private SourceBuffer sourceBuffer;
+    private List<String> processedTokens;
 
     private int currentLineStartPosition;
-    private Token currentToken;
+    private CommonHiddenStreamToken currentToken;
 
     void bind(GroovyPsiBuilder builder) {
         this.builder = builder;
         adaptee = new GroovyLexer(builder);
         adaptee.setCaseSensitive(true);
         adaptee.setWhitespaceIncluded(true);
+
+        sourceBuffer = new SourceBuffer();
+        processedTokens = new ArrayList<String>();
         start(CharArrayUtil.fromSequence(builder.getOriginalText()));
     }
 
@@ -68,13 +76,17 @@ public class GroovyLexerAdapter extends LexerBase {
         currentLineStartPosition = startOffset; // index of the first character on the current line
 
         String input = new String(buffer, startOffset, endOffset - startOffset);
-        UnicodeEscapingReader reader = new UnicodeEscapingReader(new StringReader(input));
-        reader.setLexer(adaptee);
-        adaptee.setInputState(new LexerSharedInputState(reader));
+        UnicodeEscapingReader reader = new UnicodeEscapingReader(new StringReader(input), getSourceBuffer());
+        reader.setLexer(getAdaptedLexer());
+        getAdaptedLexer().setInputState(new LexerSharedInputState(reader));
     }
 
     public GroovyLexer getAdaptedLexer() {
         return adaptee;
+    }
+
+    public SourceBuffer getSourceBuffer() {
+        return sourceBuffer;
     }
 
     public char[] getBuffer() {
@@ -91,7 +103,7 @@ public class GroovyLexerAdapter extends LexerBase {
     }
 
     public IElementType getTokenType() {
-        Token token = currentToken;
+        CommonHiddenStreamToken token = currentToken;
         if (token == null || token.getType() == GroovyTokenTypes.EOF) {
             return null;
         }
@@ -107,19 +119,29 @@ public class GroovyLexerAdapter extends LexerBase {
         return currentTokenStartOffset + currentToken.getText().length();
     }
 
-    public Token getCurrentToken() {
+    public CommonHiddenStreamToken getCurrentToken() {
         return currentToken;
     }
 
     public void advance() {
         try {
-            lexerAdvanced(adaptee.nextToken());
+            lexerAdvanced((CommonHiddenStreamToken) getAdaptedLexer().nextToken());
         } catch (TokenStreamException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void lexerAdvanced(Token nextToken) {
+    public void lexerAdvanced(CommonHiddenStreamToken nextToken) {
+        if (!processedTokens.contains(nextToken.toString())) {
+            processedTokens.add(nextToken.toString());
+            updateStartingLineNumber();
+            updateStartOffset(nextToken);
+            addToPsiBuilder(nextToken);
+            processHiddenTokens(nextToken);
+        }
+    }
+
+    private void updateStartingLineNumber() {
         if (currentToken != null) {
             if (currentToken.getType() == GroovyTokenTypes.NLS) {
                 advanceNewLine();
@@ -127,14 +149,23 @@ public class GroovyLexerAdapter extends LexerBase {
                 advanceMultiLineComment();
             }
         }
+    }
 
+    private void updateStartOffset(CommonHiddenStreamToken nextToken) {
         currentToken = nextToken;
         // columns start at 1, currentTokenStartOffset starts at 0
         currentTokenStartOffset = currentLineStartPosition + currentToken.getColumn() - 1;
+    }
 
-        if (nextToken.getType() != GroovyTokenTypes.EOF) {
-            String tokenAsText = new String(getBuffer(), getTokenStart(), getTokenEnd() - getTokenStart());
-            builder.addToken(getTokenType(), getTokenStart(), getTokenEnd(), tokenAsText);
+    private void addToPsiBuilder(CommonHiddenStreamToken token) {
+        if (token.getType() != GroovyTokenTypes.EOF) {
+            builder.addToken(getTokenType(), getTokenStart(), getTokenEnd(), token.getText());
+        }
+    }
+
+    private void processHiddenTokens(CommonHiddenStreamToken significantToken) {
+        for (CommonHiddenStreamToken token = significantToken.getHiddenAfter(); token != null; token = token.getHiddenAfter()) {
+            lexerAdvanced(token);
         }
     }
 
@@ -144,7 +175,7 @@ public class GroovyLexerAdapter extends LexerBase {
     }
 
     private void advanceMultiLineComment() {
-        // ML_COMMENTS may contain any number of NLS and may end with one
+        // ML_COMMENT may contain any number of NLS tokens and may end with one
         int lastLineSeparatorIndex = findLastIndexOfALineSeparator(currentToken.getText());
         if (lastLineSeparatorIndex > -1) {
             currentLineStartPosition = currentTokenStartOffset + lastLineSeparatorIndex + 1;

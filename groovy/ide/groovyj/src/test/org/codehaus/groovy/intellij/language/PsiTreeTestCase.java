@@ -22,13 +22,22 @@ import com.intellij.lang.ASTNode;
 import com.intellij.psi.tree.IElementType;
 
 import org.codehaus.groovy.intellij.GroovyjTestCase;
+import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
 public abstract class PsiTreeTestCase extends GroovyjTestCase {
+
+    protected ASTNode assertFirstChildNode(int tokenTypeIndex, ASTNode node) {
+        return assertFirstChildNode(GroovyTokenTypeMappings.getType(tokenTypeIndex), node);
+    }
 
     protected ASTNode assertFirstChildNode(IElementType elementType, ASTNode node) {
         ASTNode firstChild = node.getFirstChildNode();
         assertNodeAttributes(elementType, firstChild);
         return firstChild;
+    }
+
+    protected ASTNode assertNextNode(int tokenTypeIndex, ASTNode node) {
+        return assertNextNode(GroovyTokenTypeMappings.getType(tokenTypeIndex), node);
     }
 
     protected ASTNode assertNextNode(IElementType elementType, ASTNode node) {

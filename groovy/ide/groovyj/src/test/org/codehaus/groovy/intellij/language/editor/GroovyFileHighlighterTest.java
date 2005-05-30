@@ -26,10 +26,9 @@ import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.psi.tree.IElementType;
 
-import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
-
 import org.codehaus.groovy.intellij.GroovyjTestCase;
 import org.codehaus.groovy.intellij.Stubs;
+import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
 public class GroovyFileHighlighterTest extends GroovyjTestCase {

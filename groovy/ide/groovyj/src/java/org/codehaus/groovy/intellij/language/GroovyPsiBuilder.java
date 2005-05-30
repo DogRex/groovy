@@ -91,7 +91,7 @@ public class GroovyPsiBuilder implements PsiBuilder {
 
     public IElementType getTokenType() {
         Token currentToken = getCurrentToken();
-        return currentToken == null ? null : currentToken.getTokenType();
+        return currentToken == null ? null : currentToken.getType();
     }
 
     public int getCurrentOffset() {
@@ -181,7 +181,7 @@ public class GroovyPsiBuilder implements PsiBuilder {
             if (productionMarker instanceof StartMarker) {
                 for ( ;
                      productionMarker.lexemIndex < tokens.size()
-                            && whitespaceTokens.isInSet(tokens.get(productionMarker.lexemIndex).getTokenType());
+                     && whitespaceTokens.isInSet(tokens.get(productionMarker.lexemIndex).getType());
                      productionMarker.lexemIndex++);
                 continue;
             }
@@ -192,8 +192,8 @@ public class GroovyPsiBuilder implements PsiBuilder {
 
             for (int i1 = ((ProductionMarker) markers.get(k - 1)).lexemIndex;
                  productionMarker.lexemIndex > i1
-                        && productionMarker.lexemIndex < tokens.size()
-                        && whitespaceTokens.isInSet(tokens.get(productionMarker.lexemIndex - 1).getTokenType());
+                 && productionMarker.lexemIndex < tokens.size()
+                 && whitespaceTokens.isInSet(tokens.get(productionMarker.lexemIndex - 1).getType());
                  productionMarker.lexemIndex--);
         }
 
@@ -246,7 +246,7 @@ public class GroovyPsiBuilder implements PsiBuilder {
     }
 
     private LeafPsiElement buildLeafPsiElement(Token token) {
-        IElementType elementType = token.getTokenType();
+        IElementType elementType = token.getType();
         if (whitespaceTokens.isInSet(elementType)) {
             return new PsiWhiteSpaceImpl(lexer.getBuffer(), token.startOffset, token.endOffset, token.state, charTable);
         }
@@ -265,22 +265,22 @@ public class GroovyPsiBuilder implements PsiBuilder {
 
     static class Token {
 
-        private final IElementType tokenType;
+        private final IElementType type;
         private final int startOffset;
         private final int endOffset;
         private final String text;
         private final int state;
 
-        private Token(IElementType tokenType, int startOffset, int endOffset, String text) {
-            this.tokenType = tokenType;
+        private Token(IElementType tokenType, int startOffset, int endOffset, String tokenText) {
+            this.type = tokenType;
             this.startOffset = startOffset;
             this.endOffset = endOffset;
-            this.text = text;
+            this.text = tokenText;
             this.state = 0;
         }
 
-        public IElementType getTokenType() {
-            return tokenType;
+        public IElementType getType() {
+            return type;
         }
 
         public String getTokenText() {

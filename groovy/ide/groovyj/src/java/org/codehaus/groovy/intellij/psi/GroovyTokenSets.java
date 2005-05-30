@@ -21,7 +21,7 @@ package org.codehaus.groovy.intellij.psi;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.TokenSet;
 
-import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
+import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
 
 public final class GroovyTokenSets {
 

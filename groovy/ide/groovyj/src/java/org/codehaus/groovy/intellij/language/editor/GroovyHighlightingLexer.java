@@ -22,9 +22,8 @@ import com.intellij.lexer.LayeredLexer;
 import com.intellij.lexer.StringLiteralLexer;
 import com.intellij.psi.tree.IElementType;
 
-import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
-
 import org.codehaus.groovy.intellij.language.GroovyLexerAdapter;
+import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
 public class GroovyHighlightingLexer extends LayeredLexer {

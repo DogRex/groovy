@@ -31,13 +31,12 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.tree.IElementType;
 
-import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
-
 import org.picocontainer.MutablePicoContainer;
 
 import org.codehaus.groovy.intellij.language.editor.GroovyFileHighlighter;
 import org.codehaus.groovy.intellij.language.editor.GroovyFoldingBuilder;
 import org.codehaus.groovy.intellij.language.editor.GroovyPseudoTextBuilder;
+import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
 public class GroovyLanguage extends Language {

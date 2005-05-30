@@ -25,8 +25,7 @@ import com.intellij.lang.PsiBuilder;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
 
-import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
-
+import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
 import org.codehaus.groovy.intellij.psi.GroovyElementTypes;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
@@ -222,33 +221,33 @@ public class GroovyPsiBuilderTest extends PsiTreeTestCase {
 
         ASTNode rootChildNode = assertFirstChildNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.SH_COMMENT), rootNode);
         rootChildNode = assertNextNode(TokenType.WHITE_SPACE, rootChildNode);
-        rootChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IMPORT), rootChildNode);
+        rootChildNode = assertNextNode(GroovyTokenTypes.IMPORT, rootChildNode);
 
-        ASTNode importStatement1ChildNode = assertFirstChildNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.LITERAL_import), rootChildNode);
+        ASTNode importStatement1ChildNode = assertFirstChildNode(GroovyTokenTypes.LITERAL_import, rootChildNode);
         importStatement1ChildNode = assertNextNode(TokenType.WHITE_SPACE, importStatement1ChildNode);
-        importStatement1ChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IDENT), importStatement1ChildNode);
-        importStatement1ChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.DOT), importStatement1ChildNode);
-        importStatement1ChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IDENT), importStatement1ChildNode);
-        importStatement1ChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.DOT), importStatement1ChildNode);
-        importStatement1ChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IDENT), importStatement1ChildNode);
+        importStatement1ChildNode = assertNextNode(GroovyTokenTypes.IDENT, importStatement1ChildNode);
+        importStatement1ChildNode = assertNextNode(GroovyTokenTypes.DOT, importStatement1ChildNode);
+        importStatement1ChildNode = assertNextNode(GroovyTokenTypes.IDENT, importStatement1ChildNode);
+        importStatement1ChildNode = assertNextNode(GroovyTokenTypes.DOT, importStatement1ChildNode);
+        importStatement1ChildNode = assertNextNode(GroovyTokenTypes.IDENT, importStatement1ChildNode);
         assertNodeHasNoChildrenAndNoNextSiblings(importStatement1ChildNode);
 
         rootChildNode = assertNextNode(TokenType.WHITE_SPACE, rootChildNode);
-        rootChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IMPORT), rootChildNode);
+        rootChildNode = assertNextNode(GroovyTokenTypes.IMPORT, rootChildNode);
 
-        ASTNode importStatement2ChildNode = assertFirstChildNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.LITERAL_import), rootChildNode);
+        ASTNode importStatement2ChildNode = assertFirstChildNode(GroovyTokenTypes.LITERAL_import, rootChildNode);
         importStatement2ChildNode = assertNextNode(TokenType.WHITE_SPACE, importStatement2ChildNode);
-        importStatement2ChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IDENT), importStatement2ChildNode);
-        importStatement2ChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.DOT), importStatement2ChildNode);
-        importStatement2ChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IDENT), importStatement2ChildNode);
-        importStatement2ChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.DOT), importStatement2ChildNode);
-        importStatement2ChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.IDENT), importStatement2ChildNode);
+        importStatement2ChildNode = assertNextNode(GroovyTokenTypes.IDENT, importStatement2ChildNode);
+        importStatement2ChildNode = assertNextNode(GroovyTokenTypes.DOT, importStatement2ChildNode);
+        importStatement2ChildNode = assertNextNode(GroovyTokenTypes.IDENT, importStatement2ChildNode);
+        importStatement2ChildNode = assertNextNode(GroovyTokenTypes.DOT, importStatement2ChildNode);
+        importStatement2ChildNode = assertNextNode(GroovyTokenTypes.IDENT, importStatement2ChildNode);
         assertNodeHasNoChildrenAndNoNextSiblings(importStatement2ChildNode);
 
         rootChildNode = assertNextNode(TokenType.WHITE_SPACE, rootChildNode);
-        rootChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.ML_COMMENT), rootChildNode);
+        rootChildNode = assertNextNode(GroovyTokenTypes.ML_COMMENT, rootChildNode);
         rootChildNode = assertNextNode(TokenType.WHITE_SPACE, rootChildNode);
-        rootChildNode = assertNextNode(GroovyTokenTypeMappings.getType(GroovyTokenTypes.SL_COMMENT), rootChildNode);
+        rootChildNode = assertNextNode(GroovyTokenTypes.SL_COMMENT, rootChildNode);
         rootChildNode = assertNextNode(TokenType.WHITE_SPACE, rootChildNode);
         assertNodeHasNoChildrenAndNoNextSiblings(rootChildNode);
     }
@@ -259,7 +258,7 @@ public class GroovyPsiBuilderTest extends PsiTreeTestCase {
         IElementType elementType = GroovyTokenTypeMappings.getType(tokenTypeIndex);
 
         assertEquals("token type [GroovyPsiBuilder]", elementType, builder.getTokenType());
-        assertEquals("token type [GroovyPsiBuilder.Token]", elementType, currentToken.getTokenType());
+        assertEquals("token type [GroovyPsiBuilder.Token]", elementType, currentToken.getType());
         assertEquals("token offset", offset, builder.getCurrentOffset());
         assertEquals("token text", text, currentToken.getTokenText());
     }

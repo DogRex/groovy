@@ -21,8 +21,7 @@ package org.codehaus.groovy.intellij.language;
 import com.intellij.lang.BracePair;
 import com.intellij.lang.PairedBraceMatcher;
 
-import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
-
+import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
 public class GroovyPairedBraceMatcher implements PairedBraceMatcher {

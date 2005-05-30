@@ -107,8 +107,22 @@ public class GroovyLexerAdapterTest extends GroovyjTestCase {
         assertNextTokenIsEndOfFile();
     }
 
+    public void testReadsTextContainingASingleTokenRepresentingAStringLiteralContainingEscapedCharactersAndDelimitedBySingleQuotes() {
+        String input = "'line 1\\nline 2\\rline 3\\tline 4\\bline 5\\fline 6\\'line 7\\\"line 8\\\\line 9'";
+        initialiseLexer(input);
+        assertNextTokenAttributes(GroovyTokenTypes.STRING_LITERAL, 1, 1, input);
+        assertNextTokenIsEndOfFile();
+    }
+
     public void testReadsTextContainingASingleTokenRepresentingAStringLiteralDelimitedByQuotes() {
         String input = "\"some stuff\"";
+        initialiseLexer(input);
+        assertNextTokenAttributes(GroovyTokenTypes.STRING_LITERAL, 1, 1, input);
+        assertNextTokenIsEndOfFile();
+    }
+
+    public void testReadsTextContainingASingleTokenRepresentingAStringLiteralContainingEscapedCharactersAndDelimitedByQuotes() {
+        String input = "\"line 1\\nline 2\\rline 3\\tline 4\\bline 5\\fline 6\\'line 7\\\"line 8\\\\line 9\"";
         initialiseLexer(input);
         assertNextTokenAttributes(GroovyTokenTypes.STRING_LITERAL, 1, 1, input);
         assertNextTokenIsEndOfFile();

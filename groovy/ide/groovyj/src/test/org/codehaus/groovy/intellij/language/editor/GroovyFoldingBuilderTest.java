@@ -23,11 +23,10 @@ import com.intellij.lang.folding.FoldingDescriptor;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.tree.IElementType;
 
-import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
-
 import org.jmock.Mock;
 
 import org.codehaus.groovy.intellij.GroovyjTestCase;
+import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
 public class GroovyFoldingBuilderTest extends GroovyjTestCase {

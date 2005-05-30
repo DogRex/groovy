@@ -25,7 +25,7 @@ import java.util.List;
 
 import com.intellij.psi.tree.IElementType;
 
-import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
+import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
 
 import gnu.trove.TIntObjectHashMap;
 
