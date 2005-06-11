@@ -18,7 +18,6 @@
 
 package org.codehaus.groovy.intellij.language;
 
-import com.intellij.codeFormatting.PseudoTextBuilder;
 import com.intellij.lang.Commenter;
 import com.intellij.lang.Language;
 import com.intellij.lang.PairedBraceMatcher;
@@ -26,6 +25,7 @@ import com.intellij.lang.ParserDefinition;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.cacheBuilder.WordsScanner;
 import com.intellij.lang.folding.FoldingBuilder;
+import com.intellij.newCodeFormatting.FormattingModelBuilder;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.openapi.project.Project;
@@ -35,7 +35,6 @@ import org.picocontainer.MutablePicoContainer;
 
 import org.codehaus.groovy.intellij.language.editor.GroovyFileHighlighter;
 import org.codehaus.groovy.intellij.language.editor.GroovyFoldingBuilder;
-import org.codehaus.groovy.intellij.language.editor.GroovyPseudoTextBuilder;
 import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
@@ -80,8 +79,15 @@ public class GroovyLanguage extends Language {
         return new GroovyFoldingBuilder();
     }
 
-    public PseudoTextBuilder getFormatter() {
-        return new GroovyPseudoTextBuilder();
+    public FormattingModelBuilder getFormattingModelBuilder() {
+/*
+        return new FormattingModelBuilder() {
+            public FormattingModel createModel(PsiElement element, CodeStyleSettings settings) {
+                return new GroovyFormattingModel(element.getContainingFile(), settings, new GroovyBlock(element.getNode(), null, null, null, settings));
+            }
+        };
+*/
+        return null;
     }
 
     public PairedBraceMatcher getPairedBraceMatcher() {

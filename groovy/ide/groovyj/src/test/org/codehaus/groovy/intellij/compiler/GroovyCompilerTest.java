@@ -35,7 +35,9 @@ import com.intellij.testFramework.MockVirtualFile;
 
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
-import org.codehaus.groovy.control.Phases;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.ErrorCollector;
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.messages.ExceptionMessage;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.control.messages.WarningMessage;
@@ -49,8 +51,6 @@ import org.codehaus.groovy.intellij.GroovySupportLoader;
 import org.codehaus.groovy.intellij.GroovyjTestCase;
 import org.codehaus.groovy.intellij.Mocks;
 import org.codehaus.groovy.intellij.TestUtil;
-
-import antlr.RecognitionException;
 
 public class GroovyCompilerTest extends GroovyjTestCase {
 
@@ -106,12 +106,13 @@ public class GroovyCompilerTest extends GroovyjTestCase {
         assertEquals("number of files compiled", 0, exitStatus.getSuccessfullyCompiled().length);
     }
 
-    public void testAddsSyntaxErrorsWithPreciseLocationToCompileContext() throws IOException, CompilationFailedException {
+    public void testAddsSyntaxExceptionsWithPreciseLocationToCompileContext() throws IOException, CompilationFailedException {
         SyntaxException syntaxException = new SyntaxException("a syntax exception", TestUtil.nextAbsRandomInt(), TestUtil.nextAbsRandomInt());
 
         MockCompilationUnit compilationUnit = new MockCompilationUnit();
-        compilationUnit.exception = new CompilationFailedException(Phases.PARSING, compilationUnit, null);
-        compilationUnit.addError(new SyntaxErrorMessage(syntaxException));
+        ErrorCollector errorCollector = compilationUnit.getErrorCollector();
+        errorCollector.addError(new SyntaxErrorMessage(syntaxException, null));
+        compilationUnit.exception = new MultipleCompilationErrorsException(errorCollector);
 
         VirtualFile fileToCompile = createVirtualFile("/home/foo/acme/src/bar.groovy");
 
@@ -126,44 +127,19 @@ public class GroovyCompilerTest extends GroovyjTestCase {
 
         assertEquals("number of files compiled", 0, exitStatus.getSuccessfullyCompiled().length);
 
-        assertEquals("number of errors", 1, compilationUnit.getErrorCount());
-        assertSame("exception", syntaxException, compilationUnit.getException(0));
+        assertEquals("number of errors", 1, errorCollector.getErrorCount());
+        assertSame("exception", syntaxException, errorCollector.getException(0));
 
-        assertEquals("number of warnings", 0, compilationUnit.getWarningCount());
-    }
-
-    public void testAddsRecognitionExceptionsWithPreciseLocationToCompileContext() throws IOException, CompilationFailedException {
-        RecognitionException recognitionException = new RecognitionException(null, "file name", TestUtil.nextAbsRandomInt(), TestUtil.nextAbsRandomInt());
-
-        MockCompilationUnit compilationUnit = new MockCompilationUnit();
-        compilationUnit.exception = new CompilationFailedException(Phases.PARSING, compilationUnit, null);
-        compilationUnit.addError(new ExceptionMessage(recognitionException));
-
-        VirtualFile fileToCompile = createVirtualFile("/home/foo/acme/src/bar.groovy");
-
-        Mock mockCompileContext = createMockedCompileContextWithStubbedProgressIndicator();
-        mockCompileContext.expects(once()).method("addMessage")
-                .with(new Constraint[] { same(CompilerMessageCategory.ERROR), eq(recognitionException.getMessage()),
-                                         eq(fileToCompile.getUrl()), eq(recognitionException.getLine()), eq(recognitionException.getColumn()) });
-
-        TranslatingCompiler.ExitStatus exitStatus = compile(fileToCompile, mockCompileContext, compilationUnit);
-        assertEquals("number of files to recompile", 1, exitStatus.getFilesToRecompile().length);
-        assertSame("file to recompile", fileToCompile, exitStatus.getFilesToRecompile()[0]);
-
-        assertEquals("number of files compiled", 0, exitStatus.getSuccessfullyCompiled().length);
-
-        assertEquals("number of errors", 1, compilationUnit.getErrorCount());
-        assertSame("exception", recognitionException, compilationUnit.getException(0));
-
-        assertEquals("number of warnings", 0, compilationUnit.getWarningCount());
+        assertEquals("number of warnings", 0, errorCollector.getWarningCount());
     }
 
     public void testAddsExceptionsAsErrorsToCompileContext() throws IOException, CompilationFailedException {
         IOException anotherException = new IOException("exceptional I/O stuff");
 
         MockCompilationUnit compilationUnit = new MockCompilationUnit();
-        compilationUnit.exception = new CompilationFailedException(Phases.PARSING, compilationUnit, null);
-        compilationUnit.addError(new ExceptionMessage(anotherException));
+        ErrorCollector errorCollector = compilationUnit.getErrorCollector();
+        errorCollector.addError(new ExceptionMessage(anotherException, false, null));
+        compilationUnit.exception = new MultipleCompilationErrorsException(errorCollector);
 
         VirtualFile fileToCompile = createVirtualFile("/home/foo/acme/src/bar.groovy");
 
@@ -178,16 +154,18 @@ public class GroovyCompilerTest extends GroovyjTestCase {
 
         assertEquals("number of files compiled", 0, exitStatus.getSuccessfullyCompiled().length);
 
-        assertEquals("number of errors", 1, compilationUnit.getErrorCount());
-        assertSame("exception", anotherException, compilationUnit.getException(0));
+        assertEquals("number of errors", 1, errorCollector.getErrorCount());
+        assertSame("exception", anotherException, errorCollector.getException(0));
 
-        assertEquals("number of warnings", 0, compilationUnit.getWarningCount());
+        assertEquals("number of warnings", 0, errorCollector.getWarningCount());
     }
 
     public void testCompilesASingleErrorFreeGroovyScriptAndAddsWarningsToCompileContext() throws IOException {
         MockCompilationUnit compilationUnit = new MockCompilationUnit();
-        WarningMessage expectedWarningMessage = new WarningMessage(WarningMessage.LIKELY_ERRORS, "a warning", null);
-        compilationUnit.addWarning(expectedWarningMessage);
+        WarningMessage expectedWarningMessage = new WarningMessage(WarningMessage.LIKELY_ERRORS, "a warning", null, null);
+
+        ErrorCollector errorCollector = compilationUnit.getErrorCollector();
+        errorCollector.addWarning(expectedWarningMessage);
 
         VirtualFile fileToCompile = createVirtualFile("/home/foo/acme/src/bar.groovy");
 
@@ -203,10 +181,10 @@ public class GroovyCompilerTest extends GroovyjTestCase {
         assertEquals("file compiled", compilationUnit.getConfiguration().getTargetDirectory().getCanonicalPath(),
                      exitStatus.getSuccessfullyCompiled()[0].getOutputPath());
 
-        assertEquals("number of errors", 0, compilationUnit.getErrorCount());
+        assertEquals("number of errors", 0, errorCollector.getErrorCount());
 
-        assertEquals("number of warnings", 1, compilationUnit.getWarningCount());
-        assertSame("warnings", expectedWarningMessage, compilationUnit.getWarning(0));
+        assertEquals("number of warnings", 1, errorCollector.getWarningCount());
+        assertSame("warnings", expectedWarningMessage, errorCollector.getWarning(0));
     }
 
     private TranslatingCompiler.ExitStatus compile(VirtualFile file, Mock mockCompileContext, CompilationUnit compilationUnit) {
@@ -236,6 +214,10 @@ public class GroovyCompilerTest extends GroovyjTestCase {
     private static class MockCompilationUnit extends CompilationUnit {
 
         private CompilationFailedException exception;
+
+        public MockCompilationUnit() {
+            super(new CompilerConfiguration());
+        }
 
         public void compile() throws CompilationFailedException {
             if (exception != null) {

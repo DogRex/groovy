@@ -21,7 +21,6 @@ package org.codehaus.groovy.intellij.language;
 import junitx.framework.Assert;
 import junitx.framework.ObjectAssert;
 
-import com.intellij.codeFormatting.PseudoTextBuilder;
 import com.intellij.lang.Commenter;
 import com.intellij.lang.PairedBraceMatcher;
 import com.intellij.lang.ParserDefinition;
@@ -35,7 +34,6 @@ import org.codehaus.groovy.intellij.GroovyjTestCase;
 import org.codehaus.groovy.intellij.Stubs;
 import org.codehaus.groovy.intellij.language.editor.GroovyFileHighlighter;
 import org.codehaus.groovy.intellij.language.editor.GroovyFoldingBuilder;
-import org.codehaus.groovy.intellij.language.editor.GroovyPseudoTextBuilder;
 import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
@@ -84,10 +82,8 @@ public class GroovyLanguageTest extends GroovyjTestCase {
         ObjectAssert.assertInstanceOf("folding builder", GroovyFoldingBuilder.class, foldingBuilder);
     }
 
-    public void testProducesAFormatterForGroovy() {
-        PseudoTextBuilder formatter = language.getFormatter();
-        Assert.assertNotEquals("formatter", null, formatter);
-        ObjectAssert.assertInstanceOf("formatter", GroovyPseudoTextBuilder.class, formatter);
+    public void testDoesNotProduceAFormattingModelBuilderYet() {
+        assertEquals("formatting model builder", null, language.getFormattingModelBuilder());
     }
 
     public void testProducesAPairedBraceMatcherForGroovy() {

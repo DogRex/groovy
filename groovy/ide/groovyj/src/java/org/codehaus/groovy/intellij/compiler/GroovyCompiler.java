@@ -32,16 +32,14 @@ import com.intellij.openapi.compiler.TranslatingCompiler;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.vfs.VirtualFile;
 
-import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
-import org.codehaus.groovy.control.ProcessingUnit;
+import org.codehaus.groovy.control.ErrorCollector;
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.messages.WarningMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
 
 import org.codehaus.groovy.intellij.GroovyController;
 import org.codehaus.groovy.intellij.GroovySupportLoader;
-
-import antlr.RecognitionException;
 
 public class GroovyCompiler implements TranslatingCompiler {
 
@@ -95,7 +93,7 @@ public class GroovyCompiler implements TranslatingCompiler {
         } catch (Exception e) {
             processCompilationException(e, fileToCompile, filesToRecompile, context);
         } finally {
-            addWarnings(compilationUnit, context);
+            addWarnings(compilationUnit.getErrorCollector(), context);
         }
     }
 
@@ -105,19 +103,19 @@ public class GroovyCompiler implements TranslatingCompiler {
         compiledFiles.add(new OutputItemImpl(outputRootDirectory, outputPath, compiledFile));
     }
 
-    private void addWarnings(CompilationUnit compilationUnit, CompileContext context) {
-        for (int i = 0; i < compilationUnit.getWarningCount(); i++) {
-            WarningMessage warning = compilationUnit.getWarning(i);
+    private void addWarnings(ErrorCollector errorCollector, CompileContext context) {
+        for (int i = 0; i < errorCollector.getWarningCount(); i++) {
+            WarningMessage warning = errorCollector.getWarning(i);
             context.addMessage(CompilerMessageCategory.WARNING, warning.getMessage(), null, -1, -1);
         }
     }
 
     private void processCompilationException(Exception exception, VirtualFile fileToCompile, List<VirtualFile> filesToRecompile, CompileContext context) {
-        if (exception instanceof CompilationFailedException) {
-            CompilationFailedException compilationFailureException = (CompilationFailedException) exception;
-            ProcessingUnit unit = compilationFailureException.getUnit();
-            for (int i = 0; i < unit.getErrorCount(); i++) {
-                processException(unit.getException(i), context, filesToRecompile, fileToCompile);
+        if (exception instanceof MultipleCompilationErrorsException) {
+            MultipleCompilationErrorsException compilationFailureException = (MultipleCompilationErrorsException) exception;
+            ErrorCollector errorCollector = compilationFailureException.getErrorCollector();
+            for (int i = 0; i < errorCollector.getErrorCount(); i++) {
+                processException(errorCollector.getException(i), context, filesToRecompile, fileToCompile);
             }
         } else {
             processException(exception, context, filesToRecompile, fileToCompile);
@@ -125,22 +123,14 @@ public class GroovyCompiler implements TranslatingCompiler {
     }
 
     private void processException(Exception exception, CompileContext context, List<VirtualFile> filesToRecompile, VirtualFile fileToCompile) {
-        int line = -1;
-        int column = -1;
-
         if (exception instanceof SyntaxException) {
             SyntaxException syntaxException = (SyntaxException) exception;
-            line = syntaxException.getLine();
-            column = syntaxException.getStartColumn();
+            context.addMessage(CompilerMessageCategory.ERROR, syntaxException.getMessage(), fileToCompile.getUrl(),
+                               syntaxException.getLine(), syntaxException.getStartColumn());
+        } else {
+            context.addMessage(CompilerMessageCategory.ERROR, exception.getMessage(), fileToCompile.getUrl(), -1, -1);
         }
 
-        if (exception instanceof RecognitionException) {
-            RecognitionException syntaxException = (RecognitionException) exception;
-            line = syntaxException.getLine();
-            column = syntaxException.getColumn();
-        }
-
-        context.addMessage(CompilerMessageCategory.ERROR, exception.getMessage(), fileToCompile.getUrl(), line, column);
         filesToRecompile.add(fileToCompile);
     }
 

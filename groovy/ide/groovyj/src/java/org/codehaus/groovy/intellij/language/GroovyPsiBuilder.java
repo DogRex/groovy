@@ -37,6 +37,7 @@ import com.intellij.psi.impl.source.tree.TreeUtil;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.TokenSet;
 import com.intellij.util.CharTable;
+import com.intellij.util.text.CharArrayUtil;
 
 public class GroovyPsiBuilder implements PsiBuilder {
 
@@ -51,6 +52,7 @@ public class GroovyPsiBuilder implements PsiBuilder {
     private final TokenSet commentTokens;
     private CharTable charTable;
     private int currentTokenIndex;
+    private boolean debugMode;
 
     public GroovyPsiBuilder(Language language, Project project, CharTable charTable, CharSequence originalText) {
         this.originalText = originalText;
@@ -64,6 +66,7 @@ public class GroovyPsiBuilder implements PsiBuilder {
         charTableNotAvailable = charTable == null;
 
         lexer.bind(this);
+        lexer.start(CharArrayUtil.fromSequence(getOriginalText()));
     }
 
     // Lexer support API -----------------------------------------------------------------------------------------------
@@ -150,6 +153,17 @@ public class GroovyPsiBuilder implements PsiBuilder {
             if (startMarker.doneMarker == null) {
                 LOGGER.error("Another not done marker of type [" + startMarker.elementType + "] added after this one. Must be done before this.");
             }
+
+            if (startMarker.doneMarker != null) {
+                continue;
+            }
+            LOGGER.error("Another not done marker of type [" + startMarker.elementType + "] added after this one. Must be done before this.");
+            Throwable throwable1 = startMarker.debugAllocationPosition;
+            Throwable throwable2 = ((StartMarker) marker).debugAllocationPosition;
+            if (throwable1 != null) {
+                LOGGER.error("Attempt to close marker allocated at: ", throwable2);
+                LOGGER.error("Before marker allocated at: " + throwable1);
+            }
         }
 
         DoneMarker doneMarker = new DoneMarker((StartMarker) marker, currentTokenIndex);
@@ -162,6 +176,10 @@ public class GroovyPsiBuilder implements PsiBuilder {
             return;
         }
         markers.add(new ErrorItem(message, currentTokenIndex));
+    }
+
+    public void setDebugMode(boolean debugMode) {
+        this.debugMode = debugMode;
     }
 
     public ASTNode getTreeBuilt() {
@@ -179,10 +197,12 @@ public class GroovyPsiBuilder implements PsiBuilder {
         for (int k = 1; k < markers.size() - 1; k++) {
             ProductionMarker productionMarker = markers.get(k);
             if (productionMarker instanceof StartMarker) {
-                for ( ;
+                for (;
                      productionMarker.lexemIndex < tokens.size()
                      && whitespaceTokens.isInSet(tokens.get(productionMarker.lexemIndex).getType());
-                     productionMarker.lexemIndex++);
+                     productionMarker.lexemIndex++) {
+                    ;
+                }
                 continue;
             }
 
@@ -194,7 +214,9 @@ public class GroovyPsiBuilder implements PsiBuilder {
                  productionMarker.lexemIndex > i1
                  && productionMarker.lexemIndex < tokens.size()
                  && whitespaceTokens.isInSet(tokens.get(productionMarker.lexemIndex - 1).getType());
-                 productionMarker.lexemIndex--);
+                 productionMarker.lexemIndex--) {
+                ;
+            }
         }
 
         ASTNode nodeCopy = node;
@@ -301,10 +323,15 @@ public class GroovyPsiBuilder implements PsiBuilder {
 
         private IElementType elementType;
         private DoneMarker doneMarker;
+        private Throwable debugAllocationPosition;
 
         private StartMarker(int lexemIndex) {
             super(lexemIndex);
             doneMarker = null;
+            debugAllocationPosition = null;
+            if (debugMode) {
+                debugAllocationPosition = new Throwable("Created at the following trace: ");
+            }
         }
 
         public Marker preceed() {

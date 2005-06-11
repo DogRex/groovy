@@ -24,7 +24,6 @@ import java.util.List;
 
 import com.intellij.lexer.LexerBase;
 import com.intellij.psi.tree.IElementType;
-import com.intellij.util.text.CharArrayUtil;
 
 import org.codehaus.groovy.antlr.SourceBuffer;
 import org.codehaus.groovy.antlr.UnicodeEscapingReader;
@@ -40,25 +39,28 @@ import antlr.TokenStreamException;
 public class GroovyLexerAdapter extends LexerBase {
 
     private GroovyPsiBuilder builder;
+    private SourceBuffer sourceBuffer;
+    private List<String> processedTokens;
+
     private GroovyLexer adaptee;
     private char[] buffer;
     private int currentTokenStartOffset;
     private int bufferEndOffset;
-    private SourceBuffer sourceBuffer;
-    private List<String> processedTokens;
 
     private int currentLineStartPosition;
     private CommonHiddenStreamToken currentToken;
 
+    /* reduced visibility to package-level */
+    GroovyLexerAdapter() {}
+
     void bind(GroovyPsiBuilder builder) {
         this.builder = builder;
+        sourceBuffer = new SourceBuffer();
+        processedTokens = new ArrayList<String>();
+
         adaptee = new GroovyLexer(builder);
         adaptee.setCaseSensitive(true);
         adaptee.setWhitespaceIncluded(true);
-
-        sourceBuffer = new SourceBuffer();
-        processedTokens = new ArrayList<String>();
-        start(CharArrayUtil.fromSequence(builder.getOriginalText()));
     }
 
     public void start(char[] buffer) {

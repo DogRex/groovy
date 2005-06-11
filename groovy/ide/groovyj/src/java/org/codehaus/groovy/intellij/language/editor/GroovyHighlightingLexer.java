@@ -22,14 +22,14 @@ import com.intellij.lexer.LayeredLexer;
 import com.intellij.lexer.StringLiteralLexer;
 import com.intellij.psi.tree.IElementType;
 
-import org.codehaus.groovy.intellij.language.GroovyLexerAdapter;
+import org.codehaus.groovy.intellij.language.GroovyPsiBuilder;
 import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
 
 public class GroovyHighlightingLexer extends LayeredLexer {
 
-    public GroovyHighlightingLexer() {
-        super(new GroovyLexerAdapter());
+    public GroovyHighlightingLexer(GroovyPsiBuilder groovyPsiBuilder) {
+        super(groovyPsiBuilder.getLexer());
 
         IElementType stringLiteralElementType = GroovyTokenTypeMappings.getType(GroovyTokenTypes.STRING_LITERAL);
         registerSelfStoppingLayer(new StringLiteralLexer('"', stringLiteralElementType), new IElementType[] { stringLiteralElementType}, IElementType.EMPTY_ARRAY);

@@ -31,6 +31,8 @@ import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.java.IJavaDocElementType;
 import com.intellij.psi.xml.XmlTokenType;
 
+import org.codehaus.groovy.intellij.language.GroovyLanguage;
+import org.codehaus.groovy.intellij.language.GroovyPsiBuilder;
 import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
 import org.codehaus.groovy.intellij.psi.GroovyTokenSets;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
@@ -50,7 +52,8 @@ public class GroovyFileHighlighter extends SyntaxHighlighterBase {
     }
 
     public Lexer getHighlightingLexer() {
-        return new GroovyHighlightingLexer();
+        GroovyPsiBuilder groovyPsiBuilder = new GroovyPsiBuilder(GroovyLanguage.findOrCreate(), null, null, "");
+        return new GroovyHighlightingLexer(groovyPsiBuilder);
     }
 
     private static void fillElementTypeToTextAttributeKeyMaps(Map<IElementType, TextAttributesKey> levelOneElementTypeToTextAttributeKeyMap,
@@ -90,10 +93,12 @@ public class GroovyFileHighlighter extends SyntaxHighlighterBase {
             }
         });
 
+/*
         for (int i = 0; i < elementTypes.length; i++) {
             IElementType elementType = elementTypes[i];
             levelOneElementTypeToTextAttributeKeyMap.put(elementType, SyntacticAttributes.GROOVY_DOC_COMMENT);
         }
+*/
 
         levelOneElementTypeToTextAttributeKeyMap.put(XmlTokenType.XML_DATA_CHARACTERS, SyntacticAttributes.GROOVY_DOC_COMMENT);
         levelOneElementTypeToTextAttributeKeyMap.put(XmlTokenType.XML_REAL_WHITE_SPACE, SyntacticAttributes.GROOVY_DOC_COMMENT);

@@ -18,7 +18,6 @@
 
 package org.codehaus.groovy.intellij.psi;
 
-import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.TokenSet;
 
 import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
@@ -29,7 +28,7 @@ public final class GroovyTokenSets {
 
     public static final TokenSet ASSIGNMENT_OPERATIONS = TokenSet.create(GroovyTokenTypeMappings.getAssignmentTypes());
 
-    public static final TokenSet OPERATIONS = TokenSet.create(new IElementType[] {
+    public static final TokenSet OPERATIONS = TokenSet.create(
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.QUESTION),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.COLON),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.COMMA),
@@ -68,88 +67,90 @@ public final class GroovyTokenSets {
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.STAR_STAR),            // **
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.POST_INC),             // todo: add to groovy.g comment
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.POST_DEC),
-        GroovyTokenTypeMappings.getType(GroovyTokenTypes.DOLLAR),               // scope escape
-    });
+        GroovyTokenTypeMappings.getType(GroovyTokenTypes.DOLLAR)                // scope escape
+    );
 
-    public static final TokenSet EQUALITY_OPERATIONS = TokenSet.create(new IElementType[] {
+    public static final TokenSet EQUALITY_OPERATIONS = TokenSet.create(
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.EQUAL),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.NOT_EQUAL),
-        GroovyTokenTypeMappings.getType(GroovyTokenTypes.COMPARE_TO),
-    });
+        GroovyTokenTypeMappings.getType(GroovyTokenTypes.COMPARE_TO)
+    );
 
-    public static final TokenSet RELATIONAL_OPERATIONS = TokenSet.create(new IElementType[] {
+    public static final TokenSet RELATIONAL_OPERATIONS = TokenSet.create(
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.LT),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.GT),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.LE),
-        GroovyTokenTypeMappings.getType(GroovyTokenTypes.GE),
+        GroovyTokenTypeMappings.getType(GroovyTokenTypes.GE)
 
         // same precedence level as above, but with a different meaning
 //        GroovyTokenTypeMappings.getType(GroovyTokenTypes.LITERAL_instanceof),
 //        GroovyTokenTypeMappings.getType(GroovyTokenTypes.LITERAL_in),
 //        GroovyTokenTypeMappings.getType(GroovyTokenTypes.LITERAL_as)
-    });
+    );
 
-    public static final TokenSet ADDITIVE_OPERATIONS = TokenSet.create(new IElementType[] {
+    public static final TokenSet ADDITIVE_OPERATIONS = TokenSet.create(
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.PLUS),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.MINUS)
-    });
+    );
 
-    public static final TokenSet MULTIPLICATIVE_OPERATIONS = TokenSet.create(new IElementType[] {
+    public static final TokenSet MULTIPLICATIVE_OPERATIONS = TokenSet.create(
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.STAR),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.DIV),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.MOD)
-    });
+    );
 
-    public static final TokenSet SHIFT_OPERATIONS = TokenSet.create(new IElementType[] {
+    public static final TokenSet SHIFT_OPERATIONS = TokenSet.create(
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.SL),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.SR),
-        GroovyTokenTypeMappings.getType(GroovyTokenTypes.BSR),
-    });
+        GroovyTokenTypeMappings.getType(GroovyTokenTypes.BSR)
+    );
 
-    public static final TokenSet UNARY_OPERATIONS = TokenSet.create(new IElementType[] {
+    public static final TokenSet UNARY_OPERATIONS = TokenSet.create(
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.PLUS),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.MINUS),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.INC),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.DEC),
-        GroovyTokenTypeMappings.getType(GroovyTokenTypes.DOLLAR),           // scope escape
-    });
+        GroovyTokenTypeMappings.getType(GroovyTokenTypes.DOLLAR)            // scope escape
+    );
 
-    public static final TokenSet NUMBERS = TokenSet.create(new IElementType[] {
+    public static final TokenSet NUMBERS = TokenSet.create(
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.NUM_INT),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.NUM_FLOAT),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.NUM_LONG),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.NUM_DOUBLE),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.NUM_BIG_INT),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.NUM_BIG_DECIMAL)
-    });
+    );
 
-    public static final TokenSet PARENTHESES = TokenSet.create(new IElementType[] {
+    public static final TokenSet PARENTHESES = TokenSet.create(
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.LPAREN),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.RPAREN)
-    });
+    );
 
-    public static final TokenSet BRACKETS = TokenSet.create(new IElementType[] {
+    public static final TokenSet BRACKETS = TokenSet.create(
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.LBRACK),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.RBRACK)
-    });
+    );
 
-    public static final TokenSet BRACES = TokenSet.create(new IElementType[]{
+    public static final TokenSet BRACES = TokenSet.create(
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.LCURLY),
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.RCURLY)
-    });
+    );
 
-    public static final TokenSet WHITESPACES = TokenSet.create(new IElementType[] {
+    public static final TokenSet WHITESPACES = TokenSet.create(
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.WS),
-        GroovyTokenTypeMappings.getType(GroovyTokenTypes.NLS),
-    });
+        GroovyTokenTypeMappings.getType(GroovyTokenTypes.NLS)
+    );
 
-    public static final TokenSet IDENTIFIERS = TokenSet.create(new IElementType[] {
+    public static final TokenSet IDENTIFIERS = TokenSet.create(
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.IDENT)
-    });
+    );
 
-    public static final TokenSet STRING_LITERALS = TokenSet.create(new IElementType[] {
+    public static final TokenSet STRING_LITERALS = TokenSet.create(
         GroovyTokenTypeMappings.getType(GroovyTokenTypes.STRING_LITERAL)
-    });
+    );
 
-    public static final TokenSet COMMENTS = TokenSet.create(GroovyTokenTypeMappings.getCommentTypes());
+    public static final TokenSet COMMENTS = TokenSet.create(
+        GroovyTokenTypeMappings.getCommentTypes()
+    );
 }

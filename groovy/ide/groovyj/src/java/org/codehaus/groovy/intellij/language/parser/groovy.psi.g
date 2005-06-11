@@ -40,6 +40,7 @@ import antlr.TokenStreamException;
 import antlr.TokenStreamHiddenTokenFilter;
 
 import org.codehaus.groovy.antlr.GroovySourceAST;
+import org.codehaus.groovy.antlr.LineColumn;
 import org.codehaus.groovy.antlr.SourceBuffer;
 
 import org.codehaus.groovy.intellij.language.GroovyPsiBuilder;
@@ -319,7 +320,10 @@ tokens {
 
             // todo - we can populate AST snippets on the fly, but this may be better done as a post-parse decoration
             if (sourceBuffer != null) {
-                String snippet = sourceBuffer.getSnippet(first.getLine(),first.getColumn(),last.getLine(),last.getColumn());
+                String snippet = sourceBuffer.getSnippet(
+                                        new LineColumn(first.getLine(),first.getColumn()),
+                                        new LineColumn(last.getLine(),last.getColumn())
+                );
                 node.setSnippet(snippet);
             }
         }
@@ -3663,7 +3667,7 @@ LETTER
 options {
     paraphrase="a letter";
 }
-    :   'a'..'z'|'A'..'Z'|'_'
+    :   'a'..'z'|'A'..'Z'|'\u0100'..'\uFFFE'|'_'
     // TODO:  Recognize all the Java identifier starts here (except '$').
     ;
 
