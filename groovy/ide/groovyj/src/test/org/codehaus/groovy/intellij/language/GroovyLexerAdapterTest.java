@@ -43,7 +43,7 @@ public class GroovyLexerAdapterTest extends GroovyjTestCase {
     public void testReadsTextRepresentingAScriptHeaderCommentOnly() {
         String input = "#!";
         initialiseLexer(input);
-        assertNextTokenAttributes(GroovyTokenTypes.SH_COMMENT, 1, 1, input); // TODO: report that this used to result in an OutOfMemoryError?
+        assertNextTokenAttributes(GroovyTokenTypes.SH_COMMENT, 1, 1, input);
         assertNextTokenIsEndOfFile();
     }
 
@@ -57,7 +57,7 @@ public class GroovyLexerAdapterTest extends GroovyjTestCase {
     public void testReadsTextRepresentingTheOpeningOfAMultiLineCommentOnly() {
         initialiseLexer("/*");
         try {
-            lexer.advance();                                                // TODO: report that this used to result in an OutOfMemoryError?
+            lexer.advance();
             fail("Bad grammar - ANTLR lexer should have choked on EOF!");
         } catch (RuntimeException e) {
             ObjectAssert.assertInstanceOf("exception class", TokenStreamException.class, e.getCause());
@@ -68,7 +68,7 @@ public class GroovyLexerAdapterTest extends GroovyjTestCase {
     public void testReadsTextContainingASuccessionOfTokensThatResembleTheClosingOfAMultiLineCommentOnly() {
         initialiseLexer("*/");
         assertNextTokenAttributes(GroovyTokenTypes.STAR, 1, 1, "*");
-        assertNextTokenAttributes(GroovyTokenTypes.DIV, 2, 1, "/");         // TODO: report that this used to result in an OutOfMemoryError?
+        assertNextTokenAttributes(GroovyTokenTypes.DIV, 2, 1, "/");
         assertNextTokenIsEndOfFile();
     }
 
