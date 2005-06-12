@@ -28,7 +28,6 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighterBase;
 import com.intellij.psi.JavaDocTokenType;
 import com.intellij.psi.StringEscapesTokenTypes;
 import com.intellij.psi.tree.IElementType;
-import com.intellij.psi.tree.java.IJavaDocElementType;
 import com.intellij.psi.xml.XmlTokenType;
 
 import org.codehaus.groovy.intellij.language.GroovyLanguage;
@@ -87,13 +86,14 @@ public class GroovyFileHighlighter extends SyntaxHighlighterBase {
         levelOneElementTypeToTextAttributeKeyMap.put(GroovyTokenTypeMappings.getType(GroovyTokenTypes.SL_COMMENT), SyntacticAttributes.GROOVY_LINE_COMMENT);
         levelOneElementTypeToTextAttributeKeyMap.put(GroovyTokenTypeMappings.getType(GroovyTokenTypes.ML_COMMENT), SyntacticAttributes.GROOVY_BLOCK_COMMENT);
 
+/*
+        // TODO: restore once GroovyDoc comments are implemented in groovy-core
         IElementType[] elementTypes = IElementType.enumerate(new IElementType.Predicate() {
             public boolean matches(IElementType elementType) {
                 return elementType instanceof IJavaDocElementType;
             }
         });
 
-/*
         for (int i = 0; i < elementTypes.length; i++) {
             IElementType elementType = elementTypes[i];
             levelOneElementTypeToTextAttributeKeyMap.put(elementType, SyntacticAttributes.GROOVY_DOC_COMMENT);
@@ -107,7 +107,7 @@ public class GroovyFileHighlighter extends SyntaxHighlighterBase {
         levelOneElementTypeToTextAttributeKeyMap.put(JavaDocTokenType.DOC_TAG_NAME, SyntacticAttributes.GROOVY_DOC_COMMENT);
         levelTwoElementTypeToTextAttributeKeyMap.put(JavaDocTokenType.DOC_TAG_NAME, SyntacticAttributes.GROOVY_DOC_TAG);
 
-        elementTypes = new IElementType[] {
+        IElementType[] elementTypes = new IElementType[] {
             XmlTokenType.XML_START_TAG_START,
             XmlTokenType.XML_END_TAG_START,
             XmlTokenType.XML_TAG_END,

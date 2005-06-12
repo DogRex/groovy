@@ -58,20 +58,6 @@ public class GroovyFile extends PsiFileImpl implements GroovyElement {
         return "[GroovyFile '" + getContainingFile().getVirtualFile().getPath() + "']";
     }
 
-    // what is this for again? remove if possible...
-/*
-    public boolean processDeclarations(PsiScopeProcessor processor, PsiSubstitutor substitutor, PsiElement lastParent, PsiElement place) {
-        PsiElement[] children = getChildren();
-        for (int i = 0; i < children.length; i++) {
-            PsiElement child = children[i];
-            if (!child.processDeclarations(processor, substitutor, lastParent, place)) {
-                return false;
-            }
-        }
-        return true;
-    }
-*/
-
     public Language getLanguage() {
         return LANGUAGE;
     }

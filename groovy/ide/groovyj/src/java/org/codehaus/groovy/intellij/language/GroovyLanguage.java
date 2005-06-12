@@ -18,6 +18,7 @@
 
 package org.codehaus.groovy.intellij.language;
 
+import com.intellij.ide.highlighter.JavaFileHighlighter;
 import com.intellij.lang.Commenter;
 import com.intellij.lang.Language;
 import com.intellij.lang.PairedBraceMatcher;
@@ -29,11 +30,11 @@ import com.intellij.newCodeFormatting.FormattingModelBuilder;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.openapi.project.Project;
+import com.intellij.pom.java.LanguageLevel;
 import com.intellij.psi.tree.IElementType;
 
 import org.picocontainer.MutablePicoContainer;
 
-import org.codehaus.groovy.intellij.language.editor.GroovyFileHighlighter;
 import org.codehaus.groovy.intellij.language.editor.GroovyFoldingBuilder;
 import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
@@ -64,7 +65,9 @@ public class GroovyLanguage extends Language {
     }
 
     public SyntaxHighlighter getSyntaxHighlighter(Project project) {
-        return new GroovyFileHighlighter();
+        // TODO: restore once GroovyFileHighlighter is functionally usable
+//        return new GroovyFileHighlighter();
+        return new JavaFileHighlighter(LanguageLevel.HIGHEST);
     }
 
     public WordsScanner getWordsScanner() {

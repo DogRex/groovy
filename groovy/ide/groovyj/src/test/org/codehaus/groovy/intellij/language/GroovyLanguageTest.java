@@ -21,6 +21,7 @@ package org.codehaus.groovy.intellij.language;
 import junitx.framework.Assert;
 import junitx.framework.ObjectAssert;
 
+import com.intellij.ide.highlighter.JavaFileHighlighter;
 import com.intellij.lang.Commenter;
 import com.intellij.lang.PairedBraceMatcher;
 import com.intellij.lang.ParserDefinition;
@@ -32,7 +33,6 @@ import com.intellij.psi.tree.IElementType;
 
 import org.codehaus.groovy.intellij.GroovyjTestCase;
 import org.codehaus.groovy.intellij.Stubs;
-import org.codehaus.groovy.intellij.language.editor.GroovyFileHighlighter;
 import org.codehaus.groovy.intellij.language.editor.GroovyFoldingBuilder;
 import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
@@ -57,7 +57,8 @@ public class GroovyLanguageTest extends GroovyjTestCase {
 
         SyntaxHighlighter syntaxHighlighter = language.getSyntaxHighlighter(null);
         Assert.assertNotEquals("project syntax highlighter", null, syntaxHighlighter);
-        ObjectAssert.assertInstanceOf("project syntax highlighter", GroovyFileHighlighter.class, syntaxHighlighter);
+//        ObjectAssert.assertInstanceOf("project syntax highlighter", GroovyFileHighlighter.class, syntaxHighlighter);
+        ObjectAssert.assertInstanceOf("project syntax highlighter", JavaFileHighlighter.class, syntaxHighlighter);
     }
 
     public void testProducesAWordScannerForGroovy() {

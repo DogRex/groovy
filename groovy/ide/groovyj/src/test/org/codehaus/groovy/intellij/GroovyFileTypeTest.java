@@ -20,9 +20,6 @@ package org.codehaus.groovy.intellij;
 
 import java.nio.charset.Charset;
 
-import junitx.framework.ObjectAssert;
-
-import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
@@ -32,7 +29,6 @@ import com.intellij.testFramework.MockVirtualFile;
 import org.jmock.Mock;
 
 import org.codehaus.groovy.intellij.language.GroovyLanguage;
-import org.codehaus.groovy.intellij.language.editor.GroovyFileHighlighter;
 
 public class GroovyFileTypeTest extends GroovyjTestCase {
 
@@ -85,13 +81,6 @@ public class GroovyFileTypeTest extends GroovyjTestCase {
         mockVirtualFile.expects(once()).method("getCharset").will(returnValue(Charset.forName(expectedCharacterSetName)));
 
         assertSame("character set", expectedCharacterSetName, fileType.getCharset((VirtualFile) mockVirtualFile.proxy()));
-    }
-
-    public void testUsesTheGroovyFileHighlighterAsItsHighlighter() {
-        StdFileTypes.XML = Stubs.LANGUAGE_FILE_TYPE;
-        StdFileTypes.JAVA = Stubs.LANGUAGE_FILE_TYPE;
-
-        ObjectAssert.assertInstanceOf("highlighter", GroovyFileHighlighter.class, fileType.getHighlighter(null));
     }
 
     public void testDoesNotCreateABuilderForTheStructuralTreeViewForAFileOutsideOfTheCurrentProject() {
