@@ -14,9 +14,15 @@
     <target name="check.ant.version">
         <echo taskname="ant.version" message="${ant.version}"/>
         <condition property="ant.version.ok">
-            <or>
-                <contains string="${ant.version}" substring="1.6.2" casesensitive="false"/>
-            </or>
+            <and>
+                <contains string="${ant.version}" substring="1.6."/>
+                <not>
+                    <contains string="${ant.version}" substring="1.6.0"/>
+                </not>
+                <not>
+                    <contains string="${ant.version}" substring="1.6.1"/>
+                </not>
+            </and>
         </condition>
     </target>
 
