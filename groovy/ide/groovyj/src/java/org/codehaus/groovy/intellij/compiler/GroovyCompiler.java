@@ -37,9 +37,12 @@ import org.codehaus.groovy.control.ErrorCollector;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.messages.WarningMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
+import org.codehaus.groovy.ast.ASTNode;
 
 import org.codehaus.groovy.intellij.GroovyController;
 import org.codehaus.groovy.intellij.GroovySupportLoader;
+
+import groovy.lang.GroovyRuntimeException;
 
 public class GroovyCompiler implements TranslatingCompiler {
 
@@ -127,6 +130,11 @@ public class GroovyCompiler implements TranslatingCompiler {
             SyntaxException syntaxException = (SyntaxException) exception;
             context.addMessage(CompilerMessageCategory.ERROR, syntaxException.getMessage(), fileToCompile.getUrl(),
                                syntaxException.getLine(), syntaxException.getStartColumn());
+        } else if (exception instanceof GroovyRuntimeException) {
+            GroovyRuntimeException groovyRuntimeException = (GroovyRuntimeException) exception;
+            ASTNode astNode = groovyRuntimeException.getNode();
+            context.addMessage(CompilerMessageCategory.ERROR, groovyRuntimeException.getMessageWithoutLocationText(),
+                               fileToCompile.getUrl(), astNode.getLineNumber(), astNode.getColumnNumber());
         } else {
             context.addMessage(CompilerMessageCategory.ERROR, exception.getMessage(), fileToCompile.getUrl(), -1, -1);
         }

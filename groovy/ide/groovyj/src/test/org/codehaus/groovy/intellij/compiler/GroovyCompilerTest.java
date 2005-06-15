@@ -42,6 +42,7 @@ import org.codehaus.groovy.control.messages.ExceptionMessage;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.control.messages.WarningMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
+import org.codehaus.groovy.ast.ASTNode;
 
 import org.jmock.Mock;
 import org.jmock.core.Constraint;
@@ -51,6 +52,8 @@ import org.codehaus.groovy.intellij.GroovySupportLoader;
 import org.codehaus.groovy.intellij.GroovyjTestCase;
 import org.codehaus.groovy.intellij.Mocks;
 import org.codehaus.groovy.intellij.TestUtil;
+
+import groovy.lang.MissingClassException;
 
 public class GroovyCompilerTest extends GroovyjTestCase {
 
@@ -129,6 +132,38 @@ public class GroovyCompilerTest extends GroovyjTestCase {
 
         assertEquals("number of errors", 1, errorCollector.getErrorCount());
         assertSame("exception", syntaxException, errorCollector.getException(0));
+
+        assertEquals("number of warnings", 0, errorCollector.getWarningCount());
+    }
+
+    public void testAddsGroovyRuntimeExceptionsWithPreciseLocationToCompileContext() throws IOException, CompilationFailedException {
+        ASTNode astNode = new ASTNode();
+        astNode.setLineNumber(TestUtil.nextAbsRandomInt());
+        astNode.setColumnNumber(TestUtil.nextAbsRandomInt());
+
+        MissingClassException missingClassException = new MissingClassException("MadeUpType", astNode, "in blah blah");
+
+        MockCompilationUnit compilationUnit = new MockCompilationUnit();
+        ErrorCollector errorCollector = compilationUnit.getErrorCollector();
+        errorCollector.addError(new ExceptionMessage(missingClassException, false, null));
+        compilationUnit.exception = new MultipleCompilationErrorsException(errorCollector);
+
+        VirtualFile fileToCompile = createVirtualFile("/home/foo/acme/src/bar.groovy");
+
+        Mock mockCompileContext = createMockedCompileContextWithStubbedProgressIndicator();
+        mockCompileContext.expects(once()).method("addMessage")
+                .with(new Constraint[] { same(CompilerMessageCategory.ERROR),
+                                         eq(missingClassException.getMessageWithoutLocationText()), eq(fileToCompile.getUrl()),
+                                         eq(astNode.getLineNumber()), eq(astNode.getColumnNumber()) });
+
+        TranslatingCompiler.ExitStatus exitStatus = compile(fileToCompile, mockCompileContext, compilationUnit);
+        assertEquals("number of files to recompile", 1, exitStatus.getFilesToRecompile().length);
+        assertSame("file to recompile", fileToCompile, exitStatus.getFilesToRecompile()[0]);
+
+        assertEquals("number of files compiled", 0, exitStatus.getSuccessfullyCompiled().length);
+
+        assertEquals("number of errors", 1, errorCollector.getErrorCount());
+        assertSame("exception", missingClassException, errorCollector.getException(0));
 
         assertEquals("number of warnings", 0, errorCollector.getWarningCount());
     }
