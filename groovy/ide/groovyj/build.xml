@@ -98,7 +98,6 @@
             <filter token="PROJECT.NAME" value="${project.name}"/>
             <filter token="PROJECT.HOMEPAGE" value="${project.homepage}"/>
             <filter token="PROJECT.TITLE" value="${project.title}"/>
-            <filter token="PROJECT.VERSION" value="${project.version}"/>
             <filter token="PROJECT.DESCRIPTION" value="${project.description}"/>
             <filter token="PROJECT.CHANGE-NOTES" value="${project.change-notes}"/>
             <filter token="PROJECT.VENDOR" value="${project.vendor}"/>
@@ -317,7 +316,8 @@
             <fileset dir="${src.etc.dir}" excludes="styles/**/*, ${binary.extensions}, **/*.xcf"/>
             <filterset>
                 <filter token="PROJECT.IDEA.SINCE-BUILD" value="3354"/>
-                <filter token="PROJECT.IDEA.UNTIL-BUILD" value="3354"/>
+                <filter token="PROJECT.IDEA.UNTIL-BUILD" value="3370"/>
+                <filter token="PROJECT.VERSION" value="${project.version} (Irida)"/>
             </filterset>
             <filterset refid="project.variables"/>
             <filterset refid="timestamp.variables"/>
