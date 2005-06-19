@@ -73,8 +73,7 @@ public final class GroovyTokenTypeMappings {
         List<IElementType> literalTypes = new ArrayList<IElementType>();
         List<IElementType> commentTypes = new ArrayList<IElementType>();
 
-        for (int i = 0; i < fields.length; i++) {
-            Field field = fields[i];
+        for (Field field : fields) {
             if (isPublicStaticFinalIntegerPrimitive(field)) {
                 addTokenTypeMapping(field, assignmentTypes, literalTypes, commentTypes);
             }

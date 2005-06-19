@@ -98,14 +98,13 @@ public class GroovyRunConfiguration extends RuntimeConfiguration {
 //        return ModuleManager.getInstance(getProject()).findModuleByName(getModuleName());
 
         Module[] modules = ModuleManager.getInstance(getProject()).getModules();
-        for (int i = 0; i < modules.length; i++) {
-            Module module = modules[i];
+        for (Module module : modules) {
             if (module.getName().equals(getModuleName())) {
                 return module;
             }
         }
         return null;
-        }
+    }
 
     public void setModule(Module module) {
         this.moduleName = (module == null) ? "" : module.getName();

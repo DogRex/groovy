@@ -18,13 +18,22 @@
 
 package org.codehaus.groovy.intellij;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import com.intellij.openapi.command.CommandListener;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.SourceFolder;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileListener;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.wm.WindowManager;
@@ -53,6 +62,34 @@ public abstract class BaseEditorAPI implements EditorAPI {
         System.arraycopy(dependencies, 0, moduleAndDependentModules, 1, dependencies.length);
 
         return moduleAndDependentModules;
+    }
+
+    public List<VirtualFile> getAllSourceFolderFiles(Module module) {
+        List<VirtualFile> sourceFolders = new ArrayList<VirtualFile>();
+        ContentEntry[] contentEntries = ModuleRootManager.getInstance(module).getContentEntries();
+        collectAllSourceFolders(contentEntries, sourceFolders);
+        sourceFolders.removeAll(collectExcludedFolders(contentEntries));
+        return sourceFolders;
+    }
+
+    private void collectAllSourceFolders(ContentEntry[] entries, List sourceFolders) {
+        for (ContentEntry entry : entries) {
+            SourceFolder[] folders = entry.getSourceFolders();
+            for (SourceFolder folder : folders) {
+                VirtualFile file = folder.getFile();
+                if (file.isDirectory() && file.isWritable()) {
+                    sourceFolders.add(file);
+                }
+            }
+        }
+    }
+
+    private Set<VirtualFile> collectExcludedFolders(ContentEntry[] entries) {
+        Set<VirtualFile> excludedFolders = new HashSet<VirtualFile>();
+        for (ContentEntry entry : entries) {
+            excludedFolders.addAll(Arrays.asList(entry.getExcludeFolderFiles()));
+        }
+        return excludedFolders;
     }
 
     public void writeMessageToStatusBar(String message) {

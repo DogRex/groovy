@@ -33,6 +33,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.MockVirtualFile;
 
+import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
@@ -42,7 +43,6 @@ import org.codehaus.groovy.control.messages.ExceptionMessage;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.control.messages.WarningMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
-import org.codehaus.groovy.ast.ASTNode;
 
 import org.jmock.Mock;
 import org.jmock.core.Constraint;
@@ -227,7 +227,7 @@ public class GroovyCompilerTest extends GroovyjTestCase {
         mockCompileContext.expects(once()).method("getModuleByFile").with(same(file)).will(returnValue(module));
 
         compilationUnit.getConfiguration().setTargetDirectory("/home/foo/acme/classes");
-        mockGroovyController.expects(once()).method("createCompilationUnit").with(same(file), same(module))
+        mockGroovyController.expects(once()).method("createCompilationUnit").with(same(module), same(file))
                 .will(returnValue(compilationUnit));
 
         return groovyCompiler.compile((CompileContext) mockCompileContext.proxy(), new VirtualFile[] { file });

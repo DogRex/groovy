@@ -22,11 +22,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.List;
 
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ModuleFileIndex;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.testFramework.MockVirtualFile;
 
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
@@ -58,41 +61,51 @@ public class GroovyControllerTest extends GroovyjTestCase {
     public void testCreatesAGroovyShellWithAnEmptyContext() {
         groovyController = new GroovyController((EditorAPI) mockEditorAPI.proxy());
 
-        Module expectedModule = createModuleForCreatingACompilerConfiguration("UTF-8", "some_lib.jar", "/home/foobar/acme/classes");
+        VirtualFile sourceFolder = new MockVirtualFile("/home/foo/dev/projects/acme/src/groovy");
+        Module expectedModule = createModuleForCreatingACompilerConfiguration(
+                "UTF-8", "some_lib.jar", "/home/foobar/acme/classes", Collections.singletonList(sourceFolder));
+
         GroovyShell shell = groovyController.createGroovyShellForScript((VirtualFile) mockVirtualFile.proxy(), expectedModule);
         assertEquals(0, shell.getContext().getVariables().size());
     }
 
-    public void testCreatesACompilationUnitConfiguredWithTheClassLoaderOfTheCurrentThreadForASingleCompilableFile() throws IOException {
+    public void testCreatesACompilationUnitConfiguredWithTheClassLoaderOfTheCurrentThreadBoundToTheGroovyClassLoader() throws IOException {
         String expectedCharsetName = "UTF-8";
         String expectedClasspathEntry = "some_lib.jar";
-        String exargetDirectoryPath = "/home/foobar/acme/classes";
+        String expectedTargetDirectoryPath = "/home/foobar/acme/classes";
 
-        Module module = createModuleForCreatingACompilerConfiguration(expectedCharsetName, expectedClasspathEntry, exargetDirectoryPath);
-        CompilationUnit compilationUnit = groovyController.createCompilationUnit((VirtualFile) mockVirtualFile.proxy(), module);
+        VirtualFile sourceFolder = new MockVirtualFile("home/foo/dev/projects/acme/src/groovy");
+        Module module = createModuleForCreatingACompilerConfiguration(
+                expectedCharsetName, expectedClasspathEntry, expectedTargetDirectoryPath, Collections.singletonList(sourceFolder));
+
+        CompilationUnit compilationUnit = groovyController.createCompilationUnit(module, (VirtualFile) mockVirtualFile.proxy());
         CompilerConfiguration configuration = compilationUnit.getConfiguration();
 
         assertEquals("source encoding", expectedCharsetName, configuration.getSourceEncoding());
-        assertEquals("number of classpath items", 1, configuration.getClasspath().size());
-        assertEquals("classpath item", expectedClasspathEntry, configuration.getClasspath().get(0));
-        assertEquals("target directory", new File(exargetDirectoryPath), configuration.getTargetDirectory());
-        assertSame("class loader", Thread.currentThread().getContextClassLoader(), compilationUnit.getClassLoader());
+        assertEquals("number of classpath items", 2, configuration.getClasspath().size());
+        assertEquals("classpath item #1", expectedClasspathEntry, configuration.getClasspath().get(0));
+        assertEquals("classpath item #2", sourceFolder.getPath(), configuration.getClasspath().get(1));
+        assertEquals("target directory", new File(expectedTargetDirectoryPath), configuration.getTargetDirectory());
+        assertSame("class loader", Thread.currentThread().getContextClassLoader(), compilationUnit.getClassLoader().getParent());
     }
 
-    private Module createModuleForCreatingACompilerConfiguration(String charsetName, String classpath, String targetDirectoryPath) {
-        Mock mockModule = mock(Module.class);
-        Module expectedModule = (Module) mockModule.proxy();
+    private Module createModuleForCreatingACompilerConfiguration(String charsetName, String classpath, String targetDirectoryPath,
+                                                                 List<? extends VirtualFile> sourceFolderFiles) {
+        Mock stubModule = mock(Module.class, "stubModule");
+        stubModule.stubs().method("getName").will(returnValue("stubbed module"));
 
+        Module expectedModule = (Module) stubModule.proxy();
         mockVirtualFile.expects(once()).method("getCharset").will(returnValue(Charset.forName(charsetName)));
         mockEditorAPI.expects(once()).method("getCompilationClasspath").with(same(expectedModule)).will(returnValue(classpath));
+        mockEditorAPI.expects(once()).method("getAllSourceFolderFiles").with(same(expectedModule)).will(returnValue(sourceFolderFiles));
 
         Mock mockModuleRootManager = mock(ModuleRootManager.class);
-        mockModule.stubs().method("getComponent").with(same(ModuleRootManager.class)).will(returnValue(mockModuleRootManager.proxy()));
+        stubModule.stubs().method("getComponent").with(same(ModuleRootManager.class)).will(returnValue(mockModuleRootManager.proxy()));
 
-        Mock mockModuleFileIndex = mock(ModuleFileIndex.class);
-        mockModuleRootManager.stubs().method("getFileIndex").will(returnValue(mockModuleFileIndex.proxy()));
+        Mock stubModuleFileIndex = mock(ModuleFileIndex.class);
+        mockModuleRootManager.stubs().method("getFileIndex").will(returnValue(stubModuleFileIndex.proxy()));
 
-        mockModuleFileIndex.expects(once()).method("isInTestSourceContent").with(same(mockVirtualFile.proxy())).will(returnValue(false));
+        stubModuleFileIndex.expects(once()).method("isInTestSourceContent").with(same(mockVirtualFile.proxy())).will(returnValue(false));
         mockModuleRootManager.expects(once()).method("getCompilerOutputPathUrl").will(returnValue("file://" + targetDirectoryPath));
 
         return expectedModule;

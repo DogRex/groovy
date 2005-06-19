@@ -18,6 +18,8 @@
 
 package org.codehaus.groovy.intellij;
 
+import java.util.List;
+
 import org.intellij.openapi.testing.MockApplication;
 import org.intellij.openapi.testing.MockApplicationManager;
 
@@ -28,7 +30,10 @@ import com.intellij.openapi.fileEditor.FileEditorManagerAdapter;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.SourceFolder;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileListener;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.wm.StatusBar;
@@ -38,6 +43,7 @@ import com.intellij.psi.PsiTreeChangeAdapter;
 import com.intellij.psi.PsiTreeChangeListener;
 import com.intellij.refactoring.listeners.RefactoringElementListenerProvider;
 import com.intellij.refactoring.listeners.RefactoringListenerManager;
+import com.intellij.testFramework.MockVirtualFile;
 
 import org.jmock.Mock;
 import org.jmock.cglib.MockObjectTestCase;
@@ -45,7 +51,9 @@ import org.jmock.cglib.MockObjectTestCase;
 public abstract class EditorApiTestCase extends MockObjectTestCase {
 
     protected final Mock mockProject = mock(Project.class);
-    protected final Mock mockModule = mock(Module.class);
+
+    private final Mock stubModule = mock(Module.class);
+    protected final Module stubbedModule = (Module) stubModule.proxy();
     protected final Mock mockModuleRootManager = mock(ModuleRootManager.class);
 
     private final Mock mockPsiManager = mock(PsiManager.class);
@@ -62,7 +70,7 @@ public abstract class EditorApiTestCase extends MockObjectTestCase {
         mockProject.stubs().method("getComponent").with(eq(PsiManager.class)).will(returnValue(mockPsiManager.proxy()));
         mockProject.stubs().method("getComponent").with(eq(FileEditorManager.class)).will(returnValue(mockFileEditorManager.proxy()));
         mockProject.stubs().method("getComponent").with(eq(RefactoringListenerManager.class)).will(returnValue(mockRefactoringListenerManager.proxy()));
-        mockModule.stubs().method("getComponent").with(eq(ModuleRootManager.class)).will(returnValue(mockModuleRootManager.proxy()));
+        stubModule.stubs().method("getComponent").with(eq(ModuleRootManager.class)).will(returnValue(mockModuleRootManager.proxy()));
         mockWindowManager.stubs().method("getStatusBar").will(returnValue(mockStatusBar.proxy()));
 
         MockApplication applicationMock = MockApplicationManager.getMockApplication();
@@ -86,29 +94,74 @@ public abstract class EditorApiTestCase extends MockObjectTestCase {
     public void testReturnsAnArrayContainingJustAGivenModuleWhenItHasNoDependentModules() {
         mockModuleRootManager.expects(once()).method("getDependencies").will(returnValue(Module.EMPTY_ARRAY));
 
-        Module expectedModule = (Module) mockModule.proxy();
-        Module[] moduleAndDependentModules = editorApi.getModuleAndDependentModules(expectedModule);
-
+        Module[] moduleAndDependentModules = editorApi.getModuleAndDependentModules(stubbedModule);
         assertEquals("number of modules", 1, moduleAndDependentModules.length);
-        assertSame("module", expectedModule, moduleAndDependentModules[0]);
+        assertSame("module", stubbedModule, moduleAndDependentModules[0]);
     }
 
     public void testReturnsAnArrayOfModulesMadeOfTheModuleItselfFollowedByAllOfItsDependentModules() {
         Module[] moduleDependencies = new Module[] {
             (Module) mock(Module.class, "mockModuleDependency1").proxy(),
-            (Module) mock(Module.class, "mockModuleDependency2").proxy()
+            (Module) mock(Module.class, "mockModuleDependency2").proxy(),
         };
         mockModuleRootManager.expects(once()).method("getDependencies").will(returnValue(moduleDependencies));
 
-        Module expectedModule = (Module) mockModule.proxy();
-        Module[] moduleAndDependentModules = editorApi.getModuleAndDependentModules(expectedModule);
-
+        Module[] moduleAndDependentModules = editorApi.getModuleAndDependentModules(stubbedModule);
         assertEquals("number of modules", moduleDependencies.length + 1, moduleAndDependentModules.length);
-        assertSame("module", expectedModule, moduleAndDependentModules[0]);
+        assertSame("module", stubbedModule, moduleAndDependentModules[0]);
 
         for (int i = 0; i < moduleDependencies.length; i++) {
             int destinationIndex = i + 1;
             assertSame("module dependency #" + destinationIndex, moduleDependencies[i], moduleAndDependentModules[destinationIndex]);
+        }
+    }
+
+    public void testReturnsAllNonExcludedSourceFoldersForAGivenModule() {
+        Mock stubWritableSourceFolder = mock(SourceFolder.class, "stubWritableSourceFolder");
+        Mock stubReadOnlySourceFolder = mock(SourceFolder.class, "stubReadOnlySourceFolder");
+        Mock stubWritableSourceFile = mock(SourceFolder.class, "stubWritableSourceFile");
+        Mock stubExcludedSourceFolder = mock(SourceFolder.class, "stubExcludedSourceFolder");
+
+        Mock stubContentEntry = mock(ContentEntry.class, "stubContentEntry");
+        VirtualFile excludedFolderFile = new VirtualFileStub(true, true);
+        stubContentEntry.stubs().method("getExcludeFolderFiles").will(returnValue(new VirtualFile[] { excludedFolderFile }));
+
+        VirtualFile expectedSourceFolder = new VirtualFileStub(true, true);
+        stubWritableSourceFolder.stubs().method("getFile").will(returnValue(expectedSourceFolder));
+        stubReadOnlySourceFolder.stubs().method("getFile").will(returnValue(new VirtualFileStub(true, false)));
+        stubWritableSourceFile.stubs().method("getFile").will(returnValue(new VirtualFileStub(false, true)));
+        stubExcludedSourceFolder.stubs().method("getFile").will(returnValue(excludedFolderFile));
+
+        stubContentEntry.stubs().method("getSourceFolders").will(returnValue(new SourceFolder[] {
+            (SourceFolder) stubWritableSourceFolder.proxy(),
+            (SourceFolder) stubReadOnlySourceFolder.proxy(),
+            (SourceFolder) stubWritableSourceFile.proxy(),
+            (SourceFolder) stubExcludedSourceFolder.proxy(),
+        }));
+
+        ContentEntry[] allContentEntries = new ContentEntry[] { (ContentEntry) stubContentEntry.proxy() };
+        mockModuleRootManager.expects(once()).method("getContentEntries").will(returnValue(allContentEntries));
+
+        List allSourceFolderFiles = editorApi.getAllSourceFolderFiles(stubbedModule);
+        assertEquals("number of source folders", 1, allSourceFolderFiles.size());
+        assertSame(expectedSourceFolder, allSourceFolderFiles.get(0));
+    }
+
+    private static class VirtualFileStub extends MockVirtualFile {
+        private final boolean directory;
+        private final boolean writable;
+
+        public VirtualFileStub(boolean directory, boolean writable) {
+            this.directory = directory;
+            this.writable = writable;
+        }
+
+        public boolean isDirectory() {
+            return directory;
+        }
+
+        public boolean isWritable() {
+            return writable;
         }
     }
 

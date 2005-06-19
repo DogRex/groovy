@@ -94,8 +94,7 @@ public class GroovyFileHighlighter extends SyntaxHighlighterBase {
             }
         });
 
-        for (int i = 0; i < elementTypes.length; i++) {
-            IElementType elementType = elementTypes[i];
+        for (IElementType elementType : elementTypes) {
             levelOneElementTypeToTextAttributeKeyMap.put(elementType, SyntacticAttributes.GROOVY_DOC_COMMENT);
         }
 */
@@ -121,8 +120,7 @@ public class GroovyFileHighlighter extends SyntaxHighlighterBase {
             XmlTokenType.XML_EQ
         };
 
-        for (int j = 0; j < elementTypes.length; j++) {
-            IElementType elementType = elementTypes[j];
+        for (IElementType elementType : elementTypes) {
             levelOneElementTypeToTextAttributeKeyMap.put(elementType, SyntacticAttributes.GROOVY_DOC_COMMENT);
             levelTwoElementTypeToTextAttributeKeyMap.put(elementType, SyntacticAttributes.GROOVY_DOC_MARKUP);
         }

@@ -23,7 +23,6 @@ import java.io.File;
 import org.intellij.openapi.testing.MockApplicationManager;
 
 import com.intellij.openapi.application.Application;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.OrderEntry;
 import com.intellij.openapi.roots.OrderRootType;
@@ -49,10 +48,9 @@ public class IridaAPITest extends EditorApiTestCase {
     public void testReturnsAnEmptyStringAsTheCompilationClasspathWhenTheGivenModuleHasNoLibraryDependencies() {
         String expectedCompilationClasspath = "";
 
-        mockModuleRootManager.expects(once()).method("getOrderEntries").withNoArguments()
-                .will(returnValue(OrderEntry.EMPTY_ARRAY));
+        mockModuleRootManager.expects(once()).method("getOrderEntries").will(returnValue(OrderEntry.EMPTY_ARRAY));
 
-        String compilationClasspath = editorApi.getCompilationClasspath((Module) mockModule.proxy());
+        String compilationClasspath = editorApi.getCompilationClasspath(stubbedModule);
         assertEquals("compilation classpath", expectedCompilationClasspath, compilationClasspath);
     }
 
@@ -64,9 +62,9 @@ public class IridaAPITest extends EditorApiTestCase {
                 .will(returnValue(new VirtualFile[] { new MockVirtualFile(expectedFileName) }));
 
         OrderEntry[] orderEntries = new OrderEntry[] { (OrderEntry) mockOrderEntry.proxy() };
-        mockModuleRootManager.expects(once()).method("getOrderEntries").withNoArguments().will(returnValue(orderEntries));
+        mockModuleRootManager.expects(once()).method("getOrderEntries").will(returnValue(orderEntries));
 
-        String compilationClasspath = editorApi.getCompilationClasspath((Module) mockModule.proxy());
+        String compilationClasspath = editorApi.getCompilationClasspath(stubbedModule);
         assertEquals("compilation classpath", File.separatorChar + expectedFileName, compilationClasspath);
     }
 

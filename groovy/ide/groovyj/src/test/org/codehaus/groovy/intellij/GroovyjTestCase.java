@@ -84,8 +84,7 @@ public abstract class GroovyjTestCase extends MockObjectTestCase {
         stubModuleManager.stubs().method("getModules").will(returnValue(allProjectModules));
         stubModuleManager.stubs().method("getSortedModules").will(returnValue(allProjectModules));
 
-        for (int i = 0; i < allProjectModules.length; i++) {
-            Module projectModule = allProjectModules[i];
+        for (Module projectModule : allProjectModules) {
             stubModuleManager.stubs().method("findModuleByName").with(eq(projectModule.getName())).will(returnValue(projectModule));
             stubModuleManager.stubs().method("findModuleByName").with(not(eq(projectModule.getName()))).will(returnValue(null));
         }

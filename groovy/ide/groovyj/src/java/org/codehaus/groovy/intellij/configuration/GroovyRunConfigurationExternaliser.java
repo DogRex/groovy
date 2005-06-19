@@ -19,7 +19,6 @@
 package org.codehaus.groovy.intellij.configuration;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -70,11 +69,10 @@ public class GroovyRunConfigurationExternaliser {
         element.addContent(moduleElement);
     }
 
-    static Map buildOptionsByName(List listOfOptionElements) {
+    static Map buildOptionsByName(List<Element> listOfOptionElements) {
         Map<String, String> optionMap = new HashMap<String, String>();
 
-        for (Iterator optionElements = listOfOptionElements.iterator(); optionElements.hasNext(); ) {
-            Element optionElement = (Element) optionElements.next();
+        for (Element optionElement : listOfOptionElements) {
             optionMap.put(optionElement.getAttribute(NAME_ATTRIBUTE).getValue(),
                           optionElement.getAttribute(VALUE_ATTRIBUTE).getValue());
         }

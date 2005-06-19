@@ -50,8 +50,7 @@ public class GroovyPairedBraceMatcherTest extends GroovyjTestCase {
     }
 
     private BracePair findBracePair(char leftBraceCharacter) {
-        for (int i = 0; i < actualBracePairs.length; i++) {
-            BracePair bracePair = actualBracePairs[i];
+        for (BracePair bracePair : actualBracePairs) {
             if (bracePair.getLeftBraceChar() == leftBraceCharacter) {
                 return bracePair;
             }

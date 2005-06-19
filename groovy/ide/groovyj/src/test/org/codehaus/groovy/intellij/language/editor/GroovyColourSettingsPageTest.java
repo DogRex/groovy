@@ -74,21 +74,21 @@ public class GroovyColourSettingsPageTest extends GroovyjTestCase {
     }
 
     public void testUsesAttributeDescriptorsDerivedFromTheOnesDefinedOnTheJavaColourSettingsPage() {
-        AttributesDescriptor[] groovyAttributeDescriptors = groovyColourSettingsPage.getAttributeDescriptors();
-        AttributesDescriptor[] javaAttributeDescriptors = javaColourSettingsPage.getAttributeDescriptors();
+        AttributesDescriptor[] groovyAttributesDescriptors = groovyColourSettingsPage.getAttributeDescriptors();
+        AttributesDescriptor[] javaAttributesDescriptors = javaColourSettingsPage.getAttributeDescriptors();
 
         assertTrue("should have a greater or equal number of attribute descriptors than the Java page",
-                   groovyAttributeDescriptors.length >= javaAttributeDescriptors.length);
+                   groovyAttributesDescriptors.length >= javaAttributesDescriptors.length);
 
         List<TextAttributes> groovyAttributeDescriptorAttributes = new ArrayList<TextAttributes>();
-        for (int i = 0; i < groovyAttributeDescriptors.length; i++) {
-            groovyAttributeDescriptorAttributes.add(groovyAttributeDescriptors[i].getKey().getDefaultAttributes());
+        for (AttributesDescriptor attributesDescriptor : groovyAttributesDescriptors) {
+            groovyAttributeDescriptorAttributes.add(attributesDescriptor.getKey().getDefaultAttributes());
         }
 
-        for (int i = 0; i < javaAttributeDescriptors.length; i++) {
+        for (int i = 0; i < javaAttributesDescriptors.length; i++) {
             ListAssert.assertContains("attribute descriptor attributes #" + i,
                     groovyAttributeDescriptorAttributes,
-                    javaAttributeDescriptors[i].getKey().getDefaultAttributes());
+                    javaAttributesDescriptors[i].getKey().getDefaultAttributes());
         }
     }
 

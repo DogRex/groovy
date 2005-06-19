@@ -18,9 +18,12 @@
 
 package org.codehaus.groovy.intellij;
 
+import java.util.List;
+
 import com.intellij.openapi.command.CommandListener;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileListener;
 import com.intellij.psi.PsiTreeChangeListener;
 import com.intellij.refactoring.listeners.RefactoringElementListenerProvider;
@@ -30,6 +33,8 @@ public interface EditorAPI {
     Module[] getModuleAndDependentModules(Module module);
 
     String getCompilationClasspath(Module module);
+
+    List<VirtualFile> getAllSourceFolderFiles(Module module);
 
     void invokeLater(Runnable task);
 

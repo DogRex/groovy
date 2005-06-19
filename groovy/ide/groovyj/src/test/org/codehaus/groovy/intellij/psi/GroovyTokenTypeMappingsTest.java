@@ -62,8 +62,7 @@ public class GroovyTokenTypeMappingsTest extends GroovyjTestCase {
     private void assertElementTypesAreCorrectlyDetected(String keyword, IElementType[] literalTypes) {
         Assert.assertNotEquals("number of " + keyword.toLowerCase() + " types", 0, literalTypes.length);
 
-        for (int i = 0; i < literalTypes.length; i++) {
-            IElementType literalType = literalTypes[i];
+        for (IElementType literalType : literalTypes) {
             String elementTypeName = literalType.toString();
             StringAssert.assertContains("element type name", keyword, elementTypeName);
         }

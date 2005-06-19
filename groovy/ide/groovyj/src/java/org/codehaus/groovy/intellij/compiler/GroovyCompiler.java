@@ -32,12 +32,12 @@ import com.intellij.openapi.compiler.TranslatingCompiler;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.vfs.VirtualFile;
 
+import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.ErrorCollector;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.messages.WarningMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
-import org.codehaus.groovy.ast.ASTNode;
 
 import org.codehaus.groovy.intellij.GroovyController;
 import org.codehaus.groovy.intellij.GroovySupportLoader;
@@ -87,7 +87,7 @@ public class GroovyCompiler implements TranslatingCompiler {
 
     private void compile(CompileContext context, VirtualFile fileToCompile, List<OutputItem> compiledFiles, List<VirtualFile> filesToRecompile) {
         Module module = context.getModuleByFile(fileToCompile);
-        CompilationUnit compilationUnit = controller.createCompilationUnit(fileToCompile, module);
+        CompilationUnit compilationUnit = controller.createCompilationUnit(module, fileToCompile);
         compilationUnit.addSource(new File(fileToCompile.getPath()));
 
         try {

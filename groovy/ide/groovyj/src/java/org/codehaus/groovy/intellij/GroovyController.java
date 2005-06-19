@@ -18,8 +18,10 @@
 
 package org.codehaus.groovy.intellij;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 
 import com.intellij.openapi.compiler.CompilerPaths;
 import com.intellij.openapi.module.Module;
@@ -32,6 +34,7 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.messages.WarningMessage;
 
 import groovy.lang.Binding;
+import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyShell;
 
 public class GroovyController {
@@ -61,28 +64,50 @@ public class GroovyController {
     }
 
     GroovyShell createGroovyShellForScript(VirtualFile fileToRun, Module module) {
-        CompilerConfiguration compilerConfiguration = createCompilerConfiguration(fileToRun, module);
+        boolean inTestSourceContent = isInTestSourceContent(module, fileToRun);
+        String characterEncoding = fileToRun.getCharset().name();
+        CompilerConfiguration compilerConfiguration = createCompilerConfiguration(module, characterEncoding, inTestSourceContent);
         return new GroovyShell(getClass().getClassLoader(), new Binding(), compilerConfiguration);
     }
 
-    public CompilationUnit createCompilationUnit(VirtualFile fileToCompile, Module module) {
-        CompilerConfiguration compilerConfiguration = createCompilerConfiguration(fileToCompile, module);
-        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-        return new CompilationUnit(compilerConfiguration, null, contextClassLoader);
+    public CompilationUnit createCompilationUnit(Module module, VirtualFile fileToCompile) {
+        boolean inTestSourceContent = isInTestSourceContent(module, fileToCompile);
+        String characterEncoding = fileToCompile.getCharset().name();
+        CompilerConfiguration compilerConfiguration = createCompilerConfiguration(module, characterEncoding, inTestSourceContent);
+        return new CompilationUnit(compilerConfiguration, null, assembleClassLoader(compilerConfiguration));
     }
 
-    private CompilerConfiguration createCompilerConfiguration(VirtualFile fileToCompile, Module module) {
+    private boolean isInTestSourceContent(Module module, VirtualFile file) {
+        ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(module);
+        return moduleRootManager.getFileIndex().isInTestSourceContent(file);
+    }
+
+    private CompilerConfiguration createCompilerConfiguration(Module module, String characterEncoding, boolean inTestSourceContent) {
         CompilerConfiguration compilerConfiguration = new CompilerConfiguration();
-        compilerConfiguration.setSourceEncoding(fileToCompile.getCharset().name());
-        compilerConfiguration.setClasspath(editorApi.getCompilationClasspath(module));
+        compilerConfiguration.setSourceEncoding(characterEncoding);
         compilerConfiguration.setOutput(new PrintWriter(System.out));
         compilerConfiguration.setWarningLevel(WarningMessage.PARANOIA);
 
-        ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(module);
-        boolean isInTestSourceContent = moduleRootManager.getFileIndex().isInTestSourceContent(fileToCompile);
-        String outputPath = CompilerPaths.getModuleOutputPath(module, isInTestSourceContent);
-        compilerConfiguration.setTargetDirectory(outputPath);
+        String moduleClasspath = editorApi.getCompilationClasspath(module);
+        String sourceFoldersPath = flattenModuleSourceFoldersAsPath(module);
+        compilerConfiguration.setClasspath(moduleClasspath + File.pathSeparator + sourceFoldersPath);
+        compilerConfiguration.setTargetDirectory(CompilerPaths.getModuleOutputPath(module, inTestSourceContent));
 
         return compilerConfiguration;
+    }
+
+    private String flattenModuleSourceFoldersAsPath(Module module) {
+        String sourceFoldersAsPath = "";
+        List<VirtualFile> allSourceFolderFiles = editorApi.getAllSourceFolderFiles(module);
+        for (VirtualFile sourceFolderFile : allSourceFolderFiles) {
+            sourceFoldersAsPath += sourceFolderFile.getPath() + File.pathSeparator;
+        }
+        return sourceFoldersAsPath;
+    }
+
+    private ClassLoader assembleClassLoader(CompilerConfiguration compilerConfiguration) {
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        return new GroovyClassLoader(contextClassLoader, compilerConfiguration);
+//        return new GroovyClassLoader(new CompilerClassLoader(), compilerConfiguration);
     }
 }
