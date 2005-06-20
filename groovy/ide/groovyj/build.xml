@@ -159,9 +159,10 @@
         $IDEA_HOME/lib/icons.jar,
         $IDEA_HOME/lib/idea.jar,
         $IDEA_HOME/lib/openapi.jar,
-        $IDEA_HOME/lib/picocontainer.jar and
-        $IDEA_HOME/lib/trove4j.jar to
-        ${irida.home}/lib.
+        $IDEA_HOME/lib/picocontainer.jar,
+        $IDEA_HOME/lib/trove4j.jar,
+        $IDEA_HOME/lib/xstream.jar
+        to ${irida.home}/lib.
         </fail>
     </target>
 
