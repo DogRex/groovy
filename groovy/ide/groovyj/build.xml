@@ -138,6 +138,9 @@
                 <available classname="gnu.trove.TIntObjectHashMap"
                            classpathref="irida.compile.classpath"/>
 
+                <available classname="org.apache.commons.collections.MultiHashMap"
+                           classpathref="irida.compile.classpath"/>
+
                 <not>
                     <available classname="com.intellij.codeFormatting.PseudoTextBuilder"
                                classpathref="irida.compile.classpath"/>
@@ -150,6 +153,7 @@
         <fail>IntelliJ IDEA (Irida) is not available. Please either start with 'ant -Dirida.home=/path/to/irida' or copy
         $IDEA_HOME/lib/annotations.jar,
         $IDEA_HOME/lib/boot.jar,
+        $IDEA_HOME/lib/commons-collections.jar,
         $IDEA_HOME/lib/extensions.jar,
         $IDEA_HOME/lib/forms_rt.jar,
         $IDEA_HOME/lib/icons.jar,
