@@ -33,6 +33,12 @@ public class GroovySupportLoader implements ApplicationComponent {
 
     private static final String[] DEFAULT_ASSOCIATED_EXTENSIONS = new String[] { "groovy", "gvy", "gy", "gsh" };
 
+    private final GroovyLibraryManager groovyLibraryManager;
+
+    public GroovySupportLoader(GroovyLibraryManager groovyLibraryManager) {
+        this.groovyLibraryManager = groovyLibraryManager;
+    }
+
     public String getComponentName() {
         return "groovy.support.loader";
     }
@@ -43,6 +49,7 @@ public class GroovySupportLoader implements ApplicationComponent {
         ApplicationManager.getApplication().runWriteAction(new Runnable() {
             public void run() {
                 FileTypeManager.getInstance().registerFileType(GROOVY, DEFAULT_ASSOCIATED_EXTENSIONS);
+                groovyLibraryManager.installOrUpgradeGroovyRuntimeAsAGlobalLibraryIfNecessary();
             }
         });
 

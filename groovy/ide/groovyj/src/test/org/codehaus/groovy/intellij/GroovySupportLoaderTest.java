@@ -30,7 +30,9 @@ import org.codehaus.groovy.intellij.language.editor.GroovyColourSettingsPage;
 
 public class GroovySupportLoaderTest extends GroovyjTestCase {
 
-    private final GroovySupportLoader groovySupportLoader = new GroovySupportLoader();
+    private final Mock mockGroovyLibraryManager = mock(GroovyLibraryManager.class);
+
+    private final GroovySupportLoader groovySupportLoader = new GroovySupportLoader((GroovyLibraryManager) mockGroovyLibraryManager.proxy());
 
     protected void tearDown() {
         System.getProperties().remove("groovy.jsr");
@@ -58,19 +60,18 @@ public class GroovySupportLoaderTest extends GroovyjTestCase {
     }
 
     private void setExpectationsForInitialisationByIntellijIdea() {
-        MockApplication application = MockApplicationManager.getMockApplication();
-
         Mock mockFileTypeManager = mock(FileTypeManager.class);
-        application.registerComponent(FileTypeManager.class, mockFileTypeManager.proxy());
-
-        Mock mockColorSettingsPages = mock(ColorSettingsPages.class);
-        application.registerComponent(ColorSettingsPages.class, mockColorSettingsPages.proxy());
-
         mockFileTypeManager.expects(once()).method("registerFileType")
                 .with(same(GroovySupportLoader.GROOVY), eq(new String[] { "groovy", "gvy", "gy", "gsh" }));
 
-        mockColorSettingsPages.expects(once()).method("registerPage")
-                .with(isA(GroovyColourSettingsPage.class));
+        Mock mockColorSettingsPages = mock(ColorSettingsPages.class);
+        mockColorSettingsPages.expects(once()).method("registerPage").with(isA(GroovyColourSettingsPage.class));
+
+        MockApplication application = MockApplicationManager.getMockApplication();
+        application.registerComponent(FileTypeManager.class, mockFileTypeManager.proxy());
+        application.registerComponent(ColorSettingsPages.class, mockColorSettingsPages.proxy());
+
+        mockGroovyLibraryManager.expects(once()).method("installOrUpgradeGroovyRuntimeAsAGlobalLibraryIfNecessary");
     }
 
     public void testRemovesTheGroovyJsrSystemPropertyWhenDisposedByIntellijIdea() {

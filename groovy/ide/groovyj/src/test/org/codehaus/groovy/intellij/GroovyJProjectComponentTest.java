@@ -18,8 +18,15 @@
 
 package org.codehaus.groovy.intellij;
 
+import org.intellij.openapi.testing.MockApplication;
+import org.intellij.openapi.testing.MockApplicationManager;
+
 import com.intellij.openapi.compiler.CompilerManager;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.impl.libraries.LibraryTablesRegistrarImpl;
+import com.intellij.openapi.roots.libraries.LibraryTable;
+import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 
 import org.jmock.Mock;
 
@@ -28,6 +35,7 @@ import org.codehaus.groovy.intellij.compiler.GroovyCompiler;
 public class GroovyJProjectComponentTest extends GroovyjTestCase {
 
     private final Mock mockCompilerManager = mock(CompilerManager.class);
+    private final Mock mockModuleManager = mock(ModuleManager.class);
     private final Mock mockProject = mock(Project.class);
     private final Project selectedProject = (Project) mockProject.proxy();
 
@@ -44,6 +52,7 @@ public class GroovyJProjectComponentTest extends GroovyjTestCase {
         mockEditorAPIFactory.stubs().method("createEditorAPI").withAnyArguments().will(returnValue(mockEditorAPI.proxy()));
 
         mockProject.stubs().method("getComponent").with(same(CompilerManager.class)).will(returnValue(mockCompilerManager.proxy()));
+        mockProject.stubs().method("getComponent").with(same(ModuleManager.class)).will(returnValue(mockModuleManager.proxy()));
     }
 
     protected void tearDown() {
@@ -51,28 +60,51 @@ public class GroovyJProjectComponentTest extends GroovyjTestCase {
     }
 
     public void testInitialisesGroovyControllerAndCompilerWithEditorApiWhenTheProjectIsOpened() {
-        assertNull("reference to EditorAPI should not have been initialised", projectComponent.getEditorApi());
-        assertNull("reference to GroovyController should not have been initialised", projectComponent.getGroovyController());
+        assertAllProjectLevelDependenciesAreRemoved();
+        setExpectationsForRetrievingTheGroovyLibrary();
 
         mockCompilerManager.expects(once()).method("addCompiler").with(isA(GroovyCompiler.class));
+        mockModuleManager.expects(once()).method("addModuleListener").with(isA(GroovyLibraryModuleListener.class));
 
         projectComponent.projectOpened();
-        assertNotNull("reference to EditorAPI should have been initialised", projectComponent.getEditorApi());
-        assertNotNull("reference to GroovyController should have been initialised", projectComponent.getGroovyController());
+        assertAllProjectLevelDependenciesHaveBeenInitialised();
     }
 
     public void testRemovesReferencesToEditorApiAndGroovyControllerAndCompilerWhenTheProjectIsClosed() {
         mockCompilerManager.expects(once()).method("addCompiler").with(isA(GroovyCompiler.class));
+        mockModuleManager.expects(once()).method("addModuleListener").with(isA(GroovyLibraryModuleListener.class));
+        setExpectationsForRetrievingTheGroovyLibrary();
 
         projectComponent.projectOpened();
-        assertNotNull("reference to EditorAPI should have been initialised", projectComponent.getEditorApi());
-        assertNotNull("reference to GroovyController should have been initialised", projectComponent.getGroovyController());
+        assertAllProjectLevelDependenciesHaveBeenInitialised();
 
         mockCompilerManager.expects(once()).method("removeCompiler").with(isA(GroovyCompiler.class));
+        mockModuleManager.expects(once()).method("removeModuleListener").with(isA(GroovyLibraryModuleListener.class));
 
         projectComponent.projectClosed();
-        assertNull("reference to EditorAPI should have been removed", projectComponent.getEditorApi());
-        assertNull("reference to GroovyController should have been removed", projectComponent.getGroovyController());
+        assertAllProjectLevelDependenciesAreRemoved();
+    }
+
+    private void setExpectationsForRetrievingTheGroovyLibrary() {
+        Mock mockLibraryTable = mock(LibraryTable.class);
+
+        MockApplication application = MockApplicationManager.getMockApplication();
+        application.registerComponent(LibraryTablesRegistrar.class, new LibraryTablesRegistrarImpl());
+        application.registerComponent(LibraryTable.class, mockLibraryTable.proxy());
+
+        mockLibraryTable.stubs().method("getLibraryByName").with(startsWith("Groovy from GroovyJ "));
+    }
+
+    private void assertAllProjectLevelDependenciesHaveBeenInitialised() {
+        assertNotNull("reference to EditorAPI should have been initialised", projectComponent.getEditorApi());
+        assertNotNull("reference to GroovyController should have been initialised", projectComponent.getGroovyController());
+        assertNotNull("reference to GroovyLibraryModuleListener should have been initialised", projectComponent.groovyLibraryModuleListener);
+    }
+
+    private void assertAllProjectLevelDependenciesAreRemoved() {
+        assertNull("reference to EditorAPI should be null", projectComponent.getEditorApi());
+        assertNull("reference to GroovyController should be null", projectComponent.getGroovyController());
+        assertNull("reference to GroovyLibraryModuleListener should be null", projectComponent.groovyLibraryModuleListener);
     }
 
     public void testDoesNothingWhenInitialisedByIdea() {

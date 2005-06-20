@@ -23,6 +23,7 @@ import java.util.Map;
 
 import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.components.ProjectComponent;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 
 import org.codehaus.groovy.intellij.compiler.GroovyCompiler;
@@ -36,6 +37,7 @@ public class GroovyJProjectComponent implements ProjectComponent {
     private EditorAPI editorApi;
     private GroovyController groovyController;
     private GroovyCompiler groovyCompiler;
+    GroovyLibraryModuleListener groovyLibraryModuleListener;
 
     protected GroovyJProjectComponent(Project project, EditorAPIFactory editorApiFactory) {
         this.project = project;
@@ -57,6 +59,9 @@ public class GroovyJProjectComponent implements ProjectComponent {
         groovyController = new GroovyController(editorApi);
         groovyCompiler = new GroovyCompiler(groovyController);
         CompilerManager.getInstance(project).addCompiler(groovyCompiler);
+
+        groovyLibraryModuleListener = new GroovyLibraryModuleListener();
+        ModuleManager.getInstance(project).addModuleListener(groovyLibraryModuleListener);
     }
 
     public void projectClosed() {
@@ -64,6 +69,9 @@ public class GroovyJProjectComponent implements ProjectComponent {
         groovyCompiler = null;
         groovyController = null;
         editorApi = null;
+
+        ModuleManager.getInstance(project).removeModuleListener(groovyLibraryModuleListener);
+        groovyLibraryModuleListener = null;
     }
 
     public void initComponent() {}
