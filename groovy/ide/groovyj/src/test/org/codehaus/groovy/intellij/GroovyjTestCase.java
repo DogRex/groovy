@@ -28,12 +28,15 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.ProjectJdk;
+import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.psi.PsiManager;
 import com.intellij.testFramework.MockVirtualFile;
+import com.intellij.util.PathsList;
 
 import org.jmock.Mock;
 import org.jmock.cglib.MockObjectTestCase;
+import org.jmock.core.Constraint;
 
 import org.codehaus.groovy.intellij.configuration.GroovyConfigurationFactory;
 import org.codehaus.groovy.intellij.configuration.GroovyRunConfiguration;
@@ -95,6 +98,14 @@ public abstract class GroovyjTestCase extends MockObjectTestCase {
     }
 
     protected Module createStubbedModule(ModuleType moduleType) {
+        return createStubbedModule(moduleType, null);
+    }
+
+    protected Module createStubbedModule(ModifiableRootModel moduleRootModel) {
+        return createStubbedModule(new JavaModuleType(), moduleRootModel);
+    }
+
+    protected Module createStubbedModule(ModuleType moduleType, ModifiableRootModel moduleRootModel) {
         String moduleName = "stubModule#" + TestUtil.nextAbsRandomInt();
 
         Mock stubModule = mock(Module.class, moduleName);
@@ -108,7 +119,26 @@ public abstract class GroovyjTestCase extends MockObjectTestCase {
         stubModuleRootManager.stubs().method("getJdk").will(returnValue(stubProjectJdk.proxy()));
         stubProjectJdk.stubs().method("getHomeDirectory").will(returnValue(new MockVirtualFile()));
 
+        stubModuleRootManager.stubs().method("getModifiableModel").will(returnValue(moduleRootModel));
         stubModuleRootManager.stubs().method("processOrder").withAnyArguments();
         return (Module) stubModule.proxy();
+    }
+
+    protected PathsList createPathsList(String path) {
+        PathsList pathsList = new PathsList();
+        pathsList.add(path);
+        return pathsList;
+    }
+
+    protected Constraint startsWith(final String text) {
+        return new Constraint() {
+            public boolean eval(Object o) {
+                return o instanceof String && ((String) o).startsWith(text);
+            }
+
+            public StringBuffer describeTo(StringBuffer buffer) {
+                return buffer.append("a string starting with \"").append(text).append("\"");
+            }
+        };
     }
 }

@@ -18,10 +18,8 @@
 
 package org.codehaus.groovy.intellij;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import com.intellij.openapi.command.CommandListener;
@@ -41,6 +39,7 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiTreeChangeListener;
 import com.intellij.refactoring.listeners.RefactoringElementListenerProvider;
 import com.intellij.refactoring.listeners.RefactoringListenerManager;
+import com.intellij.util.PathsList;
 
 public abstract class BaseEditorAPI implements EditorAPI {
 
@@ -64,27 +63,27 @@ public abstract class BaseEditorAPI implements EditorAPI {
         return moduleAndDependentModules;
     }
 
-    public List<VirtualFile> getAllSourceFolderFiles(Module module) {
-        List<VirtualFile> sourceFolders = new ArrayList<VirtualFile>();
+    public PathsList getNonExcludedModuleSourceFolders(Module module) {
         ContentEntry[] contentEntries = ModuleRootManager.getInstance(module).getContentEntries();
-        collectAllSourceFolders(contentEntries, sourceFolders);
-        sourceFolders.removeAll(collectExcludedFolders(contentEntries));
+        PathsList sourceFolders = findAllSourceFolders(contentEntries);
+        sourceFolders.getPathList().removeAll(findExcludedFolders(contentEntries));
         return sourceFolders;
     }
 
-    private void collectAllSourceFolders(ContentEntry[] entries, List sourceFolders) {
-        for (ContentEntry entry : entries) {
-            SourceFolder[] folders = entry.getSourceFolders();
-            for (SourceFolder folder : folders) {
+    private PathsList findAllSourceFolders(ContentEntry[] contentEntries) {
+        PathsList sourceFolders = new PathsList();
+        for (ContentEntry contentEntry : contentEntries) {
+            for (SourceFolder folder : contentEntry.getSourceFolders()) {
                 VirtualFile file = folder.getFile();
                 if (file.isDirectory() && file.isWritable()) {
                     sourceFolders.add(file);
                 }
             }
         }
+        return sourceFolders;
     }
 
-    private Set<VirtualFile> collectExcludedFolders(ContentEntry[] entries) {
+    private Set<VirtualFile> findExcludedFolders(ContentEntry[] entries) {
         Set<VirtualFile> excludedFolders = new HashSet<VirtualFile>();
         for (ContentEntry entry : entries) {
             excludedFolders.addAll(Arrays.asList(entry.getExcludeFolderFiles()));

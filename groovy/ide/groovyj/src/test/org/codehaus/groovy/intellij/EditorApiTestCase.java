@@ -44,6 +44,7 @@ import com.intellij.psi.PsiTreeChangeListener;
 import com.intellij.refactoring.listeners.RefactoringElementListenerProvider;
 import com.intellij.refactoring.listeners.RefactoringListenerManager;
 import com.intellij.testFramework.MockVirtualFile;
+import com.intellij.util.PathUtil;
 
 import org.jmock.Mock;
 import org.jmock.cglib.MockObjectTestCase;
@@ -142,9 +143,9 @@ public abstract class EditorApiTestCase extends MockObjectTestCase {
         ContentEntry[] allContentEntries = new ContentEntry[] { (ContentEntry) stubContentEntry.proxy() };
         mockModuleRootManager.expects(once()).method("getContentEntries").will(returnValue(allContentEntries));
 
-        List allSourceFolderFiles = editorApi.getAllSourceFolderFiles(stubbedModule);
-        assertEquals("number of source folders", 1, allSourceFolderFiles.size());
-        assertSame(expectedSourceFolder, allSourceFolderFiles.get(0));
+        List<String> allSourceFolders = editorApi.getNonExcludedModuleSourceFolders(stubbedModule).getPathList();
+        assertEquals("number of source folders", 1, allSourceFolders.size());
+        assertEquals(PathUtil.getLocalPath(expectedSourceFolder), allSourceFolders.get(0));
     }
 
     private static class VirtualFileStub extends MockVirtualFile {

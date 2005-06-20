@@ -26,12 +26,16 @@ import com.intellij.execution.configurations.JavaParameters;
 import com.intellij.execution.configurations.ParametersList;
 import com.intellij.openapi.application.PathMacros;
 
+import org.jmock.Mock;
+
+import org.codehaus.groovy.intellij.EditorAPI;
+
 import groovy.lang.GroovyShell;
 
 public class GroovyCommandLineStateTest extends GroovyConfigurationTestCase {
 
     public void testDoesNotCreateJavaParametersWhenAGivenGroovyRunConfigurationIsNotValid() {
-        GroovyRunConfiguration invalidRunConfiguration = createRunConfiguration(null, "~/scripts/foobar.groovy", null, null);
+        GroovyRunConfiguration invalidRunConfiguration = createRunConfiguration(null, null, "~/scripts/foobar.groovy", null, null);
         invalidRunConfiguration.setModuleName("");
 
         try {
@@ -43,11 +47,17 @@ public class GroovyCommandLineStateTest extends GroovyConfigurationTestCase {
     }
 
     public void testCreatesJavaParametersFromAGivenGroovyRunConfiguration() throws ExecutionException {
+        Mock mockEditorAPI = mock(EditorAPI.class);
+
         GroovyRunConfiguration runConfiguration =
-                createRunConfiguration("-showversion -Xms128m -Xmx512m",
+                createRunConfiguration((EditorAPI) mockEditorAPI.proxy(), "-showversion -Xms128m -Xmx512m",
                                        "C:\\Documents and Settings\\Foo Bar\\.groovy\\scripts\\foobar.groovy",
                                        "-dir C:\\WINDOWS -enableWarnings",
                                        "C:\\Documents and Settings\\All Users\\.groovy");
+
+        String moduleSourceFoldersAsPath = "anything";
+        mockEditorAPI.expects(once()).method("getNonExcludedModuleSourceFolders").with(same(runConfiguration.getModule()))
+                .will(returnValue(createPathsList(moduleSourceFoldersAsPath)));
 
         JavaParameters javaParameters = createJavaParameters(runConfiguration);
         assertEquals("main class", GroovyShell.class.getName(), javaParameters.getMainClass());
@@ -57,10 +67,12 @@ public class GroovyCommandLineStateTest extends GroovyConfigurationTestCase {
         assertEquals("number of program parameters", 4, groovyShellParameters.getList().size());
         assertEquals("script path", runConfiguration.getScriptPath(), groovyShellParameters.getList().get(0));
         assertEquals("all program parameters",
-                     "\"" + runConfiguration.getScriptPath() + "\"" + " " + runConfiguration.getScriptParameters(),
+                     "\"" + runConfiguration.getScriptPath() + "\" " + runConfiguration.getScriptParameters(),
                      groovyShellParameters.getParametersString().trim());
 
         assertEquals("working directory path", runConfiguration.getWorkingDirectoryPath(), javaParameters.getWorkingDirectory());
+        assertEquals("number of classpath items", 1, javaParameters.getClassPath().getPathList().size());
+        assertEquals("classpath", moduleSourceFoldersAsPath, javaParameters.getClassPath().getPathsString());
     }
 
     private JavaParameters createJavaParameters(GroovyRunConfiguration runConfiguration) throws ExecutionException {

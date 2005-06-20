@@ -31,7 +31,7 @@ public class GroovyRunConfigurationExternaliserTest extends GroovyConfigurationT
 
     private final GroovyRunConfigurationExternaliser runConfigurationExternaliser = new GroovyRunConfigurationExternaliser();
 
-    private final GroovyRunConfiguration runConfiguration = createRunConfiguration("-showversion", "src/scripts/foo.groovy",
+    private final GroovyRunConfiguration runConfiguration = createRunConfiguration(null, "-showversion", "src/scripts/foo.groovy",
                                                                                    "-ignoreWarnings -scanOnly", "/home/acme");
 
     public void testSerialisesAGivenUninitialisedConfigurationToAnExternalisableElement() {
@@ -39,7 +39,7 @@ public class GroovyRunConfigurationExternaliserTest extends GroovyConfigurationT
         assertEquals("number of modules", 0, rootElement.getChildren("module").size());
         assertEquals("number of options", 0, rootElement.getChildren("option").size());
 
-        GroovyRunConfiguration uninitialisedRunConfiguration = createRunConfiguration(null, null, null, null);
+        GroovyRunConfiguration uninitialisedRunConfiguration = createRunConfiguration(null, null, null, null, null);
         uninitialisedRunConfiguration.setModuleName("");
 
         runConfigurationExternaliser.writeExternal(uninitialisedRunConfiguration, rootElement);
@@ -83,7 +83,7 @@ public class GroovyRunConfigurationExternaliserTest extends GroovyConfigurationT
         Element rootElement = new Element("configuration");
         runConfigurationExternaliser.writeExternal(runConfiguration, rootElement);
 
-        GroovyRunConfiguration anotherRunConfiguration = createRunConfiguration("", "", "", "");
+        GroovyRunConfiguration anotherRunConfiguration = createRunConfiguration(null, "", "", "", "");
         Assert.assertNotEquals("script path", runConfiguration.getScriptPath(), anotherRunConfiguration.getScriptPath());
         Assert.assertNotEquals("VM parameters", runConfiguration.getVmParameters(), anotherRunConfiguration.getVmParameters());
         Assert.assertNotEquals("scripit parameters", runConfiguration.getScriptParameters(), anotherRunConfiguration.getScriptParameters());

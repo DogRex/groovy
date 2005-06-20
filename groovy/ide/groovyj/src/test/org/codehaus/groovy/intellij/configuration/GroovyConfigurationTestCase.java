@@ -21,14 +21,16 @@ package org.codehaus.groovy.intellij.configuration;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 
+import org.codehaus.groovy.intellij.EditorAPI;
 import org.codehaus.groovy.intellij.GroovyjTestCase;
 
 class GroovyConfigurationTestCase extends GroovyjTestCase {
 
-    protected GroovyRunConfiguration createRunConfiguration(String vmParameters, String scriptPath, String scriptParameters, String workingDirectoryPath) {
+    protected GroovyRunConfiguration createRunConfiguration(EditorAPI editorApi, String vmParameters, String scriptPath,
+                                                            String scriptParameters, String workingDirectoryPath) {
         Project stubbedProject = createStubbedProject();
         GroovyConfigurationFactory configurationFactory = new GroovyConfigurationFactory(null, null, null);
-        GroovyRunConfiguration runConfiguration = new GroovyRunConfiguration(null, stubbedProject, configurationFactory, null);
+        GroovyRunConfiguration runConfiguration = new GroovyRunConfiguration(null, stubbedProject, configurationFactory, editorApi);
         runConfiguration.setVmParameters(vmParameters);
         runConfiguration.setScriptPath(scriptPath);
         runConfiguration.setScriptParameters(scriptParameters);

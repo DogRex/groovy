@@ -52,6 +52,7 @@ public class GroovyCommandLineState extends JavaCommandLineState {
         parameters.getProgramParametersList().addParametersString(quoteParameter(runConfiguration.getScriptPath()));
         parameters.getProgramParametersList().addParametersString(runConfiguration.getScriptParameters());
         parameters.configureByModule(runConfiguration.getModule(), JavaParameters.JDK_AND_CLASSES_AND_TESTS);
+        parameters.getClassPath().add(runConfiguration.flattenModuleSourceFoldersAsPath());
         parameters.setWorkingDirectory(runConfiguration.getWorkingDirectoryPath());
         return parameters;
     }

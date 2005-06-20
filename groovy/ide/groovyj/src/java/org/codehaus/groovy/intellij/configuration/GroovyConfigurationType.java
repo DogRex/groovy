@@ -104,8 +104,8 @@ public class GroovyConfigurationType implements LocatableConfigurationType {
         if (runConfiguration instanceof GroovyRunConfiguration) {
             VirtualFile file = psiElement.getContainingFile().getVirtualFile();
             if (GroovySupportLoader.GROOVY == file.getFileType()) {
-                String scripthPath = ((GroovyRunConfiguration) runConfiguration).getScriptPath();
-                return PathUtil.getCanonicalPath(file.getPath()).equals(scripthPath);
+                String scriptPath = ((GroovyRunConfiguration) runConfiguration).getScriptPath();
+                return PathUtil.getCanonicalPath(file.getPath()).equals(scriptPath);
             }
         }
         return false;

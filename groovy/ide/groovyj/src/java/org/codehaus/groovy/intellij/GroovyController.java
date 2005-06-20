@@ -21,7 +21,6 @@ package org.codehaus.groovy.intellij;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
 
 import com.intellij.openapi.compiler.CompilerPaths;
 import com.intellij.openapi.module.Module;
@@ -89,20 +88,11 @@ public class GroovyController {
         compilerConfiguration.setWarningLevel(WarningMessage.PARANOIA);
 
         String moduleClasspath = editorApi.getCompilationClasspath(module);
-        String sourceFoldersPath = flattenModuleSourceFoldersAsPath(module);
+        String sourceFoldersPath = editorApi.getNonExcludedModuleSourceFolders(module).getPathsString();
         compilerConfiguration.setClasspath(moduleClasspath + File.pathSeparator + sourceFoldersPath);
         compilerConfiguration.setTargetDirectory(CompilerPaths.getModuleOutputPath(module, inTestSourceContent));
 
         return compilerConfiguration;
-    }
-
-    private String flattenModuleSourceFoldersAsPath(Module module) {
-        String sourceFoldersAsPath = "";
-        List<VirtualFile> allSourceFolderFiles = editorApi.getAllSourceFolderFiles(module);
-        for (VirtualFile sourceFolderFile : allSourceFolderFiles) {
-            sourceFoldersAsPath += sourceFolderFile.getPath() + File.pathSeparator;
-        }
-        return sourceFoldersAsPath;
     }
 
     private ClassLoader assembleClassLoader(CompilerConfiguration compilerConfiguration) {

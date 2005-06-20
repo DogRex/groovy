@@ -38,7 +38,7 @@ import org.codehaus.groovy.intellij.Mocks;
 
 public class GroovySettingsEditorTest extends GroovyConfigurationTestCase {
 
-    private final GroovyRunConfiguration runConfiguration = createRunConfiguration("-showversion", "../foo.groovy", "", "/home/acme");
+    private final GroovyRunConfiguration runConfiguration = createRunConfiguration(null, "-showversion", "../foo.groovy", "", "/home/acme");
 
     private GroovySettingsEditor settingsEditor;
     private GroovySettingsEditor.ModuleComboBoxRenderer moduleComboBoxRenderer;

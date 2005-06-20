@@ -118,6 +118,10 @@ public class GroovyRunConfiguration extends RuntimeConfiguration {
         this.moduleName = moduleName;
     }
 
+    String flattenModuleSourceFoldersAsPath() {
+        return editorApi.getNonExcludedModuleSourceFolders(getModule()).getPathsString();
+    }
+
     // RunConfiguration ------------------------------------------------------------------------------------------------
 
     public SettingsEditor<GroovyRunConfiguration> getConfigurationEditor() {
