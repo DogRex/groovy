@@ -20,7 +20,6 @@ package org.codehaus.groovy.intellij;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.Charset;
 
 import com.intellij.openapi.module.Module;
@@ -29,18 +28,14 @@ import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.MockVirtualFile;
 
-import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.control.Phases;
 
 import org.jmock.Mock;
 
 import groovy.lang.GroovyShell;
 
 public class GroovyControllerTest extends GroovyjTestCase {
-
-    private static final String FILE_NAME = "foo.groovy";
 
     private final Mock mockEditorAPI = mock(EditorAPI.class);
     private final Mock mockVirtualFile = Mocks.createVirtualFileMock(this);
@@ -54,17 +49,6 @@ public class GroovyControllerTest extends GroovyjTestCase {
                 return (GroovyShell) mockGroovyShell.proxy();
             }
         };
-    }
-
-    public void testCreatesAGroovyShellWithAnEmptyContext() {
-        groovyController = new GroovyController((EditorAPI) mockEditorAPI.proxy());
-
-        VirtualFile sourceFolder = new MockVirtualFile("/home/foo/dev/projects/acme/src/groovy");
-        Module expectedModule = createModuleForCreatingACompilerConfiguration(
-                "UTF-8", "some_lib.jar", "/home/foobar/acme/classes", sourceFolder.getPath());
-
-        GroovyShell shell = groovyController.createGroovyShellForScript((VirtualFile) mockVirtualFile.proxy(), expectedModule);
-        assertEquals(0, shell.getContext().getVariables().size());
     }
 
     public void testCreatesACompilationUnitConfiguredWithTheClassLoaderOfTheCurrentThreadBoundToTheGroovyClassLoader() throws IOException {
@@ -109,54 +93,5 @@ public class GroovyControllerTest extends GroovyjTestCase {
         mockModuleRootManager.expects(once()).method("getCompilerOutputPathUrl").will(returnValue("file://" + targetDirectoryPath));
 
         return expectedModule;
-    }
-
-    public void testDoesNotAttemptToRunAGroovyScriptIfTheGivenFileReferenceIsNull() {
-        groovyController.runAsGroovyScriptInModule(null, null);
-    }
-
-    public void testDoesNotAttemptToRunAGivenFileAsAGroovyScriptIfTheFileIsNotValid() {
-        mockVirtualFile.expects(once()).method("isValid").will(returnValue(false));
-        groovyController.runAsGroovyScriptInModule((VirtualFile) mockVirtualFile.proxy(), null);
-    }
-
-    public void testDoesNotAttemptToRunAGivenFileAsAGroovyScriptIfTheFileIsActuallyADirectory() {
-        mockVirtualFile.expects(once()).method("isValid").will(returnValue(true));
-        mockVirtualFile.expects(once()).method("isDirectory").will(returnValue(true));
-
-        groovyController.runAsGroovyScriptInModule((VirtualFile) mockVirtualFile.proxy(), null);
-    }
-
-    public void testRunsTheCurrentlySelectedFileAsAGroovyScriptUsingTheEditorApi() {
-        setExpectationsForRunningAFileAsAGroovyScript(FILE_NAME);
-        mockGroovyShell.expects(once()).method("run").with(isA(InputStream.class), eq(FILE_NAME), isA(String[].class));
-
-        groovyController.runAsGroovyScriptInModule((VirtualFile) mockVirtualFile.proxy(), null);
-    }
-
-    public void testDoesNothingWhenRunningAGroovyScriptFailsDueToACompilationError() {
-        setExpectationsForRunningAFileAsAGroovyScript(FILE_NAME);
-        mockGroovyShell.expects(once()).method("run").with(isA(InputStream.class), eq(FILE_NAME), isA(String[].class))
-                .will(throwException(new CompilationFailedException(Phases.SEMANTIC_ANALYSIS, new CompilationUnit())));
-
-        groovyController.runAsGroovyScriptInModule((VirtualFile) mockVirtualFile.proxy(), null);
-    }
-
-    public void testDoesNothingWhenRunningAGroovyScriptFailsBecauseTheScriptCouldNotBeFound() {
-        setExpectationsForRunningAFileAsAGroovyScript(FILE_NAME);
-
-        mockGroovyShell.expects(once()).method("run").with(isA(InputStream.class), eq(FILE_NAME), isA(String[].class))
-                .will(throwException(new CompilationFailedException(Phases.INITIALIZATION, null, new IOException("script not found"))));
-
-        groovyController.runAsGroovyScriptInModule((VirtualFile) mockVirtualFile.proxy(), null);
-    }
-
-    private void setExpectationsForRunningAFileAsAGroovyScript(String fileName) {
-        mockVirtualFile.expects(once()).method("isValid").will(returnValue(true));
-        mockVirtualFile.expects(once()).method("isDirectory").will(returnValue(false));
-        mockVirtualFile.expects(atLeastOnce()).method("getName").will(returnValue(fileName));
-        mockVirtualFile.expects(once()).method("getInputStream").will(returnValue(System.in));
-
-        mockEditorAPI.expects(once()).method("writeMessageToStatusBar").with(isA(String.class));
     }
 }

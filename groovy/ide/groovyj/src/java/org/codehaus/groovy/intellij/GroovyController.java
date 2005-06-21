@@ -19,7 +19,6 @@
 package org.codehaus.groovy.intellij;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 
 import com.intellij.openapi.compiler.CompilerPaths;
@@ -27,14 +26,11 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 
-import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.messages.WarningMessage;
 
-import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyShell;
 
 public class GroovyController {
 
@@ -42,31 +38,6 @@ public class GroovyController {
 
     public GroovyController(EditorAPI editorApi) {
         this.editorApi = editorApi;
-    }
-
-    public void runAsGroovyScriptInModule(VirtualFile selectedFile, Module module) {
-        if (isValidFile(selectedFile)) {
-            editorApi.writeMessageToStatusBar("Running " + selectedFile.getName() + "...");
-            try {
-                GroovyShell groovyShellForScript = createGroovyShellForScript(selectedFile, module);
-                groovyShellForScript.run(selectedFile.getInputStream(), selectedFile.getName(), new String[0]);
-            } catch (CompilationFailedException e) {
-                System.out.println("Run failed: " + e.getMessage());
-            } catch (IOException e) {
-                System.out.println("Run failed: " + e.getMessage());
-            }
-        }
-    }
-
-    private boolean isValidFile(VirtualFile selectedFile) {
-        return (selectedFile != null) && selectedFile.isValid() && !selectedFile.isDirectory();
-    }
-
-    GroovyShell createGroovyShellForScript(VirtualFile fileToRun, Module module) {
-        boolean inTestSourceContent = isInTestSourceContent(module, fileToRun);
-        String characterEncoding = fileToRun.getCharset().name();
-        CompilerConfiguration compilerConfiguration = createCompilerConfiguration(module, characterEncoding, inTestSourceContent);
-        return new GroovyShell(getClass().getClassLoader(), new Binding(), compilerConfiguration);
     }
 
     public CompilationUnit createCompilationUnit(Module module, VirtualFile fileToCompile) {

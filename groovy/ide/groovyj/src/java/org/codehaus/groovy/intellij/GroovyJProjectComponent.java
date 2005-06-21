@@ -61,12 +61,12 @@ public class GroovyJProjectComponent implements ProjectComponent {
         groovyCompiler = new GroovyCompiler(groovyController);
         CompilerManager.getInstance(project).addCompiler(groovyCompiler);
 
-        groovyLibraryModuleListener = createGroovyLibraryModuleListener();
+        groovyLibraryModuleListener = new GroovyLibraryModuleListener(getPluginVersion());
         ModuleManager.getInstance(project).addModuleListener(groovyLibraryModuleListener);
     }
 
-    protected GroovyLibraryModuleListener createGroovyLibraryModuleListener() {
-        return new GroovyLibraryModuleListener(PluginManager.getPlugin("GroovyJ").getVersion());
+    protected String getPluginVersion() {
+        return PluginManager.getPlugin("GroovyJ").getVersion();
     }
 
     public void projectClosed() {
