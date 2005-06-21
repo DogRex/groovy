@@ -35,7 +35,11 @@ public class GroovySupportLoader implements ApplicationComponent {
 
     private final GroovyLibraryManager groovyLibraryManager;
 
-    public GroovySupportLoader(GroovyLibraryManager groovyLibraryManager) {
+    public GroovySupportLoader() {
+        this(new GroovyLibraryManager());
+    }
+
+    GroovySupportLoader(GroovyLibraryManager groovyLibraryManager) {
         this.groovyLibraryManager = groovyLibraryManager;
     }
 

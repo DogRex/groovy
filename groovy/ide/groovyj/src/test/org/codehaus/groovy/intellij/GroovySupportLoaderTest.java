@@ -32,18 +32,18 @@ public class GroovySupportLoaderTest extends GroovyjTestCase {
 
     private final Mock mockGroovyLibraryManager = mock(GroovyLibraryManager.class);
 
-    private final GroovySupportLoader groovySupportLoader = new GroovySupportLoader((GroovyLibraryManager) mockGroovyLibraryManager.proxy());
-
     protected void tearDown() {
         System.getProperties().remove("groovy.jsr");
     }
 
     public void testDefinesAComponentName() {
-        assertEquals("component name", "groovy.support.loader", groovySupportLoader.getComponentName());
+        assertEquals("component name", "groovy.support.loader", new GroovySupportLoader().getComponentName());
     }
 
     public void testRegistersTheGroovyFileTypeAndColourSettingsPageWhenInitialisedByIntellijIdea() {
         setExpectationsForInitialisationByIntellijIdea();
+
+        GroovySupportLoader groovySupportLoader = new GroovySupportLoader((GroovyLibraryManager) mockGroovyLibraryManager.proxy());
         groovySupportLoader.initComponent();
 
         MockApplicationManager.getMockApplication().removeComponent(FileTypeManager.class);
@@ -53,6 +53,7 @@ public class GroovySupportLoaderTest extends GroovyjTestCase {
         setExpectationsForInitialisationByIntellijIdea();
         assertEquals("groovy.jsr", null, System.getProperty("groovy.jsr"));
 
+        GroovySupportLoader groovySupportLoader = new GroovySupportLoader((GroovyLibraryManager) mockGroovyLibraryManager.proxy());
         groovySupportLoader.initComponent();
         assertEquals("groovy.jsr", "true", System.getProperty("groovy.jsr"));
 
@@ -75,7 +76,7 @@ public class GroovySupportLoaderTest extends GroovyjTestCase {
     }
 
     public void testRemovesTheGroovyJsrSystemPropertyWhenDisposedByIntellijIdea() {
-        groovySupportLoader.disposeComponent();
+        new GroovySupportLoader().disposeComponent();
         assertEquals("groovy.jsr", null, System.getProperty("groovy.jsr"));
     }
 }
