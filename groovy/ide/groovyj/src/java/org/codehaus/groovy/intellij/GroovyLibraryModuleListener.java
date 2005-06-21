@@ -20,7 +20,6 @@ package org.codehaus.groovy.intellij;
 
 import java.util.List;
 
-import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
@@ -33,8 +32,8 @@ public class GroovyLibraryModuleListener implements ModuleListener {
 
     private final Library groovyLibrary;
 
-    public GroovyLibraryModuleListener() {
-        String libraryName = "Groovy from GroovyJ " + PluginManager.getPlugin("GroovyJ").getVersion();
+    public GroovyLibraryModuleListener(String pluginVersion) {
+        String libraryName = "Groovy from GroovyJ " + pluginVersion;
         groovyLibrary = LibraryTablesRegistrar.getInstance().getLibraryTable().getLibraryByName(libraryName);
     }
 

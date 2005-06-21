@@ -21,6 +21,7 @@ package org.codehaus.groovy.intellij;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.module.ModuleManager;
@@ -60,8 +61,12 @@ public class GroovyJProjectComponent implements ProjectComponent {
         groovyCompiler = new GroovyCompiler(groovyController);
         CompilerManager.getInstance(project).addCompiler(groovyCompiler);
 
-        groovyLibraryModuleListener = new GroovyLibraryModuleListener();
+        groovyLibraryModuleListener = createGroovyLibraryModuleListener();
         ModuleManager.getInstance(project).addModuleListener(groovyLibraryModuleListener);
+    }
+
+    protected GroovyLibraryModuleListener createGroovyLibraryModuleListener() {
+        return new GroovyLibraryModuleListener(PluginManager.getPlugin("GroovyJ").getVersion());
     }
 
     public void projectClosed() {

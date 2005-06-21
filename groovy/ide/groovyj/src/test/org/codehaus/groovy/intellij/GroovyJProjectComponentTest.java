@@ -45,7 +45,11 @@ public class GroovyJProjectComponentTest extends GroovyjTestCase {
         assertNull(GroovyJProjectComponent.getInstance(selectedProject));
 
         Mock mockEditorAPIFactory = mock(EditorAPIFactory.class);
-        projectComponent = new GroovyJProjectComponent(selectedProject, (EditorAPIFactory) mockEditorAPIFactory.proxy());
+        projectComponent = new GroovyJProjectComponent(selectedProject, (EditorAPIFactory) mockEditorAPIFactory.proxy()) {
+            protected GroovyLibraryModuleListener createGroovyLibraryModuleListener() {
+                return new GroovyLibraryModuleListener("1.0." + TestUtil.nextAbsRandomInt());
+            }
+        };
         assertSame(projectComponent, GroovyJProjectComponent.getInstance(selectedProject));
 
         Mock mockEditorAPI = mock(EditorAPI.class);

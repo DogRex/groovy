@@ -21,6 +21,7 @@ package org.codehaus.groovy.intellij;
 import org.intellij.openapi.testing.MockApplication;
 import org.intellij.openapi.testing.MockApplicationManager;
 
+import com.intellij.ide.plugins.PluginDescriptor;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.impl.libraries.LibraryTablesRegistrarImpl;
 import com.intellij.openapi.roots.libraries.Library;
@@ -33,7 +34,11 @@ import org.jmock.Mock;
 
 public class GroovyLibraryManagerTest extends GroovyjTestCase {
 
-    private final GroovyLibraryManager groovyLibraryManager = new GroovyLibraryManager();
+    private final GroovyLibraryManager groovyLibraryManager = new GroovyLibraryManager() {
+        protected PluginDescriptor getPluginDescriptor() {
+            return new PluginDescriptor(null);
+        }
+    };
 
     private final Mock mockLibraryTable = mock(LibraryTable.class);
     private final Mock mockLibraryTableModel = mock(LibraryTable.ModifiableModel.class, "mockLibraryTableModel");
@@ -114,7 +119,7 @@ public class GroovyLibraryManagerTest extends GroovyjTestCase {
     }
 
     private void configureGroovyLibraryWithPluginJarFiles(Mock mockLibraryModel) {
-        mockLibraryModel.expects(atLeastOnce()).method("addRoot").with(startsWith(JarFileSystem.PROTOCOL), same(OrderRootType.CLASSES));
+        mockLibraryModel.stubs().method("addRoot").with(startsWith(JarFileSystem.PROTOCOL), same(OrderRootType.CLASSES));
         mockLibraryModel.expects(once()).method("commit");
     }
 }

@@ -40,7 +40,7 @@ public class GroovyLibraryModuleListenerTest extends GroovyjTestCase {
         application.registerComponent(LibraryTable.class, mockLibraryTable.proxy());
 
         mockLibraryTable.stubs().method("getLibraryByName").with(startsWith("Groovy from GroovyJ "));
-        groovyLibraryModuleListener = new GroovyLibraryModuleListener();
+        groovyLibraryModuleListener = new GroovyLibraryModuleListener("1.0." + TestUtil.nextAbsRandomInt());
     }
 
     public void testAddsTheGroovyLibraryToANewlyAddedModule() {

@@ -34,7 +34,7 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 public class GroovyLibraryManager {
 
     public void installOrUpgradeGroovyRuntimeAsAGlobalLibraryIfNecessary() {
-        PluginDescriptor pluginDescriptor = PluginManager.getPlugin("GroovyJ");
+        PluginDescriptor pluginDescriptor = getPluginDescriptor();
         String libraryNamePrefix = "Groovy from GroovyJ ";
         String libraryName = libraryNamePrefix + pluginDescriptor.getVersion();
 
@@ -43,6 +43,10 @@ public class GroovyLibraryManager {
             Library.ModifiableModel libraryModel = findOrCreateEmptyLibrary(libraryTable.getModifiableModel(), libraryNamePrefix, libraryName);
             addJarFilesToLibrary(pluginDescriptor, libraryModel);
         }
+    }
+
+    protected PluginDescriptor getPluginDescriptor() {
+        return PluginManager.getPlugin("GroovyJ");
     }
 
     private boolean matchingGroovyRuntimeNotFound(LibraryTable libraryTable, String libraryName) {
