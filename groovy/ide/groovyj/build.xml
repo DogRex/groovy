@@ -75,9 +75,6 @@
                 <include name="**/*.jar"/>
                 <exclude name="irida/**/*.jar"/>
             </fileset>
-            <fileset dir="${lib.runtime.dir}">
-                <include name="**/*.jar"/>
-            </fileset>
         </path>
 
         <path id="irida.compile.classpath">
@@ -130,6 +127,9 @@
                            classpathref="irida.compile.classpath"/>
 
                 <available classname="com.intellij.newCodeFormatting.FormattingModelBuilder"
+                           classpathref="irida.compile.classpath"/>
+
+                <available classname="com.intellij.psi.tree.IFileElementType"
                            classpathref="irida.compile.classpath"/>
 
                 <available classname="org.picocontainer.defaults.DefaultPicoContainer"
@@ -320,8 +320,8 @@
         <copy todir="${irida.classes.dir}" overwrite="true" preservelastmodified="true">
             <fileset dir="${src.etc.dir}" excludes="styles/**/*, ${binary.extensions}, **/*.xcf"/>
             <filterset>
-                <filter token="PROJECT.IDEA.SINCE-BUILD" value="3354"/>
-                <filter token="PROJECT.IDEA.UNTIL-BUILD" value="3370"/>
+                <filter token="PROJECT.IDEA.SINCE-BUILD" value="3378"/>
+                <filter token="PROJECT.IDEA.UNTIL-BUILD" value="3378"/>
                 <filter token="PROJECT.VERSION" value="${project.version} (Irida)"/>
             </filterset>
             <filterset refid="project.variables"/>

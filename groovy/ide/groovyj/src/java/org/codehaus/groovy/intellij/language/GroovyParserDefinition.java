@@ -28,8 +28,10 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.impl.source.PsiPlainTextFileImpl;
-import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
+
+import org.jetbrains.annotations.NotNull;
 
 import org.codehaus.groovy.intellij.GroovySupportLoader;
 import org.codehaus.groovy.intellij.psi.GroovyElementTypes;
@@ -51,14 +53,16 @@ public class GroovyParserDefinition implements ParserDefinition {
         return languageToolsFactory.createParser();
     }
 
-    public IElementType getFileNodeType() {
+    public IFileElementType getFileNodeType() {
         return GroovyElementTypes.FILE;
     }
 
+    @NotNull
     public TokenSet getWhitespaceTokens() {
         return GroovyTokenSets.WHITESPACES;
     }
 
+    @NotNull
     public TokenSet getCommentTokens() {
         return GroovyTokenSets.COMMENTS;
     }

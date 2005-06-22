@@ -24,6 +24,7 @@ import java.util.Map;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.components.ProjectComponent;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 
@@ -66,7 +67,7 @@ public class GroovyJProjectComponent implements ProjectComponent {
     }
 
     protected String getPluginVersion() {
-        return PluginManager.getPlugin("GroovyJ").getVersion();
+        return PluginManager.getPlugin(PluginId.getId("GroovyJ")).getVersion();
     }
 
     public void projectClosed() {

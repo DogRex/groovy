@@ -29,6 +29,7 @@ public final class CodeInsightAttributes {
     public static final TextAttributesKey DEPRECATED_ATTRIBUTES = TextAttributesKey.createTextAttributesKey("DEPRECATED_ATTRIBUTES", CodeInsightColors.DEPRECATED_ATTRIBUTES.getDefaultAttributes());
     public static final TextAttributesKey NOT_USED_ELEMENT_ATTRIBUTES = TextAttributesKey.createTextAttributesKey("NOT_USED_ELEMENT_ATTRIBUTES", CodeInsightColors.NOT_USED_ELEMENT_ATTRIBUTES.getDefaultAttributes());
     public static final TextAttributesKey CLASS_NAME_ATTRIBUTES = TextAttributesKey.createTextAttributesKey("CLASS_NAME_ATTRIBUTES", CodeInsightColors.CLASS_NAME_ATTRIBUTES.getDefaultAttributes());
+    public static final TextAttributesKey ABSTRACT_CLASS_NAME_ATTRIBUTES = TextAttributesKey.createTextAttributesKey("ABSTRACT_CLASS_NAME_ATTRIBUTES", CodeInsightColors.ABSTRACT_CLASS_NAME_ATTRIBUTES.getDefaultAttributes());
     public static final TextAttributesKey INTERFACE_NAME_ATTRIBUTES = TextAttributesKey.createTextAttributesKey("INTERFACE_NAME_ATTRIBUTES", CodeInsightColors.INTERFACE_NAME_ATTRIBUTES.getDefaultAttributes());
     public static final TextAttributesKey LOCAL_VARIABLE_ATTRIBUTES = TextAttributesKey.createTextAttributesKey("LOCAL_VARIABLE_ATTRIBUTES", CodeInsightColors.LOCAL_VARIABLE_ATTRIBUTES.getDefaultAttributes());
     public static final TextAttributesKey REASSIGNED_LOCAL_VARIABLE_ATTRIBUTES = TextAttributesKey.createTextAttributesKey("REASSIGNED_LOCAL_VARIABLE_ATTRIBUTES", CodeInsightColors.REASSIGNED_LOCAL_VARIABLE_ATTRIBUTES.getDefaultAttributes());

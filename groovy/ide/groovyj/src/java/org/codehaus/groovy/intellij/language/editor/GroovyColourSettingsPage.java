@@ -33,6 +33,8 @@ import com.intellij.openapi.options.colors.AttributesDescriptor;
 import com.intellij.openapi.options.colors.ColorDescriptor;
 import com.intellij.openapi.options.colors.ColorSettingsPage;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.codehaus.groovy.intellij.GroovySupportLoader;
 
 public class GroovyColourSettingsPage implements ColorSettingsPage {
@@ -119,6 +121,7 @@ public class GroovyColourSettingsPage implements ColorSettingsPage {
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("static_method", CodeInsightAttributes.STATIC_METHOD_ATTRIBUTES);
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("param", CodeInsightAttributes.PARAMETER_ATTRIBUTES);
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("class", CodeInsightAttributes.CLASS_NAME_ATTRIBUTES);
+        ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("abstractClass", CodeInsightAttributes.ABSTRACT_CLASS_NAME_ATTRIBUTES);
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("interface", CodeInsightAttributes.INTERFACE_NAME_ATTRIBUTES);
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("annotationName", CodeInsightAttributes.ANNOTATION_NAME_ATTRIBUTES);
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("annotationAttributeName", CodeInsightAttributes.ANNOTATION_ATTRIBUTE_NAME_ATTRIBUTES);
@@ -128,18 +131,22 @@ public class GroovyColourSettingsPage implements ColorSettingsPage {
         return GroovySupportLoader.GROOVY.getIcon();
     }
 
+    @NotNull
     public String getDisplayName() {
         return "Groovy";
     }
 
+    @NotNull
     public String getDemoText() {
         return DEMO_TEXT;
     }
 
+    @NotNull
     public AttributesDescriptor[] getAttributeDescriptors() {
         return ATTRIBUTES_DESCRIPTORS;
     }
 
+    @NotNull
     public ColorDescriptor[] getColorDescriptors() {
         return COLOR_DESCRIPTORS;
     }
@@ -148,6 +155,7 @@ public class GroovyColourSettingsPage implements ColorSettingsPage {
         return ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP;
     }
 
+    @NotNull
     public SyntaxHighlighter getHighlighter() {
         return new GroovyFileHighlighter();
     }

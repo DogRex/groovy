@@ -18,11 +18,11 @@
 
 package org.codehaus.groovy.intellij.psi;
 
-import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.tree.IFileElementType;
 
 import org.codehaus.groovy.intellij.language.GroovyLanguage;
 
-public class GroovyElementType extends IElementType {
+public class GroovyElementType extends IFileElementType {
 
     GroovyElementType(String debugName) {
         super(debugName, GroovyLanguage.findOrCreate());

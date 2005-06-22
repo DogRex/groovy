@@ -23,6 +23,7 @@ import java.io.FileFilter;
 
 import com.intellij.ide.plugins.PluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
@@ -46,7 +47,7 @@ public class GroovyLibraryManager {
     }
 
     protected PluginDescriptor getPluginDescriptor() {
-        return PluginManager.getPlugin("GroovyJ");
+        return PluginManager.getPlugin(PluginId.getId("GroovyJ"));
     }
 
     private boolean matchingGroovyRuntimeNotFound(LibraryTable libraryTable, String libraryName) {

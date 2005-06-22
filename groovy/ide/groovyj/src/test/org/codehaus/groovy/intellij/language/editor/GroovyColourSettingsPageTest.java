@@ -108,16 +108,17 @@ public class GroovyColourSettingsPageTest extends GroovyjTestCase {
         Map groovyAdditionalHighlightingTagToDescriptorMap = groovyColourSettingsPage.getAdditionalHighlightingTagToDescriptorMap();
         Map javaAdditionalHighlightingTagToDescriptorMap = javaColourSettingsPage.getAdditionalHighlightingTagToDescriptorMap();
 
-        assertEquals("number of additional highlighting tags",
-                     javaAdditionalHighlightingTagToDescriptorMap.size(),
-                     groovyAdditionalHighlightingTagToDescriptorMap.size());
-
         for (Iterator iterator = javaAdditionalHighlightingTagToDescriptorMap.keySet().iterator(); iterator.hasNext();) {
             String key = (String) iterator.next();
             TextAttributesKey expectedAttributes = (TextAttributesKey) javaAdditionalHighlightingTagToDescriptorMap.get(key);
             TextAttributesKey actualAttributes = (TextAttributesKey) groovyAdditionalHighlightingTagToDescriptorMap.get(key);
+            assertNotNull(key + " tag is missing in GroovyJ", actualAttributes);
             assertEquals(key + " tag", expectedAttributes.getDefaultAttributes(), actualAttributes.getDefaultAttributes());
         }
+
+        assertEquals("number of additional highlighting tags",
+                     javaAdditionalHighlightingTagToDescriptorMap.size(),
+                     groovyAdditionalHighlightingTagToDescriptorMap.size());
     }
 
     public void testUsesTheGroovyFileHighlighterAsItsHighlighter() {

@@ -18,11 +18,11 @@
 
 package org.codehaus.groovy.intellij.psi;
 
-import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.tree.IFileElementType;
 
 public final class GroovyElementTypes {
 
-    public static final IElementType FILE = new GroovyElementType("File");
+    public static final IFileElementType FILE = new GroovyElementType("File");
 
 /*
     public static final IElementType GROOVY_FILE = new IChameleonElementType("GROOVY_FILE_TEXT", GroovyLanguage.findOrCreate()) {
