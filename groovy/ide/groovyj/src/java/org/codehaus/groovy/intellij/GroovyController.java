@@ -30,8 +30,6 @@ import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.messages.WarningMessage;
 
-import groovy.lang.GroovyClassLoader;
-
 public class GroovyController {
 
     private final EditorAPI editorApi;
@@ -43,13 +41,16 @@ public class GroovyController {
     public CompilationUnit createCompilationUnit(Module module, VirtualFile fileToCompile) {
         boolean inTestSourceContent = isInTestSourceContent(module, fileToCompile);
         String characterEncoding = fileToCompile.getCharset().name();
-        CompilerConfiguration compilerConfiguration = createCompilerConfiguration(module, characterEncoding, inTestSourceContent);
-        return new CompilationUnit(compilerConfiguration, null, assembleClassLoader(compilerConfiguration));
+        return createCompilationUnit(module, characterEncoding, inTestSourceContent);
     }
 
     private boolean isInTestSourceContent(Module module, VirtualFile file) {
         ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(module);
         return moduleRootManager.getFileIndex().isInTestSourceContent(file);
+    }
+
+    private CompilationUnit createCompilationUnit(Module module, String characterEncoding, boolean inTestSourceContent) {
+        return new CompilationUnit(createCompilerConfiguration(module, characterEncoding, inTestSourceContent));
     }
 
     private CompilerConfiguration createCompilerConfiguration(Module module, String characterEncoding, boolean inTestSourceContent) {
@@ -64,11 +65,5 @@ public class GroovyController {
         compilerConfiguration.setTargetDirectory(CompilerPaths.getModuleOutputPath(module, inTestSourceContent));
 
         return compilerConfiguration;
-    }
-
-    private ClassLoader assembleClassLoader(CompilerConfiguration compilerConfiguration) {
-        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-        return new GroovyClassLoader(contextClassLoader, compilerConfiguration);
-//        return new GroovyClassLoader(new CompilerClassLoader(), compilerConfiguration);
     }
 }

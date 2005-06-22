@@ -33,23 +33,12 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 
 import org.jmock.Mock;
 
-import groovy.lang.GroovyShell;
-
 public class GroovyControllerTest extends GroovyjTestCase {
 
     private final Mock mockEditorAPI = mock(EditorAPI.class);
     private final Mock mockVirtualFile = Mocks.createVirtualFileMock(this);
-    private final Mock mockGroovyShell = mock(GroovyShell.class);
 
-    private GroovyController groovyController;
-
-    protected void setUp() {
-        groovyController = new GroovyController((EditorAPI) mockEditorAPI.proxy()) {
-            protected GroovyShell createGroovyShellForScript(VirtualFile selectedFile, Module module) {
-                return (GroovyShell) mockGroovyShell.proxy();
-            }
-        };
-    }
+    private final GroovyController groovyController = new GroovyController((EditorAPI) mockEditorAPI.proxy());
 
     public void testCreatesACompilationUnitConfiguredWithTheClassLoaderOfTheCurrentThreadBoundToTheGroovyClassLoader() throws IOException {
         String expectedCharsetName = "UTF-8";
