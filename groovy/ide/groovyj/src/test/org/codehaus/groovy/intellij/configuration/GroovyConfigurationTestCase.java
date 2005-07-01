@@ -18,7 +18,10 @@
 
 package org.codehaus.groovy.intellij.configuration;
 
+import com.intellij.openapi.module.JavaModuleType;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.WebModuleType;
 import com.intellij.openapi.project.Project;
 
 import org.codehaus.groovy.intellij.EditorAPI;
@@ -28,7 +31,11 @@ class GroovyConfigurationTestCase extends GroovyjTestCase {
 
     protected GroovyRunConfiguration createRunConfiguration(EditorAPI editorApi, String vmParameters, String scriptPath,
                                                             String scriptParameters, String workingDirectoryPath) {
-        Project stubbedProject = createStubbedProject();
+        Module[] projectModules = new Module[] {
+                module().isA(new JavaModuleType()).withProjectJdk().build(),
+                module().isA(new WebModuleType()).withProjectJdk().build()
+        };
+        Project stubbedProject = project().withProjectFile().withModules(projectModules).build();
         GroovyConfigurationFactory configurationFactory = new GroovyConfigurationFactory(null, null, null);
         GroovyRunConfiguration runConfiguration = new GroovyRunConfiguration(null, stubbedProject, configurationFactory, editorApi);
         runConfiguration.setVmParameters(vmParameters);

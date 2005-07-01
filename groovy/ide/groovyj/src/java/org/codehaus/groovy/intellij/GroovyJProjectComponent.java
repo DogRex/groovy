@@ -28,6 +28,7 @@ import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 
+import org.codehaus.groovy.intellij.compiler.CompilationUnitsFactory;
 import org.codehaus.groovy.intellij.compiler.GroovyCompiler;
 
 public class GroovyJProjectComponent implements ProjectComponent {
@@ -36,9 +37,8 @@ public class GroovyJProjectComponent implements ProjectComponent {
 
     private Project project;
     private EditorAPIFactory editorApiFactory;
-    private EditorAPI editorApi;
-    private GroovyController groovyController;
     private GroovyCompiler groovyCompiler;
+    EditorAPI editorApi;
     GroovyLibraryModuleListener groovyLibraryModuleListener;
 
     protected GroovyJProjectComponent(Project project, EditorAPIFactory editorApiFactory) {
@@ -58,8 +58,7 @@ public class GroovyJProjectComponent implements ProjectComponent {
 
     public void projectOpened() {
         editorApi = editorApiFactory.createEditorAPI(project);
-        groovyController = new GroovyController(editorApi);
-        groovyCompiler = new GroovyCompiler(groovyController);
+        groovyCompiler = new GroovyCompiler(editorApi, new CompilationUnitsFactory());
         CompilerManager.getInstance(project).addCompiler(groovyCompiler);
 
         groovyLibraryModuleListener = new GroovyLibraryModuleListener(getPluginVersion());
@@ -73,7 +72,6 @@ public class GroovyJProjectComponent implements ProjectComponent {
     public void projectClosed() {
         CompilerManager.getInstance(project).removeCompiler(groovyCompiler);
         groovyCompiler = null;
-        groovyController = null;
         editorApi = null;
 
         ModuleManager.getInstance(project).removeModuleListener(groovyLibraryModuleListener);
@@ -86,13 +84,5 @@ public class GroovyJProjectComponent implements ProjectComponent {
 
     public String getComponentName() {
         return "groovyj.project.plugin";
-    }
-
-    public GroovyController getGroovyController() {
-        return groovyController;
-    }
-
-    EditorAPI getEditorApi() {
-        return editorApi;
     }
 }

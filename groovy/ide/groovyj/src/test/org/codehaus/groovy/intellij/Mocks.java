@@ -19,6 +19,7 @@
 package org.codehaus.groovy.intellij;
 
 import com.intellij.openapi.module.ModuleType;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 
 import org.jmock.Mock;
@@ -26,62 +27,17 @@ import org.jmock.cglib.MockObjectTestCase;
 
 public final class Mocks {
 
-    /** Sole constructor hidden to enfore non-instantiability. */
-    private Mocks() { }
-
-    // Factory methods -------------------------------------------------------------------------------------------------
-
-    public static Mock createVirtualFileMock(MockObjectTestCase testCase) {
-        return createMock(testCase, MockableVirtualFile.class, "mockVirtualFile");
-    }
+    private Mocks() {}
 
     public static Mock createVirtualFileMock(MockObjectTestCase testCase, String roleName) {
-        return createMock(testCase, MockableVirtualFile.class, roleName);
+        return testCase.mock(VirtualFile.class, roleName);
     }
 
     public static Mock createModuleTypeMock(MockObjectTestCase testCase) {
-        return createMock(testCase, MockableModuleType.class, "mockModuleType");
+        return testCase.mock(ModuleType.class, new Class[] { String.class }, new Object[] { null });
     }
 
     public static Mock createGroovyJProjectComponentMock(MockObjectTestCase testCase) {
-        return createMock(testCase, MockableGroovyJProjectComponent.class, "mockGroovyJProjectComponent");
-    }
-
-    public static Mock createGroovyControllerMock(MockObjectTestCase testCase) {
-        return createMock(testCase, MockableGroovyController.class, "mockGroovyController");
-    }
-
-    private static Mock createMock(MockObjectTestCase testCase, Class mockedType, String roleName) {
-        return testCase.mock(mockedType, roleName);
-    }
-
-    // Mockable classes ------------------------------------------------------------------------------------------------
-
-    private static abstract class MockableVirtualFile extends VirtualFile {
-
-        public MockableVirtualFile() {
-            super();
-        }
-    }
-
-    private static abstract class MockableModuleType extends ModuleType {
-
-        public MockableModuleType() {
-            super(null);
-        }
-    }
-
-    private static class MockableGroovyJProjectComponent extends GroovyJProjectComponent {
-
-        public MockableGroovyJProjectComponent() {
-            super(null, null);
-        }
-    }
-
-    private static class MockableGroovyController extends GroovyController {
-
-        public MockableGroovyController() {
-            super(null);
-        }
+        return testCase.mock(GroovyJProjectComponent.class, new Class[] { Project.class, EditorAPIFactory.class }, new Object[] { null, null });
     }
 }

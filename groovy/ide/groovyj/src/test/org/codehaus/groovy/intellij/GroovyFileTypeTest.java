@@ -18,8 +18,6 @@
 
 package org.codehaus.groovy.intellij;
 
-import java.nio.charset.Charset;
-
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
@@ -76,11 +74,8 @@ public class GroovyFileTypeTest extends GroovyjTestCase {
 
     public void testReturnsTheCharacterSetOfAGivenFileAsItsCharacterSet() {
         String expectedCharacterSetName = "UTF-8";
-
-        Mock mockVirtualFile = Mocks.createVirtualFileMock(this);
-        mockVirtualFile.expects(once()).method("getCharset").will(returnValue(Charset.forName(expectedCharacterSetName)));
-
-        assertSame("character set", expectedCharacterSetName, fileType.getCharset((VirtualFile) mockVirtualFile.proxy()));
+        VirtualFile file = virtualFile().withCharset(expectedCharacterSetName).build();
+        assertSame("character set", expectedCharacterSetName, fileType.getCharset(file));
     }
 
     public void testDoesNotCreateABuilderForTheStructuralTreeViewForAFileOutsideOfTheCurrentProject() {

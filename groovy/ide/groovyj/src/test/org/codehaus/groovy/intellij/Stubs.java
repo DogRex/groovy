@@ -51,6 +51,5 @@ public final class Stubs {
         }
     };
 
-    /** Sole constructor hidden to enfore non-instantiability. */
-    private Stubs() { }
+    private Stubs() {}
 }

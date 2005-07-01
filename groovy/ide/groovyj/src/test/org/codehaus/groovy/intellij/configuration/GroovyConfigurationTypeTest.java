@@ -29,7 +29,6 @@ import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
-import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -39,7 +38,6 @@ import com.intellij.psi.css.CssFileType;
 import org.jmock.Mock;
 
 import org.codehaus.groovy.intellij.GroovySupportLoader;
-import org.codehaus.groovy.intellij.Mocks;
 
 public class GroovyConfigurationTypeTest extends GroovyConfigurationTestCase {
 
@@ -102,10 +100,8 @@ public class GroovyConfigurationTypeTest extends GroovyConfigurationTestCase {
         Mock stubLocation = mock(Location.class);
         stubLocation.stubs().method("getPsiElement").will(returnValue(mock(PsiElement.class).proxy()));
 
-        Mock stubVirtualFile = Mocks.createVirtualFileMock(this);
-        stubVirtualFile.stubs().method("getFileType").will(returnValue(new XmlFileType()));
-
-        OpenFileDescriptor openFileDescriptor = new OpenFileDescriptor(null, (VirtualFile) stubVirtualFile.proxy(), -1);
+        VirtualFile file = virtualFile().withFileType(new XmlFileType()).build();
+        OpenFileDescriptor openFileDescriptor = new OpenFileDescriptor(null, file, -1);
         stubLocation.stubs().method("getOpenFileDescriptor").will(returnValue(openFileDescriptor));
 
         RunnerAndConfigurationSettings settings = configurationType.createConfigurationByLocation((Location) stubLocation.proxy());
@@ -124,18 +120,16 @@ public class GroovyConfigurationTypeTest extends GroovyConfigurationTestCase {
 
     public void testDoesNotOfferToConfigureByElementWhenTheCurrentPsiElementDoesNotComeFromAGroovyScript() {
         GroovyConfigurationFactory configurationFactory = new GroovyConfigurationFactory(null, configurationType, null);
-        GroovyRunConfiguration runConfiguration = new GroovyRunConfiguration(null, createStubbedProject(), configurationFactory, null);
+        GroovyRunConfiguration runConfiguration = new GroovyRunConfiguration(null, project().withProjectFile().build(), configurationFactory, null);
 
-        Mock stubVirtualFile = Mocks.createVirtualFileMock(this);
-        stubVirtualFile.stubs().method("getFileType").will(returnValue(new CssFileType()));
-
-        PsiElement psiElement = createStubbedPsiElement((VirtualFile) stubVirtualFile.proxy());
+        VirtualFile file = virtualFile().withFileType(new CssFileType()).build();
+        PsiElement psiElement = createStubbedPsiElementFor(file);
         assertEquals("configure by element", false, configurationType.isConfigurationByElement(runConfiguration, null, psiElement));
     }
 
     public void testOffersToConfigureByElementWhenTheCurrentPsiElementComesFromAGroovyScript() {
         GroovyConfigurationFactory configurationFactory = new GroovyConfigurationFactory(null, configurationType, null);
-        GroovyRunConfiguration runConfiguration = new GroovyRunConfiguration(null, createStubbedProject(), configurationFactory, null);
+        GroovyRunConfiguration runConfiguration = new GroovyRunConfiguration(null, project().withProjectFile().build(), configurationFactory, null);
         runConfiguration.setScriptPath("/home/foo/acme/src/scripts/bar.groovy");
 
         PsiElement psiElement = createStubbedPsiElementFromGroovyScript(runConfiguration.getScriptPath());
@@ -144,48 +138,35 @@ public class GroovyConfigurationTypeTest extends GroovyConfigurationTestCase {
 
     private Location createStubbedLocationPretendingToPointToAGroovyScript() {
         Mock stubLocation = mock(Location.class);
+
+        Mock mockProjectFileIndex = mock(ProjectFileIndex.class);
+        Project stubbedProject = project()
+                .withProjectFile((ProjectFileIndex) mockProjectFileIndex.proxy())
+                .canCreateRunConfigurations()
+                .build();
+
+        stubLocation.stubs().method("getProject").will(returnValue(stubbedProject));
+
         Mock stubPsiElement = mock(PsiElement.class);
         stubLocation.stubs().method("getPsiElement").will(returnValue(stubPsiElement.proxy()));
-
-        Mock stubProject = mock(Project.class);
-        Project stubbedProject = createStubbedProject(stubProject);
-        stubLocation.stubs().method("getProject").will(returnValue(stubbedProject));
 
         Mock stubPsiManager = mock(PsiManager.class);
         stubPsiElement.stubs().method("getManager").will(returnValue(stubPsiManager.proxy()));
         stubPsiManager.stubs().method("getProject").will(returnValue(stubbedProject));
 
-        Mock mockProjectRootManager = mock(ProjectRootManager.class);
-        stubProject.stubs().method("getComponent").with(same(ProjectRootManager.class)).will(returnValue(mockProjectRootManager.proxy()));
-
-        Mock mockProjectFileIndex = mock(ProjectFileIndex.class);
-        mockProjectRootManager.stubs().method("getFileIndex").will(returnValue(mockProjectFileIndex.proxy()));
-
-        Mock stubVirtualFile = Mocks.createVirtualFileMock(this);
-        stubVirtualFile.stubs().method("getFileType").will(returnValue(GroovySupportLoader.GROOVY));
-        stubVirtualFile.stubs().method("getNameWithoutExtension").will(returnValue("FooBar"));
-        stubVirtualFile.stubs().method("getPath").will(returnValue("/home/foo/acme/src/scripts/bar.groovy"));
-
-        VirtualFile groovyScriptFile = (VirtualFile) stubVirtualFile.proxy();
-        mockProjectFileIndex.expects(once()).method("getModuleForFile").with(same(groovyScriptFile));
-
-        OpenFileDescriptor openFileDescriptor = new OpenFileDescriptor(null, groovyScriptFile, -1);
-        stubLocation.stubs().method("getOpenFileDescriptor").will(returnValue(openFileDescriptor));
+        VirtualFile groovyScriptFile = createGroovyScriptFile();
+        mockProjectFileIndex.expects(once()).method("getModuleForFile").with(same(groovyScriptFile)).will(returnValue(module().build()));;
+        stubLocation.stubs().method("getOpenFileDescriptor").will(returnValue(new OpenFileDescriptor(stubbedProject, groovyScriptFile, -1)));
 
         return (Location) stubLocation.proxy();
     }
 
     private PsiElement createStubbedPsiElementFromGroovyScript(String scriptPath) {
-        Mock stubVirtualFile = Mocks.createVirtualFileMock(this);
-        stubVirtualFile.stubs().method("getFileType").will(returnValue(GroovySupportLoader.GROOVY));
-        stubVirtualFile.stubs().method("isValid").will(returnValue(true));
-        stubVirtualFile.stubs().method("getFileSystem").will(returnValue(null));
-        stubVirtualFile.stubs().method("getPath").will(returnValue(scriptPath));
-
-        return createStubbedPsiElement((VirtualFile) stubVirtualFile.proxy());
+        VirtualFile script = virtualFile().withPath(scriptPath).withFileType(GroovySupportLoader.GROOVY).build();
+        return createStubbedPsiElementFor(script);
     }
 
-    private PsiElement createStubbedPsiElement(VirtualFile virtualFile) {
+    private PsiElement createStubbedPsiElementFor(VirtualFile virtualFile) {
         Mock stubPsiFile = mock(PsiFile.class);
         stubPsiFile.stubs().method("getVirtualFile").will(returnValue(virtualFile));
 
@@ -193,5 +174,12 @@ public class GroovyConfigurationTypeTest extends GroovyConfigurationTestCase {
         stubPsiElement.stubs().method("getContainingFile").will(returnValue(stubPsiFile.proxy()));
 
         return (PsiElement) stubPsiElement.proxy();
+    }
+
+    private VirtualFile createGroovyScriptFile() {
+        return virtualFile()
+                .withPath("/home/foo/acme/src/scripts/FooBar.groovy")
+                .withFileType(GroovySupportLoader.GROOVY)
+                .build();
     }
 }

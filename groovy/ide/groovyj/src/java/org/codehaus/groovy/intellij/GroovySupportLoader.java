@@ -31,7 +31,7 @@ public class GroovySupportLoader implements ApplicationComponent {
 
     public static final FileType GROOVY = new GroovyFileType(GroovyLanguage.findOrCreate());
 
-    private static final String[] DEFAULT_ASSOCIATED_EXTENSIONS = new String[] { "groovy", "gvy", "gy", "gsh" };
+    public static final String[] DEFAULT_ASSOCIATED_EXTENSIONS = new String[] { "groovy", "gvy", "gy", "gsh" };
 
     private final GroovyLibraryManager groovyLibraryManager;
 

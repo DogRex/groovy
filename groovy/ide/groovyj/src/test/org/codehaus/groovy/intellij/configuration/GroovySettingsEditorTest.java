@@ -117,7 +117,7 @@ public class GroovySettingsEditorTest extends GroovyConfigurationTestCase {
 
     public void testUsesAListCellRendererToRenderAGivenModuleInAComboBox() {
         Mock mockModuleType = Mocks.createModuleTypeMock(this);
-        Module stubbedModule = createStubbedModule((ModuleType) mockModuleType.proxy());
+        Module stubbedModule = module().isA((ModuleType) mockModuleType.proxy()).build();
 
         boolean nodeIconOpened = true;
         Icon expectedNodeIcon = Icons.SMALLEST;

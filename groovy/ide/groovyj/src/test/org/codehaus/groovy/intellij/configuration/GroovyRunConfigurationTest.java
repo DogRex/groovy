@@ -26,7 +26,9 @@ import com.intellij.execution.configurations.RuntimeConfigurationException;
 import com.intellij.execution.filters.TextConsoleBuidlerFactory;
 import com.intellij.execution.filters.TextConsoleBuidlerFactoryImpl;
 import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.module.JavaModuleType;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.WebModuleType;
 import com.intellij.openapi.options.SettingsEditor;
 
 import org.jdom.Element;
@@ -45,7 +47,13 @@ public class GroovyRunConfigurationTest extends GroovyConfigurationTestCase {
     protected void setUp() {
         GroovyRunConfigurationExternaliser runConfigurationExternaliser = (GroovyRunConfigurationExternaliser) mockGroovyRunConfigurationExternalizer.proxy();
         GroovyConfigurationFactory configurationFactory = new GroovyConfigurationFactory(null, null, runConfigurationExternaliser);
-        runConfiguration = new GroovyRunConfiguration(null, createStubbedProject(), configurationFactory, (EditorAPI) mockEditorApi.proxy());
+
+        Module[] projectModules = new Module[] {
+                module().isA(new JavaModuleType()).build(),
+                module().isA(new WebModuleType()).build()
+        };
+        runConfiguration = new GroovyRunConfiguration(null, project().withProjectFile().withModules(projectModules).build(),
+                                                      configurationFactory, (EditorAPI) mockEditorApi.proxy());
     }
 
     public void testCreatesAConfigurationEditorForAnyGivenProject() {

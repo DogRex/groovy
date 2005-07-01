@@ -16,15 +16,13 @@
  */
 
 
-package org.codehaus.groovy.intellij;
+package org.codehaus.groovy.intellij.compiler;
 
-import java.util.Random;
+import org.codehaus.groovy.control.CompilationUnit;
 
-public class TestUtil {
+public class CompilationUnitsFactory {
 
-    private static final Random PSEUDO_RANDOM_NUMBER_GENERATOR = new Random();
-
-    public static int nextAbsRandomInt() {
-        return Math.abs(PSEUDO_RANDOM_NUMBER_GENERATOR.nextInt());
+    public CompilationUnits create(CompilationUnit sourceCompilationUnit, CompilationUnit testCompilationUnit) {
+        return new CompilationUnits(sourceCompilationUnit, testCompilationUnit);
     }
 }

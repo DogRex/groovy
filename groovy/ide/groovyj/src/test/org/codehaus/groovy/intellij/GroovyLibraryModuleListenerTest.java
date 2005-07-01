@@ -40,7 +40,7 @@ public class GroovyLibraryModuleListenerTest extends GroovyjTestCase {
         application.registerComponent(LibraryTable.class, mockLibraryTable.proxy());
 
         mockLibraryTable.stubs().method("getLibraryByName").with(startsWith("Groovy from GroovyJ "));
-        groovyLibraryModuleListener = new GroovyLibraryModuleListener("1.0." + TestUtil.nextAbsRandomInt());
+        groovyLibraryModuleListener = new GroovyLibraryModuleListener("1.0." + nextPositiveRandomInt());
     }
 
     public void testAddsTheGroovyLibraryToANewlyAddedModule() {
@@ -48,8 +48,8 @@ public class GroovyLibraryModuleListenerTest extends GroovyjTestCase {
         mockModifiableRootModel.expects(once()).method("addLibraryEntry");
         mockModifiableRootModel.expects(once()).method("commit");
 
-        groovyLibraryModuleListener.moduleAdded(createStubbedProject(),
-                                                createStubbedModule((ModifiableRootModel) mockModifiableRootModel.proxy()));
+        ModifiableRootModel moduleRootModel = (ModifiableRootModel) mockModifiableRootModel.proxy();
+        groovyLibraryModuleListener.moduleAdded(project().build(), module().withModuleRootModel(moduleRootModel).build());
     }
 
     public void testDoesNothingBeforeAModuleIsRemoved() {

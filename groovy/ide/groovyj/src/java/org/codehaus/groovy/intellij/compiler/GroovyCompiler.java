@@ -19,37 +19,41 @@
 package org.codehaus.groovy.intellij.compiler;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import com.intellij.compiler.impl.javaCompiler.OutputItemImpl;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompileScope;
-import com.intellij.openapi.compiler.CompilerMessageCategory;
+import com.intellij.openapi.compiler.CompilerPaths;
 import com.intellij.openapi.compiler.TranslatingCompiler;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 
-import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.control.CompilationUnit;
-import org.codehaus.groovy.control.ErrorCollector;
-import org.codehaus.groovy.control.MultipleCompilationErrorsException;
+import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.messages.WarningMessage;
-import org.codehaus.groovy.syntax.SyntaxException;
 
-import org.codehaus.groovy.intellij.GroovyController;
+import org.codehaus.groovy.intellij.EditorAPI;
 import org.codehaus.groovy.intellij.GroovySupportLoader;
 
-import groovy.lang.GroovyRuntimeException;
+import groovy.lang.GroovyClassLoader;
 
 public class GroovyCompiler implements TranslatingCompiler {
 
-    private final GroovyController controller;
+    private final EditorAPI editorApi;
+    private final CompilationUnitsFactory factory;
 
-    public GroovyCompiler(GroovyController controller) {
-        this.controller = controller;
+    public GroovyCompiler(EditorAPI editorApi, CompilationUnitsFactory factory) {
+        this.editorApi = editorApi;
+        this.factory = factory;
     }
 
     public String getDescription() {
@@ -75,71 +79,81 @@ public class GroovyCompiler implements TranslatingCompiler {
     }
 
     private void compile(CompileContext context, VirtualFile[] filesToCompile, List<OutputItem> compiledFiles, List<VirtualFile> filesToRecompile) {
-        for (int i = 0; i < filesToCompile.length; i++) {
-            if (context.getProgressIndicator().isCanceled()) {
-                break;
-            }
+        Map<Module, CompilationUnits> modulesToCompilationUnits = mapModulesToSourceAndTestCompilationUnits(context, filesToCompile);
 
-            context.getProgressIndicator().setFraction((double) i / (double) filesToCompile.length);
-            compile(context, filesToCompile[i], compiledFiles, filesToRecompile);
+        for (Module module : modulesToCompilationUnits.keySet()) {
+            CompilationUnits compilationUnits = modulesToCompilationUnits.get(module);
+            compilationUnits.compile(context, compiledFiles, filesToRecompile);
         }
     }
 
-    private void compile(CompileContext context, VirtualFile fileToCompile, List<OutputItem> compiledFiles, List<VirtualFile> filesToRecompile) {
-        Module module = context.getModuleByFile(fileToCompile);
-        CompilationUnit compilationUnit = controller.createCompilationUnit(module, fileToCompile);
-        compilationUnit.addSource(new File(fileToCompile.getPath()));
+    private Map<Module,CompilationUnits> mapModulesToSourceAndTestCompilationUnits(CompileContext context, VirtualFile[] filesToCompile) {
+        Map<Module, CompilationUnits> modulesToCompilationUnits = new HashMap<Module, CompilationUnits>();
 
+        for (VirtualFile fileToCompile : filesToCompile) {
+            Module module = context.getModuleByFile(fileToCompile);
+            String characterEncoding = fileToCompile.getCharset().name();
+            CompilationUnits compilationUnits = findOrCreateCompilationUnits(module, characterEncoding, modulesToCompilationUnits);
+            compilationUnits.add(fileToCompile, isFileInTestSourceFolder(fileToCompile, module));
+        }
+
+        return modulesToCompilationUnits;
+    }
+
+    private boolean isFileInTestSourceFolder(VirtualFile file, Module module) {
+        return ModuleRootManager.getInstance(module).getFileIndex().isInTestSourceContent(file);
+    }
+
+    private CompilationUnits findOrCreateCompilationUnits(Module module, String characterEncoding,
+                                                          Map<Module, CompilationUnits> modulesToCompilationUnits) {
+        CompilationUnits compilationUnits = modulesToCompilationUnits.get(module);
+        return (compilationUnits == null)
+               ? createCompilationUnits(module, characterEncoding, modulesToCompilationUnits)
+               : compilationUnits;
+    }
+
+    private CompilationUnits createCompilationUnits(Module module, String characterEncoding, Map<Module, CompilationUnits> modulesToCompilationUnits) {
+        CompilationUnits compilationUnits = factory.create(createCompilationUnit(module, characterEncoding, false),
+                                                           createCompilationUnit(module, characterEncoding, true));
+        modulesToCompilationUnits.put(module, compilationUnits);
+        return compilationUnits;
+    }
+
+    private CompilationUnit createCompilationUnit(Module module, String characterEncoding, boolean forTestSourceFolders) {
+        CompilerConfiguration compilerConfiguration = new CompilerConfiguration();
+        compilerConfiguration.setSourceEncoding(characterEncoding);
+        compilerConfiguration.setOutput(new PrintWriter(System.err));
+        compilerConfiguration.setWarningLevel(WarningMessage.PARANOIA);
+
+        String moduleClasspath = editorApi.getCompilationClasspath(module);
+        String sourceFoldersPath = editorApi.getNonExcludedModuleSourceFolders(module).getPathsString();
+        compilerConfiguration.setClasspath(moduleClasspath + File.pathSeparator + sourceFoldersPath);
+        compilerConfiguration.setTargetDirectory(CompilerPaths.getModuleOutputPath(module, forTestSourceFolders));
+
+        return new CompilationUnit(compilerConfiguration, null, buildClassLoaderFor(compilerConfiguration));
+    }
+
+    GroovyClassLoader buildClassLoaderFor(CompilerConfiguration compilerConfiguration) {
+        URLClassLoader urlClassLoader = new URLClassLoader(convertClasspathToUrls(compilerConfiguration));
+        return new GroovyClassLoader(urlClassLoader, compilerConfiguration);
+    }
+
+    private URL[] convertClasspathToUrls(CompilerConfiguration compilerConfiguration) {
         try {
-            compilationUnit.compile();
-            addCompiledFile(fileToCompile, compiledFiles, compilationUnit.getConfiguration().getTargetDirectory());
-        } catch (Exception e) {
-            processCompilationException(e, fileToCompile, filesToRecompile, context);
-        } finally {
-            addWarnings(compilationUnit.getErrorCollector(), context);
+            return classpathAsUrls(compilerConfiguration);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private void addCompiledFile(VirtualFile compiledFile, List<OutputItem> compiledFiles, File targetDirectory) throws IOException {
-        String outputRootDirectory = targetDirectory.getParentFile().getCanonicalPath();
-        String outputPath = targetDirectory.getCanonicalPath();
-        compiledFiles.add(new OutputItemImpl(outputRootDirectory, outputPath, compiledFile));
-    }
-
-    private void addWarnings(ErrorCollector errorCollector, CompileContext context) {
-        for (int i = 0; i < errorCollector.getWarningCount(); i++) {
-            WarningMessage warning = errorCollector.getWarning(i);
-            context.addMessage(CompilerMessageCategory.WARNING, warning.getMessage(), null, -1, -1);
+    private URL[] classpathAsUrls(CompilerConfiguration compilerConfiguration) throws MalformedURLException {
+        List classpath = compilerConfiguration.getClasspath();
+        URL[] classpathUrls = new URL[classpath.size()];
+        for (int i = 0; i < classpathUrls.length; i++) {
+            String classpathEntry = (String) classpath.get(i);
+            classpathUrls[i] = new File(classpathEntry).toURL();
         }
-    }
-
-    private void processCompilationException(Exception exception, VirtualFile fileToCompile, List<VirtualFile> filesToRecompile, CompileContext context) {
-        if (exception instanceof MultipleCompilationErrorsException) {
-            MultipleCompilationErrorsException compilationFailureException = (MultipleCompilationErrorsException) exception;
-            ErrorCollector errorCollector = compilationFailureException.getErrorCollector();
-            for (int i = 0; i < errorCollector.getErrorCount(); i++) {
-                processException(errorCollector.getException(i), context, filesToRecompile, fileToCompile);
-            }
-        } else {
-            processException(exception, context, filesToRecompile, fileToCompile);
-        }
-    }
-
-    private void processException(Exception exception, CompileContext context, List<VirtualFile> filesToRecompile, VirtualFile fileToCompile) {
-        if (exception instanceof SyntaxException) {
-            SyntaxException syntaxException = (SyntaxException) exception;
-            context.addMessage(CompilerMessageCategory.ERROR, syntaxException.getMessage(), fileToCompile.getUrl(),
-                               syntaxException.getLine(), syntaxException.getStartColumn());
-        } else if (exception instanceof GroovyRuntimeException) {
-            GroovyRuntimeException groovyRuntimeException = (GroovyRuntimeException) exception;
-            ASTNode astNode = groovyRuntimeException.getNode();
-            context.addMessage(CompilerMessageCategory.ERROR, groovyRuntimeException.getMessageWithoutLocationText(),
-                               fileToCompile.getUrl(), astNode.getLineNumber(), astNode.getColumnNumber());
-        } else {
-            context.addMessage(CompilerMessageCategory.ERROR, exception.getMessage(), fileToCompile.getUrl(), -1, -1);
-        }
-
-        filesToRecompile.add(fileToCompile);
+        return classpathUrls;
     }
 
     public boolean validateConfiguration(CompileScope scope) {

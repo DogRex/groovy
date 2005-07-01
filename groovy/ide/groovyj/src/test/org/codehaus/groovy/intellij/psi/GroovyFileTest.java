@@ -25,7 +25,7 @@ import org.codehaus.groovy.intellij.GroovyjTestCase;
 
 public class GroovyFileTest extends GroovyjTestCase {
 
-    private final GroovyFile groovyFile = new GroovyFile(createStubbedProject(), new MockVirtualFile("path", "contents"));
+    private final GroovyFile groovyFile = new GroovyFile(project().build(), new MockVirtualFile("path", "contents"));
 
     public void testHasTheGroovyFileType() {
         assertSame("file type", GroovySupportLoader.GROOVY, groovyFile.getFileType());

@@ -110,7 +110,7 @@ public class GroovyLibraryManagerTest extends GroovyjTestCase {
     private void configureLibraryTableWithAGroovyLibraryRequiringAnUpgrade(Mock mockLibrary) {
         mockLibraryTableModel.expects(once()).method("getLibraries")
                 .will(returnValue(new Library[] { (Library) mockLibrary.proxy() }));
-        mockLibrary.stubs().method("getName").will(returnValue("Groovy from GroovyJ 0." + TestUtil.nextAbsRandomInt()));
+        mockLibrary.stubs().method("getName").will(returnValue("Groovy from GroovyJ 0." + nextPositiveRandomInt()));
     }
 
     private void createGroovyLibrary(Library library) {

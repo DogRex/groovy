@@ -18,49 +18,44 @@
 
 package org.codehaus.groovy.intellij.compiler;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.List;
 
 import org.intellij.openapi.testing.MockApplicationManager;
 
-import com.intellij.compiler.progress.CompilerProgressIndicator;
 import com.intellij.openapi.compiler.CompileContext;
-import com.intellij.openapi.compiler.CompilerMessageCategory;
+import com.intellij.openapi.compiler.CompileScope;
 import com.intellij.openapi.compiler.TranslatingCompiler;
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.MockVirtualFile;
+import com.intellij.util.PathsList;
 
-import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.control.ErrorCollector;
-import org.codehaus.groovy.control.MultipleCompilationErrorsException;
-import org.codehaus.groovy.control.messages.ExceptionMessage;
-import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
-import org.codehaus.groovy.control.messages.WarningMessage;
-import org.codehaus.groovy.syntax.SyntaxException;
 
 import org.jmock.Mock;
-import org.jmock.core.Constraint;
+import org.jmock.cglib.MockObjectTestCase;
 
-import org.codehaus.groovy.intellij.GroovyController;
+import org.codehaus.groovy.intellij.EditorAPI;
 import org.codehaus.groovy.intellij.GroovySupportLoader;
 import org.codehaus.groovy.intellij.GroovyjTestCase;
-import org.codehaus.groovy.intellij.Mocks;
-import org.codehaus.groovy.intellij.TestUtil;
-
-import groovy.lang.MissingClassException;
 
 public class GroovyCompilerTest extends GroovyjTestCase {
 
-    private final Mock mockGroovyController = Mocks.createGroovyControllerMock(this);
+    private final Mock mockEditorAPI = mock(EditorAPI.class);
+    private final Mock mockCompilationUnitsFactory = mock(CompilationUnitsFactory.class);
     private final Mock mockFileTypeManager = mock(FileTypeManager.class);
 
-    private final GroovyCompiler groovyCompiler = new GroovyCompiler((GroovyController) mockGroovyController.proxy());
+    private final GroovyCompiler groovyCompiler = new GroovyCompiler((EditorAPI) mockEditorAPI.proxy(),
+                                                                     (CompilationUnitsFactory) mockCompilationUnitsFactory.proxy());
 
     protected void setUp() {
         MockApplicationManager.getMockApplication().registerComponent(FileTypeManager.class, mockFileTypeManager.proxy());
@@ -75,189 +70,146 @@ public class GroovyCompilerTest extends GroovyjTestCase {
     }
 
     public void testIsAlwaysReadyToParticipateInTheCompilationOfEitherProjectOrModule() {
-        assertEquals("ready for compilation?", true, groovyCompiler.validateConfiguration(null));
+        assertEquals("ready for compilation?", true, groovyCompiler.validateConfiguration(compileScope()));
     }
 
     public void testDeterminesThatAGivenFileIsCompilableWhenItsCorrespondingFileTypeIsTheGroovyOne() {
         VirtualFile file = new MockVirtualFile();
         mockFileTypeManager.expects(once()).method("getFileTypeByFile").with(same(file)).will(returnValue(GroovySupportLoader.GROOVY));
-        assertEquals("is compilable?", true, groovyCompiler.isCompilableFile(file, null));
+        assertEquals("is compilable?", true, groovyCompiler.isCompilableFile(file, compileContext()));
     }
 
     public void testDeterminesThatAGivenFileIsNotCompilableWhenItsCorrespondingFileTypeIsNotTheGroovyOne() {
         VirtualFile file = new MockVirtualFile();
         mockFileTypeManager.expects(once()).method("getFileTypeByFile").with(same(file)).will(returnValue(StdFileTypes.JAVA));
-        assertEquals("is compilable?", false, groovyCompiler.isCompilableFile(file, null));
+        assertEquals("is compilable?", false, groovyCompiler.isCompilableFile(file, compileContext()));
     }
 
-    public void testCompilesNothingWhenThereAreNoFilesToCompile() {
-        TranslatingCompiler.ExitStatus exitStatus = groovyCompiler.compile((CompileContext) mock(CompileContext.class).proxy(), VirtualFile.EMPTY_ARRAY);
-        assertEquals("number of files to recompile", 0, exitStatus.getFilesToRecompile().length);
-        assertEquals("number of files compiled", 0, exitStatus.getSuccessfullyCompiled().length);
+    public void testDoesNothingWhenThereAreNoFilesToCompile() {
+        TranslatingCompiler.ExitStatus exitStatus = groovyCompiler.compile((CompileContext) newDummy(CompileContext.class), VirtualFile.EMPTY_ARRAY);
+        assertExitStatusDoesNotIndicateWhichFilesCompiledSuccessfullyNorWhichFilesNeedRecompiling(exitStatus);
     }
 
-    public void testAbortsCompilationWhenCancelledInTheProgressBar() throws IOException {
-        Mock mockCompileContext = mock(CompileContext.class);
-        Mock mockProgressIndicator = mock(ProgressIndicator.class);
-        mockCompileContext.stubs().method("getProgressIndicator").will(returnValue(mockProgressIndicator.proxy()));
-        mockProgressIndicator.expects(once()).method("isCanceled").will(returnValue(true));
-
-        VirtualFile[] filesToCompile = new VirtualFile[] { createVirtualFile("/home/foo/acme/src/bar.groovy") };
-
-        TranslatingCompiler.ExitStatus exitStatus = groovyCompiler.compile((CompileContext) mockCompileContext.proxy(), filesToCompile);
-        assertEquals("number of files to recompile", 0, exitStatus.getFilesToRecompile().length);
-        assertEquals("number of files compiled", 0, exitStatus.getSuccessfullyCompiled().length);
+    public void testBuildsAClassloaderLinkedToAUrlClassLoaderConfiguredToSearchTheClasspathOfACompilerConfiguration() throws MalformedURLException {
+        CompilerConfiguration compilerConfiguration = aCompilerConfigurationWith(aUserDefinedClasspath());
+        ClassLoader classLoader = groovyCompiler.buildClassLoaderFor(compilerConfiguration);
+        URLClassLoader parentClassLoader = (URLClassLoader) classLoader.getParent();
+        assertClasspathUrlsMatch(parentClassLoader.getURLs(), compilerConfiguration);
     }
 
-    public void testAddsSyntaxExceptionsWithPreciseLocationToCompileContext() throws IOException, CompilationFailedException {
-        SyntaxException syntaxException = new SyntaxException("a syntax exception", TestUtil.nextAbsRandomInt(), TestUtil.nextAbsRandomInt());
-
-        MockCompilationUnit compilationUnit = new MockCompilationUnit();
-        ErrorCollector errorCollector = compilationUnit.getErrorCollector();
-        errorCollector.addError(new SyntaxErrorMessage(syntaxException, null));
-        compilationUnit.exception = new MultipleCompilationErrorsException(errorCollector);
-
-        VirtualFile fileToCompile = createVirtualFile("/home/foo/acme/src/bar.groovy");
-
-        Mock mockCompileContext = createMockedCompileContextWithStubbedProgressIndicator();
-        mockCompileContext.expects(once()).method("addMessage")
-                .with(new Constraint[] { same(CompilerMessageCategory.ERROR), eq(syntaxException.getMessage()),
-                                         eq(fileToCompile.getUrl()), eq(syntaxException.getLine()), eq(syntaxException.getStartColumn()) });
-
-        TranslatingCompiler.ExitStatus exitStatus = compile(fileToCompile, mockCompileContext, compilationUnit);
-        assertEquals("number of files to recompile", 1, exitStatus.getFilesToRecompile().length);
-        assertSame("file to recompile", fileToCompile, exitStatus.getFilesToRecompile()[0]);
-
-        assertEquals("number of files compiled", 0, exitStatus.getSuccessfullyCompiled().length);
-
-        assertEquals("number of errors", 1, errorCollector.getErrorCount());
-        assertSame("exception", syntaxException, errorCollector.getException(0));
-
-        assertEquals("number of warnings", 0, errorCollector.getWarningCount());
+    private CompilerConfiguration aCompilerConfigurationWith(String classpath) {
+        CompilerConfiguration compilerConfiguration = new CompilerConfiguration();
+        compilerConfiguration.setClasspath(classpath);
+        return compilerConfiguration;
     }
 
-    public void testAddsGroovyRuntimeExceptionsWithPreciseLocationToCompileContext() throws IOException, CompilationFailedException {
-        ASTNode astNode = new ASTNode();
-        astNode.setLineNumber(TestUtil.nextAbsRandomInt());
-        astNode.setColumnNumber(TestUtil.nextAbsRandomInt());
-
-        MissingClassException missingClassException = new MissingClassException("MadeUpType", astNode, "in blah blah");
-
-        MockCompilationUnit compilationUnit = new MockCompilationUnit();
-        ErrorCollector errorCollector = compilationUnit.getErrorCollector();
-        errorCollector.addError(new ExceptionMessage(missingClassException, false, null));
-        compilationUnit.exception = new MultipleCompilationErrorsException(errorCollector);
-
-        VirtualFile fileToCompile = createVirtualFile("/home/foo/acme/src/bar.groovy");
-
-        Mock mockCompileContext = createMockedCompileContextWithStubbedProgressIndicator();
-        mockCompileContext.expects(once()).method("addMessage")
-                .with(new Constraint[] { same(CompilerMessageCategory.ERROR),
-                                         eq(missingClassException.getMessageWithoutLocationText()), eq(fileToCompile.getUrl()),
-                                         eq(astNode.getLineNumber()), eq(astNode.getColumnNumber()) });
-
-        TranslatingCompiler.ExitStatus exitStatus = compile(fileToCompile, mockCompileContext, compilationUnit);
-        assertEquals("number of files to recompile", 1, exitStatus.getFilesToRecompile().length);
-        assertSame("file to recompile", fileToCompile, exitStatus.getFilesToRecompile()[0]);
-
-        assertEquals("number of files compiled", 0, exitStatus.getSuccessfullyCompiled().length);
-
-        assertEquals("number of errors", 1, errorCollector.getErrorCount());
-        assertSame("exception", missingClassException, errorCollector.getException(0));
-
-        assertEquals("number of warnings", 0, errorCollector.getWarningCount());
+    private String aUserDefinedClasspath() {
+        return "/var/lib/acme/lib/acme.jar" + File.pathSeparator
+               + "/home/foobar/.ant/lib/junit.jar" + File.pathSeparator
+               + "/tmp/classes" + File.pathSeparator
+               + "\\\\SHARE\\dev\\projects\\helloworld\\src\\groovy\\";
     }
 
-    public void testAddsExceptionsAsErrorsToCompileContext() throws IOException, CompilationFailedException {
-        IOException anotherException = new IOException("exceptional I/O stuff");
+    private void assertClasspathUrlsMatch(URL[] urls, CompilerConfiguration compilerConfiguration) throws MalformedURLException {
+        List classpath = compilerConfiguration.getClasspath();
+        assertEquals("number of classpath entries", classpath.size(), urls.length);
 
-        MockCompilationUnit compilationUnit = new MockCompilationUnit();
-        ErrorCollector errorCollector = compilationUnit.getErrorCollector();
-        errorCollector.addError(new ExceptionMessage(anotherException, false, null));
-        compilationUnit.exception = new MultipleCompilationErrorsException(errorCollector);
-
-        VirtualFile fileToCompile = createVirtualFile("/home/foo/acme/src/bar.groovy");
-
-        Mock mockCompileContext = createMockedCompileContextWithStubbedProgressIndicator();
-        mockCompileContext.expects(once()).method("addMessage")
-                .with(new Constraint[] { same(CompilerMessageCategory.ERROR), eq(anotherException.getMessage()),
-                                         eq(fileToCompile.getUrl()), eq(-1), eq(-1) });
-
-        TranslatingCompiler.ExitStatus exitStatus = compile(fileToCompile, mockCompileContext, compilationUnit);
-        assertEquals("number of files to recompile", 1, exitStatus.getFilesToRecompile().length);
-        assertSame("file to recompile", fileToCompile, exitStatus.getFilesToRecompile()[0]);
-
-        assertEquals("number of files compiled", 0, exitStatus.getSuccessfullyCompiled().length);
-
-        assertEquals("number of errors", 1, errorCollector.getErrorCount());
-        assertSame("exception", anotherException, errorCollector.getException(0));
-
-        assertEquals("number of warnings", 0, errorCollector.getWarningCount());
+        for (int i = 0; i < classpath.size(); i++) {
+            String classpathEntry = (String) classpath.get(i);
+            assertEquals(new File(classpathEntry).toURL(), urls[i]);
+        }
     }
 
-    public void testCompilesASingleErrorFreeGroovyScriptAndAddsWarningsToCompileContext() throws IOException {
-        MockCompilationUnit compilationUnit = new MockCompilationUnit();
-        WarningMessage expectedWarningMessage = new WarningMessage(WarningMessage.LIKELY_ERRORS, "a warning", null, null);
+    public void testDelegatesTheCompilationToAPairOfCompilationUnits() throws IOException, CompilationFailedException {
+        VirtualFile[] filesToCompile = someFilesWithDifferentEncodingsToCompile();
+        expectTheCreationOfCompilationUnitsForCompiling(filesToCompile);
 
-        ErrorCollector errorCollector = compilationUnit.getErrorCollector();
-        errorCollector.addWarning(expectedWarningMessage);
-
-        VirtualFile fileToCompile = createVirtualFile("/home/foo/acme/src/bar.groovy");
-
-        Mock mockCompileContext = createMockedCompileContextWithStubbedProgressIndicator();
-        mockCompileContext.expects(once()).method("addMessage")
-                .with(new Constraint[] { same(CompilerMessageCategory.WARNING), eq(expectedWarningMessage.getMessage()),
-                                         NULL, eq(-1), eq(-1) });
-
-        TranslatingCompiler.ExitStatus exitStatus = compile(fileToCompile, mockCompileContext, compilationUnit);
-        assertEquals("number of files to recompile", 0, exitStatus.getFilesToRecompile().length);
-
-        assertEquals("number of files compiled", 1, exitStatus.getSuccessfullyCompiled().length);
-        assertEquals("file compiled", compilationUnit.getConfiguration().getTargetDirectory().getCanonicalPath(),
-                     exitStatus.getSuccessfullyCompiled()[0].getOutputPath());
-
-        assertEquals("number of errors", 0, errorCollector.getErrorCount());
-
-        assertEquals("number of warnings", 1, errorCollector.getWarningCount());
-        assertSame("warnings", expectedWarningMessage, errorCollector.getWarning(0));
+        CompileContext compileContext = compilationContextFor(filesToCompile);
+        TranslatingCompiler.ExitStatus exitStatus = groovyCompiler.compile(compileContext, filesToCompile);
+        assertExitStatusDoesNotIndicateWhichFilesCompiledSuccessfullyNorWhichFilesNeedRecompiling(exitStatus);
     }
 
-    private TranslatingCompiler.ExitStatus compile(VirtualFile file, Mock mockCompileContext, CompilationUnit compilationUnit) {
-        Module module = (Module) mock(Module.class).proxy();
-        mockCompileContext.expects(once()).method("getModuleByFile").with(same(file)).will(returnValue(module));
-
-        compilationUnit.getConfiguration().setTargetDirectory("/home/foo/acme/classes");
-        mockGroovyController.expects(once()).method("createCompilationUnit").with(same(module), same(file))
-                .will(returnValue(compilationUnit));
-
-        return groovyCompiler.compile((CompileContext) mockCompileContext.proxy(), new VirtualFile[] { file });
+    private VirtualFile[] someFilesWithDifferentEncodingsToCompile() {
+        VirtualFile[] filesToCompile = new VirtualFile[] {
+            virtualFile().withCharset("UTF-8").withPath("/home/bar/src/main/Bar.groovy").build(),
+            virtualFile().withCharset("US-ASCII").withPath("/home/foo/test/unit/FooTest.groovy").build(),
+        };
+        return filesToCompile;
     }
 
-    private Mock createMockedCompileContextWithStubbedProgressIndicator() {
-        Mock mockCompileContext = mock(CompileContext.class);
-        mockCompileContext.stubs().method("getProgressIndicator").will(returnValue(new CompilerProgressIndicator(null, false, null)));
-        return mockCompileContext;
+    private void expectTheCreationOfCompilationUnitsForCompiling(VirtualFile[] filesToCompile) {
+        mockCompilationUnitsFactory.expects(once()).method("create")
+                .with(isA(CompilationUnit.class), isA(CompilationUnit.class))
+                .will(returnValue(compilationUnitsForCompiling(filesToCompile)));
     }
 
-    private VirtualFile createVirtualFile(String filePath) {
-        Mock mockVirtualFile = Mocks.createVirtualFileMock(this);
-        mockVirtualFile.stubs().method("getPath").will(returnValue(filePath));
-        mockVirtualFile.stubs().method("getUrl").will(returnValue("file://" + filePath));
-        return (VirtualFile) mockVirtualFile.proxy();
+    private CompileContext compilationContextFor(VirtualFile[] filesToCompile) {
+        return new CompileContextBuilder(this).linking(moduleFor(filesToCompile), filesToCompile).build();
     }
 
-    private static class MockCompilationUnit extends CompilationUnit {
+    private CompilationUnits compilationUnitsForCompiling(VirtualFile[] filesToCompile) {
+        CompilationUnitsBuilder compilationUnitsBuilder = new CompilationUnitsBuilder(this);
 
-        private CompilationFailedException exception;
-
-        public MockCompilationUnit() {
-            super(new CompilerConfiguration());
+        boolean inTestSourceFolder = false;
+        for (VirtualFile file : filesToCompile) {
+            compilationUnitsBuilder.expectsAddFile(file, inTestSourceFolder);
+            inTestSourceFolder = !inTestSourceFolder;
         }
 
-        public void compile() throws CompilationFailedException {
-            if (exception != null) {
-                throw exception;
-            }
+        return compilationUnitsBuilder.expectsCompile().build();
+    }
+
+    private CompileScope compileScope() {
+        return (CompileScope) newDummy(CompileScope.class);
+    }
+
+    private CompileContext compileContext() {
+        return (CompileContext) newDummy(CompileContext.class);
+    }
+
+    private Module moduleFor(VirtualFile[] files) {
+        ModuleBuilder moduleBuilder = module()
+                .withCompilerOutputPathUrl("build/classes")
+                .withCompilerOutputPathForTestsUrl("build/test-classes");
+
+        boolean inTestSourceFolder = false;
+        for (VirtualFile file : files) {
+            moduleBuilder.forFileInSourceFolder(file, inTestSourceFolder);
+            inTestSourceFolder = !inTestSourceFolder;
         }
+
+        Module module = moduleBuilder.build();
+        mockEditorAPI.stubs().method("getCompilationClasspath").with(same(module)).will(returnValue(aUserDefinedClasspath()));
+        mockEditorAPI.stubs().method("getNonExcludedModuleSourceFolders").with(same(module)).will(returnValue(new PathsList()));
+        return module;
+    }
+
+    private static class CompilationUnitsBuilder {
+        private final MockObjectTestCase testCase;
+        private final Mock mockCompilationUnits;
+
+        CompilationUnitsBuilder(MockObjectTestCase testCase) {
+            this.testCase = testCase;
+            mockCompilationUnits = testCase.mock(CompilationUnits.class, new Class[] { CompilationUnit.class, CompilationUnit.class }, new Object[] { null, null });
+        }
+
+        private CompilationUnitsBuilder expectsAddFile(VirtualFile file, boolean inTestSourceFolder) {
+            mockCompilationUnits.expects(testCase.once()).method("add").with(testCase.same(file), testCase.eq(inTestSourceFolder));
+            return this;
+        }
+
+        CompilationUnitsBuilder expectsCompile() {
+            mockCompilationUnits.expects(testCase.once()).method("compile");
+            return this;
+        }
+
+        CompilationUnits build() {
+            return (CompilationUnits) mockCompilationUnits.proxy();
+        }
+    }
+
+    private void assertExitStatusDoesNotIndicateWhichFilesCompiledSuccessfullyNorWhichFilesNeedRecompiling(TranslatingCompiler.ExitStatus exitStatus) {
+        assertEquals("number of files to recompile", 0, exitStatus.getFilesToRecompile().length);
+        assertEquals("number of files compiled", 0, exitStatus.getSuccessfullyCompiled().length);
     }
 }

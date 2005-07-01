@@ -47,7 +47,7 @@ public class GroovyJProjectComponentTest extends GroovyjTestCase {
         Mock mockEditorAPIFactory = mock(EditorAPIFactory.class);
         projectComponent = new GroovyJProjectComponent(selectedProject, (EditorAPIFactory) mockEditorAPIFactory.proxy()) {
             protected String getPluginVersion() {
-                return "1.0." + TestUtil.nextAbsRandomInt();
+                return "1.0." + nextPositiveRandomInt();
             }
         };
         assertSame(projectComponent, GroovyJProjectComponent.getInstance(selectedProject));
@@ -63,7 +63,7 @@ public class GroovyJProjectComponentTest extends GroovyjTestCase {
         GroovyJProjectComponent.setInstance(selectedProject, null);
     }
 
-    public void testInitialisesGroovyControllerAndCompilerWithEditorApiWhenTheProjectIsOpened() {
+    public void testInitialisesTheGroovyCompilerWithEditorApiWhenTheProjectIsOpened() {
         assertAllProjectLevelDependenciesAreRemoved();
         setExpectationsForRetrievingTheGroovyLibrary();
 
@@ -74,7 +74,7 @@ public class GroovyJProjectComponentTest extends GroovyjTestCase {
         assertAllProjectLevelDependenciesHaveBeenInitialised();
     }
 
-    public void testRemovesReferencesToEditorApiAndGroovyControllerAndCompilerWhenTheProjectIsClosed() {
+    public void testRemovesReferencesToEditorApiAndGroovyCompilerWhenTheProjectIsClosed() {
         mockCompilerManager.expects(once()).method("addCompiler").with(isA(GroovyCompiler.class));
         mockModuleManager.expects(once()).method("addModuleListener").with(isA(GroovyLibraryModuleListener.class));
         setExpectationsForRetrievingTheGroovyLibrary();
@@ -100,14 +100,12 @@ public class GroovyJProjectComponentTest extends GroovyjTestCase {
     }
 
     private void assertAllProjectLevelDependenciesHaveBeenInitialised() {
-        assertNotNull("reference to EditorAPI should have been initialised", projectComponent.getEditorApi());
-        assertNotNull("reference to GroovyController should have been initialised", projectComponent.getGroovyController());
+        assertNotNull("reference to EditorAPI should have been initialised", projectComponent.editorApi);
         assertNotNull("reference to GroovyLibraryModuleListener should have been initialised", projectComponent.groovyLibraryModuleListener);
     }
 
     private void assertAllProjectLevelDependenciesAreRemoved() {
-        assertNull("reference to EditorAPI should be null", projectComponent.getEditorApi());
-        assertNull("reference to GroovyController should be null", projectComponent.getGroovyController());
+        assertNull("reference to EditorAPI should be null", projectComponent.editorApi);
         assertNull("reference to GroovyLibraryModuleListener should be null", projectComponent.groovyLibraryModuleListener);
     }
 
