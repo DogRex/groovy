@@ -8,12 +8,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.GroovyClassVisitor;
 import org.codehaus.groovy.ast.ImportNode;
-import org.codehaus.groovy.ast.MetadataNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
@@ -176,7 +176,7 @@ class ClassAdapter extends TreeAdapter {
 				add(new PropertyAdapter(node, ClassAdapter.this), node);
 			}
 
-			private void add(TreeAdapter adapter, MetadataNode node) {
+			private void add(TreeAdapter adapter, AnnotatedNode node) {
 				if (!node.isSynthetic())
 					childrrenList.add(adapter);
 

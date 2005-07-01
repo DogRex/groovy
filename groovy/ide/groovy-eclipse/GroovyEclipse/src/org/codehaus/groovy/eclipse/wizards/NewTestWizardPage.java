@@ -142,7 +142,7 @@ public class NewTestWizardPage extends NewTypeWizardPage {
 		src.append("{\n\n\t void testSomething() {\n\t}\n}");
 		monitor.worked(1);
 		monitor.done();
-		return WizardUtil.createGroovyType(packageFragment, getTypeName() + ".groovy", src.toString());
+		return WizardUtil.createGroovyType(getPackageFragmentRoot(), packageFragment, getTypeName() + ".groovy", src.toString());
 	}
 
 }

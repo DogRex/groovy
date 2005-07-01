@@ -9,6 +9,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
 import org.eclipse.jdt.internal.ui.actions.WorkbenchRunnableAdapter;
@@ -83,6 +84,11 @@ public class NewTestWizard extends NewElementWizard  {
 			public boolean isConflicting(ISchedulingRule rule) {
 				return false;
 			}};
+	}
+
+	public IJavaElement getCreatedElement() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
 

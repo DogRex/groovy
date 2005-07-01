@@ -15,6 +15,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
@@ -26,8 +27,10 @@ import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
  * Preferences - Java - Code Generation - Code and Comments
  */
 public class WizardUtil {
-	public static IFile createGroovyType(IPackageFragment pack,String cuName, String source) throws CoreException {
+	public static IFile createGroovyType(IPackageFragmentRoot root, IPackageFragment pack,String cuName, String source) throws CoreException {
 
+        checkPackageExists(root, pack);
+        
 		StringBuffer buf = new StringBuffer();
 		if(pack.getElementName().length()>0){
 			buf.append("package " + pack.getElementName() + ";\n");
@@ -63,4 +66,23 @@ public class WizardUtil {
 		return file;
 	}
 
+    /**
+     * Checks that the specified package fragment exists, and if it doesn't creates it.
+     * 
+     * @param root source folder
+     * @param pack package
+     * @throws JavaModelException if an error occurs
+     */
+    private static void checkPackageExists(IPackageFragmentRoot root, IPackageFragment pack) 
+        throws JavaModelException {
+
+        if (pack == null) {
+            pack = root.getPackageFragment("");  // default package
+        }
+        
+        if (!pack.exists()) {
+            final String packName = pack.getElementName();
+            pack = root.createPackageFragment(packName, true, null);
+        }       
+    }
 }

@@ -145,7 +145,7 @@ public class NewClassWizardPage extends NewTypeWizardPage {
 		monitor.worked(1);
 		src.append("{\n\n\t static void main(args) {\n\t}\n}");
 		monitor.done();
-		return WizardUtil.createGroovyType(packageFragment,getTypeName()+".groovy",src.toString());
+		return WizardUtil.createGroovyType(getPackageFragmentRoot(), packageFragment,getTypeName()+".groovy",src.toString());
 	}
 
 }

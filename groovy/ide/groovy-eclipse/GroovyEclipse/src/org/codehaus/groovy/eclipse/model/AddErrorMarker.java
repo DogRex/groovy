@@ -46,6 +46,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.codehaus.groovy.control.CompilationFailedException;
+import org.codehaus.groovy.control.ErrorCollector;
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.ProcessingUnit;
 import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.codehaus.groovy.syntax.SyntaxException;
@@ -75,11 +77,11 @@ class AddErrorMarker implements IWorkspaceRunnable {
 		this.e = e;
 	}
 	public void run(IProgressMonitor monitor) throws CoreException {
-		if (e instanceof CompilationFailedException) {
-			CompilationFailedException compilationFailuresException = (CompilationFailedException) e;
-			ProcessingUnit unit = compilationFailuresException.getUnit();
-			for(int i =0; i < unit.getErrorCount(); ++i){
-				markerFromException(unit.getException(i));
+		if (e instanceof MultipleCompilationErrorsException) {
+			MultipleCompilationErrorsException multiple = (MultipleCompilationErrorsException) e;
+			ErrorCollector collector = multiple.getErrorCollector();
+			for (int i = 0; i < collector.getErrorCount(); ++i) {
+				markerFromException(collector.getException(i));
 			}
 		} else {
 			markerFromException(e);
