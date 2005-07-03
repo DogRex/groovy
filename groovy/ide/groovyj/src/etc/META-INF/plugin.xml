@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!DOCTYPE idea-plugin PUBLIC "-//IntelliJ Technology Network//DTD Plugin Manager 0.1//EN" "NEW URI NOT KNOWN YET!">
-
 <idea-plugin url="@PROJECT.HOMEPAGE@" version="2">
 
     <name>@PROJECT.TITLE@</name>
