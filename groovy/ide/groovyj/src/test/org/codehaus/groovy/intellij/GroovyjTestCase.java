@@ -18,8 +18,6 @@
 
 package org.codehaus.groovy.intellij;
 
-import java.io.File;
-import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 import java.util.Random;
 
@@ -38,9 +36,12 @@ import com.intellij.openapi.roots.ModuleFileIndex;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.PsiManager;
 import com.intellij.testFramework.MockVirtualFile;
+import com.intellij.util.PathUtil;
 import com.intellij.util.PathsList;
 
 import org.jmock.Mock;
@@ -251,7 +252,11 @@ public abstract class GroovyjTestCase extends MockObjectTestCase {
         public ModuleBuilder withProjectJdk() {
             Mock stubProjectJdk = testCase.mock(ProjectJdk.class, "stubProjectJdk");
             stubProjectJdk.stubs().method("getHomeDirectory").will(testCase.returnValue(new MockVirtualFile()));
-            stubModuleRootManager.stubs().method("getJdk").will(testCase.returnValue(stubProjectJdk.proxy()));
+            return withProjectJdk((ProjectJdk) stubProjectJdk.proxy());
+        }
+
+        public ModuleBuilder withProjectJdk(ProjectJdk jdk) {
+            stubModuleRootManager.stubs().method("getJdk").will(testCase.returnValue(jdk));
             stubModuleRootManager.stubs().method("processOrder").withAnyArguments();
             return this;
         }
@@ -288,11 +293,7 @@ public abstract class GroovyjTestCase extends MockObjectTestCase {
         }
 
         private String pathToUrl(String path) {
-            try {
-                return new File(path).toURL().toExternalForm();
-            } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
-            }
+            return VirtualFileManager.constructUrl(LocalFileSystem.PROTOCOL, PathUtil.getCanonicalPath(path));
         }
 
         public VirtualFileBuilder withExtension(String fileExtension) {

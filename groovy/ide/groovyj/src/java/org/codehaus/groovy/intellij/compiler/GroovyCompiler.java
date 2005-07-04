@@ -101,7 +101,7 @@ public class GroovyCompiler implements TranslatingCompiler {
     }
 
     private boolean isFileInTestSourceFolder(VirtualFile file, Module module) {
-        return ModuleRootManager.getInstance(module).getFileIndex().isInTestSourceContent(file);
+        return moduleRootManager(module).getFileIndex().isInTestSourceContent(file);
     }
 
     private CompilationUnits findOrCreateCompilationUnits(Module module, String characterEncoding,
@@ -114,9 +114,14 @@ public class GroovyCompiler implements TranslatingCompiler {
 
     private CompilationUnits createCompilationUnits(Module module, String characterEncoding, Map<Module, CompilationUnits> modulesToCompilationUnits) {
         CompilationUnits compilationUnits = factory.create(createCompilationUnit(module, characterEncoding, false),
-                                                           createCompilationUnit(module, characterEncoding, true));
+                                                           createCompilationUnit(module, characterEncoding, true),
+                                                           moduleRootManager(module).getJdk());
         modulesToCompilationUnits.put(module, compilationUnits);
         return compilationUnits;
+    }
+
+    private ModuleRootManager moduleRootManager(Module module) {
+        return ModuleRootManager.getInstance(module);
     }
 
     private CompilationUnit createCompilationUnit(Module module, String characterEncoding, boolean forTestSourceFolders) {

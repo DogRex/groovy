@@ -29,7 +29,7 @@ public class CompilationUnitsFactoryTest extends GroovyjTestCase {
         CompilationUnit testCompilationUnit = new CompilationUnit();
 
         CompilationUnitsFactory factory = new CompilationUnitsFactory();
-        CompilationUnits actualCompilationUnits = factory.create(sourceCompilationUnit, testCompilationUnit);
+        CompilationUnits actualCompilationUnits = factory.create(sourceCompilationUnit, testCompilationUnit, null);
         assertSame("source compilation unit", sourceCompilationUnit, actualCompilationUnits.sourceCompilationUnit);
         assertSame("test compilation unit", testCompilationUnit, actualCompilationUnits.testCompilationUnit);
     }

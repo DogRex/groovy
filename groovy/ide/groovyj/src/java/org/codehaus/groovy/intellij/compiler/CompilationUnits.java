@@ -20,7 +20,6 @@ package org.codehaus.groovy.intellij.compiler;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -29,8 +28,10 @@ import com.intellij.compiler.impl.javaCompiler.OutputItemImpl;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
 import com.intellij.openapi.compiler.TranslatingCompiler;
+import com.intellij.openapi.projectRoots.ProjectJdk;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.PathUtil;
 
 import org.codehaus.groovy.ast.ASTNode;
@@ -55,10 +56,12 @@ class CompilationUnits {
 
     private final List<SourceUnit> sourceFilesToCompile = new ArrayList<SourceUnit>();
     private final List<SourceUnit> testFilesToCompile = new ArrayList<SourceUnit>();
+    private final ProjectJdk jdk;
 
-    CompilationUnits(CompilationUnit sourceCompilationUnit, CompilationUnit testCompilationUnit) {
+    CompilationUnits(CompilationUnit sourceCompilationUnit, CompilationUnit testCompilationUnit, ProjectJdk jdk) {
         this.sourceCompilationUnit = sourceCompilationUnit;
         this.testCompilationUnit = testCompilationUnit;
+        this.jdk = jdk;
     }
 
     public void add(VirtualFile fileToCompile, boolean inTestSourceFolder) {
@@ -103,13 +106,9 @@ class CompilationUnits {
         LocalFileSystem fileSystem = LocalFileSystem.getInstance();
         for (Iterator iterator = compilationUnit.iterator(); iterator.hasNext(); ) {
             SourceUnit sourceUnit = (SourceUnit) iterator.next();
-            VirtualFile file = fileSystem.findFileByPath(canonicalPath(sourceUnit));
+            VirtualFile file = fileSystem.findFileByPath(canonicalPath(sourceUnit.getName()));
             compiledFiles.add(new OutputItemImpl(outputRootDirectory, outputPath, file));
         }
-    }
-
-    private String canonicalPath(SourceUnit sourceUnit) {
-        return PathUtil.getCanonicalPath(sourceUnit.getName());
     }
 
     private void addWarnings(ErrorCollector errorCollector, CompileContext context) {
@@ -169,11 +168,11 @@ class CompilationUnits {
         context.addMessage(CompilerMessageCategory.ERROR, message.getMessage(), null, -1, -1);
     }
 
-    private String pathToUrl(String filePath) {
-        try {
-            return new File(filePath).toURL().toExternalForm();
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
+    private String pathToUrl(String path) {
+        return VirtualFileManager.constructUrl(LocalFileSystem.PROTOCOL, canonicalPath(path));
+    }
+
+    private String canonicalPath(String path) {
+        return PathUtil.getCanonicalPath(path);
     }
 }

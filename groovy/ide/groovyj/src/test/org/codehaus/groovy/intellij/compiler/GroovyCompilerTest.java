@@ -33,6 +33,7 @@ import com.intellij.openapi.compiler.TranslatingCompiler;
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.projectRoots.ProjectJdk;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.MockVirtualFile;
 import com.intellij.util.PathsList;
@@ -139,7 +140,7 @@ public class GroovyCompilerTest extends GroovyjTestCase {
 
     private void expectTheCreationOfCompilationUnitsForCompiling(VirtualFile[] filesToCompile) {
         mockCompilationUnitsFactory.expects(once()).method("create")
-                .with(isA(CompilationUnit.class), isA(CompilationUnit.class))
+                .with(isA(CompilationUnit.class), isA(CompilationUnit.class), isA(ProjectJdk.class))
                 .will(returnValue(compilationUnitsForCompiling(filesToCompile)));
     }
 
@@ -170,7 +171,8 @@ public class GroovyCompilerTest extends GroovyjTestCase {
     private Module moduleFor(VirtualFile[] files) {
         ModuleBuilder moduleBuilder = module()
                 .withCompilerOutputPathUrl("build/classes")
-                .withCompilerOutputPathForTestsUrl("build/test-classes");
+                .withCompilerOutputPathForTestsUrl("build/test-classes")
+                .withProjectJdk();
 
         boolean inTestSourceFolder = false;
         for (VirtualFile file : files) {
@@ -190,7 +192,9 @@ public class GroovyCompilerTest extends GroovyjTestCase {
 
         CompilationUnitsBuilder(MockObjectTestCase testCase) {
             this.testCase = testCase;
-            mockCompilationUnits = testCase.mock(CompilationUnits.class, new Class[] { CompilationUnit.class, CompilationUnit.class }, new Object[] { null, null });
+            mockCompilationUnits = testCase.mock(CompilationUnits.class,
+                                                 new Class[] { CompilationUnit.class, CompilationUnit.class, ProjectJdk.class },
+                                                 new Object[] { null, null, null });
         }
 
         private CompilationUnitsBuilder expectsAddFile(VirtualFile file, boolean inTestSourceFolder) {

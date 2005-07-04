@@ -26,6 +26,7 @@ import org.intellij.openapi.testing.MockApplicationManager;
 
 import com.intellij.openapi.compiler.CompilerMessageCategory;
 import com.intellij.openapi.compiler.TranslatingCompiler;
+import com.intellij.openapi.projectRoots.ProjectJdk;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 
@@ -55,7 +56,8 @@ public class CompilationUnitsTest extends GroovyjTestCase {
 
     private final DummyCompilationUnit sourceCompilationUnit = new DummyCompilationUnit();
     private final DummyCompilationUnit testCompilationUnit = new DummyCompilationUnit();
-    private final CompilationUnits compilationUnits = new CompilationUnits(sourceCompilationUnit, testCompilationUnit);
+    private final ProjectJdk jdk = (ProjectJdk) newDummy(ProjectJdk.class);
+    private final CompilationUnits compilationUnits = new CompilationUnits(sourceCompilationUnit, testCompilationUnit, jdk);
 
     private final CompileContextBuilder compileContextBuilder = new CompileContextBuilder(this);
 
