@@ -1296,16 +1296,16 @@ variableDefinitions[AST mods, AST t]  {Token first = LT(1);}
 
         // get the list of exceptions that this method is
         // declared to throw
-        (   tc:throwsClause!  )? nlsWarn!
+        (   tc:throwsClause!  )?
 
         // the method body is an open block
         // but, it may have an optional constructor call (for constructors only)
         // this constructor clause is only used for constructors using 'def'
         // which look like method declarations
-        (
-                mb:openBlock!
-        |   /*or nothing at all*/
-        )
+        // since the block is optional and nls is part of sep we have to be sure
+        // a newline is followed by a block or ignore the nls too
+        ((nls! LCURLY) =>  (nlsWarn! mb:openBlock!))?
+
         {   if (#qid != null)  #id = #qid;
             #variableDefinitions =
                     #(create(METHOD_DEF,"METHOD_DEF",first,LT(1)),
@@ -2103,6 +2103,7 @@ pathExpression[int lc_stmt]
             // The lookahead is also necessary to reach across newline in foo \n {bar}.
             // (Apparently antlr's basic approximate LL(k) lookahead is too weak for this.)
         :   (pathElementStart)=>
+            nls!
             pe:pathElement[prefix]!
             { prefix = #pe; }
         |
@@ -2130,7 +2131,7 @@ pathElement[AST prefix]
         |   // Member pointer operator: foo.&y == foo.metaClass.getMethodPointer(foo, "y")
             MEMBER_POINTER^
         |   // The all-powerful dot.
-            DOT^
+            (nls! DOT^)
         ) nls!
         (typeArguments)?   // TODO: Java 5 type argument application via prefix x.<Integer>y
         namePart
@@ -2166,7 +2167,7 @@ pathElement[AST prefix]
     ;
 
 pathElementStart!
-    :   DOT
+    :   (nls! DOT)
     |   SPREAD_DOT
     |   OPTIONAL_DOT
 //todo - nondeterminisms    |   MEMBER_POINTER_DEFAULT
@@ -2718,8 +2719,9 @@ identPrimary
  *
  */
 newExpression
-    :   "new"^ (typeArguments)? type
-        (   mca:methodCallArgs[null]!
+    :   "new"^ nls! (typeArguments)? type
+        (   nls!
+            mca:methodCallArgs[null]!
 
             (
                 options { greedy=true; }:
