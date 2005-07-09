@@ -28,7 +28,6 @@ import com.intellij.compiler.impl.javaCompiler.OutputItemImpl;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
 import com.intellij.openapi.compiler.TranslatingCompiler;
-import com.intellij.openapi.projectRoots.ProjectJdk;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
@@ -56,12 +55,10 @@ class CompilationUnits {
 
     private final List<SourceUnit> sourceFilesToCompile = new ArrayList<SourceUnit>();
     private final List<SourceUnit> testFilesToCompile = new ArrayList<SourceUnit>();
-    private final ProjectJdk jdk;
 
-    CompilationUnits(CompilationUnit sourceCompilationUnit, CompilationUnit testCompilationUnit, ProjectJdk jdk) {
+    CompilationUnits(CompilationUnit sourceCompilationUnit, CompilationUnit testCompilationUnit) {
         this.sourceCompilationUnit = sourceCompilationUnit;
         this.testCompilationUnit = testCompilationUnit;
-        this.jdk = jdk;
     }
 
     public void add(VirtualFile fileToCompile, boolean inTestSourceFolder) {

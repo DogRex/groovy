@@ -18,13 +18,11 @@
 
 package org.codehaus.groovy.intellij.compiler;
 
-import com.intellij.openapi.projectRoots.ProjectJdk;
-
 import org.codehaus.groovy.control.CompilationUnit;
 
 public class CompilationUnitsFactory {
 
-    public CompilationUnits create(CompilationUnit sourceCompilationUnit, CompilationUnit testCompilationUnit, ProjectJdk jdk) {
-        return new CompilationUnits(sourceCompilationUnit, testCompilationUnit, jdk);
+    public CompilationUnits create(CompilationUnit sourceCompilationUnit, CompilationUnit testCompilationUnit) {
+        return new CompilationUnits(sourceCompilationUnit, testCompilationUnit);
     }
 }

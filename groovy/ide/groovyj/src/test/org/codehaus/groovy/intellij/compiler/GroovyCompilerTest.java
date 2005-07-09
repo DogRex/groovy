@@ -33,7 +33,6 @@ import com.intellij.openapi.compiler.TranslatingCompiler;
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.projectRoots.ProjectJdk;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.MockVirtualFile;
 import com.intellij.util.PathsList;
@@ -131,16 +130,15 @@ public class GroovyCompilerTest extends GroovyjTestCase {
     }
 
     private VirtualFile[] someFilesWithDifferentEncodingsToCompile() {
-        VirtualFile[] filesToCompile = new VirtualFile[] {
-            virtualFile().withCharset("UTF-8").withPath("/home/bar/src/main/Bar.groovy").build(),
-            virtualFile().withCharset("US-ASCII").withPath("/home/foo/test/unit/FooTest.groovy").build(),
+        return new VirtualFile[] {
+                virtualFile().withCharset("UTF-8").withPath("/home/bar/src/main/Bar.groovy").build(),
+                virtualFile().withCharset("US-ASCII").withPath("/home/foo/test/unit/FooTest.groovy").build(),
         };
-        return filesToCompile;
     }
 
     private void expectTheCreationOfCompilationUnitsForCompiling(VirtualFile[] filesToCompile) {
         mockCompilationUnitsFactory.expects(once()).method("create")
-                .with(isA(CompilationUnit.class), isA(CompilationUnit.class), isA(ProjectJdk.class))
+                .with(isA(CompilationUnit.class), isA(CompilationUnit.class))
                 .will(returnValue(compilationUnitsForCompiling(filesToCompile)));
     }
 
@@ -193,8 +191,8 @@ public class GroovyCompilerTest extends GroovyjTestCase {
         CompilationUnitsBuilder(MockObjectTestCase testCase) {
             this.testCase = testCase;
             mockCompilationUnits = testCase.mock(CompilationUnits.class,
-                                                 new Class[] { CompilationUnit.class, CompilationUnit.class, ProjectJdk.class },
-                                                 new Object[] { null, null, null });
+                                                 new Class[] { CompilationUnit.class, CompilationUnit.class },
+                                                 new Object[] { null, null });
         }
 
         private CompilationUnitsBuilder expectsAddFile(VirtualFile file, boolean inTestSourceFolder) {

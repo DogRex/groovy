@@ -114,8 +114,7 @@ public class GroovyCompiler implements TranslatingCompiler {
 
     private CompilationUnits createCompilationUnits(Module module, String characterEncoding, Map<Module, CompilationUnits> modulesToCompilationUnits) {
         CompilationUnits compilationUnits = factory.create(createCompilationUnit(module, characterEncoding, false),
-                                                           createCompilationUnit(module, characterEncoding, true),
-                                                           moduleRootManager(module).getJdk());
+                                                           createCompilationUnit(module, characterEncoding, true));
         modulesToCompilationUnits.put(module, compilationUnits);
         return compilationUnits;
     }
