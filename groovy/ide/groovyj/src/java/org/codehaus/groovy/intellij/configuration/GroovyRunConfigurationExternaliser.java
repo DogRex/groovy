@@ -47,12 +47,12 @@ public class GroovyRunConfigurationExternaliser {
     }
 
     public void readExternal(GroovyRunConfiguration runConfiguration, Element element) {
-        Map optionsByName = buildOptionsByName(element.getChildren(OPTION_ELEMENT));
+        Map<String, String> optionsByName = buildOptionsByName(element.getChildren(OPTION_ELEMENT));
 
-        runConfiguration.setScriptPath((String) optionsByName.get(SCRIPT_PATH));
-        runConfiguration.setVmParameters((String) optionsByName.get(VM_PARAMETERS));
-        runConfiguration.setScriptParameters((String) optionsByName.get(SCRIPT_PARAMETERS));
-        runConfiguration.setWorkingDirectoryPath(ExternalizablePath.localPathValue((String) optionsByName.get(WORKING_DIRECTORY_PATH)));
+        runConfiguration.setScriptPath(optionsByName.get(SCRIPT_PATH));
+        runConfiguration.setVmParameters(optionsByName.get(VM_PARAMETERS));
+        runConfiguration.setScriptParameters(optionsByName.get(SCRIPT_PARAMETERS));
+        runConfiguration.setWorkingDirectoryPath(ExternalizablePath.localPathValue(optionsByName.get(WORKING_DIRECTORY_PATH)));
         runConfiguration.setModuleName(element.getChild(MODULE_ELEMENT).getAttribute(NAME_ATTRIBUTE).getValue());
     }
 
@@ -69,7 +69,7 @@ public class GroovyRunConfigurationExternaliser {
         element.addContent(moduleElement);
     }
 
-    static Map buildOptionsByName(List<Element> listOfOptionElements) {
+    static Map<String, String> buildOptionsByName(List<Element> listOfOptionElements) {
         Map<String, String> optionMap = new HashMap<String, String>();
 
         for (Element optionElement : listOfOptionElements) {

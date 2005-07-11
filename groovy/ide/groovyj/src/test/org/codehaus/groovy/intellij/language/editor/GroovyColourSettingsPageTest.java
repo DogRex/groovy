@@ -30,6 +30,7 @@ import junitx.framework.ObjectAssert;
 
 import org.intellij.openapi.testing.MockApplicationManager;
 
+import com.intellij.ide.highlighter.JavaFileHighlighter;
 import com.intellij.openapi.editor.colors.ColorKey;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
@@ -125,7 +126,9 @@ public class GroovyColourSettingsPageTest extends GroovyjTestCase {
         StdFileTypes.XML = Stubs.LANGUAGE_FILE_TYPE;
         StdFileTypes.JAVA = Stubs.LANGUAGE_FILE_TYPE;
 
-        ObjectAssert.assertInstanceOf("highlighter", GroovyFileHighlighter.class, groovyColourSettingsPage.getHighlighter());
+        // TODO: restore once GroovyFileHighlighter is functionally usable
+//        ObjectAssert.assertInstanceOf("highlighter", GroovyFileHighlighter.class, groovyColourSettingsPage.getHighlighter());
+        ObjectAssert.assertInstanceOf("highlighter", JavaFileHighlighter.class, groovyColourSettingsPage.getHighlighter());
     }
 
     private EditorColorsManager createdStubbedEditorColorsManager() {

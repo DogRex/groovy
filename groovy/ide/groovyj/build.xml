@@ -329,7 +329,24 @@
         </copy>
 
         <mkdir dir="${dist.dir}"/>
-        <jar basedir="${irida.classes.dir}" compress="true" update="true" destfile="${dist.dir}/${distfile.name}-irida.jar"/>
+
+        <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${lib.compile.dir}/jarjar-0.6.jar"/>
+        <jarjar jarfile="${dist.dir}/${distfile.name}-irida.jar" compress="true" update="true">
+            <fileset dir="${irida.classes.dir}">
+                <exclude name="**/GroovyFile.class"/>
+                <exclude name="**/GroovyRunConfiguration.class"/>
+                <exclude name="**/GroovySettingsEditor.class"/>
+            </fileset>
+            <rule pattern="antlr.**" result="groovyjarjarantlr.@1"/>
+        </jarjar>
+
+        <jar jarfile="${dist.dir}/${distfile.name}-irida.jar" compress="true" update="true">
+            <fileset dir="${irida.classes.dir}">
+                <include name="**/GroovyFile.class"/>
+                <include name="**/GroovyRunConfiguration.class"/>
+                <include name="**/GroovySettingsEditor.class"/>
+            </fileset>
+        </jar>
     </target>
 
     <target name="zip.irida" depends="initialise" description="Packages up the plug-in as a deployable zip file for IntelliJ IDEA (Irida)">

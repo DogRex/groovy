@@ -30,6 +30,8 @@ import com.intellij.psi.impl.source.PsiFileImpl;
 import com.intellij.psi.impl.source.tree.FileElement;
 import com.intellij.psi.tree.IElementType;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.codehaus.groovy.intellij.GroovySupportLoader;
 import org.codehaus.groovy.intellij.language.GroovyLanguage;
 import org.codehaus.groovy.intellij.language.GroovyPsiBuilder;
@@ -50,6 +52,7 @@ public class GroovyFile extends PsiFileImpl implements GroovyElement {
         super(project, createFileElement(project, text), LANGUAGE.getParserDefinition().getFileNodeType(), FILE_TEXT_CHAMELEON, name);
     }
 
+    @NotNull
     public FileType getFileType() {
         return GroovySupportLoader.GROOVY;
     }
@@ -58,6 +61,7 @@ public class GroovyFile extends PsiFileImpl implements GroovyElement {
         return "[GroovyFile '" + getContainingFile().getVirtualFile().getPath() + "']";
     }
 
+    @NotNull
     public Language getLanguage() {
         return LANGUAGE;
     }
