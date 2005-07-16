@@ -23,6 +23,8 @@ import com.intellij.lang.PsiBuilder;
 import com.intellij.lang.PsiParser;
 import com.intellij.psi.tree.IElementType;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.codehaus.groovy.intellij.language.parser.GroovyRecognizer;
 
 import antlr.RecognitionException;
@@ -30,6 +32,7 @@ import antlr.TokenStreamException;
 
 public class GroovyPsiParser implements PsiParser {
 
+    @NotNull
     public ASTNode parse(IElementType rootElementType, PsiBuilder builder) {
         PsiBuilder.Marker rootMarker = builder.mark();
         try {

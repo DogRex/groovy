@@ -34,7 +34,7 @@ public class ActionEvents {
 
     static ActionEvents instance = new ActionEvents();
 
-    private final List DEFAULT_ASSOCIATED_EXTENSIONS = Arrays.asList(GroovySupportLoader.DEFAULT_ASSOCIATED_EXTENSIONS);
+    private final List<String> DEFAULT_ASSOCIATED_EXTENSIONS = Arrays.asList(GroovySupportLoader.DEFAULT_ASSOCIATED_EXTENSIONS);
 
     public GroovyJProjectComponent getGroovyJProjectComponent(AnActionEvent event) {
         return GroovyJProjectComponent.getInstance(getProject(event));

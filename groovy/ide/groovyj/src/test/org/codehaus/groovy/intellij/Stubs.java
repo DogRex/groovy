@@ -22,31 +22,31 @@ import javax.swing.Icon;
 
 import com.intellij.lang.Language;
 import com.intellij.openapi.editor.markup.TextAttributes;
-import com.intellij.openapi.fileTypes.FileTypeSupportCapabilities;
 import com.intellij.openapi.fileTypes.LanguageFileType;
+
+import org.jetbrains.annotations.NotNull;
 
 public final class Stubs {
 
     public static final TextAttributes TEXT_ATTRIBUTES = new TextAttributes();
 
     public static final LanguageFileType LANGUAGE_FILE_TYPE = new LanguageFileType(Language.ANY) {
+        @NotNull
         public String getName() {
             return null;
         }
 
+        @NotNull
         public String getDescription() {
             return null;
         }
 
+        @NotNull
         public String getDefaultExtension() {
             return null;
         }
 
         public Icon getIcon() {
-            return null;
-        }
-
-        public FileTypeSupportCapabilities getSupportCapabilities() {
             return null;
         }
     };

@@ -69,7 +69,7 @@ public class CompilationUnitsTest extends GroovyjTestCase {
         MockApplicationManager.getMockApplication().removeComponent(LocalFileSystem.class);
     }
 
-    public void testAddsSyntaxExceptionsWithErrorLocationToTheCompileContext() throws IOException, CompilationFailedException {
+    public void testAddsSyntaxExceptionsWithErrorLocationToTheCompileContext() {
         String filePath = "/home/foo/acme/src/bar.groovy";
         SyntaxException syntaxException = syntaxException("occurred because of blah...");
         SourceUnit sourceUnit = sourceUnit(filePath, testCompilationUnit);
@@ -85,7 +85,7 @@ public class CompilationUnitsTest extends GroovyjTestCase {
         assertEquals("number of warnings", 0, errorCollector.getWarningCount());
     }
 
-    public void testAddsGroovyRuntimeExceptionsWithErrorLocationToTheCompileContext() throws IOException, CompilationFailedException {
+    public void testAddsGroovyRuntimeExceptionsWithErrorLocationToTheCompileContext() {
         ASTNode astNode = astNodeWithRandomLineAndColumnNumbers();
         MissingClassException missingClassException = new MissingClassException("MadeUpType", astNode, "in blah blah");
         missingClassException.setModule(moduleNodeBoundTo(sourceCompilationUnit));
@@ -101,7 +101,7 @@ public class CompilationUnitsTest extends GroovyjTestCase {
         assertEquals("number of warnings", 0, errorCollector.getWarningCount());
     }
 
-    public void testAddsOtherExceptionsAsErrorsToTheCompileContext() throws IOException, CompilationFailedException {
+    public void testAddsOtherExceptionsAsErrorsToTheCompileContext() {
         Exception anotherException = new IOException("exceptional I/O stuff");
         ErrorCollector errorCollector = errorCollectorWith(new ExceptionMessage(anotherException, false, testCompilationUnit));
 
@@ -115,7 +115,7 @@ public class CompilationUnitsTest extends GroovyjTestCase {
         assertEquals("number of warnings", 0, errorCollector.getWarningCount());
     }
 
-    public void testAddsSimpleErrorMessagesAsErrorsToTheCompileContext() throws IOException, CompilationFailedException {
+    public void testAddsSimpleErrorMessagesAsErrorsToTheCompileContext() {
         SimpleMessage message = new SimpleMessage(someString(), testCompilationUnit);
         ErrorCollector errorCollector = errorCollectorWith(message);
 
@@ -129,7 +129,7 @@ public class CompilationUnitsTest extends GroovyjTestCase {
         assertEquals("number of warnings", 0, errorCollector.getWarningCount());
     }
 
-    public void testAddsOtherMessagesAsEmptyErrorMessagesToTheCompileContext() throws IOException, CompilationFailedException {
+    public void testAddsOtherMessagesAsEmptyErrorMessagesToTheCompileContext() {
         Message message = new Message() {
             public void write(PrintWriter writer, Janitor janitor) {}
         };
@@ -137,7 +137,7 @@ public class CompilationUnitsTest extends GroovyjTestCase {
 
         VirtualFile fileToCompile = virtualFile("/home/foo/acme/src/bar.groovy").build();
         compilationUnits.add(fileToCompile, true);
-        compileContextBuilder.expectsAddDefaultErrorMessage("An unknown error occurred.");
+        compileContextBuilder.expectsAddDefaultErrorMessage();
 
         compileSourceAndTestUnitsWithContext();
         assertEquals("number of errors", 1, errorCollector.getErrorCount());
@@ -145,7 +145,7 @@ public class CompilationUnitsTest extends GroovyjTestCase {
         assertEquals("number of warnings", 0, errorCollector.getWarningCount());
     }
 
-    public void testCompilesASingleErrorFreeGroovyScriptAndAddsWarningsToTheCompileContext() throws IOException {
+    public void testCompilesASingleErrorFreeGroovyScriptAndAddsWarningsToTheCompileContext() {
         WarningMessage expectedWarningMessage = new WarningMessage(WarningMessage.LIKELY_ERRORS, "a warning", null, null);
         ErrorCollector errorCollector = sourceCompilationUnit.getErrorCollector();
         errorCollector.addWarning(expectedWarningMessage);

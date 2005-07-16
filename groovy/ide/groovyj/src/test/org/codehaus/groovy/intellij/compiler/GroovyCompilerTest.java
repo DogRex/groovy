@@ -19,7 +19,6 @@
 package org.codehaus.groovy.intellij.compiler;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -37,7 +36,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.MockVirtualFile;
 import com.intellij.util.PathsList;
 
-import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
 
@@ -120,7 +118,7 @@ public class GroovyCompilerTest extends GroovyjTestCase {
         }
     }
 
-    public void testDelegatesTheCompilationToAPairOfCompilationUnits() throws IOException, CompilationFailedException {
+    public void testDelegatesTheCompilationToAPairOfCompilationUnits() {
         VirtualFile[] filesToCompile = someFilesWithDifferentEncodingsToCompile();
         expectTheCreationOfCompilationUnitsForCompiling(filesToCompile);
 

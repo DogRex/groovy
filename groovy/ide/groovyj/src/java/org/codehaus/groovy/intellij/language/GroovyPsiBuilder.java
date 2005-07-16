@@ -118,9 +118,9 @@ public class GroovyPsiBuilder implements PsiBuilder {
         return startMarker;
     }
 
-    private Marker preceed(StartMarker startMarker) {
+    private Marker precede(StartMarker startMarker) {
         int markerIndex = markers.lastIndexOf(startMarker);
-        LOGGER.assertTrue(markerIndex >= 0, "Cannot preceed dropped or rolled-back marker");
+        LOGGER.assertTrue(markerIndex >= 0, "Cannot precede dropped or rolled-back marker");
         StartMarker startMarkerCopy = new StartMarker(startMarker.lexemIndex);
         markers.add(markerIndex, startMarkerCopy);
         return startMarkerCopy;
@@ -334,8 +334,8 @@ public class GroovyPsiBuilder implements PsiBuilder {
             }
         }
 
-        public Marker preceed() {
-            return GroovyPsiBuilder.this.preceed(this);
+        public Marker precede() {
+            return GroovyPsiBuilder.this.precede(this);
         }
 
         public void drop() {

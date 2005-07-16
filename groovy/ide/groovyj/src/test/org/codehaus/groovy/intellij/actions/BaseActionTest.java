@@ -36,7 +36,7 @@ public class BaseActionTest extends GroovyjTestCase {
     private static final KeyEvent NULL_KEY_EVENT = new KeyEvent(new Container(), 0, 0, 0, 0, ' ');
 
     protected final Mock mockActionEvents = mock(ActionEvents.class);
-    protected final Mock mockGroovyJProjectComponent = Mocks.createGroovyJProjectComponentMock(this);
+    private final Mock mockGroovyJProjectComponent = Mocks.createGroovyJProjectComponentMock(this);
 
     protected void setUp() {
         ActionEvents.instance = (ActionEvents) mockActionEvents.proxy();

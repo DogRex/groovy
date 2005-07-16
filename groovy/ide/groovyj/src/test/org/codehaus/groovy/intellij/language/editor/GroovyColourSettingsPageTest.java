@@ -20,7 +20,6 @@ package org.codehaus.groovy.intellij.language.editor;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -106,13 +105,12 @@ public class GroovyColourSettingsPageTest extends GroovyjTestCase {
     }
 
     public void testUsesAMapOfAdditionalHighlightingTagsEquivalentToTheOnesDefinedOnTheJavaColourSettingsPage() {
-        Map groovyAdditionalHighlightingTagToDescriptorMap = groovyColourSettingsPage.getAdditionalHighlightingTagToDescriptorMap();
-        Map javaAdditionalHighlightingTagToDescriptorMap = javaColourSettingsPage.getAdditionalHighlightingTagToDescriptorMap();
+        Map<String, TextAttributesKey> groovyAdditionalHighlightingTagToDescriptorMap = groovyColourSettingsPage.getAdditionalHighlightingTagToDescriptorMap();
+        Map<String, TextAttributesKey> javaAdditionalHighlightingTagToDescriptorMap = javaColourSettingsPage.getAdditionalHighlightingTagToDescriptorMap();
 
-        for (Iterator iterator = javaAdditionalHighlightingTagToDescriptorMap.keySet().iterator(); iterator.hasNext();) {
-            String key = (String) iterator.next();
-            TextAttributesKey expectedAttributes = (TextAttributesKey) javaAdditionalHighlightingTagToDescriptorMap.get(key);
-            TextAttributesKey actualAttributes = (TextAttributesKey) groovyAdditionalHighlightingTagToDescriptorMap.get(key);
+        for (String key : javaAdditionalHighlightingTagToDescriptorMap.keySet()) {
+            TextAttributesKey expectedAttributes = javaAdditionalHighlightingTagToDescriptorMap.get(key);
+            TextAttributesKey actualAttributes = groovyAdditionalHighlightingTagToDescriptorMap.get(key);
             assertNotNull(key + " tag is missing in GroovyJ", actualAttributes);
             assertEquals(key + " tag", expectedAttributes.getDefaultAttributes(), actualAttributes.getDefaultAttributes());
         }

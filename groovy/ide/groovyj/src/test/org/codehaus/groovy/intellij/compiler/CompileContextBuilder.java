@@ -96,7 +96,7 @@ class CompileContextBuilder {
         return this;
     }
 
-    CompileContextBuilder expectsAddDefaultErrorMessage(String message) {
+    CompileContextBuilder expectsAddDefaultErrorMessage() {
         mockCompileContext.expects(testCase.once()).method("addMessage")
                 .with(new Constraint[] { testCase.same(CompilerMessageCategory.ERROR), testCase.eq("An unknown error occurred."),
                                          MockObjectSupportTestCase.NULL, testCase.eq(-1), testCase.eq(-1) });

@@ -277,7 +277,7 @@ public abstract class GroovyjTestCase extends MockObjectTestCase {
         }
 
         public VirtualFileBuilder withCharset(String charsetName) {
-            mockVirtualFile.stubs().method("getCharset").will(testCase.returnValue(Charset.forName("UTF-8")));
+            mockVirtualFile.stubs().method("getCharset").will(testCase.returnValue(Charset.forName(charsetName)));
             return this;
         }
 

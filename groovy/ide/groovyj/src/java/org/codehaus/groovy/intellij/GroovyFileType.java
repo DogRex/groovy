@@ -20,9 +20,10 @@ package org.codehaus.groovy.intellij;
 
 import javax.swing.Icon;
 
-import com.intellij.openapi.fileTypes.FileTypeSupportCapabilities;
 import com.intellij.openapi.fileTypes.LanguageFileType;
 import com.intellij.openapi.vfs.VirtualFile;
+
+import org.jetbrains.annotations.NotNull;
 
 import org.codehaus.groovy.intellij.language.GroovyLanguage;
 
@@ -32,40 +33,23 @@ public class GroovyFileType extends LanguageFileType {
         super(language);
     }
 
+    @NotNull
     public String getName() {
         return "Groovy";
     }
 
+    @NotNull
     public String getDescription() {
         return "Groovy Scripts and Classes";
     }
 
+    @NotNull
     public String getDefaultExtension() {
         return "groovy";
     }
 
     public Icon getIcon() {
         return Icons.SMALLEST;
-    }
-
-    public FileTypeSupportCapabilities getSupportCapabilities() {
-        return new FileTypeSupportCapabilities() {
-            public boolean hasCompletion() {
-                return true;
-            }
-
-            public boolean hasValidation() {
-                return true;
-            }
-
-            public boolean hasFindUsages() {
-                return true;
-            }
-
-            public boolean hasNavigation() {
-                return true;
-            }
-        };
     }
 
     public String getCharset(VirtualFile file) {

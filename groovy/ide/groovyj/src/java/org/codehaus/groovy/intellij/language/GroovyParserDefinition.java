@@ -45,10 +45,12 @@ public class GroovyParserDefinition implements ParserDefinition {
         this.languageToolsFactory = languageToolsFactory;
     }
 
+    @NotNull
     public Lexer createLexer(Project project) {
         return languageToolsFactory.createLexer();
     }
 
+    @NotNull
     public PsiParser createParser(Project project) {
         return languageToolsFactory.createParser();
     }
@@ -67,6 +69,7 @@ public class GroovyParserDefinition implements ParserDefinition {
         return GroovyTokenSets.COMMENTS;
     }
 
+    @NotNull
     public PsiElement createElement(ASTNode node) {
         return new ASTWrapperPsiElement(node);
     }

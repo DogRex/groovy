@@ -31,10 +31,10 @@ public final class SyntacticAttributes {
     public static final TextAttributesKey GROOVY_DOC_MARKUP = TextAttributesKey.createTextAttributesKey("GROOVY_DOC_MARKUP", HighlighterColors.JAVA_DOC_MARKUP.getDefaultAttributes());
     public static final TextAttributesKey GROOVY_KEYWORD = TextAttributesKey.createTextAttributesKey("GROOVY_KEYWORD", HighlighterColors.JAVA_KEYWORD.getDefaultAttributes());
     public static final TextAttributesKey GROOVY_NUMBER = TextAttributesKey.createTextAttributesKey("GROOVY_NUMBER", HighlighterColors.JAVA_NUMBER.getDefaultAttributes());
-    public static final TextAttributesKey GROOVY_REGEXP = TextAttributesKey.createTextAttributesKey("GROOVY_REGEXP", HighlighterColors.JAVA_STRING.getDefaultAttributes());
     public static final TextAttributesKey GROOVY_STRING = TextAttributesKey.createTextAttributesKey("GROOVY_STRING", HighlighterColors.JAVA_STRING.getDefaultAttributes());
     public static final TextAttributesKey GROOVY_VALID_STRING_ESCAPE = TextAttributesKey.createTextAttributesKey("GROOVY_VALID_STRING_ESCAPE", HighlighterColors.JAVA_VALID_STRING_ESCAPE.getDefaultAttributes());
     public static final TextAttributesKey GROOVY_INVALID_STRING_ESCAPE = TextAttributesKey.createTextAttributesKey("GROOVY_INVALID_STRING_ESCAPE", HighlighterColors.JAVA_INVALID_STRING_ESCAPE.getDefaultAttributes());
+    public static final TextAttributesKey GROOVY_REGEXP = TextAttributesKey.createTextAttributesKey("GROOVY_REGEXP", HighlighterColors.JAVA_STRING.getDefaultAttributes());
     public static final TextAttributesKey GROOVY_OPERATION_SIGN = TextAttributesKey.createTextAttributesKey("GROOVY_OPERATION_SIGN", HighlighterColors.JAVA_OPERATION_SIGN.getDefaultAttributes());
     public static final TextAttributesKey GROOVY_PARENTHESES = TextAttributesKey.createTextAttributesKey("GROOVY_PARENTH", HighlighterColors.JAVA_PARENTHS.getDefaultAttributes());
     public static final TextAttributesKey GROOVY_BRACKETS = TextAttributesKey.createTextAttributesKey("GROOVY_BRACKETS", HighlighterColors.JAVA_BRACKETS.getDefaultAttributes());

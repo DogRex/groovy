@@ -56,22 +56,6 @@ public class GroovyFileTypeTest extends GroovyjTestCase {
         assertEquals("is binary file", false, fileType.isReadOnly());
     }
 
-    public void testSupportsKeywordCompletion() {
-        assertEquals("supports keyword completion", true, fileType.getSupportCapabilities().hasCompletion());
-    }
-
-    public void testSupportsSyntaxValidation() {
-        assertEquals("supports syntax validation", true, fileType.getSupportCapabilities().hasValidation());
-    }
-
-    public void testSupportsTheNavigationToGroovyElements() {
-        assertEquals("supports navigation", true, fileType.getSupportCapabilities().hasNavigation());
-    }
-
-    public void testSupportsFindUsagesOnGroovyElements() {
-        assertEquals("supports find usages", true, fileType.getSupportCapabilities().hasFindUsages());
-    }
-
     public void testReturnsTheCharacterSetOfAGivenFileAsItsCharacterSet() {
         String expectedCharacterSetName = "UTF-8";
         VirtualFile file = virtualFile().withCharset(expectedCharacterSetName).build();

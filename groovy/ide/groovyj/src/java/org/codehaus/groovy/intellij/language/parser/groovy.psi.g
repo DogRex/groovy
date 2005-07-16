@@ -3183,11 +3183,13 @@ options {
         if (ttypes == null) {
             Map<Object, String> map = new HashMap<Object, String>();
             Field[] fields = GroovyTokenTypes.class.getDeclaredFields();
-            for (int i = 0; i < fields.length; i++) {
-                if (fields[i].getType() != int.class)  continue;
+            for (Field field : fields) {
+                if (field.getType() != int.class) {
+                    continue;
+                }
                 try {
-                    map.put(fields[i].get(null), fields[i].getName());
-                } catch (IllegalAccessException ee) {
+                    map.put(field.get(null), field.getName());
+                } catch (IllegalAccessException e) {
                 }
             }
             ttypes = map;

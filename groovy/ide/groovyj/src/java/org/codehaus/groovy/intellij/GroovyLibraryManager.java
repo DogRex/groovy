@@ -93,12 +93,11 @@ public class GroovyLibraryManager {
 
     private File[] findJarFiles(PluginDescriptor pluginDescriptor) {
         File pluginLibraryPath = new File(pluginDescriptor.getPath(), "lib");
-        File[] jarFiles = pluginLibraryPath.listFiles(new FileFilter() {
+        return pluginLibraryPath.listFiles(new FileFilter() {
             public boolean accept(File file) {
                 return file.getName().endsWith(".jar") && !file.getName().startsWith("groovyj");
             }
         });
-        return jarFiles;
     }
 
     private void addJarFileToLibrary(File jarFile, Library.ModifiableModel libraryModel) {

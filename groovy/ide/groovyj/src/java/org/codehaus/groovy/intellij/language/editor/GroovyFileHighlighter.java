@@ -30,6 +30,8 @@ import com.intellij.psi.StringEscapesTokenTypes;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.xml.XmlTokenType;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.codehaus.groovy.intellij.language.GroovyLanguage;
 import org.codehaus.groovy.intellij.language.GroovyPsiBuilder;
 import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
@@ -45,11 +47,13 @@ public class GroovyFileHighlighter extends SyntaxHighlighterBase {
         fillElementTypeToTextAttributeKeyMaps(LEVEL_1_ELEMENT_TYPE_TO_TEXT_ATTRIBUTE_KEY_MAP, LEVEL_2_ELEMENT_TYPE_TO_TEXT_ATTRIBUTE_KEY_MAP);
     }
 
+    @NotNull
     public TextAttributesKey[] getTokenHighlights(IElementType elementType) {
         return pack(LEVEL_1_ELEMENT_TYPE_TO_TEXT_ATTRIBUTE_KEY_MAP.get(elementType),
                     LEVEL_2_ELEMENT_TYPE_TO_TEXT_ATTRIBUTE_KEY_MAP.get(elementType));
     }
 
+    @NotNull
     public Lexer getHighlightingLexer() {
         GroovyPsiBuilder groovyPsiBuilder = new GroovyPsiBuilder(GroovyLanguage.findOrCreate(), null, null, "");
         return new GroovyHighlightingLexer(groovyPsiBuilder);
@@ -71,6 +75,12 @@ public class GroovyFileHighlighter extends SyntaxHighlighterBase {
 
         levelOneElementTypeToTextAttributeKeyMap.put(GroovyTokenTypeMappings.getType(GroovyTokenTypes.STRING_CH), SyntacticAttributes.GROOVY_STRING);
         levelOneElementTypeToTextAttributeKeyMap.put(GroovyTokenTypeMappings.getType(GroovyTokenTypes.STRING_LITERAL), SyntacticAttributes.GROOVY_STRING);
+
+        levelOneElementTypeToTextAttributeKeyMap.put(GroovyTokenTypeMappings.getType(GroovyTokenTypes.REGEX_FIND), SyntacticAttributes.GROOVY_REGEXP);
+        levelOneElementTypeToTextAttributeKeyMap.put(GroovyTokenTypeMappings.getType(GroovyTokenTypes.REGEX_MATCH), SyntacticAttributes.GROOVY_REGEXP);
+        levelOneElementTypeToTextAttributeKeyMap.put(GroovyTokenTypeMappings.getType(GroovyTokenTypes.REGEXP_CTOR_END), SyntacticAttributes.GROOVY_REGEXP);
+        levelOneElementTypeToTextAttributeKeyMap.put(GroovyTokenTypeMappings.getType(GroovyTokenTypes.REGEXP_LITERAL), SyntacticAttributes.GROOVY_REGEXP);
+        levelOneElementTypeToTextAttributeKeyMap.put(GroovyTokenTypeMappings.getType(GroovyTokenTypes.REGEXP_SYMBOL), SyntacticAttributes.GROOVY_REGEXP);
 
         fillMap(levelOneElementTypeToTextAttributeKeyMap, GroovyTokenSets.PARENTHESES, SyntacticAttributes.GROOVY_PARENTHESES);
         fillMap(levelOneElementTypeToTextAttributeKeyMap, GroovyTokenSets.BRACKETS, SyntacticAttributes.GROOVY_BRACKETS);
