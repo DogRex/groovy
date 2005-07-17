@@ -505,14 +505,14 @@ importStatement
 // Added this production, even though 'typeDefinition' seems to be obsolete,
 // as this is referenced by many other parts of the grammar.
 // Protected type definitions production for reuse in other productions
-protected typeDefinitionInternal[AST mods]
-    :   cd:classDefinition[#mods]       // inner class
+protected typeDefinitionInternal[AST mods, PsiBuilder.Marker marker]
+    :   cd:classDefinition[#mods, #marker]       // inner class
         {#typeDefinitionInternal = #cd;}
-    |   id:interfaceDefinition[#mods]   // inner interface
+    |   id:interfaceDefinition[#mods, #marker]   // inner interface
         {#typeDefinitionInternal = #id;}
-    |   ed:enumDefinition[#mods]        // inner enum
+    |   ed:enumDefinition[#mods, #marker]        // inner enum
         {#typeDefinitionInternal = #ed;}
-    |   ad:annotationDefinition[#mods]  // inner annotation
+    |   ad:annotationDefinition[#mods, #marker]  // inner annotation
         {#typeDefinitionInternal = #ad;}
     ;
 
@@ -525,17 +525,17 @@ protected typeDefinitionInternal[AST mods]
  *  AST effect: Create a separate Type/Var tree for each var in the var list.
  *  Must be guarded, as in (declarationStart) => declaration.
  */
-declaration!
+declaration![PsiBuilder.Marker marker]
     :
         // method/variable using a 'def' or a modifier; type is optional
         m:modifiers
         (t:typeSpec[false])?
-        v:variableDefinitions[#m, #t]
+        v:variableDefinitions[#m, #t, #marker]
         {#declaration = #v;}
     |
         // method/variable using a type only
         t2:typeSpec[false]
-        v2:variableDefinitions[null,#t2]
+        v2:variableDefinitions[null, #t2, #marker]
         {#declaration = #v2;}
     ;
 
@@ -938,12 +938,8 @@ superClassClause!
     ;
 
 // Definition of a Java class
-classDefinition![AST modifiers]
-    {
-        Token first = LT(1);
-        AST prevCurrentClass = currentClass;
-        PsiBuilder.Marker classMarker = builder.mark();
-    }
+classDefinition![AST modifiers, PsiBuilder.Marker marker]
+{Token first = LT(1);AST prevCurrentClass = currentClass; }
     :   "class" IDENT nls!
        { currentClass = #IDENT; }
         // it _might_ have type paramaters
@@ -958,14 +954,14 @@ classDefinition![AST modifiers]
                                                             modifiers,IDENT,tp,sc,ic,cb);}
     {
         currentClass = prevCurrentClass;
-        classMarker.done(GroovyTokenTypeMappings.getType(CLASS_DEF));
+        marker.done(GroovyTokenTypeMappings.getType(CLASS_DEF));
     }
     ;
 
 //TODO - where has superClassClause! production gone???
 
 // Definition of a Java Interface
-interfaceDefinition![AST modifiers]  {Token first = LT(1);}
+interfaceDefinition![AST modifiers, PsiBuilder.Marker marker]  {Token first = LT(1);}
     :   "interface" IDENT nls!
         // it _might_ have type paramaters
         (tp:typeParameters)?
@@ -975,9 +971,12 @@ interfaceDefinition![AST modifiers]  {Token first = LT(1);}
         ib:interfaceBlock
         {#interfaceDefinition = #(create(INTERFACE_DEF,"INTERFACE_DEF",first,LT(1)),
                                   modifiers,IDENT,tp,ie,ib);}
+    {
+        marker.done(GroovyTokenTypeMappings.getType(INTERFACE_DEF));
+    }
     ;
 
-enumDefinition![AST modifiers]  {Token first = LT(1);}
+enumDefinition![AST modifiers, PsiBuilder.Marker marker]  {Token first = LT(1);}
     :   "enum" IDENT
         // it might implement some interfaces...
         ic:implementsClause
@@ -985,14 +984,20 @@ enumDefinition![AST modifiers]  {Token first = LT(1);}
         eb:enumBlock
         {#enumDefinition = #(create(ENUM_DEF,"ENUM_DEF",first,LT(1)),
                              modifiers,IDENT,ic,eb);}
+    {
+        marker.done(GroovyTokenTypeMappings.getType(ENUM_DEF));
+    }
     ;
 
-annotationDefinition![AST modifiers]  {Token first = LT(1);}
+annotationDefinition![AST modifiers, PsiBuilder.Marker marker]  {Token first = LT(1);}
     :   AT "interface" IDENT
         // now parse the body of the annotation
         ab:annotationBlock
         {#annotationDefinition = #(create(ANNOTATION_DEF,"ANNOTATION_DEF",first,LT(1)),
                                    modifiers,IDENT,ab);}
+    {
+        marker.done(GroovyTokenTypeMappings.getType(ANNOTATION_DEF));
+    }
     ;
 
 typeParameters
@@ -1081,9 +1086,13 @@ enumConstants
     ;
 
 // An annotation field
-annotationField!  {Token first = LT(1);}
+annotationField!
+    {
+        Token first = LT(1);
+        PsiBuilder.Marker marker = builder.mark();
+    }
     :   mods:modifiersOpt!
-        (   td:typeDefinitionInternal[#mods]
+        (   td:typeDefinitionInternal[#mods, #marker]
             {#annotationField = #td;}
         |   t:typeSpec[false]               // annotation field
             (
@@ -1103,8 +1112,11 @@ annotationField!  {Token first = LT(1);}
                                  mods,
                                  #(create(TYPE,"TYPE",first,LT(1)),t),
                                  i,amvi
-                                 );}
-            |   v:variableDefinitions[#mods,#t]    // variable
+                                 );
+
+                    marker.done(GroovyTokenTypeMappings.getType(ANNOTATION_FIELD_DEF));
+                }
+            |   v:variableDefinitions[#mods, #t, #marker]    // variable
                 {#annotationField = #v;}
             )
         )
@@ -1112,7 +1124,11 @@ annotationField!  {Token first = LT(1);}
 
 //An enum constant may have optional parameters and may have a
 //a class body
-enumConstant!  {Token first = LT(1);}
+enumConstant!
+    {
+        Token first = LT(1);
+        PsiBuilder.Marker enumConstantMarker = builder.mark();
+    }
     :   an:annotationsOpt // Note:  Cannot start with "def" or another modifier.
         i:IDENT
         (   LPAREN!
@@ -1121,6 +1137,9 @@ enumConstant!  {Token first = LT(1);}
         )?
         ( b:enumConstantBlock )?
         {#enumConstant = #(create(ENUM_CONSTANT_DEF, "ENUM_CONSTANT_DEF",first,LT(1)), an, i, a, b);}
+    {
+        enumConstantMarker.done(GroovyTokenTypeMappings.getType(ENUM_CONSTANT_DEF));
+    }
     ;
 
 //The class-like body of an enum constant
@@ -1136,9 +1155,13 @@ enumConstantBlock  {Token first = LT(1);}
 
 // TODO - maybe allow 'declaration' production within this production,
 // but how to disallow constructors and static initializers...
-enumConstantField!  {Token first = LT(1);}
+enumConstantField!
+    {
+        Token first = LT(1);
+        PsiBuilder.Marker marker = builder.mark();
+    }
     :   mods:modifiersOpt!
-        (   td:typeDefinitionInternal[#mods]
+        (   td:typeDefinitionInternal[#mods, #marker]
             {#enumConstantField = #td;}
         |   // A generic method has the typeParameters before the return type.
             // This is not allowed for variable definitions, but this production
@@ -1170,16 +1193,22 @@ enumConstantField!  {Token first = LT(1);}
                                          IDENT,
                                          param,
                                          tc,
-                                         s2);}
+                                         s2);
 
-            |   v:variableDefinitions[#mods,#t]
+                    marker.done(GroovyTokenTypeMappings.getType(METHOD_DEF));
+                }
+
+            |   v:variableDefinitions[#mods, #t, #marker]
                 {#enumConstantField = #v;}
             )
         )
 
         // "{ ... }" instance initializer
     |   s4:compoundStatement
-        {#enumConstantField = #(create(INSTANCE_INIT,"INSTANCE_INIT",first,LT(1)), s4);}
+        {
+            #enumConstantField = #(create(INSTANCE_INIT,"INSTANCE_INIT",first,LT(1)), s4);
+            marker.drop();
+        }
     ;
 
 // An interface can extend several other interfaces...
@@ -1203,38 +1232,51 @@ implementsClause  {Token first = LT(1);}
     ;
 
 // Now the various things that can be defined inside a class
-classField!  {Token first = LT(1);}
+classField!
+    {
+        Token first = LT(1);
+        PsiBuilder.Marker marker = builder.mark();
+    }
     :   // method, constructor, or variable declaration
         (constructorStart)=>
-        mc:modifiersOpt! ctor:constructorDefinition[#mc]
+        mc:modifiersOpt! ctor:constructorDefinition[#mc, #marker]
         {#classField = #ctor;}
     |
         (declarationStart)=>
-        d:declaration
+        d:declaration[#marker]
         {#classField = #d;}
     |
         //TODO - unify typeDeclaration and typeDefinitionInternal names
         // type declaration
         (typeDeclarationStart)=>
         mods:modifiersOpt!
-        (   td:typeDefinitionInternal[#mods]
+        (   td:typeDefinitionInternal[#mods, #marker]
                 {#classField = #td;}
         )
 
     // "static { ... }" class initializer
     |   "static" s3:compoundStatement
-        {#classField = #(create(STATIC_INIT,"STATIC_INIT",first,LT(1)), s3);}
+        {
+            #classField = #(create(STATIC_INIT,"STATIC_INIT",first,LT(1)), s3);
+            marker.drop();
+        }
 
     // "{ ... }" instance initializer
     |   s4:compoundStatement
-        {#classField = #(create(INSTANCE_INIT,"INSTANCE_INIT",first,LT(1)), s4);}
+        {
+            #classField = #(create(INSTANCE_INIT,"INSTANCE_INIT",first,LT(1)), s4);
+            marker.drop();
+        }
     ;
 
 // Now the various things that can be defined inside a interface
 interfaceField!
+    {
+        PsiBuilder.Marker marker = builder.mark();
+    }
     :   // method, constructor, or variable declaration
         (declarationStart)=>
-        d:declaration
+        d:declaration[#marker]
         {#interfaceField = #d;}
     |
         //TODO - unify typeDeclaration and typeDefinitionInternal names
@@ -1242,7 +1284,7 @@ interfaceField!
         (typeDeclarationStart)=>
         mods:modifiersOpt
 
-        (   td:typeDefinitionInternal[#mods]
+        (   td:typeDefinitionInternal[#mods, #marker]
             {#interfaceField = #td;}
         )
     ;
@@ -1275,13 +1317,16 @@ explicitConstructorInvocation
   * Otherwise, the variable type defaults to 'any'.
   * DECIDE:  Method return types default to the type of the method body, as an expression.
   */
-variableDefinitions[AST mods, AST t]  {Token first = LT(1);}
+variableDefinitions[AST mods, AST t, PsiBuilder.Marker marker]  {Token first = LT(1);}
     :   variableDeclarator[getASTFactory().dupTree(mods),
                            getASTFactory().dupTree(t)]
         (   COMMA! nls!
             variableDeclarator[getASTFactory().dupTree(mods),
                                getASTFactory().dupTree(t)]
         )*
+        {
+            marker.drop();
+        }
     |
         // The parser allows a method definition anywhere a variable definition is accepted.
 
@@ -1310,13 +1355,15 @@ variableDefinitions[AST mods, AST t]  {Token first = LT(1);}
             #variableDefinitions =
                     #(create(METHOD_DEF,"METHOD_DEF",first,LT(1)),
                       mods, #(create(TYPE,"TYPE",first,LT(1)),t), id, param, tc, mb);
+
+            marker.done(GroovyTokenTypeMappings.getType(METHOD_DEF));
         }
     ;
 
 /** I've split out constructors separately; we could maybe integrate back into variableDefinitions
  *  later on if we maybe simplified 'def' to be a type declaration?
  */
-constructorDefinition[AST mods]  {Token first = LT(1);}
+constructorDefinition[AST mods, PsiBuilder.Marker marker]  {Token first = LT(1);}
     :
         id:IDENT
 
@@ -1338,6 +1385,9 @@ constructorDefinition[AST mods]  {Token first = LT(1);}
         cb:constructorBody!
         {   #constructorDefinition =  #(create(CTOR_IDENT,"CTOR_IDENT",first,LT(1)),  mods, param, tc, cb);
         }
+    {
+        marker.done(GroovyTokenTypeMappings.getType(CTOR_IDENT));
+    }
      ;
 
 /** Declaration of a variable. This can be a class/instance variable,
@@ -1656,8 +1706,11 @@ statement[int prevToken]
     // statements. Must backtrack to be sure. Could use a semantic
     // predicate to test symbol table to see what the type was coming
     // up, but that's pretty hard without a symbol table ;)
+    {
+        PsiBuilder.Marker marker = builder.mark();
+    }
     :   (declarationStart)=>
-        declaration
+        declaration[#marker]
 
     // Attach a label to the front of a statement
     // This block is executed for effect, unless it has an explicit closure argument.
@@ -1668,15 +1721,21 @@ statement[int prevToken]
         (   (LCURLY) => openOrClosedBlock
         |   statement[COLON]
         )
+        {
+            marker.drop();
+        }
 
     // An expression statement. This could be a method call,
     // assignment statement, or any other expression evaluated for
     // side-effects.
     // The prevToken is used to check for dumb expressions like +1.
     |    expressionStatement[prevToken]
+        {
+            marker.drop();
+        }
 
     // class definition
-    |    m:modifiersOpt! typeDefinitionInternal[#m]
+    |    m:modifiersOpt! typeDefinitionInternal[#m, #marker]
 
     // If-else statement
     |   "if"^ LPAREN! strictContextExpression RPAREN! nlsWarn! compatibleBodyStatement
@@ -1692,20 +1751,35 @@ statement[int prevToken]
             (sep!)?  // allow SEMI here for compatibility with Java
             "else"! nlsWarn! compatibleBodyStatement
         )?
+        {
+            marker.drop();
+        }
 
     // For statement
     |   forStatement
+        {
+            marker.drop();
+        }
 
     // While statement
     |   "while"^ LPAREN! strictContextExpression RPAREN! nlsWarn! compatibleBodyStatement
+        {
+            marker.drop();
+        }
 
     /*OBS* no do-while statement in Groovy (too ambiguous)
     // do-while statement
     |   "do"^ statement "while"! LPAREN! strictContextExpression RPAREN! SEMI!
+        {
+            marker.drop();
+        }
     *OBS*/
     // With statement
     // (This is the Groovy scope-shift mechanism, used for builders.)
     |   "with"^ LPAREN! strictContextExpression RPAREN! nlsWarn! compoundStatement
+        {
+            marker.drop();
+        }
 
     // Splice statement, meaningful only inside a "with" expression.
     // PROPOSED, DECIDE.  Prevents the namespace pollution of a "text" method or some such.
@@ -1713,28 +1787,49 @@ statement[int prevToken]
         expressionStatement[EOF]
     // Example:  with(htmlbuilder) { head{} body{ *"some text" } }
     // Equivalent to:  { htmlbuilder.head{} htmlbuilder.body{ (htmlbuilder as Collection).add("some text") } }
+        {
+            marker.drop();
+        }
 
     // Import statement.  Can be used in any scope.  Has "import x as y" also.
     |   importStatement
+        {
+            marker.drop();
+        }
 
     // switch/case statement
     |   "switch"^ LPAREN! strictContextExpression RPAREN! nlsWarn! LCURLY! nls!
         ( casesGroup )*
         RCURLY!
+        {
+            marker.drop();
+        }
 
     // exception try-catch block
     |   tryBlock
+        {
+            marker.drop();
+        }
 
     // synchronize a statement
     |   "synchronized"^ LPAREN! strictContextExpression RPAREN! nlsWarn! compoundStatement
+        {
+            marker.drop();
+        }
 
 
     /*OBS*
     // empty statement
     |   s:SEMI {#s.setType(EMPTY_STAT);}
+        {
+            marker.drop();
+        }
     *OBS*/
 
     |   branchStatement
+        {
+            marker.drop();
+        }
     ;
 
 forStatement
@@ -1962,12 +2057,19 @@ caseSList  {Token first = LT(1);}
     ;
 
 // The initializer for a for loop
-forInit  {Token first = LT(1);}
+forInit
+    {
+        Token first = LT(1);
+        PsiBuilder.Marker marker = builder.mark();
+    }
     :   // if it looks like a declaration, it is
-        (declarationStart)=> declaration
+        (declarationStart)=> declaration[#marker]
     |   // else it's a comma-separated list of expressions
         (controlExpressionList)?
         {#forInit = #(create(FOR_INIT,"FOR_INIT",first,LT(1)),#forInit);}
+    {
+        marker.drop();
+    }
     ;
 
 forCond  {Token first = LT(1);}

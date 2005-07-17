@@ -53,7 +53,7 @@ public class GroovyTokenTypeMappingsTest extends GroovyjTestCase {
         IElementType[] elementTypes = GroovyTokenTypeMappings.getCommentTypes();
         assertElementTypesAreCorrectlyDetected("COMMENT", elementTypes);
 
-        List listOfElementTypes = Arrays.asList(elementTypes);
+        List<IElementType> listOfElementTypes = Arrays.asList(elementTypes);
         ListAssert.assertContains(listOfElementTypes, GroovyTokenTypeMappings.getType(GroovyTokenTypes.SH_COMMENT));
         ListAssert.assertContains(listOfElementTypes, GroovyTokenTypeMappings.getType(GroovyTokenTypes.ML_COMMENT));
         ListAssert.assertContains(listOfElementTypes, GroovyTokenTypeMappings.getType(GroovyTokenTypes.SL_COMMENT));

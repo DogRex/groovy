@@ -27,13 +27,16 @@ import com.intellij.lang.ParserDefinition;
 import com.intellij.lang.PsiBuilder;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.impl.source.tree.ChameleonElement;
 import com.intellij.psi.impl.source.tree.CompositeElement;
 import com.intellij.psi.impl.source.tree.FileElement;
+import com.intellij.psi.impl.source.tree.LeafElement;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.impl.source.tree.PsiCommentImpl;
 import com.intellij.psi.impl.source.tree.PsiErrorElementImpl;
 import com.intellij.psi.impl.source.tree.PsiWhiteSpaceImpl;
 import com.intellij.psi.impl.source.tree.TreeUtil;
+import com.intellij.psi.tree.IChameleonElementType;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.TokenSet;
 import com.intellij.util.CharTable;
@@ -103,7 +106,8 @@ public class GroovyPsiBuilder implements PsiBuilder {
     }
 
     public String getTokenText() {
-        return getCurrentToken().getTokenText();
+        Token token = getCurrentToken();
+        return token == null ? null : token.getTokenText();
     }
 
     public Token getCurrentToken() {
@@ -149,6 +153,7 @@ public class GroovyPsiBuilder implements PsiBuilder {
             if (!(productionMarker instanceof Marker)) {
                 continue;
             }
+
             StartMarker startMarker = (StartMarker) productionMarker;
             if (startMarker.doneMarker == null) {
                 LOGGER.error("Another not done marker of type [" + startMarker.elementType + "] added after this one. Must be done before this.");
@@ -157,13 +162,14 @@ public class GroovyPsiBuilder implements PsiBuilder {
             if (startMarker.doneMarker != null) {
                 continue;
             }
-            LOGGER.error("Another not done marker of type [" + startMarker.elementType + "] added after this one. Must be done before this.");
+
             Throwable throwable1 = startMarker.debugAllocationPosition;
             Throwable throwable2 = ((StartMarker) marker).debugAllocationPosition;
             if (throwable1 != null) {
-                LOGGER.error("Attempt to close marker allocated at: ", throwable2);
-                LOGGER.error("Before marker allocated at: " + throwable1);
+                throwable2.printStackTrace(System.err);
+                throwable1.printStackTrace(System.err);
             }
+            LOGGER.error("Another not done marker of type [" + startMarker.elementType + "] added after this one. Must be done before this.");
         }
 
         DoneMarker doneMarker = new DoneMarker((StartMarker) marker, currentTokenIndex);
@@ -259,22 +265,40 @@ public class GroovyPsiBuilder implements PsiBuilder {
     }
 
     private int attachChildNodes(int numberOfProcessedTokens, int lexingIndex, ASTNode astNode) {
-        for (lexingIndex = Math.min(lexingIndex, tokens.size()); numberOfProcessedTokens < lexingIndex;) {
+        lexingIndex = Math.min(lexingIndex, tokens.size());
+
+        do {
+            if (numberOfProcessedTokens >= lexingIndex) {
+                break;
+            }
             Token token = tokens.get(numberOfProcessedTokens++);
-            TreeUtil.addChildren((CompositeElement) astNode, buildLeafPsiElement(token));
-        }
+            LeafElement leafElement = buildLeafPsiElement(token);
+            if (leafElement != null) {
+                TreeUtil.addChildren((CompositeElement) astNode, leafElement);
+            }
+        } while (true);
 
         return numberOfProcessedTokens;
     }
 
-    private LeafPsiElement buildLeafPsiElement(Token token) {
+    private LeafElement buildLeafPsiElement(Token token) {
+        if (token.startOffset == token.endOffset) {
+            return null;
+        }
+
         IElementType elementType = token.getType();
         if (whitespaceTokens.isInSet(elementType)) {
             return new PsiWhiteSpaceImpl(lexer.getBuffer(), token.startOffset, token.endOffset, token.state, charTable);
         }
+
         if (commentTokens.isInSet(elementType)) {
             return new PsiCommentImpl(elementType, lexer.getBuffer(), token.startOffset, token.endOffset, token.state, charTable);
         }
+
+        if (elementType instanceof IChameleonElementType) {
+            return new ChameleonElement(elementType, lexer.getBuffer(), token.startOffset, token.endOffset, token.state);
+        }
+
         return new LeafPsiElement(elementType, lexer.getBuffer(), token.startOffset, token.endOffset, token.state, charTable);
     }
 
