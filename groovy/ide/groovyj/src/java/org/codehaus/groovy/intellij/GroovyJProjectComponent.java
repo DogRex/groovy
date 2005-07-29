@@ -59,7 +59,7 @@ public class GroovyJProjectComponent implements ProjectComponent {
     public void projectOpened() {
         editorApi = editorApiFactory.createEditorAPI(project);
         groovyCompiler = new GroovyCompiler(editorApi, new CompilationUnitsFactory());
-        CompilerManager.getInstance(project).addCompiler(groovyCompiler);
+        addCompilationSupport();
 
         groovyLibraryModuleListener = new GroovyLibraryModuleListener(getPluginVersion());
         ModuleManager.getInstance(project).addModuleListener(groovyLibraryModuleListener);
@@ -70,12 +70,24 @@ public class GroovyJProjectComponent implements ProjectComponent {
     }
 
     public void projectClosed() {
-        CompilerManager.getInstance(project).removeCompiler(groovyCompiler);
+        removeCompilationSupport();
         groovyCompiler = null;
         editorApi = null;
 
         ModuleManager.getInstance(project).removeModuleListener(groovyLibraryModuleListener);
         groovyLibraryModuleListener = null;
+    }
+
+    private void addCompilationSupport() {
+        CompilerManager compilerManager = CompilerManager.getInstance(project);
+        compilerManager.addCompiler(groovyCompiler);
+        compilerManager.addCompilableFileType(GroovySupportLoader.GROOVY);
+    }
+
+    private void removeCompilationSupport() {
+        CompilerManager compilerManager = CompilerManager.getInstance(project);
+        compilerManager.removeCompiler(groovyCompiler);
+        compilerManager.removeCompilableFileType(GroovySupportLoader.GROOVY);
     }
 
     public void initComponent() {}

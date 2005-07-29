@@ -22,6 +22,7 @@ import org.intellij.openapi.testing.MockApplication;
 import org.intellij.openapi.testing.MockApplicationManager;
 
 import com.intellij.openapi.compiler.CompilerManager;
+import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.impl.libraries.LibraryTablesRegistrarImpl;
@@ -67,26 +68,48 @@ public class GroovyJProjectComponentTest extends GroovyjTestCase {
         assertAllProjectLevelDependenciesAreRemoved();
         setExpectationsForRetrievingTheGroovyLibrary();
 
-        mockCompilerManager.expects(once()).method("addCompiler").with(isA(GroovyCompiler.class));
-        mockModuleManager.expects(once()).method("addModuleListener").with(isA(GroovyLibraryModuleListener.class));
+        expectAdditionOfCompilationSupport();
+        expectAdditionOfModuleListener();
 
         projectComponent.projectOpened();
         assertAllProjectLevelDependenciesHaveBeenInitialised();
     }
 
     public void testRemovesReferencesToEditorApiAndGroovyCompilerWhenTheProjectIsClosed() {
-        mockCompilerManager.expects(once()).method("addCompiler").with(isA(GroovyCompiler.class));
-        mockModuleManager.expects(once()).method("addModuleListener").with(isA(GroovyLibraryModuleListener.class));
+        expectAdditionOfCompilationSupport();
+        expectAdditionOfModuleListener();
         setExpectationsForRetrievingTheGroovyLibrary();
 
         projectComponent.projectOpened();
         assertAllProjectLevelDependenciesHaveBeenInitialised();
 
-        mockCompilerManager.expects(once()).method("removeCompiler").with(isA(GroovyCompiler.class));
-        mockModuleManager.expects(once()).method("removeModuleListener").with(isA(GroovyLibraryModuleListener.class));
+        expectRemovalOfCompilationSupport();
+        expectRemovalOfModuleListener();
 
         projectComponent.projectClosed();
         assertAllProjectLevelDependenciesAreRemoved();
+    }
+
+    private void expectAdditionOfCompilationSupport() {
+        mockCompilerManager.expects(once()).method("addCompiler").with(isA(GroovyCompiler.class));
+        mockCompilerManager.expects(once()).method("addCompilableFileType").with(same(groovyFileType()));
+    }
+
+    private void expectRemovalOfCompilationSupport() {
+        mockCompilerManager.expects(once()).method("removeCompiler").with(isA(GroovyCompiler.class));
+        mockCompilerManager.expects(once()).method("removeCompilableFileType").with(same(groovyFileType()));
+    }
+
+    private FileType groovyFileType() {
+        return GroovySupportLoader.GROOVY;
+    }
+
+    private void expectAdditionOfModuleListener() {
+        mockModuleManager.expects(once()).method("addModuleListener").with(isA(GroovyLibraryModuleListener.class));
+    }
+
+    private void expectRemovalOfModuleListener() {
+        mockModuleManager.expects(once()).method("removeModuleListener").with(isA(GroovyLibraryModuleListener.class));
     }
 
     private void setExpectationsForRetrievingTheGroovyLibrary() {
