@@ -22,20 +22,18 @@ import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
 
 /**
  * @author MelamedZ
- * 
- * To change the template for this generated type comment go to Window -
- * Preferences - Java - Code Generation - Code and Comments
  */
 public class WizardUtil {
-	public static IFile createGroovyType(IPackageFragmentRoot root, IPackageFragment pack,String cuName, String source) throws CoreException {
+
+	public static IFile createGroovyType(IPackageFragmentRoot root, IPackageFragment pack, String cuName, String source) throws CoreException {
 
         checkPackageExists(root, pack);
         
 		StringBuffer buf = new StringBuffer();
-		if(pack.getElementName().length()>0){
+		if (pack.getElementName().length()>0) {
 			buf.append("package " + pack.getElementName() + ";\n");
 		}
-		buf.append("\n\n\n");
+		buf.append("\n\n");
 		buf.append(source);
 
 		IContainer folder = (IContainer) pack.getResource();

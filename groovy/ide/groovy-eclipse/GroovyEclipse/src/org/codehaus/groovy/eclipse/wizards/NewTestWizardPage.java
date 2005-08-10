@@ -134,12 +134,12 @@ public class NewTestWizardPage extends NewTypeWizardPage {
 		GroovyPlugin.getPlugin().addJunitSupprt(packageFragment.getJavaProject());
 		StringBuffer src = new StringBuffer();
 		monitor.worked(1);
-		src.append("import  groovy.util.GroovyTestCase");
-		src.append("\n\n\n");
+        //TODO should use a template thing instead of hard coding.
+		src.append("\n\n");
 		src.append("class ");
 		src.append(getTypeName());
 		src.append(" extends GroovyTestCase");
-		src.append("{\n\n\t void testSomething() {\n\t}\n}");
+		src.append(" {\n\n  void testSomething() {\n    \n  }\n\n}");
 		monitor.worked(1);
 		monitor.done();
 		return WizardUtil.createGroovyType(getPackageFragmentRoot(), packageFragment, getTypeName() + ".groovy", src.toString());

@@ -131,19 +131,19 @@ public class NewClassWizardPage extends NewTypeWizardPage {
 		String shortSuperName = WizardUtil.getSuperName(packageFragment,superClass);
 		StringBuffer src = new StringBuffer();
 		monitor.worked(1);
-		if(shortSuperName.length() >0){
-			src.append("import  ");
+        //TODO should use a template thing instead of hardcoding.
+		if (shortSuperName.length() > 0){
+			src.append("import ");
 			src.append(superClass);
-			src.append("\n\n\n");
+			src.append("\n\n");
 		}
-		
 		src.append("class ");
 		src.append(getTypeName());
-		if(shortSuperName.length() >0){
+		if (shortSuperName.length() > 0) {
 			src.append(" extends "+shortSuperName);
 		}
 		monitor.worked(1);
-		src.append("{\n\n\t static void main(args) {\n\t}\n}");
+		src.append(" {\n\n  static void main(args) {\n    \n  }\n\n}");
 		monitor.done();
 		return WizardUtil.createGroovyType(getPackageFragmentRoot(), packageFragment,getTypeName()+".groovy",src.toString());
 	}

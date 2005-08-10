@@ -6,6 +6,13 @@
  */
 package org.codehaus.groovy.eclipse.model;
 
+import groovy.lang.GroovyClassLoader;
+
+import java.io.File;
+import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -21,6 +28,7 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.control.ProcessingUnit;
 import org.codehaus.groovy.control.CompilationUnit.ProgressCallback;
+import org.codehaus.groovy.control.messages.WarningMessage;
 import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.codehaus.groovy.eclipse.builder.GroovyNature;
 import org.codehaus.groovy.eclipse.launchers.GroovyRunner;
@@ -38,19 +46,22 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.swt.widgets.Display;
+
 /**
- * @author MelamedZ
+ * The main groovy project class used to configure the project settings,
+ * and do the compiling.
  * 
- * To change the template for this generated type comment go to Window -
- * Preferences - Java - Code Generation - Code and Comments
+ * @author MelamedZ
+ * @author Hein Meling
  */
-public class GroovyProject{
+public class GroovyProject {
+
 	private IJavaProject javaProject;
 	private Map compilationUnits = new HashMap();
 	private CompilerConfiguration compilerConfiguration = new CompilerConfiguration();
 	public static final String GROOVY_ERROR_MARKER = "org.codehaus.groovy.eclipse.groovyFailure";
-	List listeners = new ArrayList();
-	List filesToBuild = new ArrayList();
+	private List listeners = new ArrayList();
+	private List filesToBuild = new ArrayList();
 	
 
 	class AddGroovySupport implements Runnable {
@@ -60,10 +71,6 @@ public class GroovyProject{
 			trace("AddGroovySupport.AddGroovySupport()");
 			this.project = project;
 		}
-
-		/**
-		 * @param string
-		 */
 
 		public void run() {
 			GroovyPlugin plugin = GroovyPlugin.getPlugin();
@@ -80,39 +87,46 @@ public class GroovyProject{
 				}
 			} catch (CoreException e) {
 				plugin.logException("failed to add groovy support", e);
-			}finally{
+			} finally {
 				plugin.listenToChanges();
 			}
 		}
 
 	}
 
+
 	/**
+	 * Construct new groovy project.
+	 * 
 	 * @param javaProject
 	 */
 	public GroovyProject(IJavaProject javaProject) {
-		super();
 		this.javaProject = javaProject;
+		// Note that enabling debug will disable class generation
 		//compilerConfiguration.setDebug(true);
 	}
-	
+
+
+	/**
+	 * 
+	 * @param monitor
+	 * @param kind
+	 */
 	public void buildGroovyContent(IProgressMonitor monitor, int kind) {
 		try {
-			
 			long start = System.currentTimeMillis();
 			setClassPath(javaProject);
 			setOutputDirectory(javaProject);
 			
 			filesToBuild.clear();
-			if(kind == IncrementalProjectBuilder.FULL_BUILD)
+			if (kind == IncrementalProjectBuilder.FULL_BUILD) {
 				javaProject.getProject().accept(
 						new FullGroovyBuilder(filesToBuild));
-			else{
+			} else {
 				javaProject.getProject().accept(
-						new IncrementalGroovyBuilder(javaProject, compilationUnits, this,filesToBuild));
-				
+						new IncrementalGroovyBuilder(javaProject, compilationUnits, this, filesToBuild));
 			}
-			monitor.beginTask("Compiling Groovy Files",filesToBuild.size());
+			monitor.beginTask("Compiling Groovy Files", filesToBuild.size());
 			compileGroovyFiles(monitor);
 			for (Iterator iter = filesToBuild.iterator(); iter.hasNext();) {
 				IFile file = (IFile) iter.next();
@@ -130,22 +144,20 @@ public class GroovyProject{
 	}
 	
 	/**
-	 * @param filesToBuild2
 	 * @param monitor
 	 */
 	private void compileGroovyFiles(IProgressMonitor monitor) {
-		
-		CompilationUnit compilationUnit = new CompilationUnit(compilerConfiguration);
+		CompilationUnit compilationUnit = createCompilationUnit("");
 		Thread.currentThread().setContextClassLoader(compilationUnit.getClassLoader());
-		compilationUnit.setProgressCallback(new ProgressCallback(){
+		compilationUnit.setProgressCallback(new ProgressCallback() {
 			public void call(ProcessingUnit context, int phase) throws CompilationFailedException {
-				System.out.println("GroovyProject.compileGroovyFiles() "+ context + " phase "+phase);
-				if(phase == Phases.OUTPUT){
+				System.out.println("GroovyProject.compileGroovyFiles() "+ context
+						+ " phase " + Phases.getDescription(phase));
+				if (phase == Phases.OUTPUT) {
 					//CompilationUnit unit = (CompilationUnit) context;
 					//String key = unit.
 				}
 			}
-			
 		});
 		IFile file = null;
 		for (Iterator iter = filesToBuild.iterator(); iter.hasNext();) {
@@ -156,15 +168,14 @@ public class GroovyProject{
 				e1.printStackTrace();
 			}
 			GroovyPlugin.trace("deleted markers from " + file.getFullPath());
+			trace("Adding source: " + file.getLocation().toFile());
 			compilationUnit.addSource(file.getLocation().toFile());
 		}
-		try{
+		try {
 			compilationUnit.compile();
 		} catch (Exception e) {
-			// buhhh !
 			handleCompilationError(file, e);
 		}
-		
 	}
 
 	private void setOutputDirectory(IJavaProject javaProject) throws JavaModelException {
@@ -172,48 +183,50 @@ public class GroovyProject{
 		GroovyPlugin.trace("groovy output = " + outputPath);
 		compilerConfiguration.setTargetDirectory(outputPath);
 	}
+
 	private String getOutputPath(IJavaProject jProject) throws JavaModelException {
 		String outputPath = jProject.getProject().getLocation().toString() + IPath.SEPARATOR
 				+ javaProject.getOutputLocation().removeFirstSegments(1).toString();
 		return outputPath;
 	}
 	
-	private void setClassPath(IJavaProject javaProject) throws JavaModelException, Exception {
-		IWorkspaceRoot root = javaProject.getProject().getWorkspace().getRoot(); 
+	private void setClassPath(IJavaProject javaProject) throws JavaModelException {
+		IWorkspaceRoot root = javaProject.getProject().getWorkspace().getRoot();
 		IClasspathEntry[] cpEntries = javaProject.getResolvedClasspath(false);
 		StringBuffer classPath = new StringBuffer();
 		for (int i = 0; i < cpEntries.length; i++) {
 			IClasspathEntry entry = cpEntries[i];
 			if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
-				if(entry.getPath().getDevice()== null) {
+				if (entry.getPath().getDevice() == null) {
 				 	IResource resource = root.findMember(entry.getPath());
-				 	if(resource != null)
-				 		classPath.append(resource.getLocation().toString() + ";");
+				 	if (resource != null) {
+				 		classPath.append(resource.getLocation().toString());
 				 	} else {
-				 		classPath.append(entry.getPath().toString() + ";");
-				 	} 	
+				 		classPath.append(entry.getPath().toString());
+				 	}
+				 	classPath.append(File.pathSeparator);
+				}
 			}
 		}
-		classPath.append(getOutputPath(javaProject) + ";");
+		classPath.append(getOutputPath(javaProject));
 		GroovyPlugin.trace("groovy cp = " + classPath.toString());
 		compilerConfiguration.setClasspath(classPath.toString());
 	}
+
 	/**
-	 * build and save compilationUnit
+	 * Create and store the compilationUnit
 	 * 
 	 * @param file
-	 * @param fullPath
-	 * @throws CoreException
-	 * @throws Exception
+	 * @param generateClassFiles
 	 */
 	void compileGroovyFile(IFile file, boolean generateClassFiles) {
 		try {
 			file.deleteMarkers(GROOVY_ERROR_MARKER, false, IResource.DEPTH_INFINITE); //$NON-NLS-1$
 			GroovyPlugin.trace("deleted markers from " + file.getFullPath());
-			GroovyPlugin.trace(generateClassFiles ? " " : "fast " + "compiling -" + file.getFullPath());
-			CompilationUnit compilationUnit = new CompilationUnit(compilerConfiguration);
+			GroovyPlugin.trace(generateClassFiles ? " " : "fast " + "compiling " + file.getFullPath());
+			CompilationUnit compilationUnit = createCompilationUnit("");
 			compilationUnit.addSource(file.getLocation().toFile());
-			compilationUnit.compile(generateClassFiles?Phases.ALL:Phases.CANONICALIZATION);
+			compilationUnit.compile(generateClassFiles ? Phases.ALL : Phases.CANONICALIZATION);
 			CompileUnit unit = compilationUnit.getAST();
 			String key = file.getFullPath().toString();
 			compilationUnits.put(key, unit);
@@ -222,11 +235,45 @@ public class GroovyProject{
 			handleCompilationError(file, e);
 		}
 	}
-	/**
+
+    private CompilationUnit createCompilationUnit(String characterEncoding) {
+//        compilerConfiguration.setSourceEncoding(characterEncoding);
+        compilerConfiguration.setOutput(new PrintWriter(System.err));
+        compilerConfiguration.setWarningLevel(WarningMessage.PARANOIA);
+
+        return new CompilationUnit(compilerConfiguration, null, buildClassLoaderFor());
+    }
+
+    private GroovyClassLoader buildClassLoaderFor() {
+        URLClassLoader urlClassLoader = new URLClassLoader(convertClasspathToUrls());
+        return new GroovyClassLoader(urlClassLoader, compilerConfiguration);
+    }
+
+    private URL[] convertClasspathToUrls() {
+        try {
+            return classpathAsUrls();
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private URL[] classpathAsUrls() throws MalformedURLException {
+        List classpath = compilerConfiguration.getClasspath();
+        URL[] classpathUrls = new URL[classpath.size()];
+        for (int i = 0; i < classpathUrls.length; i++) {
+            String classpathEntry = (String) classpath.get(i);
+            classpathUrls[i] = new File(classpathEntry).toURL();
+        }
+        return classpathUrls;
+    }
+
+    /**
+	 * 
+	 * @param resource
 	 * @param e
 	 */
 	private void handleCompilationError(IResource resource, Exception e) {
-		//GroovyPlugin.trace("compilation error : " + e.getMessage());
+		GroovyPlugin.trace("compilation error : " + e.getMessage());
 		try {
 			resource.getWorkspace().run(new AddErrorMarker(resource, e), null);
 		} catch (CoreException ce) {
@@ -244,7 +291,8 @@ public class GroovyProject{
 		}
 		runGroovyMain(compileUnit, args);
 	}
-	/*
+
+	/**
 	 *  
 	 */
 	private void runGroovyMain(CompileUnit compileUnit, String[] args) throws CoreException {
@@ -259,6 +307,7 @@ public class GroovyProject{
 		}
 		runner.run(elementName, args, javaProject);
 	}
+
 	/**
 	 * @param classNode
 	 * @return
@@ -273,6 +322,7 @@ public class GroovyProject{
 		}
 		return false;
 	}
+
 	/**
 	 * @param className
 	 * @param args
@@ -291,6 +341,7 @@ public class GroovyProject{
 		}
 		GroovyPlugin.trace("failed to run " + className + "due to missing compilation unit ");
 	}
+
 	public String[] findAllRunnableClasses() {
 		List results = new ArrayList();
 		for (Iterator iter = compilationUnits.values().iterator(); iter.hasNext();) {
@@ -312,21 +363,24 @@ public class GroovyProject{
 		}
 		return (String[]) results.toArray(new String[results.size()]);
 	}
+
 	/**
 	 * @param listener
 	 */
 	public void addBuildListener(GroovyBuildListner listener) {
 		listeners.add(listener);
 	}
+
 	/**
 	 * @param listener
 	 */
 	public void removeBuildListener(GroovyBuildListner listener) {
 		listeners.remove(listener);
 	}
+
 	class FireFileBuiltAction implements Runnable {
 		private IFile file;
-		CompileUnit unit;
+		private CompileUnit unit;
 		public void run() {
 			for (Iterator iter = listeners.iterator(); iter.hasNext();) {
 				GroovyBuildListner buildListner = (GroovyBuildListner) iter.next();
@@ -338,15 +392,18 @@ public class GroovyProject{
 			this.unit = unit;
 		}
 	}
+
 	private void fireGroovyFileBuilt(IFile file, CompileUnit unit) {
 		Display.getDefault().asyncExec(new FireFileBuiltAction(file, unit));
 	}
+
 	/**
 	 * @return Returns the javaProject.
 	 */
 	public IJavaProject getJavaProject() {
 		return javaProject;
 	}
+
 	/**
 	 * @param file
 	 * @return

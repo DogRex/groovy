@@ -45,10 +45,8 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.ErrorCollector;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
-import org.codehaus.groovy.control.ProcessingUnit;
 import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.eclipse.core.resources.IMarker;
@@ -61,9 +59,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * @author MelamedZ
- * 
- * To change the template for this generated type comment go to Window -
- * Preferences - Java - Code Generation - Code and Comments
  */
 class AddErrorMarker implements IWorkspaceRunnable {
 	private IResource resource;

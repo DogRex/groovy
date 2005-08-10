@@ -113,8 +113,8 @@ public class IncrementalGroovyBuilder implements IResourceVisitor {
 					IFile ifileClassFile = javaProject.getProject().getFile(outputLocation);
 					File classFile = ifileClassFile.getLocation().toFile();
 					long classLastModified = classFile.lastModified();
-					GroovyPlugin.trace("modify time for src file " + key + " is " + srcLastModified
-							+ " modified time for class file " + classFile.getAbsolutePath() + " is "
+					GroovyPlugin.trace("modify time for src file " + key + " is " + srcLastModified);
+					GroovyPlugin.trace("modified time for class file " + classFile.getAbsolutePath() + " is "
 							+ classLastModified);
 					if (classLastModified < srcLastModified) {
 						filesToBuild.add(file);
