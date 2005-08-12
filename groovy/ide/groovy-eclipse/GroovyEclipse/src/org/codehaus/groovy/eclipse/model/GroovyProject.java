@@ -62,7 +62,10 @@ public class GroovyProject {
 	public static final String GROOVY_ERROR_MARKER = "org.codehaus.groovy.eclipse.groovyFailure";
 	private List listeners = new ArrayList();
 	private List filesToBuild = new ArrayList();
-	
+
+	// True if we are waiting for the user to respond to question to add groovy support to project
+	private volatile boolean pendingResponse = false;
+
 
 	class AddGroovySupport implements Runnable {
 		final IProject project;
@@ -88,6 +91,9 @@ public class GroovyProject {
 			} catch (CoreException e) {
 				plugin.logException("failed to add groovy support", e);
 			} finally {
+				synchronized (GroovyProject.this) {
+					pendingResponse = false;
+				}
 				plugin.listenToChanges();
 			}
 		}
@@ -394,6 +400,7 @@ public class GroovyProject {
 	}
 
 	private void fireGroovyFileBuilt(IFile file, CompileUnit unit) {
+		trace(file.getName() + " has been built");
 		Display.getDefault().asyncExec(new FireFileBuiltAction(file, unit));
 	}
 
@@ -421,10 +428,10 @@ public class GroovyProject {
 		Preferences preferences = plugin.getPluginPreferences();
 		IProject project = resource.getProject();
 		boolean alreadyAsked = preferences.getBoolean(project.getName()+ "NoSupport");
-		
-		if (!project.exists() || project.hasNature(GroovyNature.GROOVY_NATURE)|| alreadyAsked)
+		if (pendingResponse || !project.exists()
+				|| project.hasNature(GroovyNature.GROOVY_NATURE) || alreadyAsked)
 			return;
-		
+		pendingResponse = true;
 		AddGroovySupport support = new AddGroovySupport(project);
 		Display.getDefault().asyncExec(support);
 	}
