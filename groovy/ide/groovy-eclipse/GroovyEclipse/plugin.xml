@@ -14,7 +14,7 @@
       <library name="lib/asm-2.0.jar">
          <export name="*"/>
       </library>
-      <library name="lib/groovy-1.0-jsr-02.jar">
+      <library name="lib/groovy-1.0-jsr-03.jar">
          <export name="*"/>
       </library>
       <library name="lib/antlr-2.7.5.jar"/>
