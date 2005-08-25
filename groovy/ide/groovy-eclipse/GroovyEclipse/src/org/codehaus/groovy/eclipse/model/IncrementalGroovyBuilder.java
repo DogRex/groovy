@@ -88,16 +88,26 @@ public class IncrementalGroovyBuilder implements IResourceVisitor {
 			String extension = resource.getFileExtension();
 			IFile file = (IFile) resource;
 			if (extension != null && extension.equalsIgnoreCase("groovy")) {
-				// if we dont have a compilation unit , do a fast compile
-				// without generating any class files
-				// to get the class info
-				//GroovyPlugin.trace("looking for matching class file");
+				/*
+				 * If we dont have a compilation unit, do a fast compile
+				 * without generating any class files to get the class info
+				 */
 				String key = file.getFullPath().toString();
+				GroovyPlugin.trace("Looking for matching class file: " + key);
 				if (!compilationUnits.containsKey(key)) {
 					groovyPrject.compileGroovyFile(file, false);
 				}
 				CompileUnit compileUnit = (CompileUnit) compilationUnits.get(key);
-				long srcLastModified = file.getLocation().toFile().lastModified();
+
+				//FIXME this is a temporary solution to avoid that scripts prevent the
+				// compilation of classes.
+				List classes = compileUnit.getClasses();
+				if (classes.isEmpty()) {
+					GroovyPlugin.trace("No classes found in compile unit for: " + key);
+					// skip this resource's members
+					return false;
+				}
+
 				// find a class file
 				ClassNode classNode = (ClassNode) compileUnit.getClasses().get(0);
 				String className = classNode.getName();
@@ -112,12 +122,13 @@ public class IncrementalGroovyBuilder implements IResourceVisitor {
 					outputLocation = outputLocation.addFileExtension("class");
 					IFile ifileClassFile = javaProject.getProject().getFile(outputLocation);
 					File classFile = ifileClassFile.getLocation().toFile();
+					long srcLastModified = file.getLocation().toFile().lastModified();
 					long classLastModified = classFile.lastModified();
-					GroovyPlugin.trace("modify time for src file " + key + " is " + srcLastModified);
-					GroovyPlugin.trace("modified time for class file " + classFile.getAbsolutePath() + " is "
-							+ classLastModified);
 					if (classLastModified < srcLastModified) {
+						GroovyPlugin.trace("SOURCE FILE " + key + " NEEDS RECOMPILE");
 						filesToBuild.add(file);
+					} else {
+						GroovyPlugin.trace(" class file " + classFile.getAbsolutePath() + " is up to date");
 					}
 				} catch (JavaModelException e) {
 					GroovyPlugin.getPlugin().logException("Faild during an incrementtal build",e);

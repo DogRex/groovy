@@ -102,8 +102,8 @@
             label="Groovy"
             icon="icons/run_groovy_class.gif"
             class="org.codehaus.groovy.eclipse.launchers.GroovyLaunchShortcut"
-            modes="run"
-            id="org.eclipse.jdt.debug.ui.groovyShortcut">
+            modes="run, debug"
+            id="org.codehaus.groovy.eclipse.debug.ui.groovyShortcut">
          <perspective
                id="org.eclipse.jdt.ui.JavaPerspective">
          </perspective>
@@ -122,13 +122,11 @@
          id="groovyFailure"
          name="GroovyFailureMarker"
          point="org.eclipse.core.resources.markers">
-      <super
-            type="org.eclipse.jdt.core.problem">
-      </super>
-      <persistent
-            value="true">
-      </persistent>
+      <super type="org.eclipse.core.resources.problemmarker"/>
+      <super type="org.eclipse.core.resources.textmarker"/>
+      <persistent value="true" />
    </extension>
+   
    <extension
          point="org.eclipse.ui.editors">
       <editor
@@ -174,7 +172,7 @@
             preferredPerspectives="org.eclipse.jdt.ui.JavaPerspective"
             id="org.codehaus.groovy.eclipse.wizards.newTestWizard">
          <description>
-            Create a new Groovy Class
+            Create a new Groovy Test Class
          </description>
       </wizard>
    </extension>

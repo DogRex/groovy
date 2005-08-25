@@ -126,9 +126,11 @@ public class GroovyProject {
 			
 			filesToBuild.clear();
 			if (kind == IncrementalProjectBuilder.FULL_BUILD) {
+				trace("FULL BUILD");
 				javaProject.getProject().accept(
 						new FullGroovyBuilder(filesToBuild));
 			} else {
+				trace("INCREMENTAL BUILD");
 				javaProject.getProject().accept(
 						new IncrementalGroovyBuilder(javaProject, compilationUnits, this, filesToBuild));
 			}
@@ -138,7 +140,7 @@ public class GroovyProject {
 				IFile file = (IFile) iter.next();
 				monitor.setTaskName("Compiling "+file.getName());
 				GroovyPlugin.trace("Compiling "+file.getName());
-				compileGroovyFile(file,true);
+				compileGroovyFile(file, true);
 				monitor.worked(1);
 			}
 			System.out.println("compile of " + compilationUnits.size() + " took "
@@ -165,23 +167,23 @@ public class GroovyProject {
 				}
 			}
 		});
-		IFile file = null;
-		for (Iterator iter = filesToBuild.iterator(); iter.hasNext();) {
-			file = (IFile) iter.next();
-			try {
-				file.deleteMarkers(GROOVY_ERROR_MARKER, false, IResource.DEPTH_INFINITE); //$NON-NLS-1$
-			} catch (CoreException e1) {
-				e1.printStackTrace();
-			}
-			GroovyPlugin.trace("deleted markers from " + file.getFullPath());
-			trace("Adding source: " + file.getLocation().toFile());
-			compilationUnit.addSource(file.getLocation().toFile());
-		}
-		try {
-			compilationUnit.compile();
-		} catch (Exception e) {
-			handleCompilationError(file, e);
-		}
+//		IFile file = null;
+//		for (Iterator iter = filesToBuild.iterator(); iter.hasNext();) {
+//			file = (IFile) iter.next();
+//			try {
+//				file.deleteMarkers(GROOVY_ERROR_MARKER, false, IResource.DEPTH_INFINITE); //$NON-NLS-1$
+//			} catch (CoreException e1) {
+//				e1.printStackTrace();
+//			}
+//			GroovyPlugin.trace("deleted markers from " + file.getFullPath());
+//			trace("Adding source: " + file.getLocation().toFile());
+//			compilationUnit.addSource(file.getLocation().toFile());
+//		}
+//		try {
+//			compilationUnit.compile();
+//		} catch (Exception e) {
+//			handleCompilationError(file, e);
+//		}
 	}
 
 	private void setOutputDirectory(IJavaProject javaProject) throws JavaModelException {
@@ -229,7 +231,7 @@ public class GroovyProject {
 		try {
 			file.deleteMarkers(GROOVY_ERROR_MARKER, false, IResource.DEPTH_INFINITE); //$NON-NLS-1$
 			GroovyPlugin.trace("deleted markers from " + file.getFullPath());
-			GroovyPlugin.trace(generateClassFiles ? " " : "fast " + "compiling " + file.getFullPath());
+			GroovyPlugin.trace((generateClassFiles ? "" : "fast ") + "compiling " + file.getFullPath());
 			CompilationUnit compilationUnit = createCompilationUnit("");
 			compilationUnit.addSource(file.getLocation().toFile());
 			compilationUnit.compile(generateClassFiles ? Phases.ALL : Phases.CANONICALIZATION);
@@ -275,15 +277,15 @@ public class GroovyProject {
 
     /**
 	 * 
-	 * @param resource
+	 * @param file
 	 * @param e
 	 */
-	private void handleCompilationError(IResource resource, Exception e) {
+	private void handleCompilationError(IFile file, Exception e) {
 		GroovyPlugin.trace("compilation error : " + e.getMessage());
 		try {
-			resource.getWorkspace().run(new AddErrorMarker(resource, e), null);
+			file.getWorkspace().run(new AddErrorMarker(file, e), null);
 		} catch (CoreException ce) {
-			GroovyPlugin.getPlugin().logException("error compiling " + resource.getName(), ce);
+			GroovyPlugin.getPlugin().logException("error compiling " + file.getName(), ce);
 		}
 	}
 

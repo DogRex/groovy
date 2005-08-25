@@ -33,6 +33,7 @@ public class GroovyBuilder extends IncrementalProjectBuilder {
 		if (monitor == null) {
 			monitor = new NullProgressMonitor();
 		}
+		GroovyPlugin.trace("GroovyBuilder.build project: " + javaProject.getProject().getName());
 		GroovyModel.getModel().buildGroovyContent(javaProject, monitor, kind);
 		return null;
 	}
