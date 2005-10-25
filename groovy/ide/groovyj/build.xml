@@ -320,8 +320,8 @@
         <copy todir="${irida.classes.dir}" overwrite="true" preservelastmodified="true">
             <fileset dir="${src.etc.dir}" excludes="styles/**/*, ${binary.extensions}, **/*.xcf"/>
             <filterset>
-                <filter token="PROJECT.IDEA.SINCE-BUILD" value="3429"/>
-                <filter token="PROJECT.IDEA.UNTIL-BUILD" value="3550"/>
+                <filter token="PROJECT.IDEA.SINCE-BUILD" value="3500"/>
+                <filter token="PROJECT.IDEA.UNTIL-BUILD" value="3600"/>
                 <filter token="PROJECT.VERSION" value="${project.version} (Irida)"/>
             </filterset>
             <filterset refid="project.variables"/>
