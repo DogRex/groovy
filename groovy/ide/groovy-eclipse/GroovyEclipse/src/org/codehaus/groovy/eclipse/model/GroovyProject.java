@@ -309,9 +309,9 @@ public class GroovyProject {
 		String elementName = "";
 		if (isTestCaseClass(classNode)) {
 			elementName = "junit.textui.TestRunner";
-			args = new String[]{classNode.getName()};
+			args = new String[]{classNode.getType().getName()};
 		} else {
-			elementName = classNode.getName();
+			elementName = classNode.getType().getName();
 		}
 		runner.run(elementName, args, javaProject);
 	}
@@ -341,7 +341,7 @@ public class GroovyProject {
 			List classes = unit.getClasses();
 			for (Iterator iterator = classes.iterator(); iterator.hasNext();) {
 				ClassNode classNode = (ClassNode) iterator.next();
-				if (classNode.getName().equals(className)) {
+				if (classNode.getType().getName().equals(className)) {
 					runGroovyMain(unit, args);
 					return;
 				}
@@ -361,11 +361,11 @@ public class GroovyProject {
 				for (Iterator methoodIterator = mainMethods.iterator(); methoodIterator.hasNext();) {
 					MethodNode methodNode = (MethodNode) methoodIterator.next();
 					if (methodNode != null && methodNode.isStatic() && methodNode.isVoidMethod()) {
-						results.add(classNode.getName());
+						results.add(classNode.getType().getName());
 					}
 				}
 				if (isTestCaseClass(classNode)) {
-					results.add(classNode.getName());
+					results.add(classNode.getType().getName());
 				}
 			}
 		}

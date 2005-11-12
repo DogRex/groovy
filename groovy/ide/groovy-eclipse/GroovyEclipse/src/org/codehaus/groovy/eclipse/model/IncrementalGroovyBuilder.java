@@ -110,7 +110,7 @@ public class IncrementalGroovyBuilder implements IResourceVisitor {
 
 				// find a class file
 				ClassNode classNode = (ClassNode) compileUnit.getClasses().get(0);
-				String className = classNode.getName();
+				String className = classNode.getType().getName();
 				try {
 					IPath outputLocation = javaProject.getOutputLocation();
 					outputLocation = outputLocation.removeFirstSegments(1);
