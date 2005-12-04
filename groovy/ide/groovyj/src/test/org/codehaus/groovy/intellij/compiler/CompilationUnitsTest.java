@@ -199,6 +199,7 @@ public class CompilationUnitsTest extends GroovyjTestCase {
             if (exception != null) {
                 throw exception;
             }
+            dequeued();
         }
     }
 
