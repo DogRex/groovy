@@ -65,7 +65,7 @@
 
         <condition property="clover.available">
             <and>
-                <available classname="com.cenqua.clover.tasks.CloverTask" classpathref="clover.classpath"/>
+                <available file="${clover.lib.dir}/clover.jar" type="file"/>
                 <available file="${clover.lib.dir}/clover.license" type="file"/>
             </and>
         </condition>
