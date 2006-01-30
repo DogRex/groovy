@@ -10,14 +10,16 @@ import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.IWordDetector;
 import org.eclipse.jface.text.rules.MultiLineRule;
 import org.eclipse.jface.text.rules.RuleBasedPartitionScanner;
+import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WordRule;
 
 public class GroovyPartitionScanner extends RuleBasedPartitionScanner {
 
 	public final static String GROOVY_MULTILINE_COMMENT= "__groovy_multiline_comment"; //$NON-NLS-1$
+    public final static String GROOVY_SINGLELINE_STRINGS= "__groovy_singleline_string"; //$NON-NLS-1$
 	public final static String GROOVY_MULTILINE_STRINGS= "__groovy_multiline_string"; //$NON-NLS-1$
-	public final static String[] GROOVY_PARTITION_TYPES= new String[] { GROOVY_MULTILINE_COMMENT,GROOVY_MULTILINE_STRINGS};
+	public final static String[] GROOVY_PARTITION_TYPES= new String[] { GROOVY_MULTILINE_COMMENT,GROOVY_MULTILINE_STRINGS,GROOVY_SINGLELINE_STRINGS};
 
 	/**
 	 * Detector for empty comments.
@@ -74,7 +76,8 @@ public class GroovyPartitionScanner extends RuleBasedPartitionScanner {
 		super();
 
 		IToken comment= new Token(GROOVY_MULTILINE_COMMENT);
-		IToken string = new Token(GROOVY_MULTILINE_STRINGS);
+		IToken mString = new Token(GROOVY_MULTILINE_STRINGS);
+        IToken sString = new Token(GROOVY_SINGLELINE_STRINGS);
 
 		List rules= new ArrayList();
 
@@ -84,8 +87,10 @@ public class GroovyPartitionScanner extends RuleBasedPartitionScanner {
 
 		// Add rule for strings and character constants.
 //		rules.add(new SingleLineRule("\"", "\"", Token.UNDEFINED, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
-		rules.add(new MultiLineRule("'", "'", string, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
-		rules.add(new MultiLineRule("\"", "\"", string, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
+		rules.add(new SingleLineRule("'", "'", sString, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
+        rules.add(new MultiLineRule("\"\"\"", "\"\"\"", mString, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
+        rules.add(new SingleLineRule("\"", "\"", sString, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
+        
 
 		// Add special case word rule.
 		rules.add(new WordPredicateRule(comment));

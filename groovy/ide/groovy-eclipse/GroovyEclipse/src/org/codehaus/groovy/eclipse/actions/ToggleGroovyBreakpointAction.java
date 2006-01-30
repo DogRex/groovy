@@ -65,6 +65,10 @@ public class ToggleGroovyBreakpointAction extends Action implements IAction {
         } catch (CoreException e) {
             e.printStackTrace();
         }
+        
+        IBreakpointManager mgr = DebugPlugin.getDefault().getBreakpointManager();
+        
+
     }
 
     /**

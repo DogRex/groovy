@@ -143,7 +143,7 @@ public class GroovyProject {
 				compileGroovyFile(file, true);
 				monitor.worked(1);
 			}
-			System.out.println("compile of " + compilationUnits.size() + " took "
+			System.out.println("compile of " + filesToBuild.size() + " took "
 					+ (System.currentTimeMillis() - start));
 		} catch (Exception e) {
 			monitor.worked(1);
@@ -309,9 +309,9 @@ public class GroovyProject {
 		String elementName = "";
 		if (isTestCaseClass(classNode)) {
 			elementName = "junit.textui.TestRunner";
-			args = new String[]{classNode.getType().getName()};
+			args = new String[]{classNode.getName()};
 		} else {
-			elementName = classNode.getType().getName();
+			elementName = classNode.getName();
 		}
 		runner.run(elementName, args, javaProject);
 	}
@@ -321,12 +321,12 @@ public class GroovyProject {
 	 * @return
 	 */
 	private boolean isTestCaseClass(ClassNode classNode) {
-		ClassNode parent = classNode.getSuperClassNode();
+		ClassNode parent = classNode.getSuperClass();
 		while (parent != null) {
 			if (parent.getNameWithoutPackage().equals("TestCase")) {
 				return true;
 			}
-			parent = parent.getSuperClassNode();
+			parent = parent.getSuperClass();
 		}
 		return false;
 	}
@@ -341,7 +341,7 @@ public class GroovyProject {
 			List classes = unit.getClasses();
 			for (Iterator iterator = classes.iterator(); iterator.hasNext();) {
 				ClassNode classNode = (ClassNode) iterator.next();
-				if (classNode.getType().getName().equals(className)) {
+				if (classNode.getName().equals(className)) {
 					runGroovyMain(unit, args);
 					return;
 				}
@@ -361,11 +361,11 @@ public class GroovyProject {
 				for (Iterator methoodIterator = mainMethods.iterator(); methoodIterator.hasNext();) {
 					MethodNode methodNode = (MethodNode) methoodIterator.next();
 					if (methodNode != null && methodNode.isStatic() && methodNode.isVoidMethod()) {
-						results.add(classNode.getType().getName());
+						results.add(classNode.getName());
 					}
 				}
 				if (isTestCaseClass(classNode)) {
-					results.add(classNode.getType().getName());
+					results.add(classNode.getName());
 				}
 			}
 		}

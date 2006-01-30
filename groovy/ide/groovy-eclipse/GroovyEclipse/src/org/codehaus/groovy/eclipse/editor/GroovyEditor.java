@@ -21,16 +21,20 @@ public class GroovyEditor extends AbstractDecoratedTextEditor{
 	 */
 	public Object getAdapter(Class adapter) {
 		if (adapter.equals(IContentOutlinePage.class)) {
-			return new GroovyContentOutline((IFile) getEditorInput().getAdapter(IFile.class));
+		    IFile file = (IFile) getEditorInput().getAdapter(IFile.class);
+		    if (file!=null) return new GroovyContentOutline(file);
 		}
 		return super.getAdapter(adapter);
 	}
+    
 	public void dispose() {
 		colorManager.dispose();
 		super.dispose();
 	}
+    
 	protected void editorContextMenuAboutToShow(IMenuManager menu) {
 		super.editorContextMenuAboutToShow(menu);
 		addAction(menu, "org.codehaus.groovy.eclipse.actions.RunGroovy");
 	}
+    
 }
