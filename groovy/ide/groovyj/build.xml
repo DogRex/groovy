@@ -1,4 +1,4 @@
-<project name="GroovyJ" default="build.all" basedir=".">
+<project name="GroovyJ" default="build" basedir=".">
 
     <target name="check.java.version">
         <echo taskname="java.version" message="${java.version}"/>
@@ -39,18 +39,17 @@
         <property name="src.java.dir" value="src/java"/>
         <property name="src.test.dir" value="src/test"/>
 
-        <property name="lib.dir" value="lib"/>
-        <property name="lib.compile.dir" value="${lib.dir}/compile"/>
-        <property name="lib.runtime.dir" value="${lib.dir}/runtime"/>
+        <property name="lib.compile.dir" value="lib/compile"/>
+        <property name="lib.runtime.dir" value="lib/runtime"/>
 
         <property name="build.dir" value="build"/>
         <property name="classes.dir" value="${build.dir}/classes"/>
         <property name="dist.dir" value="${build.dir}/dist"/>
+
         <property name="test.classes.dir" value="${build.dir}/test-classes"/>
         <property name="test.results.dir" value="${build.dir}/test-results"/>
         <property name="test.reports.dir" value="${build.dir}/test-reports"/>
 
-        <property name="irida.home" value="${lib.compile.dir}/irida"/>
         <property name="irida.classes.dir" value="${classes.dir}/irida"/>
         <property name="irida.test.classes.dir" value="${test.classes.dir}/irida"/>
 
@@ -150,19 +149,9 @@
     </target>
 
     <target name="irida.available" depends="check.irida.available" unless="irida.available">
-        <fail>IntelliJ IDEA (Irida) is not available. Please either start with 'ant -Dirida.home=/path/to/irida' or copy
-        $IDEA_HOME/lib/annotations.jar,
-        $IDEA_HOME/lib/boot.jar,
-        $IDEA_HOME/lib/commons-collections.jar,
-        $IDEA_HOME/lib/extensions.jar,
-        $IDEA_HOME/lib/forms_rt.jar,
-        $IDEA_HOME/lib/icons.jar,
-        $IDEA_HOME/lib/idea.jar,
-        $IDEA_HOME/lib/openapi.jar,
-        $IDEA_HOME/lib/picocontainer.jar,
-        $IDEA_HOME/lib/trove4j.jar,
-        $IDEA_HOME/lib/xstream.jar
-        to ${irida.home}/lib.
+        <fail>
+            IntelliJ IDEA 5.1 is not available. Please set the irida.home system property to the path to
+            your IntelliJ IDEA 5.1 installation.
         </fail>
     </target>
 
@@ -320,8 +309,8 @@
         <copy todir="${irida.classes.dir}" overwrite="true" preservelastmodified="true">
             <fileset dir="${src.etc.dir}" excludes="styles/**/*, ${binary.extensions}, **/*.xcf"/>
             <filterset>
-                <filter token="PROJECT.IDEA.SINCE-BUILD" value="3500"/>
-                <filter token="PROJECT.IDEA.UNTIL-BUILD" value="4100"/>
+                <filter token="PROJECT.IDEA.SINCE-BUILD" value="4155"/>
+                <filter token="PROJECT.IDEA.UNTIL-BUILD" value="4999"/>
                 <filter token="PROJECT.VERSION" value="${project.version} (Irida)"/>
             </filterset>
             <filterset refid="project.variables"/>
@@ -364,7 +353,7 @@
         <delete file="${dist.dir}/${distfile.name}-irida.jar"/>
     </target>
 
-    <target name="build.all" description="Creates all installable plug-in distributions"
+    <target name="build" description="Creates all installable plug-in distributions"
             depends="clean, antlr.clean, with.clover, test.reports.irida, coverage.reports, coverage.check, without.clover, zip.irida">
         <buildnumber/>
     </target>
