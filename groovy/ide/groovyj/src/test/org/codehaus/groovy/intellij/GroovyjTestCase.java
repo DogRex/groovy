@@ -1,7 +1,7 @@
 /*
  * $Id$
  *
- * Copyright (c) 2005 The Codehaus - http://groovy.codehaus.org
+ * Copyright (c) 2005-2006 The Codehaus - http://groovy.codehaus.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -92,15 +92,15 @@ public abstract class GroovyjTestCase extends MockObjectTestCase {
         };
     }
 
-    protected Constraint isSemanticallyEqualTo(Object operand) {
-        return new IsSemanticallyEqual(new XStream(), operand);
+    protected Constraint equivalent(Object operand) {
+        return new IsEquivalent(new XStream(), operand);
     }
 
-    private static class IsSemanticallyEqual extends IsEqual {
+    private static class IsEquivalent extends IsEqual {
 
         private final XStream xStream;
 
-        public IsSemanticallyEqual(XStream xStream, Object expected) {
+        private IsEquivalent(XStream xStream, Object expected) {
             super(xStream.toXML(expected));
             this.xStream = xStream;
         }
@@ -271,7 +271,7 @@ public abstract class GroovyjTestCase extends MockObjectTestCase {
         private final MockObjectTestCase testCase;
         private final Mock mockVirtualFile;
 
-        public VirtualFileBuilder(MockObjectTestCase testCase) {
+        private VirtualFileBuilder(MockObjectTestCase testCase) {
             this.testCase = testCase;
             mockVirtualFile = testCase.mock(VirtualFile.class);
         }
