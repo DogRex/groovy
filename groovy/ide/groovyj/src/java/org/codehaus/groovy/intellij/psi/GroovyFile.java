@@ -24,7 +24,7 @@ import com.intellij.lexer.Lexer;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.FileViewProvider;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.impl.source.PsiFileImpl;
 import com.intellij.psi.impl.source.tree.FileElement;
@@ -44,12 +44,8 @@ public class GroovyFile extends PsiFileImpl implements GroovyElement {
 
     private static final Language LANGUAGE = GroovyLanguage.findOrCreate();
 
-    public GroovyFile(Project project, VirtualFile file) {
-        super(project, LANGUAGE.getParserDefinition().getFileNodeType(), FILE_TEXT_CHAMELEON, file);
-    }
-
-    public GroovyFile(Project project, String name, CharSequence text) {
-        super(project, createFileElement(project, text), LANGUAGE.getParserDefinition().getFileNodeType(), FILE_TEXT_CHAMELEON, name);
+    public GroovyFile(FileViewProvider fileViewProvider, Language language) {
+        super(language.getParserDefinition().getFileNodeType(), FILE_TEXT_CHAMELEON, fileViewProvider);
     }
 
     @NotNull

@@ -33,7 +33,7 @@ public class GroovyCommandLineState extends JavaCommandLineState {
     private final GroovyRunConfiguration runConfiguration;
 
     public GroovyCommandLineState(GroovyRunConfiguration runConfiguration,
-                                  RunnerSettings runnerSettings,
+                                  RunnerSettings<GroovyRunConfiguration> runnerSettings,
                                   ConfigurationPerRunnerSettings configurationPerRunnerSettings) {
         super(runnerSettings, configurationPerRunnerSettings);
         this.runConfiguration = runConfiguration;

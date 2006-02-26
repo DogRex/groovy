@@ -24,7 +24,7 @@ import com.intellij.lang.ParserDefinition;
 import com.intellij.lang.PsiParser;
 import com.intellij.lexer.Lexer;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.FileViewProvider;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.impl.source.PsiPlainTextFileImpl;
@@ -33,7 +33,6 @@ import com.intellij.psi.tree.TokenSet;
 
 import org.jetbrains.annotations.NotNull;
 
-import org.codehaus.groovy.intellij.GroovySupportLoader;
 import org.codehaus.groovy.intellij.psi.GroovyElementTypes;
 import org.codehaus.groovy.intellij.psi.GroovyTokenSets;
 
@@ -74,15 +73,9 @@ public class GroovyParserDefinition implements ParserDefinition {
         return new ASTWrapperPsiElement(node);
     }
 
-    public PsiFile createFile(Project project, VirtualFile file) {
+    public PsiFile createFile(FileViewProvider fileViewProvider) {
         // TODO: restore once GroovyFile is functionally usable
-//        return new GroovyFile(project, file);
-        return new PsiPlainTextFileImpl(project, file);
-    }
-
-    public PsiFile createFile(Project project, String name, CharSequence text) {
-        // TODO: restore once GroovyFile is functionally usable
-//        return new GroovyFile(project, name, text);
-        return new PsiPlainTextFileImpl(project, name, GroovySupportLoader.GROOVY, text);
+//        return new GroovyFile(fileViewProvider, GroovyLanguage.findOrCreate());
+        return new PsiPlainTextFileImpl(fileViewProvider);
     }
 }

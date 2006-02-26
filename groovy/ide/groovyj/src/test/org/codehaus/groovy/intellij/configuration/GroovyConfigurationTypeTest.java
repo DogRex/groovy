@@ -109,7 +109,7 @@ public class GroovyConfigurationTypeTest extends GroovyConfigurationTestCase {
     }
 
     public void testCreatesAConfigurationWhenTheGivenLocationPointsToAGroovyScript() {
-        Location stubbedLocation = createStubbedLocationPretendingToPointToAGroovyScript();
+        Location<PsiElement> stubbedLocation = createStubbedLocationPretendingToPointToAGroovyScript();
         RunnerAndConfigurationSettings settings = configurationType.createConfigurationByLocation(stubbedLocation);
         assertNotNull("runner and configuration settings should have been created", settings.getConfiguration());
     }
@@ -136,7 +136,7 @@ public class GroovyConfigurationTypeTest extends GroovyConfigurationTestCase {
         assertEquals("configure by element", true, configurationType.isConfigurationByElement(runConfiguration, null, psiElement));
     }
 
-    private Location createStubbedLocationPretendingToPointToAGroovyScript() {
+    private Location<PsiElement> createStubbedLocationPretendingToPointToAGroovyScript() {
         Mock stubLocation = mock(Location.class);
 
         Mock mockProjectFileIndex = mock(ProjectFileIndex.class);
@@ -158,7 +158,7 @@ public class GroovyConfigurationTypeTest extends GroovyConfigurationTestCase {
         mockProjectFileIndex.expects(once()).method("getModuleForFile").with(same(groovyScriptFile)).will(returnValue(module().build()));;
         stubLocation.stubs().method("getOpenFileDescriptor").will(returnValue(new OpenFileDescriptor(stubbedProject, groovyScriptFile, -1)));
 
-        return (Location) stubLocation.proxy();
+        return (Location<PsiElement>) stubLocation.proxy();
     }
 
     private PsiElement createStubbedPsiElementFromGroovyScript(String scriptPath) {

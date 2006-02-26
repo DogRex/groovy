@@ -18,26 +18,29 @@
 
 package org.codehaus.groovy.intellij.configuration;
 
-import com.intellij.execution.RuntimeConfiguration;
+import com.intellij.execution.configurations.ConfigurationInfoProvider;
 import com.intellij.execution.configurations.ConfigurationPerRunnerSettings;
+import com.intellij.execution.configurations.RunConfigurationBase;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.configurations.RunnerSettings;
 import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.execution.configurations.RuntimeConfigurationException;
 import com.intellij.execution.filters.TextConsoleBuidlerFactory;
+import com.intellij.execution.runners.JavaProgramRunner;
 import com.intellij.execution.runners.RunnerInfo;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.JDOMExternalizable;
 import com.intellij.util.PathUtil;
 
 import org.jdom.Element;
 
 import org.codehaus.groovy.intellij.EditorAPI;
 
-public class GroovyRunConfiguration extends RuntimeConfiguration {
+public class GroovyRunConfiguration extends RunConfigurationBase {
 
     private final EditorAPI editorApi;
     private final GroovyRunConfigurationExternaliser runConfigurationExternaliser;
@@ -49,7 +52,7 @@ public class GroovyRunConfiguration extends RuntimeConfiguration {
     private String moduleName;
 
     public GroovyRunConfiguration(String name, Project project, GroovyConfigurationFactory configurationFactory, EditorAPI editorApi) {
-        super(name, project, configurationFactory);
+        super(project, configurationFactory, name);
 
         this.editorApi = editorApi;
         runConfigurationExternaliser = configurationFactory.getRunConfigurationExternalizer();
@@ -128,6 +131,14 @@ public class GroovyRunConfiguration extends RuntimeConfiguration {
         return new GroovySettingsEditor(getProject());
     }
 
+    public JDOMExternalizable createRunnerSettings(ConfigurationInfoProvider provider) {
+        return null;
+    }
+
+    public SettingsEditor<JDOMExternalizable> getRunnerSettingsEditor(JavaProgramRunner runner) {
+        return null;
+    }
+
     // RunProfile ------------------------------------------------------------------------------------------------------
 
     public void checkConfiguration() throws RuntimeConfigurationException {
@@ -140,7 +151,14 @@ public class GroovyRunConfiguration extends RuntimeConfiguration {
         }
     }
 
-    public RunProfileState getState(DataContext context, RunnerInfo runnerInfo, RunnerSettings runnerSettings,
+    // return modules to compile before run. Null or empty list to make project
+    public Module[] getModules() {
+        return new Module[0];
+    }
+
+    public RunProfileState getState(DataContext dataContext,
+                                    RunnerInfo runnerInfo,
+                                    RunnerSettings runnerSettings,
                                     ConfigurationPerRunnerSettings configurationSettings) {
         GroovyCommandLineState commandLineState = new GroovyCommandLineState(this, runnerSettings, configurationSettings);
         commandLineState.setConsoleBuilder(TextConsoleBuidlerFactory.getInstance().createBuilder(getProject()));

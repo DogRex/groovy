@@ -50,9 +50,6 @@
         <property name="test.results.dir" value="${build.dir}/test-results"/>
         <property name="test.reports.dir" value="${build.dir}/test-reports"/>
 
-        <property name="irida.classes.dir" value="${classes.dir}/irida"/>
-        <property name="irida.test.classes.dir" value="${test.classes.dir}/irida"/>
-
         <property name="clover.dir" value="clover"/>
         <property name="clover.lib.dir" value="${user.home}/.ant/lib"/>
         <property name="clover.reports" value="${build.dir}/clover-reports"/>
@@ -70,24 +67,19 @@
         </condition>
 
         <path id="compile.classpath">
+            <pathelement location="${classes.dir}"/>
             <fileset dir="${lib.compile.dir}">
                 <include name="**/*.jar"/>
-                <exclude name="irida/**/*.jar"/>
             </fileset>
-        </path>
-
-        <path id="irida.compile.classpath">
-            <fileset dir="${irida.home}">
+            <fileset dir="${idea.home}">
                 <include name="lib/*.jar"/>
             </fileset>
-            <pathelement location="${irida.classes.dir}"/>
-            <path refid="compile.classpath"/>
         </path>
 
-        <path id="irida.test.classpath">
-            <pathelement location="${irida.test.classes.dir}"/>
+        <path id="test.classpath">
+            <pathelement location="${test.classes.dir}"/>
             <path refid="clover.classpath"/>
-            <path refid="irida.compile.classpath"/>
+            <path refid="compile.classpath"/>
         </path>
 
         <filterset id="project.variables">
@@ -116,42 +108,48 @@
         </filterset>
     </target>
 
-    <target name="check.irida.available" depends="initialise" >
-        <condition property="irida.available">
+    <target name="check.idea.available" depends="initialise" >
+        <condition property="idea.available">
             <and>
+                <available classname="com.intellij.ide.plugins.IdeaPluginDescriptor"
+                           classpathref="compile.classpath"/>
+
                 <available classname="com.intellij.lang.Language"
-                           classpathref="irida.compile.classpath"/>
+                           classpathref="compile.classpath"/>
 
                 <available classname="com.intellij.lexer.LexerBase"
-                           classpathref="irida.compile.classpath"/>
+                           classpathref="compile.classpath"/>
 
                 <available classname="com.intellij.formatting.FormattingModelBuilder"
-                           classpathref="irida.compile.classpath"/>
+                           classpathref="compile.classpath"/>
+
+                <available classname="com.intellij.openapi.editor.colors.CodeInsightColors"
+                           classpathref="compile.classpath"/>
 
                 <available classname="com.intellij.psi.tree.IFileElementType"
-                           classpathref="irida.compile.classpath"/>
+                           classpathref="compile.classpath"/>
 
                 <available classname="org.picocontainer.defaults.DefaultPicoContainer"
-                           classpathref="irida.compile.classpath"/>
+                           classpathref="compile.classpath"/>
 
                 <available classname="gnu.trove.TIntObjectHashMap"
-                           classpathref="irida.compile.classpath"/>
+                           classpathref="compile.classpath"/>
 
                 <available classname="org.apache.commons.collections.MultiHashMap"
-                           classpathref="irida.compile.classpath"/>
+                           classpathref="compile.classpath"/>
 
                 <not>
                     <available classname="com.intellij.codeFormatting.PseudoTextBuilder"
-                               classpathref="irida.compile.classpath"/>
+                               classpathref="compile.classpath"/>
                 </not>
             </and>
         </condition>
     </target>
 
-    <target name="irida.available" depends="check.irida.available" unless="irida.available">
+    <target name="idea.available" depends="check.idea.available" unless="idea.available">
         <fail>
-            IntelliJ IDEA 5.1 is not available. Please set the irida.home system property to the path to
-            your IntelliJ IDEA 5.1 installation.
+            IntelliJ IDEA 6.0 (Demetra) is not available. Please set the 'idea.home' system property to the path to
+            your IntelliJ IDEA 6.0 installation.
         </fail>
     </target>
 
@@ -167,7 +165,7 @@
         </delete>
     </target>
 
-    <target name="antlr" depends="irida.available">
+    <target name="antlr" depends="idea.available">
         <copy file="../../groovy-core/src/main/org/codehaus/groovy/antlr/groovy.g"
               todir="${src.java.dir}/org/codehaus/groovy/intellij/language/parser"/>
 
@@ -195,52 +193,52 @@
         </exec>
 
         <antlr target="${src.java.dir}/org/codehaus/groovy/intellij/language/parser/GroovyRecognizerTree.patched.g" fork="yes">
-            <classpath refid="irida.compile.classpath"/>
+            <classpath refid="compile.classpath"/>
         </antlr>
     </target>
 
-    <target name="tree.walker" depends="irida.available">
+    <target name="tree.walker" depends="idea.available">
         <antlr target="${src.java.dir}/org/codehaus/groovy/intellij/language/parser/groovy.tree.g" fork="yes">
-            <classpath refid="irida.compile.classpath"/>
+            <classpath refid="compile.classpath"/>
         </antlr>
     </target>
 
-    <target name="antlr.psi" depends="irida.available">
+    <target name="antlr.psi" depends="idea.available">
         <antlr target="${src.java.dir}/org/codehaus/groovy/intellij/language/parser/groovy.psi.g" fork="yes">
-            <classpath refid="irida.compile.classpath"/>
+            <classpath refid="compile.classpath"/>
         </antlr>
     </target>
 
-    <target name="compile.irida" depends="antlr.psi">
-        <mkdir dir="${irida.classes.dir}"/>
-        <javac srcdir="${src.java.dir}" destdir="${irida.classes.dir}" debug="on" source="1.5" target="jsr14">
-            <classpath refid="irida.compile.classpath"/>
+    <target name="compile.plugin" depends="antlr.psi">
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${src.java.dir}" destdir="${classes.dir}" debug="on" source="1.5" target="1.5">
+            <classpath refid="compile.classpath"/>
         </javac>
-        <copy todir="${irida.classes.dir}" overwrite="true" preservelastmodified="true">
+        <copy todir="${classes.dir}" overwrite="true" preservelastmodified="true">
             <fileset dir="${src.etc.dir}" includes="${binary.extensions}"/>
         </copy>
     </target>
 
-    <target name="compile.tests.irida" depends="compile.irida">
-        <mkdir dir="${irida.test.classes.dir}"/>
-        <javac srcdir="${src.test.dir}" destdir="${irida.test.classes.dir}" debug="on" source="1.5" target="jsr14">
-            <classpath refid="irida.test.classpath"/>
+    <target name="compile.tests" depends="compile.plugin">
+        <mkdir dir="${test.classes.dir}"/>
+        <javac srcdir="${src.test.dir}" destdir="${test.classes.dir}" debug="on" source="1.5" target="1.5">
+            <classpath refid="test.classpath"/>
         </javac>
     </target>
 
-    <target name="test.irida" depends="compile.tests.irida">
+    <target name="run.tests" depends="compile.tests">
         <mkdir dir="${test.results.dir}"/>
 
         <junit fork="true" forkmode="once" errorProperty="tests.failed" failureProperty="tests.failed"
                haltonfailure="false" haltonerror="false" showoutput="true" printsummary="withOutAndErr"
                dir="${basedir}" includeantruntime="true" newenvironment="false">
 
-            <jvmarg value="-Xbootclasspath/p:${irida.home}/lib/boot.jar"/>
-            <classpath refid="irida.test.classpath"/>
+            <jvmarg value="-Xbootclasspath/p:${idea.home}/lib/boot.jar"/>
+            <classpath refid="test.classpath"/>
             <formatter type="brief" usefile="false"/>
 
             <batchtest todir="${test.results.dir}">
-                <fileset dir="${irida.test.classes.dir}">
+                <fileset dir="${test.classes.dir}">
                     <include name="**/*Test.class"/>
                     <include name="**/Create*TestCase.class"/>
                 </fileset>
@@ -249,7 +247,7 @@
         </junit>
     </target>
 
-    <target name="test.reports.irida" depends="test.irida">
+    <target name="test.reports" depends="run.tests">
         <mkdir dir="${test.reports.dir}"/>
 
         <junitreport todir="${test.results.dir}">
@@ -305,13 +303,13 @@
         <fail message="Coverage criteria not met! Check coverage reports."/>
     </target>
 
-    <target name="jar.irida" depends="compile.irida" description="Packages up the plug-in as a jar file for IDEA Irida">
-        <copy todir="${irida.classes.dir}" overwrite="true" preservelastmodified="true">
+    <target name="jar" depends="compile.plugin" description="Creates an archive of the plug-in as a jar file">
+        <copy todir="${classes.dir}" overwrite="true" preservelastmodified="true">
             <fileset dir="${src.etc.dir}" excludes="styles/**/*, ${binary.extensions}, **/*.xcf"/>
             <filterset>
-                <filter token="PROJECT.IDEA.SINCE-BUILD" value="4155"/>
-                <filter token="PROJECT.IDEA.UNTIL-BUILD" value="4999"/>
-                <filter token="PROJECT.VERSION" value="${project.version} (Irida)"/>
+                <filter token="PROJECT.IDEA.SINCE-BUILD" value="5162"/>
+                <filter token="PROJECT.IDEA.UNTIL-BUILD" value="5500"/>
+                <filter token="PROJECT.VERSION" value="${project.version} 6.0 (Demetra)"/>
             </filterset>
             <filterset refid="project.variables"/>
             <filterset refid="timestamp.variables"/>
@@ -320,8 +318,8 @@
         <mkdir dir="${dist.dir}"/>
 
         <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${lib.compile.dir}/jarjar-0.6.jar"/>
-        <jarjar jarfile="${dist.dir}/${distfile.name}-irida.jar" compress="true" update="true">
-            <fileset dir="${irida.classes.dir}">
+        <jarjar jarfile="${dist.dir}/${distfile.name}.jar" compress="true" update="true">
+            <fileset dir="${classes.dir}">
                 <exclude name="**/GroovyFile.class"/>
                 <exclude name="**/GroovyRunConfiguration.class"/>
                 <exclude name="**/GroovySettingsEditor.class"/>
@@ -329,8 +327,8 @@
             <rule pattern="antlr.**" result="groovyjarjarantlr.@1"/>
         </jarjar>
 
-        <jar jarfile="${dist.dir}/${distfile.name}-irida.jar" compress="true" update="true">
-            <fileset dir="${irida.classes.dir}">
+        <jar jarfile="${dist.dir}/${distfile.name}.jar" compress="true" update="true">
+            <fileset dir="${classes.dir}">
                 <include name="**/GroovyFile.class"/>
                 <include name="**/GroovyRunConfiguration.class"/>
                 <include name="**/GroovySettingsEditor.class"/>
@@ -338,37 +336,37 @@
         </jar>
     </target>
 
-    <target name="zip.irida" depends="initialise" description="Packages up the plug-in as a deployable zip file for IntelliJ IDEA (Irida)">
+    <target name="zip" depends="initialise" description="Packages up the plug-in as a deployable zip file">
         <delete failonerror="true">
-            <fileset dir="${irida.classes.dir}" includes="**/*.class"/>
+            <fileset dir="${classes.dir}" includes="**/*.class"/>
         </delete>
 
-        <antcall inheritall="true" target="jar.irida"/>
+        <antcall inheritall="true" target="jar"/>
 
-        <zip compress="true" update="true" destfile="${dist.dir}/${distfile.name}-irida.zip">
-            <zipfileset prefix="${project.name}/lib" file="${dist.dir}/${distfile.name}-irida.jar"/>
+        <zip compress="true" update="true" destfile="${dist.dir}/${distfile.name}.zip">
+            <zipfileset prefix="${project.name}/lib" file="${dist.dir}/${distfile.name}.jar"/>
             <zipfileset prefix="${project.name}/lib" dir="${lib.runtime.dir}"/>
         </zip>
 
-        <delete file="${dist.dir}/${distfile.name}-irida.jar"/>
+        <delete file="${dist.dir}/${distfile.name}.jar"/>
     </target>
 
     <target name="build" description="Creates all installable plug-in distributions"
-            depends="clean, antlr.clean, with.clover, test.reports.irida, coverage.reports, coverage.check, without.clover, zip.irida">
+            depends="clean, antlr.clean, with.clover, test.reports, coverage.reports, coverage.check, without.clover, zip">
         <buildnumber/>
     </target>
 
-    <target name="deploy.irida" depends="zip.irida" if="irida.plugins.dir"
+    <target name="deploy" depends="zip" if="plugins.dir"
             description="Deploys the plug-in into an IntelliJ IDEA installation">
-        <delete dir="${irida.plugins.dir}/${project.name}" failonerror="true"/>
-        <unzip src="${dist.dir}/${distfile.name}-irida.zip" dest="${irida.plugins.dir}"/>
+        <delete dir="${plugins.dir}/${project.name}" failonerror="true"/>
+        <unzip src="${dist.dir}/${distfile.name}-idea.zip" dest="${plugins.dir}"/>
     </target>
 
-    <target name="allow.interactive.plugin.dev" depends="initialise" if="irida.plugins.dir"
+    <target name="allow.interactive.plugin.dev" depends="initialise" if="plugins.dir"
             description="small helper to delete jars from the plugin lib dir that are deployed through
                          the internal plugin devkit but are in the way when running the plugin (ClassCastException)">
         <delete quiet="true">
-            <fileset dir="${irida.plugins.dir}/${project.name}/lib" includes="irida.jar, openapi.jar" />
+            <fileset dir="${plugins.dir}/${project.name}/lib" includes="idea.jar, openapi.jar" />
         </delete>
     </target>
 

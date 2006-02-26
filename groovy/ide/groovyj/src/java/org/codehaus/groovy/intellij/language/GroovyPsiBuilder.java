@@ -205,7 +205,7 @@ public class GroovyPsiBuilder implements PsiBuilder {
             if (productionMarker instanceof StartMarker) {
                 for (;
                      productionMarker.lexemIndex < tokens.size()
-                     && whitespaceTokens.isInSet(tokens.get(productionMarker.lexemIndex).getType());
+                     && whitespaceTokens.contains(tokens.get(productionMarker.lexemIndex).getType());
                      productionMarker.lexemIndex++) {
                     ;
                 }
@@ -219,7 +219,7 @@ public class GroovyPsiBuilder implements PsiBuilder {
             for (int i1 = ((ProductionMarker) markers.get(k - 1)).lexemIndex;
                  productionMarker.lexemIndex > i1
                  && productionMarker.lexemIndex < tokens.size()
-                 && whitespaceTokens.isInSet(tokens.get(productionMarker.lexemIndex - 1).getType());
+                 && whitespaceTokens.contains(tokens.get(productionMarker.lexemIndex - 1).getType());
                  productionMarker.lexemIndex--) {
                 ;
             }
@@ -287,11 +287,11 @@ public class GroovyPsiBuilder implements PsiBuilder {
         }
 
         IElementType elementType = token.getType();
-        if (whitespaceTokens.isInSet(elementType)) {
+        if (whitespaceTokens.contains(elementType)) {
             return new PsiWhiteSpaceImpl(lexer.getBuffer(), token.startOffset, token.endOffset, token.state, charTable);
         }
 
-        if (commentTokens.isInSet(elementType)) {
+        if (commentTokens.contains(elementType)) {
             return new PsiCommentImpl(elementType, lexer.getBuffer(), token.startOffset, token.endOffset, token.state, charTable);
         }
 

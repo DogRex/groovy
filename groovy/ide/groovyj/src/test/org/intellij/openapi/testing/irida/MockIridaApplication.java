@@ -4,9 +4,11 @@ import java.awt.Component;
 
 import org.intellij.openapi.testing.MockApplication;
 
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.openapi.application.ApplicationListener;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.components.BaseComponent;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Key;
@@ -142,6 +144,14 @@ public class MockIridaApplication extends MockUserDataHolder implements MockAppl
 
     public boolean isHeadlessEnvironment() {
         return false;
+    }
+
+    public IdeaPluginDescriptor getPlugin(PluginId id) {
+        return null;
+    }
+
+    public IdeaPluginDescriptor[] getPlugins() {
+        return new IdeaPluginDescriptor[0];
     }
 
     public boolean isDispatchThread() {

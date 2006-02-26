@@ -25,11 +25,9 @@ import org.intellij.openapi.testing.MockApplicationManager;
 import com.intellij.execution.configurations.RuntimeConfigurationException;
 import com.intellij.execution.filters.TextConsoleBuidlerFactory;
 import com.intellij.execution.filters.TextConsoleBuidlerFactoryImpl;
-import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.module.JavaModuleType;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.WebModuleType;
-import com.intellij.openapi.options.SettingsEditor;
 
 import org.jdom.Element;
 
@@ -57,12 +55,7 @@ public class GroovyRunConfigurationTest extends GroovyConfigurationTestCase {
     }
 
     public void testCreatesAConfigurationEditorForAnyGivenProject() {
-        Mock mockActionManager = mock(ActionManager.class);
-        MockApplicationManager.getMockApplication().registerComponent(ActionManager.class, mockActionManager.proxy());
-        mockActionManager.expects(atLeastOnce()).method("createActionPopupMenu").withAnyArguments().will(returnValue(null));
-
-        SettingsEditor configurationEditor = runConfiguration.getConfigurationEditor();
-        assertNotNull("configuration editor", configurationEditor);
+        assertNotNull("configuration editor", runConfiguration.getConfigurationEditor());
     }
 
     public void testThrowsARunConfigurationErrorWhenValidatedAndThePathToAGroovyScriptIsNotDefined() {

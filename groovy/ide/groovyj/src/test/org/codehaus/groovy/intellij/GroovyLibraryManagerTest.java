@@ -21,7 +21,8 @@ package org.codehaus.groovy.intellij;
 import org.intellij.openapi.testing.MockApplication;
 import org.intellij.openapi.testing.MockApplicationManager;
 
-import com.intellij.ide.plugins.PluginDescriptor;
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
+import com.intellij.ide.plugins.IdeaPluginDescriptorImpl;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.impl.libraries.LibraryTablesRegistrarImpl;
 import com.intellij.openapi.roots.libraries.Library;
@@ -35,8 +36,8 @@ import org.jmock.Mock;
 public class GroovyLibraryManagerTest extends GroovyjTestCase {
 
     private final GroovyLibraryManager groovyLibraryManager = new GroovyLibraryManager() {
-        protected PluginDescriptor getPluginDescriptor() {
-            return new PluginDescriptor(null);
+        protected IdeaPluginDescriptor getPluginDescriptor() {
+            return new IdeaPluginDescriptorImpl(null);
         }
     };
 

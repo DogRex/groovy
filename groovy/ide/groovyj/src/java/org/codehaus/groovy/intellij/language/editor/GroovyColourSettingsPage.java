@@ -23,10 +23,10 @@ import java.util.Map;
 
 import javax.swing.Icon;
 
-import com.intellij.codeInsight.CodeInsightColors;
 import com.intellij.debugger.settings.DebuggerColors;
 import com.intellij.ide.highlighter.JavaFileHighlighter;
 import com.intellij.openapi.editor.HighlighterColors;
+import com.intellij.openapi.editor.colors.CodeInsightColors;
 import com.intellij.openapi.editor.colors.ColorKey;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
@@ -124,6 +124,7 @@ public class GroovyColourSettingsPage implements ColorSettingsPage {
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("static_method", CodeInsightAttributes.STATIC_METHOD_ATTRIBUTES);
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("param", CodeInsightAttributes.PARAMETER_ATTRIBUTES);
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("class", CodeInsightAttributes.CLASS_NAME_ATTRIBUTES);
+        ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("typeParameter", CodeInsightAttributes.TYPE_PARAMETER_NAME_ATTRIBUTES);
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("abstractClass", CodeInsightAttributes.ABSTRACT_CLASS_NAME_ATTRIBUTES);
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("interface", CodeInsightAttributes.INTERFACE_NAME_ATTRIBUTES);
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("annotationName", CodeInsightAttributes.ANNOTATION_NAME_ATTRIBUTES);

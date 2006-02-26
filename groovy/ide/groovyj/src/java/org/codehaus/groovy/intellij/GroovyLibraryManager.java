@@ -21,7 +21,7 @@ package org.codehaus.groovy.intellij;
 import java.io.File;
 import java.io.FileFilter;
 
-import com.intellij.ide.plugins.PluginDescriptor;
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.roots.OrderRootType;
@@ -35,7 +35,7 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 public class GroovyLibraryManager {
 
     public void installOrUpgradeGroovyRuntimeAsAGlobalLibraryIfNecessary() {
-        PluginDescriptor pluginDescriptor = getPluginDescriptor();
+        IdeaPluginDescriptor pluginDescriptor = getPluginDescriptor();
         String libraryNamePrefix = "Groovy from GroovyJ ";
         String libraryName = libraryNamePrefix + pluginDescriptor.getVersion();
 
@@ -46,7 +46,7 @@ public class GroovyLibraryManager {
         }
     }
 
-    protected PluginDescriptor getPluginDescriptor() {
+    protected IdeaPluginDescriptor getPluginDescriptor() {
         return PluginManager.getPlugin(PluginId.getId("GroovyJ"));
     }
 
@@ -84,14 +84,14 @@ public class GroovyLibraryManager {
         return library.getModifiableModel();
     }
 
-    private void addJarFilesToLibrary(PluginDescriptor pluginDescriptor, Library.ModifiableModel libraryModel) {
+    private void addJarFilesToLibrary(IdeaPluginDescriptor pluginDescriptor, Library.ModifiableModel libraryModel) {
         for (File jarFile : findJarFiles(pluginDescriptor)) {
             addJarFileToLibrary(jarFile, libraryModel);
         }
         libraryModel.commit();
     }
 
-    private File[] findJarFiles(PluginDescriptor pluginDescriptor) {
+    private File[] findJarFiles(IdeaPluginDescriptor pluginDescriptor) {
         File pluginLibraryPath = new File(pluginDescriptor.getPath(), "lib");
         return pluginLibraryPath.listFiles(new FileFilter() {
             public boolean accept(File file) {
