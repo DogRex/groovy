@@ -11,6 +11,8 @@ import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WhitespaceRule;
 import org.eclipse.jface.text.rules.WordRule;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 
 public class GroovyTagScanner extends RuleBasedScanner {
 	private static String[] keywords = 
@@ -110,7 +112,10 @@ public class GroovyTagScanner extends RuleBasedScanner {
 		
 		IToken keywordToken =
 		new Token(
-				new TextAttribute(manager.getColor(IJavaColorConstants.JAVA_KEYWORD)));
+				new TextAttribute(
+						manager.getColor(IJavaColorConstants.JAVA_KEYWORD), null, SWT.BOLD
+				)
+		);
 		
 		
 		for (int j = 0; j < keywords.length; ++j) {
