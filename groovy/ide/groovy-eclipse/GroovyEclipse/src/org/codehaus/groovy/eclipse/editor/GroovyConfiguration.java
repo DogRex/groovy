@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.codehaus.groovy.eclipse.GroovyPlugin;
-import org.codehaus.groovy.eclipse.editor.GroovySourceViewerConfiguration.Hover;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.ui.text.IJavaColorConstants;
 import org.eclipse.jface.text.BadLocationException;
@@ -24,7 +23,7 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 public class GroovyConfiguration extends SourceViewerConfiguration {
-	    
+
 	private GroovyDoubleClickStrategy doubleClickStrategy;
 	private GroovyTagScanner tagScanner;
 	private ColorManager colorManager;
@@ -37,17 +36,17 @@ public class GroovyConfiguration extends SourceViewerConfiguration {
 			setDefaultReturnToken(new Token(attribute));
 		}
 	}
-	
+
 	public GroovyConfiguration(ColorManager colorManager) {
 		this.colorManager = colorManager;
 	}
 	public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
-		return new String[] { 
-                IDocument.DEFAULT_CONTENT_TYPE, 
+		return new String[] {
+                IDocument.DEFAULT_CONTENT_TYPE,
                 GroovyPartitionScanner.GROOVY_MULTILINE_COMMENT,
                 GroovyPartitionScanner.GROOVY_MULTILINE_STRINGS,
                 GroovyPartitionScanner.GROOVY_SINGLELINE_STRINGS
-		};		
+		};
 	}
 	public ITextDoubleClickStrategy getDoubleClickStrategy(
 		ISourceViewer sourceViewer,
@@ -62,9 +61,9 @@ public class GroovyConfiguration extends SourceViewerConfiguration {
 	 */
 	public String getConfiguredDocumentPartitioning(ISourceViewer sourceViewer) {
 		return GroovyPlugin.GROOVY_PARTITIONING;
-		
+
 	}
-	
+
 	protected GroovyTagScanner getGroovyScanner() {
 		if (tagScanner == null) {
 			tagScanner = new GroovyTagScanner(colorManager);
@@ -79,7 +78,7 @@ public class GroovyConfiguration extends SourceViewerConfiguration {
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
 		PresentationReconciler reconciler = new PresentationReconciler();
 		reconciler.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
-		
+
 		DefaultDamagerRepairer dr = new DefaultDamagerRepairer(getGroovyScanner());
 		reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
 		reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
@@ -92,10 +91,10 @@ public class GroovyConfiguration extends SourceViewerConfiguration {
 		reconciler.setDamager(dr, GroovyPartitionScanner.GROOVY_MULTILINE_STRINGS);
 		reconciler.setRepairer(dr, GroovyPartitionScanner.GROOVY_MULTILINE_STRINGS);
 
-		
+
 		return reconciler;
 	}
-    
+
     public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
         return new MarkerHover();
     }
