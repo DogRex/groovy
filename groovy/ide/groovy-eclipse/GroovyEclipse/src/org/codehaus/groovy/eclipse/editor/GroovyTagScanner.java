@@ -79,7 +79,7 @@ public class GroovyTagScanner extends RuleBasedScanner {
 			new Token(
 				new TextAttribute(manager.getColor(IJavaColorConstants.JAVA_STRING)));
 
-		IRule[] rules = new IRule[5];
+		IRule[] rules = new IRule[6];
 		int i = 0;
 		// Add rule for double quotes
 		rules[i++] = new SingleLineRule("\"", "\"", string, '\\');
@@ -94,6 +94,7 @@ public class GroovyTagScanner extends RuleBasedScanner {
 				new TextAttribute(manager.getColor(IJavaColorConstants.JAVA_SINGLE_LINE_COMMENT)));
 		
 		rules[i++] = new EndOfLineRule("//", slcomment);
+		rules[i++] = new EndOfLineRule("#!", slcomment);
 
 		IToken plainCode =
 			new Token(
