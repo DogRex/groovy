@@ -12,11 +12,12 @@ import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WhitespaceRule;
 import org.eclipse.jface.text.rules.WordRule;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
 
 public class GroovyTagScanner extends RuleBasedScanner {
 	private static String[] keywords = 
-	{   "abstract",
+	{   
+		"@Property",
+		"abstract",
 		"as",
 		"assert",
 		"break",
@@ -101,7 +102,7 @@ public class GroovyTagScanner extends RuleBasedScanner {
 		WordRule keywordsRule = new WordRule(new IWordDetector(){
 			
 			public boolean isWordStart(char c) {
-				return Character.isJavaIdentifierStart(c);
+				return c == '@' || Character.isJavaIdentifierStart(c);
 			}
 
 			public boolean isWordPart(char c) {
