@@ -227,7 +227,7 @@ public class GroovyProject {
 	 * @param file
 	 * @param generateClassFiles
 	 */
-	void compileGroovyFile(IFile file, boolean generateClassFiles) {
+	public void compileGroovyFile(IFile file, boolean generateClassFiles) {
 		try {
 			file.deleteMarkers(GROOVY_ERROR_MARKER, false, IResource.DEPTH_INFINITE); //$NON-NLS-1$
 			GroovyPlugin.trace("deleted markers from " + file.getFullPath());
