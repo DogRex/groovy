@@ -3,12 +3,21 @@
  */
 package org.codehaus.groovy.eclipse.actions;
 
+import java.io.File;
+import java.util.List;
+
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.CompileUnit;
+import org.codehaus.groovy.eclipse.GroovyPlugin;
+import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IBreakpointManager;
 import org.eclipse.debug.core.model.IBreakpoint;
+import org.eclipse.debug.core.model.ILineBreakpoint;
+import org.eclipse.jdt.debug.core.IJavaLineBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaStratumLineBreakpoint;
 import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jface.action.Action;
@@ -37,8 +46,8 @@ public class ToggleGroovyBreakpointAction extends Action implements IAction {
         int lineNumber = fRulerInfo.getLineOfLastMouseButtonActivity() + 1;
         for (int i = 0; i < breakpoints.length; i++) {
             IBreakpoint bp = breakpoints[i];
-            if (bp instanceof IJavaStratumLineBreakpoint) {
-                IJavaStratumLineBreakpoint breakpoint = (IJavaStratumLineBreakpoint) bp;
+            if (bp instanceof IJavaLineBreakpoint) {
+                IJavaLineBreakpoint breakpoint = (IJavaLineBreakpoint) bp;
                 if (breakpoint.getMarker().getResource().equals(resource)) {
                     try {
                         if (breakpoint.getLineNumber() == lineNumber) {
@@ -56,12 +65,23 @@ public class ToggleGroovyBreakpointAction extends Action implements IAction {
     }
 
     protected void createBreakpoint() {
+		GroovyModel model = GroovyModel.getModel();
         IResource resource = getResource();
+		IFile file = (IFile) resource;
+		CompileUnit unit = model.getCompilationUnit(file);
+		List classes = unit.getClasses();
+		ClassNode classNode = (ClassNode) classes.get(0);
+		System.out.println("list="+classes.get(0)+classes.get(0).getClass());
+//		if (unit == null) {
+//			groovyPrject.compileGroovyFile(file, false);
+//		}
         int lineNumber = fRulerInfo.getLineOfLastMouseButtonActivity() + 1;
         try {
-            JDIDebugModel.createStratumBreakpoint(resource, "Groovy", resource
+/*            JDIDebugModel.createStratumBreakpoint(resource, "Groovy", resource
                     .getLocation().toOSString(), null, "*", lineNumber,
                     -1, -1, 0, true, null);
+*/
+        	JDIDebugModel.createLineBreakpoint(resource,classNode.getName(),lineNumber,-1,-1,0,true,null);
         } catch (CoreException e) {
             e.printStackTrace();
         }

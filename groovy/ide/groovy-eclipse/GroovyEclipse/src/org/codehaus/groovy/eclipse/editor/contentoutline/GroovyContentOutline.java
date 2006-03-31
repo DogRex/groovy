@@ -10,6 +10,7 @@ import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.codehaus.groovy.eclipse.model.GroovyBuildListner;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
+import org.codehaus.groovy.eclipse.model.GroovyProject;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -63,6 +64,12 @@ public class GroovyContentOutline extends ContentOutlinePage implements GroovyBu
 
 		GroovyModel model = GroovyModel.getModel();
 		CompileUnit unit = model.getCompilationUnit(file);
+		if (unit == null) {
+			GroovyProject groovyProject = model.getProject(file.getProject());
+			groovyProject.compileGroovyFile(file, true);
+			unit = model.getCompilationUnit(file);
+			GroovyPlugin.trace("recompiling inside of outliner, unit=" + unit);
+		}
 		getTreeViewer().setInput(unit);
 		getTreeViewer().expandAll();
 		model.addBuildListener(this);
