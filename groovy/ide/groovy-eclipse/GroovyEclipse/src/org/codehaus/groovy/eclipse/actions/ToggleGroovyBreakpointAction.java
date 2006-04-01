@@ -10,6 +10,7 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
+import org.codehaus.groovy.eclipse.model.GroovyProject;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -69,18 +70,17 @@ public class ToggleGroovyBreakpointAction extends Action implements IAction {
         IResource resource = getResource();
 		IFile file = (IFile) resource;
 		CompileUnit unit = model.getCompilationUnit(file);
+		if (unit == null) {
+			GroovyProject groovyProject = model.getProject(file.getProject());
+			groovyProject.compileGroovyFile(file, true);
+			unit = model.getCompilationUnit(file);
+			GroovyPlugin.trace("creating compilation unit inside of createBreakPoint(), unit="+ unit);
+		}
 		List classes = unit.getClasses();
 		ClassNode classNode = (ClassNode) classes.get(0);
 		System.out.println("list="+classes.get(0)+classes.get(0).getClass());
-//		if (unit == null) {
-//			groovyPrject.compileGroovyFile(file, false);
-//		}
         int lineNumber = fRulerInfo.getLineOfLastMouseButtonActivity() + 1;
         try {
-/*            JDIDebugModel.createStratumBreakpoint(resource, "Groovy", resource
-                    .getLocation().toOSString(), null, "*", lineNumber,
-                    -1, -1, 0, true, null);
-*/
         	JDIDebugModel.createLineBreakpoint(resource,classNode.getName(),lineNumber,-1,-1,0,true,null);
         } catch (CoreException e) {
             e.printStackTrace();

@@ -32,6 +32,7 @@ import org.codehaus.groovy.control.messages.WarningMessage;
 import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.codehaus.groovy.eclipse.builder.GroovyNature;
 import org.codehaus.groovy.eclipse.launchers.GroovyRunner;
+import org.codehaus.groovy.eclipse.preferences.PreferenceConstants;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -140,7 +141,9 @@ public class GroovyProject {
 				IFile file = (IFile) iter.next();
 				monitor.setTaskName("Compiling "+file.getName());
 				GroovyPlugin.trace("Compiling "+file.getName());
-				compileGroovyFile(file, true);
+				Preferences prefs = GroovyPlugin.getDefault().getPluginPreferences();
+				compileGroovyFile(file, 
+					prefs.getBoolean(PreferenceConstants.GROOVY_GENERATE_CLASS_FILES));
 				monitor.worked(1);
 			}
 			System.out.println("compile of " + filesToBuild.size() + " took "
@@ -205,7 +208,7 @@ public class GroovyProject {
 		for (int i = 0; i < cpEntries.length; i++) {
 			IClasspathEntry entry = cpEntries[i];
 			if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
-				if (entry.getPath().getDevice() == null) {
+				//if (entry.getPath().getDevice() == null) {
 				 	IResource resource = root.findMember(entry.getPath());
 				 	if (resource != null) {
 				 		classPath.append(resource.getLocation().toString());
@@ -213,7 +216,7 @@ public class GroovyProject {
 				 		classPath.append(entry.getPath().toString());
 				 	}
 				 	classPath.append(File.pathSeparator);
-				}
+				//}
 			}
 		}
 		classPath.append(getOutputPath(javaProject));

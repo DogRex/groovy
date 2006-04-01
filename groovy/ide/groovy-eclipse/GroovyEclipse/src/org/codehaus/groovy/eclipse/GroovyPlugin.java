@@ -283,4 +283,10 @@ public class GroovyPlugin extends AbstractUIPlugin {
 		trace("listenToChanges");
 		getWorkspace().addResourceChangeListener(groovyFilesChangeListner);
 	}
+	/**
+	 * 
+	 */
+	public static AbstractUIPlugin getDefault() {
+		return plugin;
+	}
 }

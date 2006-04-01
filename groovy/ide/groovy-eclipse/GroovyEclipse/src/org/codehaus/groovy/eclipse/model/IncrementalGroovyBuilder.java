@@ -45,10 +45,12 @@ import java.util.StringTokenizer;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.eclipse.GroovyPlugin;
+import org.codehaus.groovy.eclipse.preferences.PreferenceConstants;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Preferences;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
 /**
@@ -95,7 +97,9 @@ public class IncrementalGroovyBuilder implements IResourceVisitor {
 				String key = file.getFullPath().toString();
 				GroovyPlugin.trace("Looking for matching class file: " + key);
 				if (!compilationUnits.containsKey(key)) {
-					groovyPrject.compileGroovyFile(file, false);
+					Preferences prefs = GroovyPlugin.getDefault().getPluginPreferences();
+					groovyPrject.compileGroovyFile(file, 
+						prefs.getBoolean(PreferenceConstants.GROOVY_GENERATE_CLASS_FILES));
 				}
 				CompileUnit compileUnit = (CompileUnit) compilationUnits.get(key);
 

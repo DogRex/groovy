@@ -14,18 +14,16 @@
       <library name="lib/groovy-all-1.0-RC-01-SNAPSHOT.jar">
          <export name="*"/>
       </library>
-   </runtime>
+    </runtime>
    
    <requires>
       <import plugin="org.eclipse.core.resources"/>
-      <import plugin="org.eclipse.core.variables"/>
       <import plugin="org.eclipse.jface"/>
       <import plugin="org.eclipse.ui"/>
       <import plugin="org.eclipse.text"/>
       <import plugin="org.eclipse.jface.text"/>
       <import plugin="org.eclipse.ui.workbench.texteditor"/>
       <import plugin="org.eclipse.ui.editors"/>
-      <import plugin="org.eclipse.ui.ide"/>
       <import plugin="org.eclipse.jdt.core"/>
       <import plugin="org.eclipse.jdt.ui"/>
       <import plugin="org.eclipse.debug.core"/>
@@ -201,5 +199,27 @@
             id="org.codehaus.groovy.eclipse.editor.groovySourceLocator">
       </sourceLocator>
    </extension>
-
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.codehaus.groovy.eclipse.preferences.GroovyPreferencePage"
+            id="org.codehaus.groovy.eclipse.preferences.GroovyPreferencePage"
+            name="Groovy Preferences"/>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer class="org.codehaus.groovy.eclipse.preferences.PreferenceInitializer"/>
+   </extension>
+   
+   <extension point="org.eclipse.ui.popupMenus">
+   		<objectContribution id="org.codehaus.groovy.eclipse.addnature"
+   			objectClass="org.eclipse.core.resources.IProject">
+	   		<action id="org.codehaus.groovy.eclipse.addnature.action"
+	   			label="Add Groovy Nature"
+	   			enablesFor="1"
+	   			class="org.codehaus.groovy.eclipse.actions.AddGroovyNatureAction">
+	   		</action>
+		</objectContribution>
+	</extension>
+	
 </plugin>
