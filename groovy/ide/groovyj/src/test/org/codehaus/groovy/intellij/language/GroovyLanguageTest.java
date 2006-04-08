@@ -73,7 +73,7 @@ public class GroovyLanguageTest extends GroovyjTestCase {
     }
 
     public void testDefinesThatTokensThatDoNotRepresentGroovyIdentifiersMayNotHaveReferences() {
-        IElementType notAGroovyIdentifierElementType = new IElementType(null, null);
+        IElementType notAGroovyIdentifierElementType = new IElementType("", null);
         assertFalse("tokens that are not groovy identifiers may not have references", language.mayHaveReferences(notAGroovyIdentifierElementType));
     }
 
