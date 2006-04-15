@@ -1,15 +1,17 @@
 package org.codehaus.groovy.eclipse.editor;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
 import org.codehaus.groovy.eclipse.GroovyPlugin;
-import org.eclipse.core.resources.IMarker;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
+import org.eclipse.jdt.internal.ui.text.java.JavaAutoIndentStrategy;
+import org.eclipse.jdt.internal.ui.text.java.JavaStringAutoIndentStrategy;
+import org.eclipse.jdt.internal.ui.text.java.SmartSemicolonAutoEditStrategy;
+import org.eclipse.jdt.internal.ui.text.javadoc.JavaDocAutoIndentStrategy;
 import org.eclipse.jdt.ui.text.IJavaColorConstants;
-import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jdt.ui.text.IJavaPartitions;
+import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
-import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
@@ -17,16 +19,19 @@ import org.eclipse.jface.text.rules.BufferedRuleBasedScanner;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.IAnnotationHover;
-import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
-import org.eclipse.ui.texteditor.MarkerAnnotation;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.texteditor.ITextEditor;
 
 public class GroovyConfiguration extends SourceViewerConfiguration {
 
 	private GroovyDoubleClickStrategy doubleClickStrategy;
 	private GroovyTagScanner tagScanner;
+	private GroovyMultiLineCommentScanner multiLineCommentScanner;
 	private ColorManager colorManager;
+	private ITextEditor editor;
+	private GroovyStringScanner stringScanner;
 
 	/**
 	 * Single token scanner.
@@ -75,6 +80,20 @@ public class GroovyConfiguration extends SourceViewerConfiguration {
 		return tagScanner;
 	}
 
+	protected GroovyMultiLineCommentScanner getMultiLineCommentScanner() {
+		if (multiLineCommentScanner == null) {
+			multiLineCommentScanner = new GroovyMultiLineCommentScanner();
+		}
+		return multiLineCommentScanner;
+	}
+
+	protected GroovyStringScanner getStringScanner() {
+		if (stringScanner == null) {
+			stringScanner = new GroovyStringScanner();
+		}
+		return stringScanner;
+	}
+
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
 		PresentationReconciler reconciler = new PresentationReconciler();
 		reconciler.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
@@ -83,14 +102,17 @@ public class GroovyConfiguration extends SourceViewerConfiguration {
 		reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
 		reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
 
-		dr= new DefaultDamagerRepairer(new SingleTokenScanner(new TextAttribute(colorManager.getColor(IJavaColorConstants.JAVA_MULTI_LINE_COMMENT))));
+		dr= new DefaultDamagerRepairer(getMultiLineCommentScanner());
 		reconciler.setDamager(dr, GroovyPartitionScanner.GROOVY_MULTILINE_COMMENT);
 		reconciler.setRepairer(dr, GroovyPartitionScanner.GROOVY_MULTILINE_COMMENT);
 
-		dr= new DefaultDamagerRepairer(new SingleTokenScanner(new TextAttribute(colorManager.getColor(IJavaColorConstants.JAVA_STRING))));
+		dr= new DefaultDamagerRepairer(getStringScanner());
 		reconciler.setDamager(dr, GroovyPartitionScanner.GROOVY_MULTILINE_STRINGS);
 		reconciler.setRepairer(dr, GroovyPartitionScanner.GROOVY_MULTILINE_STRINGS);
 
+		dr= new DefaultDamagerRepairer(getStringScanner());
+		reconciler.setDamager(dr, GroovyPartitionScanner.GROOVY_SINGLELINE_STRINGS);
+		reconciler.setRepairer(dr, GroovyPartitionScanner.GROOVY_SINGLELINE_STRINGS);
 
 		return reconciler;
 	}
@@ -98,4 +120,39 @@ public class GroovyConfiguration extends SourceViewerConfiguration {
     public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
         return new MarkerHover();
     }
+    /*
+     * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getAutoEditStrategies(org.eclipse.jface.text.source.ISourceViewer, java.lang.String)
+     */
+    public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
+        String partitioning= getConfiguredDocumentPartitioning(sourceViewer);
+        if (IJavaPartitions.JAVA_DOC.equals(contentType) || IJavaPartitions.JAVA_MULTI_LINE_COMMENT.equals(contentType))
+            return new IAutoEditStrategy[] { new JavaDocAutoIndentStrategy(partitioning) };
+        else if (IJavaPartitions.JAVA_STRING.equals(contentType))
+            return new IAutoEditStrategy[] { new SmartSemicolonAutoEditStrategy(partitioning), new JavaStringAutoIndentStrategy(partitioning) };
+        else if (IJavaPartitions.JAVA_CHARACTER.equals(contentType) || IDocument.DEFAULT_CONTENT_TYPE.equals(contentType))
+            return new IAutoEditStrategy[] { new SmartSemicolonAutoEditStrategy(partitioning), new JavaAutoIndentStrategy(partitioning, getJavaProject()) };
+        else
+            return new IAutoEditStrategy[] { new JavaAutoIndentStrategy(partitioning, getJavaProject()) };
+            //return new IAutoEditStrategy[] { new DefaultIndentLineAutoEditStrategy() };
+    }
+
+     private IJavaProject getJavaProject() {
+        ITextEditor editor= getEditor();
+        if (editor == null)
+            return null;
+ 
+        IEditorInput input= editor.getEditorInput();
+         
+        if (input == null)
+            return null;
+ 
+        return  EditorUtility.getJavaProject(input);
+    }
+	public ITextEditor getEditor() {
+		return editor;
+	}
+	public void setEditor(ITextEditor editor) {
+		this.editor = editor;
+	}
+ 
 }
