@@ -274,6 +274,7 @@ public class GroovyProject {
         for (int i = 0; i < classpathUrls.length; i++) {
             String classpathEntry = (String) classpath.get(i);
             classpathUrls[i] = new File(classpathEntry).toURL();
+            GroovyPlugin.trace("classpath entry="+classpathEntry);
         }
         return classpathUrls;
     }

@@ -12,7 +12,10 @@ public class GroovyEditor extends AbstractDecoratedTextEditor{
 	public GroovyEditor() {
 		super();
 		colorManager = new ColorManager();
-		setSourceViewerConfiguration(new GroovyConfiguration(colorManager));
+		GroovyConfiguration groovyConfiguration = new GroovyConfiguration(colorManager);
+		groovyConfiguration.setEditor(this);
+		setSourceViewerConfiguration(groovyConfiguration);
+		
 	}
 	
 	/*
