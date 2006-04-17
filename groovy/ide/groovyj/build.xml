@@ -53,7 +53,7 @@
         <property name="clover.dir" value="clover"/>
         <property name="clover.lib.dir" value="${user.home}/.ant/lib"/>
         <property name="clover.reports" value="${build.dir}/clover-reports"/>
-        <property name="coverage.criteria" value="95%"/>
+        <property name="coverage.criteria" value="90%"/>
 
         <path id="clover.classpath">
             <pathelement location="${clover.lib.dir}/clover.jar"/>
@@ -111,6 +111,9 @@
     <target name="check.idea.available" depends="initialise" >
         <condition property="idea.available">
             <and>
+                <available classname="com.intellij.execution.configurations.LocatableConfiguration"
+                           classpathref="compile.classpath"/>
+
                 <available classname="com.intellij.ide.plugins.IdeaPluginDescriptor"
                            classpathref="compile.classpath"/>
 
@@ -307,8 +310,8 @@
         <copy todir="${classes.dir}" overwrite="true" preservelastmodified="true">
             <fileset dir="${src.etc.dir}" excludes="styles/**/*, ${binary.extensions}, **/*.xcf"/>
             <filterset>
-                <filter token="PROJECT.IDEA.SINCE-BUILD" value="5162"/>
-                <filter token="PROJECT.IDEA.UNTIL-BUILD" value="5500"/>
+                <filter token="PROJECT.IDEA.SINCE-BUILD" value="5231"/>
+                <filter token="PROJECT.IDEA.UNTIL-BUILD" value="5400"/>
                 <filter token="PROJECT.VERSION" value="${project.version} 6.0 (Demetra)"/>
             </filterset>
             <filterset refid="project.variables"/>

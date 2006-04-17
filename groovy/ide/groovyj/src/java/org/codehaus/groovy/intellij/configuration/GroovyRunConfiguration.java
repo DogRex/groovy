@@ -20,6 +20,7 @@ package org.codehaus.groovy.intellij.configuration;
 
 import com.intellij.execution.configurations.ConfigurationInfoProvider;
 import com.intellij.execution.configurations.ConfigurationPerRunnerSettings;
+import com.intellij.execution.configurations.LocatableConfiguration;
 import com.intellij.execution.configurations.RunConfigurationBase;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.configurations.RunnerSettings;
@@ -40,7 +41,7 @@ import org.jdom.Element;
 
 import org.codehaus.groovy.intellij.EditorAPI;
 
-public class GroovyRunConfiguration extends RunConfigurationBase {
+public class GroovyRunConfiguration extends RunConfigurationBase implements LocatableConfiguration {
 
     private final EditorAPI editorApi;
     private final GroovyRunConfigurationExternaliser runConfigurationExternaliser;
@@ -156,9 +157,7 @@ public class GroovyRunConfiguration extends RunConfigurationBase {
         return new Module[0];
     }
 
-    public RunProfileState getState(DataContext dataContext,
-                                    RunnerInfo runnerInfo,
-                                    RunnerSettings runnerSettings,
+    public RunProfileState getState(DataContext dataContext, RunnerInfo runnerInfo, RunnerSettings runnerSettings,
                                     ConfigurationPerRunnerSettings configurationSettings) {
         GroovyCommandLineState commandLineState = new GroovyCommandLineState(this, runnerSettings, configurationSettings);
         commandLineState.setConsoleBuilder(TextConsoleBuidlerFactory.getInstance().createBuilder(getProject()));
@@ -174,5 +173,15 @@ public class GroovyRunConfiguration extends RunConfigurationBase {
 
     public void writeExternal(Element element) {
         runConfigurationExternaliser.writeExternal(this, element);
+    }
+
+    // LocatableConfiguration ------------------------------------------------------------------------------------------
+
+    public boolean isGeneratedName() {
+        return false;
+    }
+
+    public String suggestedName() {
+        return "Unnamed";
     }
 }
