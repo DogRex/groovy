@@ -176,7 +176,8 @@
             targetID="org.codehaus.groovy.eclipse.editor.GroovyEditor"
             id="org.codehaus.groovy.eclipse.BreakpointRulerActions">
          <action
-               label=""
+               label="Toggle Groovy Breakpoint"
+               definitionId="org.codehaus.groovy.eclipse.actions.ToggleGroovyBreakpointAction"
                class="org.codehaus.groovy.eclipse.actions.ToggleGroovyBreakpointRulerActionDelegate"
                actionID="RulerDoubleClick"
                id="org.codehaus.groovy.eclipse.actions.ToggleGroovyBreakpointAction">
