@@ -111,6 +111,13 @@ public class GroovyProject {
 		this.javaProject = javaProject;
 		// Note that enabling debug will disable class generation
 		//compilerConfiguration.setDebug(true);
+		try {
+			setClassPath(javaProject);
+		} catch (JavaModelException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 
 
@@ -274,8 +281,7 @@ public class GroovyProject {
         for (int i = 0; i < classpathUrls.length; i++) {
             String classpathEntry = (String) classpath.get(i);
             classpathUrls[i] = new File(classpathEntry).toURL();
-            GroovyPlugin.trace("classpath entry="+classpathEntry);
-        }
+         }
         return classpathUrls;
     }
 
