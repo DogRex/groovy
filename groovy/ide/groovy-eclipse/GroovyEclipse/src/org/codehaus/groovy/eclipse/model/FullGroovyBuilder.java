@@ -40,6 +40,7 @@
 
 package org.codehaus.groovy.eclipse.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -53,18 +54,7 @@ import org.eclipse.core.resources.IResourceVisitor;
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
 public class FullGroovyBuilder implements IResourceVisitor {
-
-	private List filesToBuild;
-
-	/**
-	 * @param javaProject
-	 * @param compilationUnits
-	 * @param groovyPrject
-	 * @param filesToBuild
-	 */
-	public FullGroovyBuilder(List filesToBuild) {
-		this.filesToBuild = filesToBuild;
-	}
+	private List filesToBuild = new ArrayList();
 	
 	/*
 	 * (non-Javadoc)
@@ -80,5 +70,9 @@ public class FullGroovyBuilder implements IResourceVisitor {
 			}
 		}
 		return true;
+	}
+
+	public List getFilesToBuild() {
+		return filesToBuild;
 	}
 }

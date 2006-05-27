@@ -225,6 +225,11 @@ public class GroovyPlugin extends AbstractUIPlugin {
 				.getSymbolicName(), 0, message, e); //$NON-NLS-1$
 		getLog().log(status);
 	}
+	public void logTraceMessage(String message) {
+		IStatus status = new Status(IStatus.INFO, getBundle()
+				.getSymbolicName(), 0, message, null); //$NON-NLS-1$
+		getLog().log(status);
+	}
 
 	/**
 	 * @return Returns the dialogProvider.
@@ -244,6 +249,9 @@ public class GroovyPlugin extends AbstractUIPlugin {
 	public static void trace(String message) {
 		if (trace) {
 			System.out.println(message);
+			// Can be hard to get at output in standard out
+			// TODO: this should be controlled by the preferences page
+			getPlugin().logTraceMessage("trace: " + message);
 		}
 	}
 

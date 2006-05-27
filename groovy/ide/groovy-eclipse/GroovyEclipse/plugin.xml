@@ -98,6 +98,19 @@
             class="org.codehaus.groovy.eclipse.launchers.GroovyLaunchShortcut"
             modes="run, debug"
             id="org.codehaus.groovy.eclipse.debug.ui.groovyShortcut">
+         <contextualLaunch>
+           <enablement>
+              <with variable="selection">
+                 <count value="1"/>
+           		 <iterate>
+           		 	<or>
+               		    <test property="org.eclipse.debug.ui.matchesPattern" value="*.groovy"/>
+                		</or>
+           		 </iterate>
+              </with>
+           </enablement>
+        </contextualLaunch>
+            
          <perspective
                id="org.eclipse.jdt.ui.JavaPerspective">
          </perspective>

@@ -6,8 +6,9 @@ package org.codehaus.groovy.eclipse.model;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import org.codehaus.groovy.ast.CompileUnit;
+
 import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.codehaus.groovy.eclipse.builder.GroovyNature;
 import org.eclipse.core.resources.IFile;
@@ -81,10 +82,13 @@ public class GroovyModel {
 	/**
 	 * @param javaProject
 	 */
-	public void buildGroovyContent(IJavaProject javaProject,
-			IProgressMonitor monitor, int kind) {
+	public void buildGroovyContent(IJavaProject javaProject, IProgressMonitor monitor, int kind, List filesToBuild, boolean generateClassFiles) {
 		GroovyProject gp = getGroovyProject(javaProject);
-		gp.buildGroovyContent(monitor, kind);
+		gp.buildGroovyContent(monitor, kind, filesToBuild, generateClassFiles);
+	}
+	public void buildGroovyContent(IJavaProject javaProject, IProgressMonitor monitor, int kind, List filesToBuild) {
+		GroovyProject gp = getGroovyProject(javaProject);
+		gp.buildGroovyContent(monitor, kind, filesToBuild);
 	}
 
 	/**
@@ -101,6 +105,7 @@ public class GroovyModel {
 	}
 
 	public void addBuildListener(GroovyBuildListner listener) {
+		GroovyPlugin.trace("addingBuildListener:" + listener.toString());
 		for (Iterator iter = projects.values().iterator(); iter.hasNext();) {
 			GroovyProject groovyProject = (GroovyProject) iter.next();
 			groovyProject.addBuildListener(listener);
@@ -118,10 +123,9 @@ public class GroovyModel {
 	 * @param file
 	 * @return
 	 */
-	public CompileUnit getCompilationUnit(IFile file) {
-		GroovyProject project = getGroovyProject(JavaCore.create(file
-				.getProject()));
-		return project.getCompilationUnit(file);
+	public List getModuleNodes(IFile file) {
+		GroovyProject project = getGroovyProject(JavaCore.create(file.getProject()));
+		return project.getModuleNodes(file);
 	}
 
 	/**

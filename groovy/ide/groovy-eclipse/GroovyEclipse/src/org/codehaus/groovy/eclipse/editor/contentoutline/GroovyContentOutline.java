@@ -6,11 +6,9 @@
  */
 package org.codehaus.groovy.eclipse.editor.contentoutline;
 
-import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.codehaus.groovy.eclipse.model.GroovyBuildListner;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
-import org.codehaus.groovy.eclipse.model.GroovyProject;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -61,16 +59,8 @@ public class GroovyContentOutline extends ContentOutlinePage implements GroovyBu
 			}
 
 		});
-
 		GroovyModel model = GroovyModel.getModel();
-		CompileUnit unit = model.getCompilationUnit(file);
-		if (unit == null) {
-			GroovyProject groovyProject = model.getProject(file.getProject());
-			groovyProject.compileGroovyFile(file, true);
-			unit = model.getCompilationUnit(file);
-			GroovyPlugin.trace("recompiling inside of outliner, unit=" + unit);
-		}
-		getTreeViewer().setInput(unit);
+		getTreeViewer().setInput(file);
 		getTreeViewer().expandAll();
 		model.addBuildListener(this);
 	}
@@ -92,9 +82,12 @@ public class GroovyContentOutline extends ContentOutlinePage implements GroovyBu
 	 *
 	 * @see org.codehaus.groovy.eclipse.model.GroovyBuildListner#fileBuilt(org.eclipse.core.resources.IFile)
 	 */
-	public void fileBuilt(IFile fileBuilt, CompileUnit compilationUnit) {
+	public void fileBuilt(IFile fileBuilt) {
+		//GroovyPlugin.trace("file built event rcvd in Outline, fileBuilt=" + fileBuilt);
+		//GroovyPlugin.trace("outline file=" + file);
 		if (fileBuilt.equals(file)) {
-			getTreeViewer().setInput(compilationUnit);
+			GroovyPlugin.trace("updating input data for Outline:" +  fileBuilt);
+			getTreeViewer().setInput(fileBuilt);
 			// TODO this is naff , need to manage change a bit better
 			getTreeViewer().expandAll();
 		}

@@ -46,6 +46,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.codehaus.groovy.control.ErrorCollector;
@@ -71,30 +73,32 @@ class AddErrorMarker implements IWorkspaceRunnable {
 	private static final int DEFAULT_READING_SIZE = 8192;
 
 	private IFile fFile;
-
+	private List fileList;  // list of IFile objects
 	private Exception e;
 
-	private ArrayList list;
+	private List fileLineNumberList;
 
 	/**
 	 * 
 	 * @param resource the file associated with the marker to be created.
 	 * @param e exception for which to create a marker.
 	 */
-	public AddErrorMarker(IFile resource, Exception e) {
+	public AddErrorMarker(List fileList, Exception e) {
 		super();
-		this.fFile = resource;
+		this.fileList = fileList;
 		this.e = e;
+	}
+	private List getFileLineNumberList(IFile fFile){
 		char[] fileContent = getPlainContent(fFile);
-		list = new ArrayList();
+		List list = new ArrayList();
 		list.add(new Integer(0));
 		for (int i = 0; i < fileContent.length; i++) {
 			if (fileContent[i]=='\n') {
 				list.add(new Integer(i));
 			}
 		}
+		return list;
 	}
-
 	/**
 	 * Get the files content as String (Note: uses file.getCharset() to determine
 	 * the streams character set)
@@ -199,12 +203,24 @@ class AddErrorMarker implements IWorkspaceRunnable {
 
 	public void run(IProgressMonitor monitor) throws CoreException {
 		if (e instanceof MultipleCompilationErrorsException) {
+			Map fileNameIFileMap = new HashMap();
+			for(Iterator iter = fileList.iterator();iter.hasNext();){
+				IFile f = (IFile)iter.next();
+				fileNameIFileMap.put(f.getLocation().toOSString(),f);
+			}
 			MultipleCompilationErrorsException multiple = (MultipleCompilationErrorsException) e;
 			ErrorCollector collector = multiple.getErrorCollector();
 			for (int i = 0; i < collector.getErrorCount(); ++i) {
+				SyntaxException exception = collector.getSyntaxError(i);
+				// This replaces all double backslash with a single backslash
+				// Yes - it takes 4 backslash to equal one for the Java regular expressions
+				String key = exception.getSourceLocator().replaceAll("\\\\\\\\","\\\\");
+				fFile = (IFile) fileNameIFileMap.get(key);
+				fileLineNumberList = getFileLineNumberList(fFile);
 				markerFromException(collector.getException(i));
 			}
 		} else {
+			fFile = (IFile) fileList.get(0);
 			markerFromException(e);
 		}
 	}
@@ -239,9 +255,9 @@ class AddErrorMarker implements IWorkspaceRunnable {
 		map.put(IMarker.LINE_NUMBER, new Integer(line));
 		map.put(IMarker.MESSAGE, message);
 		Integer i;
-		if (startCol>=0 && list.size()>line-1) {
+		if (startCol>=0 && fileLineNumberList.size()>line-1) {
 			// calculate the start- and end-offset of the error
-			i = (Integer) list.get(line-1);
+			i = (Integer) fileLineNumberList.get(line-1);
 		  map.put(IMarker.CHAR_START, new Integer(i.intValue()+startCol));
 		  map.put(IMarker.CHAR_END, new Integer(i.intValue()+endCol));
 		}

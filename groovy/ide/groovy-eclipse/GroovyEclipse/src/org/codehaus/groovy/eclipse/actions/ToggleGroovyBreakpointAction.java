@@ -3,11 +3,9 @@
  */
 package org.codehaus.groovy.eclipse.actions;
 
-import java.io.File;
 import java.util.List;
 
 import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.codehaus.groovy.eclipse.model.GroovyProject;
@@ -17,9 +15,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IBreakpointManager;
 import org.eclipse.debug.core.model.IBreakpoint;
-import org.eclipse.debug.core.model.ILineBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaLineBreakpoint;
-import org.eclipse.jdt.debug.core.IJavaStratumLineBreakpoint;
 import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -69,26 +65,21 @@ public class ToggleGroovyBreakpointAction extends Action implements IAction {
 		GroovyModel model = GroovyModel.getModel();
         IResource resource = getResource();
 		IFile file = (IFile) resource;
-		CompileUnit unit = model.getCompilationUnit(file);
-		if (unit == null) {
-			GroovyProject groovyProject = model.getProject(file.getProject());
-			groovyProject.compileGroovyFile(file, true);
-			unit = model.getCompilationUnit(file);
-			GroovyPlugin.trace("creating compilation unit inside of createBreakPoint(), unit="+ unit);
+		GroovyProject groovyProject = model.getProject(file.getProject());
+		List classes  = groovyProject.getClassesForFile(file);
+		if (classes.isEmpty()) {
+			groovyProject.compileGroovyFile(file, false); //generateClassFiles
+			classes = groovyProject.getClassesForFile(file);
+			GroovyPlugin.trace("creating modules inside of createBreakPoint(), file:" + file);
 		}
-		List classes = unit.getClasses();
+		// TODO: This is suspect - get(0) works for most cases but can't work for all cases
 		ClassNode classNode = (ClassNode) classes.get(0);
-		System.out.println("list="+classes.get(0)+classes.get(0).getClass());
         int lineNumber = fRulerInfo.getLineOfLastMouseButtonActivity() + 1;
         try {
         	JDIDebugModel.createLineBreakpoint(resource,classNode.getName(),lineNumber,-1,-1,0,true,null);
         } catch (CoreException e) {
             e.printStackTrace();
         }
-        
-        IBreakpointManager mgr = DebugPlugin.getDefault().getBreakpointManager();
-        
-
     }
 
     /**

@@ -11,10 +11,11 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.eclipse.model.GroovyBuildListner;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
+import org.codehaus.groovy.eclipse.model.GroovyProject;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
@@ -25,9 +26,8 @@ import org.eclipse.jface.viewers.Viewer;
  * Preferences - Java - Code Generation - Code and Comments
  */
 public class GroovyASTContentProvider implements ITreeContentProvider {
-
-	private CompileUnit compilationUnit;
 	private GroovyBuildListner listner;
+	private IFile file;
 
 
 	/**
@@ -53,48 +53,36 @@ public class GroovyASTContentProvider implements ITreeContentProvider {
 	}
 
 	public Object[] getElements(Object inputElement) {
-		if (inputElement instanceof CompileUnit) {
-			compilationUnit = (CompileUnit) inputElement;
-			if (compilationUnit == null
-				|| compilationUnit.getModules() == null
-				|| compilationUnit.getModules().size() == 0) {
-				return null;
-			}
-
+		if (inputElement instanceof IFile){
+			file = (IFile) inputElement;
 			List rootElements = new ArrayList();
-			createPackageAndImportElements(compilationUnit, rootElements);
-			createClassElements(compilationUnit, rootElements);
-
+			GroovyModel model = GroovyModel.getModel();
+			GroovyProject project = model.getProject(file.getProject());
+			createPackageAndImportElements(project.getModuleNodes(file), rootElements);
+			createClassElements(project.getClassesForFile(file), rootElements);
 			return rootElements.toArray();
 		}
-
 		TreeAdapter adapter = (TreeAdapter) inputElement;
 		return adapter.getChildren();
 	}
 
-	/**
-	 * @param compilationUnit2
-	 * @param rootElements
-	 */
-	private void createClassElements(CompileUnit cUnit, List rootElements) {
-		List classes = cUnit.getClasses();
-		for (Iterator iter = classes.iterator(); iter.hasNext();) {
-			ClassNode classNode = (ClassNode) iter.next();
-			rootElements.add(new ClassAdapter(classNode));
+	private void createClassElements(List classes, List rootElements) {
+		if (classes != null) {
+			for (Iterator iter = classes.iterator(); iter.hasNext();) {
+				ClassNode classNode = (ClassNode) iter.next();
+				ClassAdapter ca = new ClassAdapter(classNode);
+				rootElements.add(ca);
+			}
 		}
 	}
 
-	/**
-	 * @param compilationUnit2
-	 * @param rootElements
-	 *
-	 */
-
-	private void createPackageAndImportElements(CompileUnit cUnit, List rootElements) {
-		ModuleNode module = (ModuleNode) cUnit.getModules().get(0);
-		String packageName = module.getPackageName();
-		rootElements.add(new PackageAdapter(packageName,null));
-		rootElements.add(new ImportContainer(module));
+	private void createPackageAndImportElements(List moduleNodes, List rootElements) {
+		if (moduleNodes != null && moduleNodes.size() > 0 ) {
+			ModuleNode module = (ModuleNode) moduleNodes.get(0);
+			String packageName = module.getPackageName();
+			rootElements.add(new PackageAdapter(packageName,null));
+			rootElements.add(new ImportContainer(module));
+		}
 	}
 
 	/*
@@ -113,7 +101,7 @@ public class GroovyASTContentProvider implements ITreeContentProvider {
 	 *      java.lang.Object, java.lang.Object)
 	 */
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-		compilationUnit = (CompileUnit) newInput;
+		file = (IFile) newInput;
 		if(listner != null && newInput == null){
 			GroovyModel.getModel().removeBuildListener(listner);
 		}

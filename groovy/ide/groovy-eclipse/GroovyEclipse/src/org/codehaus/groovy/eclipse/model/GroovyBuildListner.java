@@ -6,7 +6,6 @@
  */
 package org.codehaus.groovy.eclipse.model;
 
-import org.codehaus.groovy.ast.CompileUnit;
 import org.eclipse.core.resources.IFile;
 
 /**
@@ -16,5 +15,5 @@ import org.eclipse.core.resources.IFile;
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
 public interface GroovyBuildListner {
-	public void fileBuilt(IFile file, CompileUnit compilationUnit);
+	public void fileBuilt(IFile file);
 }

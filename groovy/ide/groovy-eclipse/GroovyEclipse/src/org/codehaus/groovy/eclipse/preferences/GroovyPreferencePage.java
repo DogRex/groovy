@@ -76,6 +76,11 @@ public class GroovyPreferencePage extends FieldEditorPreferencePage implements
 				PreferenceConstants.GROOVY_GENERATE_CLASS_FILES,
 				"&Enable Groovy Compiler Generating Class Files",
 				getFieldEditorParent()));
+		// Add plugin trace messages to erorr log view
+		addField(new BooleanFieldEditor(
+				PreferenceConstants.GROOVY_LOG_TRACE_MESSAGES_ENABLED,
+				"&Enable Displaying Plugin Trace Messages in Error Log View",
+				getFieldEditorParent()));
 	}
 
 	/*

@@ -37,108 +37,104 @@
  *
  */
 package org.codehaus.groovy.eclipse.model;
-import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
 
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.CompileUnit;
-import org.codehaus.groovy.eclipse.GroovyPlugin;
-import org.codehaus.groovy.eclipse.preferences.PreferenceConstants;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceVisitor;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Preferences;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.IResourceDeltaVisitor;
+
 /**
  * @author Sarah
  * 
  * To change the template for this generated type comment go to Window -
  * Preferences - Java - Code Generation - Code and Comments
  */
-public class IncrementalGroovyBuilder implements IResourceVisitor {
-	private IJavaProject javaProject;
-	private Map compilationUnits;
-	private GroovyProject groovyPrject;
-	private List filesToBuild;
-
-	/**
-	 * @param javaProject
-	 * @param compilationUnits
-	 * @param groovyPrject
-	 * @param filesToBuild
-	 */
-	public IncrementalGroovyBuilder(IJavaProject javaProject, Map compilationUnits, GroovyProject groovyPrject,
-			List filesToBuild) {
-
-		this.javaProject = javaProject;
-		this.compilationUnits = compilationUnits;
-		this.groovyPrject = groovyPrject;
-		this.filesToBuild = filesToBuild;
+public class IncrementalGroovyBuilder implements IResourceDeltaVisitor {
+	List filesToBuild = new ArrayList();
+	boolean doFullBuild = false;
+	
+	public boolean visit(IResourceDelta delta) {
+		String kind = null;
+		switch (delta.getKind()) {
+		case IResourceDelta.ADDED:
+			kind = "ADDED";
+			addFile(delta); // compile newly added files
+			break;
+		case IResourceDelta.CHANGED:
+			kind = "CHANGED";
+			addFile(delta); // compile changes source
+			break;
+		case IResourceDelta.TYPE:
+			kind = "TYPE"; // TODO: don't know what this is
+			break;
+		case IResourceDelta.ADDED_PHANTOM:
+			kind = "ADDED_PHANTOM"; // TODO: don't know that this is
+            break;
+		case IResourceDelta.ALL_WITH_PHANTOMS:
+			kind = "ALL_WITH_PHANTOMS"; // TODO: don't know that this is
+            break;
+		case IResourceDelta.CONTENT:
+			kind = "CONTENT"; // TODO: don't know that this is
+            break;
+		case IResourceDelta.DESCRIPTION:
+			kind = "DESCRIPTION"; // TODO: don't know what this is
+            break;
+		case IResourceDelta.ENCODING:
+			kind = "ENCODING";   // TODO: don't know what to do
+            break;
+		case IResourceDelta.MARKERS:
+			kind = "MARKERS";   // TODO: don't know what to do 
+            break;
+		case IResourceDelta.MOVED_FROM:
+			kind = "TYPE MOVED_FROM"; // TODO: should delete existing .class files and clean or just build new file
+            break;
+		case IResourceDelta.MOVED_TO:
+			kind = "TYPE MOVED_TO";
+			addFile(delta);
+            break;
+		case IResourceDelta.NO_CHANGE:
+			kind = "NO_CHANGE";
+            break;
+		case IResourceDelta.OPEN:
+			kind = "OPEN";
+            break;
+		case IResourceDelta.REMOVED:
+			kind = "REMOVED";       // TODO: delete existing class files for source file
+            break;
+		case IResourceDelta.REMOVED_PHANTOM:
+			kind = "REMOVED_PHANTOM"; // TODO: don't know what this is
+            break;
+		case IResourceDelta.REPLACED:
+			kind = "REPLACED";		// recompile file
+			addFile(delta);
+            break;
+		case IResourceDelta.SYNC:
+			kind = "SYNC";			// TODO: full build ?
+            break;
+		}
+		if (".classpath".equals(delta.getResource().getName())){
+			doFullBuild = true;
+		}
+		System.out.println("incremental groovy builder resource:" + delta.getResource().getName() +
+				" change kind:" + kind);
+		return true; // visit children too
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.eclipse.core.resources.IResourceVisitor#visit(org.eclipse.core.resources.IResource)
-	 */
-	public boolean visit(IResource resource) {
-		if (resource.getType() == IResource.FILE) {
-			String extension = resource.getFileExtension();
-			IFile file = (IFile) resource;
-			if (extension != null && extension.equalsIgnoreCase("groovy")) {
-				/*
-				 * If we dont have a compilation unit, do a fast compile
-				 * without generating any class files to get the class info
-				 */
-				String key = file.getFullPath().toString();
-				GroovyPlugin.trace("Looking for matching class file: " + key);
-				if (!compilationUnits.containsKey(key)) {
-					Preferences prefs = GroovyPlugin.getDefault().getPluginPreferences();
-					groovyPrject.compileGroovyFile(file, 
-						prefs.getBoolean(PreferenceConstants.GROOVY_GENERATE_CLASS_FILES));
-				}
-				CompileUnit compileUnit = (CompileUnit) compilationUnits.get(key);
-
-				//FIXME this is a temporary solution to avoid that scripts prevent the
-				// compilation of classes.
-				List classes = compileUnit.getClasses();
-				if (classes.isEmpty()) {
-					GroovyPlugin.trace("No classes found in compile unit for: " + key);
-					// skip this resource's members
-					return false;
-				}
-
-				// find a class file
-				ClassNode classNode = (ClassNode) compileUnit.getClasses().get(0);
-				String className = classNode.getName();
-				try {
-					IPath outputLocation = javaProject.getOutputLocation();
-					outputLocation = outputLocation.removeFirstSegments(1);
-					StringTokenizer tokenizer = new StringTokenizer(className, ".");
-					while (tokenizer.hasMoreElements()) {
-						String token = tokenizer.nextToken();
-						outputLocation = outputLocation.append(token);
-					}
-					outputLocation = outputLocation.addFileExtension("class");
-					IFile ifileClassFile = javaProject.getProject().getFile(outputLocation);
-					File classFile = ifileClassFile.getLocation().toFile();
-					long srcLastModified = file.getLocation().toFile().lastModified();
-					long classLastModified = classFile.lastModified();
-					if (classLastModified < srcLastModified) {
-						GroovyPlugin.trace("SOURCE FILE " + key + " NEEDS RECOMPILE");
-						filesToBuild.add(file);
-					} else {
-						GroovyPlugin.trace(" class file " + classFile.getAbsolutePath() + " is up to date");
-					}
-				} catch (JavaModelException e) {
-					GroovyPlugin.getPlugin().logException("Faild during an incrementtal build",e);
-				}
-			}
+	private void addFile(IResourceDelta delta){
+		String fileExtension = delta.getResource().getFileExtension();
+		if (fileExtension != null && fileExtension.equalsIgnoreCase("groovy")){
+			IFile file = (IFile) delta.getResource().getAdapter(IFile.class);
+			filesToBuild.add(file);
 		}
-		return true;
+	}
+
+	public List getFilesToBuild() {
+		return filesToBuild;
+	}
+
+	public void setFilesToBuild(List filesToBuild) {
+		this.filesToBuild = filesToBuild;
 	}
 }

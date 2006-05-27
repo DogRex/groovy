@@ -19,7 +19,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 	 */
 	public void initializeDefaultPreferences() {
 		IPreferenceStore store = GroovyPlugin.getDefault().getPreferenceStore();
-		store.setDefault(PreferenceConstants.GROOVY_GENERATE_CLASS_FILES, false);
+		store.setDefault(PreferenceConstants.GROOVY_GENERATE_CLASS_FILES, true);
+		store.setDefault(PreferenceConstants.GROOVY_LOG_TRACE_MESSAGES_ENABLED, false);
 		
 		// GJDK Prefs
 		store.setDefault(PreferenceConstants.GROOVY_EDITOR_HIGHLIGHT_GJDK_ENABLED, true);
