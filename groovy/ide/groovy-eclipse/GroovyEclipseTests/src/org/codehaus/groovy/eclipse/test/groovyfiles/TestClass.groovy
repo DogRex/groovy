@@ -3,8 +3,8 @@ package pack1;
 import java.io.IOException;
 
 class MyClass{
-	String name
-	int    number
+	@Property String name
+	@Property int number
 
 	MyClass(){}
 

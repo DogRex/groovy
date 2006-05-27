@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.commons.io.IOUtil;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
@@ -58,8 +59,9 @@ public class GroovyModelTestCase extends EclipseTestCase {
 			"MainClass.groovy",
 			"class MainClass { static void main(args){}}");
 		plugin.addGroovyRuntime(testProject.getProject());
+		List filesToBuild = model.getProject(testProject.getProject()).filesForFullBuild(); 
 		model.buildGroovyContent(testProject.getJavaProject(), new NullProgressMonitor(),
-				IncrementalProjectBuilder.FULL_BUILD);
+								IncrementalProjectBuilder.FULL_BUILD, filesToBuild, true);
 	}
 
 	public void testRunGroovyMainWithArgs() throws CoreException, IOException, InterruptedException {
@@ -72,8 +74,9 @@ public class GroovyModelTestCase extends EclipseTestCase {
 				getClass().getResource("groovyfiles/write-args-to-file.groovy").openStream());
 
 		plugin.addGroovyRuntime(testProject.getProject());
+		List filesToBuild = model.getProject(testProject.getProject()).filesForFullBuild(); 
 		model.buildGroovyContent(testProject.getJavaProject(), new NullProgressMonitor(),
-				IncrementalProjectBuilder.FULL_BUILD);
+								IncrementalProjectBuilder.FULL_BUILD, filesToBuild, true);
 		String[] args = new String[] { tempFileName, "zohar", "james", "jon" };
 		model.runGroovyMain(groovyFile, args);
 		String expectedText = tempFileName + "zoharjamesjonthe end";
@@ -88,8 +91,9 @@ public class GroovyModelTestCase extends EclipseTestCase {
 				getClass().getResource("groovyfiles/write-args-to-file.groovy").openStream());
 		
 		plugin.addGroovyRuntime(testProject.getProject());
+		List filesToBuild = model.getProject(testProject.getProject()).filesForFullBuild(); 
 		model.buildGroovyContent(testProject.getJavaProject(), new NullProgressMonitor(),
-				IncrementalProjectBuilder.FULL_BUILD);
+								IncrementalProjectBuilder.FULL_BUILD, filesToBuild, true);
 		final String tempFileName = getTempFileName();
 		String[] args = new String[] { tempFileName, "zohar", "james", "jon" };
 		model.runGroovyMain("TestProject", "pack1.MainClass", args);
@@ -99,15 +103,21 @@ public class GroovyModelTestCase extends EclipseTestCase {
 	
 	private void assertFileContentsEquals(final String tempFileName, String expectedText) throws InterruptedException, IOException {
 		try {
-			Thread.sleep(1000); 
+			Thread.sleep(2000); 
 			// we have a timing issue with file creation by
 			// 'other' vm
 			//TODO find a way to sunc with the groovy running vm
 			String text = IOUtil.toString(new FileReader(tempFileName));
-			
-			assertEquals(expectedText, text);
+			System.out.println("["+expectedText+"]");
+			System.out.println("[" + text + "]");
+			String s1 = new String(expectedText);
+			String s2 = new String(text);
+			System.out.println(s1.equals(s2));
+			System.out.println(expectedText.equals(text));
+			//assertEquals(expectedText, text);
+			assertTrue(expectedText.equals(text));
 		} catch (FileNotFoundException x) { // The file may not exist.
-			fail("expecting text file:" + tempFileName + " to be created by the groovy class ");
+			fail("file not found, expecting text file:" + tempFileName + " to be created by the groovy class ");
 		}
 	}
 

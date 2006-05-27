@@ -5,8 +5,8 @@
 package org.codehaus.groovy.eclipse.test;
 
 import java.io.IOException;
+import java.util.List;
 
-import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.eclipse.editor.contentoutline.GroovyASTContentProvider;
 import org.codehaus.groovy.eclipse.editor.contentoutline.GroovyASTLabelProvider;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
@@ -33,12 +33,14 @@ public class GroovyContentOutlineTestCase extends EclipseTestCase {
 		//import has one child
 		//assertEquals(1,provider.getChildren(roots[1]).length);
 		//TestClass has 6 children ( 2 fields 1 ctor 3 methods)
+		Object o = provider.getChildren(roots[2]);
+		System.out.println("roots="+provider.getChildren(roots[2]));
 		assertEquals(6,provider.getChildren(roots[2]).length);
 	}
 
 	public void testASTLableProvider() {
 		// package name is pack1
-		assertEquals("pack1",labelProvider.getText(roots[0]));
+		assertEquals("pack1.",labelProvider.getText(roots[0]));
 		// import node just says "import declerations"
 		assertEquals("import declerations",labelProvider.getText(roots[1]));
 		// the class is MyClass
@@ -64,12 +66,13 @@ public class GroovyContentOutlineTestCase extends EclipseTestCase {
 				getClass().getResource("groovyfiles/"+className).openStream());
 		
 		plugin.addGroovyRuntime(testProject.getProject());
+		List filesToBuild = model.getProject(testProject.getProject()).filesForFullBuild(); 
 		model.buildGroovyContent(testProject.getJavaProject(), new NullProgressMonitor(),
-								IncrementalProjectBuilder.FULL_BUILD);
+								IncrementalProjectBuilder.FULL_BUILD, filesToBuild, true);
 		GroovyModel model = GroovyModel.getModel();
-		CompileUnit unit = model.getCompilationUnit(file);
+		List moduleNodes = model.getModuleNodes(file);
 		provider = new GroovyASTContentProvider(null);
-		roots = provider.getElements(unit);
+		roots = provider.getElements(file);
 		labelProvider = new GroovyASTLabelProvider();
 		
 	}
