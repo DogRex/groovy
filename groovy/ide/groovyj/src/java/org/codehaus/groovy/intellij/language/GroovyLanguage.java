@@ -57,7 +57,7 @@ public class GroovyLanguage extends Language {
         picoContainer.unregisterComponent(GroovyLanguageToolsFactory.class);
         picoContainer.registerComponentImplementation(GroovyLanguageToolsFactory.class);
         picoContainer.registerComponentImplementation(GroovyParserDefinition.class);
-        picoContainer.registerComponentImplementation(GroovyFindUsagesProvider.class);
+//        picoContainer.registerComponentImplementation(GroovyFindUsagesProvider.class);
     }
 
     public ParserDefinition getParserDefinition() {
