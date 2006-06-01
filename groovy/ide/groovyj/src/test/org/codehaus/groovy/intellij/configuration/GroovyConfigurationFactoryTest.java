@@ -20,12 +20,10 @@ package org.codehaus.groovy.intellij.configuration;
 
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.project.Project;
-import com.intellij.testFramework.MockVirtualFile;
-
-import org.jmock.Mock;
-
+import com.intellij.testFramework.LightVirtualFile;
 import org.codehaus.groovy.intellij.EditorAPIFactory;
 import org.codehaus.groovy.intellij.Mocks;
+import org.jmock.Mock;
 
 public class GroovyConfigurationFactoryTest extends GroovyConfigurationTestCase {
 
@@ -39,7 +37,7 @@ public class GroovyConfigurationFactoryTest extends GroovyConfigurationTestCase 
         Mock mockProject = mock(Project.class);
         Mock mockProjectFile = Mocks.createVirtualFileMock(this, "mockProjectFile");
         mockProject.expects(once()).method("getProjectFile").withNoArguments().will(returnValue(mockProjectFile.proxy()));
-        mockProjectFile.expects(once()).method("getParent").withNoArguments().will(returnValue(new MockVirtualFile()));
+        mockProjectFile.expects(once()).method("getParent").withNoArguments().will(returnValue(new LightVirtualFile()));
 
         mockEditorApiFactory.expects(once()).method("createEditorAPI").with(same(mockProject.proxy())).will(returnValue(null));
 

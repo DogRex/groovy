@@ -26,6 +26,7 @@ public final class CodeInsightAttributes {
     public static final TextAttributesKey WRONG_REFERENCE_ATTRIBUTES = TextAttributesKey.createTextAttributesKey("WRONG_REFERENCE_ATTRIBUTES", CodeInsightColors.WRONG_REFERENCES_ATTRIBUTES.getDefaultAttributes());
     public static final TextAttributesKey ERROR_ATTRIBUTES = TextAttributesKey.createTextAttributesKey("ERROR_ATTRIBUTES", CodeInsightColors.ERRORS_ATTRIBUTES.getDefaultAttributes());
     public static final TextAttributesKey WARNING_ATTRIBUTES = TextAttributesKey.createTextAttributesKey("WARNING_ATTRIBUTES", CodeInsightColors.WARNINGS_ATTRIBUTES.getDefaultAttributes());
+    public static final TextAttributesKey INFO_ATTRIBUTES = TextAttributesKey.createTextAttributesKey("INFO_ATTRIBUTES", CodeInsightColors.INFO_ATTRIBUTES.getDefaultAttributes());
     public static final TextAttributesKey DEPRECATED_ATTRIBUTES = TextAttributesKey.createTextAttributesKey("DEPRECATED_ATTRIBUTES", CodeInsightColors.DEPRECATED_ATTRIBUTES.getDefaultAttributes());
     public static final TextAttributesKey NOT_USED_ELEMENT_ATTRIBUTES = TextAttributesKey.createTextAttributesKey("NOT_USED_ELEMENT_ATTRIBUTES", CodeInsightColors.NOT_USED_ELEMENT_ATTRIBUTES.getDefaultAttributes());
     public static final TextAttributesKey CLASS_NAME_ATTRIBUTES = TextAttributesKey.createTextAttributesKey("CLASS_NAME_ATTRIBUTES", CodeInsightColors.CLASS_NAME_ATTRIBUTES.getDefaultAttributes());

@@ -18,11 +18,6 @@
 
 package org.codehaus.groovy.intellij.language.editor;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.swing.Icon;
-
 import com.intellij.debugger.settings.DebuggerColors;
 import com.intellij.ide.highlighter.JavaFileHighlighter;
 import com.intellij.openapi.editor.HighlighterColors;
@@ -34,10 +29,12 @@ import com.intellij.openapi.options.colors.AttributesDescriptor;
 import com.intellij.openapi.options.colors.ColorDescriptor;
 import com.intellij.openapi.options.colors.ColorSettingsPage;
 import com.intellij.pom.java.LanguageLevel;
-
+import org.codehaus.groovy.intellij.GroovySupportLoader;
 import org.jetbrains.annotations.NotNull;
 
-import org.codehaus.groovy.intellij.GroovySupportLoader;
+import javax.swing.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GroovyColourSettingsPage implements ColorSettingsPage {
 
@@ -111,6 +108,7 @@ public class GroovyColourSettingsPage implements ColorSettingsPage {
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("unusedField", CodeInsightAttributes.NOT_USED_ELEMENT_ATTRIBUTES);
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("error", CodeInsightAttributes.ERROR_ATTRIBUTES);
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("warning", CodeInsightAttributes.WARNING_ATTRIBUTES);
+        ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("info", CodeInsightAttributes.INFO_ATTRIBUTES);
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("unknownType", CodeInsightAttributes.WRONG_REFERENCE_ATTRIBUTES);
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("localVar", CodeInsightAttributes.LOCAL_VARIABLE_ATTRIBUTES);
         ADDITIONAL_HIGHLIGHTING_TAG_TO_DESCRIPTOR_MAP.put("reassignedLocalVar", CodeInsightColors.REASSIGNED_LOCAL_VARIABLE_ATTRIBUTES);

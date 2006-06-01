@@ -18,8 +18,6 @@
 
 package org.codehaus.groovy.intellij.configuration;
 
-import javax.swing.Icon;
-
 import com.intellij.execution.LocatableConfigurationType;
 import com.intellij.execution.Location;
 import com.intellij.execution.RunManager;
@@ -32,10 +30,12 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.PathUtil;
-
 import org.codehaus.groovy.intellij.EditorAPIFactory;
 import org.codehaus.groovy.intellij.GroovySupportLoader;
 import org.codehaus.groovy.intellij.Icons;
+import org.jetbrains.annotations.NotNull;
+
+import javax.swing.*;
 
 public class GroovyConfigurationType implements LocatableConfigurationType {
 
@@ -47,6 +47,7 @@ public class GroovyConfigurationType implements LocatableConfigurationType {
         configurationFactory = new GroovyConfigurationFactory(editorApiFactory, this, new GroovyRunConfigurationExternaliser());
     }
 
+    @NotNull
     public String getComponentName() {
         return "groovy.configuration.type";
     }

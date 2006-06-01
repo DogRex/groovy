@@ -18,20 +18,17 @@
 
 package org.codehaus.groovy.intellij.irida;
 
-import java.io.File;
-
-import org.intellij.openapi.testing.MockApplicationManager;
-
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.OrderEntry;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.testFramework.MockVirtualFile;
-
+import com.intellij.testFramework.LightVirtualFile;
+import org.codehaus.groovy.intellij.EditorApiTestCase;
+import org.intellij.openapi.testing.MockApplicationManager;
 import org.jmock.Mock;
 
-import org.codehaus.groovy.intellij.EditorApiTestCase;
+import java.io.File;
 
 public class IridaAPITest extends EditorApiTestCase {
 
@@ -59,7 +56,7 @@ public class IridaAPITest extends EditorApiTestCase {
 
         Mock mockOrderEntry = mock(OrderEntry.class);
         mockOrderEntry.expects(once()).method("getFiles").with(same(OrderRootType.COMPILATION_CLASSES))
-                .will(returnValue(new VirtualFile[] { new MockVirtualFile(expectedFileName) }));
+                .will(returnValue(new VirtualFile[] { new LightVirtualFile(expectedFileName) }));
 
         OrderEntry[] orderEntries = new OrderEntry[] { (OrderEntry) mockOrderEntry.proxy() };
         mockModuleRootManager.expects(once()).method("getOrderEntries").will(returnValue(orderEntries));

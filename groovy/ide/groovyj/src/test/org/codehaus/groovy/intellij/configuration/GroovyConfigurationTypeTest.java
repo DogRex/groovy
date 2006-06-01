@@ -18,15 +18,11 @@
 
 package org.codehaus.groovy.intellij.configuration;
 
-import javax.swing.Icon;
-
-import junitx.framework.ObjectAssert;
-
 import com.intellij.execution.Location;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.ConfigurationFactory;
-import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
+import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -34,10 +30,11 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.css.CssFileType;
-
+import junitx.framework.ObjectAssert;
+import org.codehaus.groovy.intellij.GroovySupportLoader;
 import org.jmock.Mock;
 
-import org.codehaus.groovy.intellij.GroovySupportLoader;
+import javax.swing.*;
 
 public class GroovyConfigurationTypeTest extends GroovyConfigurationTestCase {
 
@@ -100,7 +97,7 @@ public class GroovyConfigurationTypeTest extends GroovyConfigurationTestCase {
         Mock stubLocation = mock(Location.class);
         stubLocation.stubs().method("getPsiElement").will(returnValue(mock(PsiElement.class).proxy()));
 
-        VirtualFile file = virtualFile().withFileType(new XmlFileType()).build();
+        VirtualFile file = virtualFile().withFileType(StdFileTypes.XML).build();
         OpenFileDescriptor openFileDescriptor = new OpenFileDescriptor(null, file, -1);
         stubLocation.stubs().method("getOpenFileDescriptor").will(returnValue(openFileDescriptor));
 

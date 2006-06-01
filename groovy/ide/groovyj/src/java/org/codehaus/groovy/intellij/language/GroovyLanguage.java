@@ -25,21 +25,19 @@ import com.intellij.lang.Language;
 import com.intellij.lang.PairedBraceMatcher;
 import com.intellij.lang.ParserDefinition;
 import com.intellij.lang.annotation.Annotator;
-import com.intellij.lang.cacheBuilder.WordsScanner;
+import com.intellij.lang.findUsages.FindUsagesProvider;
 import com.intellij.lang.folding.FoldingBuilder;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.pom.java.LanguageLevel;
 import com.intellij.psi.tree.IElementType;
-
-import org.jetbrains.annotations.NotNull;
-
-import org.picocontainer.MutablePicoContainer;
-
 import org.codehaus.groovy.intellij.language.editor.GroovyFoldingBuilder;
 import org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes;
 import org.codehaus.groovy.intellij.psi.GroovyTokenTypeMappings;
+import org.jetbrains.annotations.NotNull;
+import org.picocontainer.MutablePicoContainer;
 
 public class GroovyLanguage extends Language {
 
@@ -59,6 +57,7 @@ public class GroovyLanguage extends Language {
         picoContainer.unregisterComponent(GroovyLanguageToolsFactory.class);
         picoContainer.registerComponentImplementation(GroovyLanguageToolsFactory.class);
         picoContainer.registerComponentImplementation(GroovyParserDefinition.class);
+        picoContainer.registerComponentImplementation(GroovyFindUsagesProvider.class);
     }
 
     public ParserDefinition getParserDefinition() {
@@ -67,14 +66,15 @@ public class GroovyLanguage extends Language {
     }
 
     @NotNull
-    public SyntaxHighlighter getSyntaxHighlighter(Project project) {
+    public SyntaxHighlighter getSyntaxHighlighter(Project project, VirtualFile virtualFile) {
         // TODO: restore once GroovyFileHighlighter is functionally usable
 //        return new GroovyFileHighlighter();
         return new JavaFileHighlighter(LanguageLevel.HIGHEST);
     }
 
-    public WordsScanner getWordsScanner() {
-        return new GroovyWordsScanner(getParserDefinition().createLexer(null));
+    @NotNull
+    public FindUsagesProvider getFindUsagesProvider() {
+        return (FindUsagesProvider) picoContainer.getComponentInstanceOfType(FindUsagesProvider.class);
     }
 
     public boolean mayHaveReferences(IElementType token) {
