@@ -18,20 +18,15 @@
 
 package org.codehaus.groovy.intellij.language;
 
-import junitx.framework.Assert;
-
-import org.intellij.openapi.testing.MockApplicationManager;
-
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
-
-import org.jmock.Mock;
-
-import org.picocontainer.MutablePicoContainer;
-
+import junitx.framework.Assert;
 import org.codehaus.groovy.intellij.GroovyjTestCase;
 import org.codehaus.groovy.intellij.psi.GroovyElementTypes;
 import org.codehaus.groovy.intellij.psi.GroovyTokenSets;
+import org.intellij.openapi.testing.MockApplicationManager;
+import org.jmock.Mock;
+import org.picocontainer.MutablePicoContainer;
 
 public class GroovyParserDefinitionTest extends GroovyjTestCase {
 
@@ -87,7 +82,7 @@ public class GroovyParserDefinitionTest extends GroovyjTestCase {
 /*
     // TODO: restore both tests once GroovyFile is functionally usable
     public void testCreatesAGroovyFileFromAProjectAndVirtualFile() {
-        PsiFile psiFile = parserDefinition.createFile(createStubbedProject(), new MockVirtualFile());
+        PsiFile psiFile = parserDefinition.createFile(createStubbedProject(), new LightVirtualFile());
 //        ObjectAssert.assertInstanceOf("groovy file", GroovyFile.class, psiFile);
         ObjectAssert.assertInstanceOf("groovy file", PsiJavaFileImpl.class, psiFile);
     }

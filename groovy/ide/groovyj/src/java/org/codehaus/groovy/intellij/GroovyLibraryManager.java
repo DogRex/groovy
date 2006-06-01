@@ -18,9 +18,6 @@
 
 package org.codehaus.groovy.intellij;
 
-import java.io.File;
-import java.io.FileFilter;
-
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.extensions.PluginId;
@@ -32,17 +29,22 @@ import com.intellij.openapi.vfs.JarFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 
+import java.io.File;
+import java.io.FileFilter;
+
 public class GroovyLibraryManager {
 
     public void installOrUpgradeGroovyRuntimeAsAGlobalLibraryIfNecessary() {
         IdeaPluginDescriptor pluginDescriptor = getPluginDescriptor();
-        String libraryNamePrefix = "Groovy from GroovyJ ";
-        String libraryName = libraryNamePrefix + pluginDescriptor.getVersion();
+        if (pluginDescriptor != null) {
+            String libraryNamePrefix = "Groovy from GroovyJ ";
+            String libraryName = libraryNamePrefix + pluginDescriptor.getVersion();
 
-        LibraryTable libraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable();
-        if (matchingGroovyRuntimeNotFound(libraryTable, libraryName)) {
-            Library.ModifiableModel libraryModel = findOrCreateEmptyLibrary(libraryTable.getModifiableModel(), libraryNamePrefix, libraryName);
-            addJarFilesToLibrary(pluginDescriptor, libraryModel);
+            LibraryTable libraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable();
+            if (matchingGroovyRuntimeNotFound(libraryTable, libraryName)) {
+                Library.ModifiableModel libraryModel = findOrCreateEmptyLibrary(libraryTable.getModifiableModel(), libraryNamePrefix, libraryName);
+                addJarFilesToLibrary(pluginDescriptor, libraryModel);
+            }
         }
     }
 

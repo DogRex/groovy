@@ -22,11 +22,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import com.intellij.testFramework.MockVirtualFile;
-
-import org.jmock.Mock;
-
+import com.intellij.testFramework.LightVirtualFile;
 import org.codehaus.groovy.intellij.language.GroovyLanguage;
+import org.jmock.Mock;
 
 public class GroovyFileTypeTest extends GroovyjTestCase {
 
@@ -56,6 +54,10 @@ public class GroovyFileTypeTest extends GroovyjTestCase {
         assertEquals("is binary file", false, fileType.isReadOnly());
     }
 
+    public void testSupportsJvmDebugging() {
+        assertEquals("is JVM debugging supported", true, fileType.isJVMDebuggingSupported());
+    }
+
     public void testReturnsTheCharacterSetOfAGivenFileAsItsCharacterSet() {
         String expectedCharacterSetName = "UTF-8";
         VirtualFile file = virtualFile().withCharset(expectedCharacterSetName).build();
@@ -66,7 +68,7 @@ public class GroovyFileTypeTest extends GroovyjTestCase {
         Mock mockPsiManager = mock(PsiManager.class);
 
         Project exectedProject = createStubbedProject((PsiManager) mockPsiManager.proxy());
-        VirtualFile expectedVirtualFile = new MockVirtualFile();
+        VirtualFile expectedVirtualFile = new LightVirtualFile();
 
         mockPsiManager.expects(once()).method("findFile").with(same(expectedVirtualFile)).will(returnValue(null));
 
@@ -76,7 +78,7 @@ public class GroovyFileTypeTest extends GroovyjTestCase {
     public void testDoesNotCreateABuilderForTheStructuralTreeViewForAFileInsideTheCurrentProject() {
         Mock mockPsiManager = mock(PsiManager.class);
         Project exectedProject = createStubbedProject((PsiManager) mockPsiManager.proxy());
-        VirtualFile expectedVirtualFile = new MockVirtualFile();
+        VirtualFile expectedVirtualFile = new LightVirtualFile();
 
         mockPsiManager.expects(once()).method("findFile").with(same(expectedVirtualFile)).will(returnValue(mock(PsiFile.class).proxy()));
 

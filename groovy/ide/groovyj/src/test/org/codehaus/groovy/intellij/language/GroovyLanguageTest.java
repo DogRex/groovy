@@ -18,19 +18,16 @@
 
 package org.codehaus.groovy.intellij.language;
 
-import junitx.framework.Assert;
-import junitx.framework.ObjectAssert;
-
 import com.intellij.ide.highlighter.JavaFileHighlighter;
 import com.intellij.lang.Commenter;
 import com.intellij.lang.PairedBraceMatcher;
 import com.intellij.lang.ParserDefinition;
-import com.intellij.lang.cacheBuilder.WordsScanner;
 import com.intellij.lang.folding.FoldingBuilder;
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.psi.tree.IElementType;
-
+import junitx.framework.Assert;
+import junitx.framework.ObjectAssert;
 import org.codehaus.groovy.intellij.GroovyjTestCase;
 import org.codehaus.groovy.intellij.Stubs;
 import org.codehaus.groovy.intellij.language.editor.GroovyFoldingBuilder;
@@ -55,16 +52,10 @@ public class GroovyLanguageTest extends GroovyjTestCase {
         StdFileTypes.JAVA = Stubs.LANGUAGE_FILE_TYPE;
         StdFileTypes.XML = Stubs.LANGUAGE_FILE_TYPE;
 
-        SyntaxHighlighter syntaxHighlighter = language.getSyntaxHighlighter(null);
+        SyntaxHighlighter syntaxHighlighter = language.getSyntaxHighlighter(null, null);
         Assert.assertNotEquals("project syntax highlighter", null, syntaxHighlighter);
 //        ObjectAssert.assertInstanceOf("project syntax highlighter", GroovyFileHighlighter.class, syntaxHighlighter);
         ObjectAssert.assertInstanceOf("project syntax highlighter", JavaFileHighlighter.class, syntaxHighlighter);
-    }
-
-    public void testProducesAWordScannerForGroovy() {
-        WordsScanner wordsScanner = language.getWordsScanner();
-        Assert.assertNotEquals("word scanner", null, wordsScanner);
-        ObjectAssert.assertInstanceOf("word scanner", GroovyWordsScanner.class, wordsScanner);
     }
 
     public void testDefinesThatGroovyIdentifiersMayHaveReferences() {

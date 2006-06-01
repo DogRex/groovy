@@ -18,11 +18,12 @@
 
 package org.codehaus.groovy.intellij;
 
-import java.lang.reflect.Constructor;
-
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.project.Project;
+import org.jetbrains.annotations.NotNull;
+
+import java.lang.reflect.Constructor;
 
 public class EditorAPIFactory implements ApplicationComponent {
 
@@ -30,6 +31,7 @@ public class EditorAPIFactory implements ApplicationComponent {
 
     // ApplicationComponent --------------------------------------------------------------------------------------------
 
+    @NotNull
     public String getComponentName() {
         return "groovy.editorApi.factory";
     }

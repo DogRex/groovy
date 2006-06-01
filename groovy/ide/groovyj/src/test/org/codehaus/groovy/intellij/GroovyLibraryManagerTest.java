@@ -18,9 +18,6 @@
 
 package org.codehaus.groovy.intellij;
 
-import org.intellij.openapi.testing.MockApplication;
-import org.intellij.openapi.testing.MockApplicationManager;
-
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.IdeaPluginDescriptorImpl;
 import com.intellij.openapi.roots.OrderRootType;
@@ -30,7 +27,8 @@ import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.vfs.JarFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-
+import org.intellij.openapi.testing.MockApplication;
+import org.intellij.openapi.testing.MockApplicationManager;
 import org.jmock.Mock;
 
 public class GroovyLibraryManagerTest extends GroovyjTestCase {
@@ -48,6 +46,17 @@ public class GroovyLibraryManagerTest extends GroovyjTestCase {
         MockApplication application = MockApplicationManager.getMockApplication();
         application.registerComponent(LibraryTablesRegistrar.class, new LibraryTablesRegistrarImpl());
         application.registerComponent(LibraryTable.class, mockLibraryTable.proxy());
+    }
+
+    public void testDoesNotInstallGroovyAsAGlobalLibraryWhenThePluginItselfIsNotInstalled() {
+        GroovyLibraryManager libraryManager = new GroovyLibraryManager() {
+            protected IdeaPluginDescriptor getPluginDescriptor() {
+                return null;
+            }
+        };
+        assertNull(libraryManager.getPluginDescriptor());
+
+        libraryManager.installOrUpgradeGroovyRuntimeAsAGlobalLibraryIfNecessary();
     }
 
     public void testDoesNotModifyTheCurrentGlobalGroovyLibraryWhenItIsAlreadyUpToDate() {

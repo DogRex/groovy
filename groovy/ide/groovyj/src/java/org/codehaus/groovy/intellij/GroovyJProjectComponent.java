@@ -18,18 +18,19 @@
 
 package org.codehaus.groovy.intellij;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-
 import org.codehaus.groovy.intellij.compiler.CompilationUnitsFactory;
 import org.codehaus.groovy.intellij.compiler.GroovyCompiler;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class GroovyJProjectComponent implements ProjectComponent {
 
@@ -66,7 +67,8 @@ public class GroovyJProjectComponent implements ProjectComponent {
     }
 
     protected String getPluginVersion() {
-        return PluginManager.getPlugin(PluginId.getId("GroovyJ")).getVersion();
+        IdeaPluginDescriptor pluginDescriptor = PluginManager.getPlugin(PluginId.getId("GroovyJ"));
+        return pluginDescriptor != null ? pluginDescriptor.getVersion() : "";
     }
 
     public void projectClosed() {
@@ -94,6 +96,7 @@ public class GroovyJProjectComponent implements ProjectComponent {
 
     public void disposeComponent() {}
 
+    @NotNull
     public String getComponentName() {
         return "groovyj.project.plugin";
     }

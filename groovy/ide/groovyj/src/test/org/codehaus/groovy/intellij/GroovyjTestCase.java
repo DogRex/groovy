@@ -18,11 +18,6 @@
 
 package org.codehaus.groovy.intellij;
 
-import java.nio.charset.Charset;
-import java.util.Random;
-
-import org.intellij.openapi.testing.MockApplicationManager;
-
 import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.openapi.fileTypes.FileType;
@@ -31,28 +26,25 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.ProjectJdk;
-import com.intellij.openapi.roots.ModifiableRootModel;
-import com.intellij.openapi.roots.ModuleFileIndex;
-import com.intellij.openapi.roots.ModuleRootManager;
-import com.intellij.openapi.roots.ProjectFileIndex;
-import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.roots.*;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.PsiManager;
-import com.intellij.testFramework.MockVirtualFile;
+import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.PathUtil;
 import com.intellij.util.PathsList;
-
+import com.thoughtworks.xstream.XStream;
+import org.codehaus.groovy.intellij.configuration.GroovyConfigurationFactory;
+import org.codehaus.groovy.intellij.configuration.GroovyRunConfiguration;
+import org.intellij.openapi.testing.MockApplicationManager;
 import org.jmock.Mock;
 import org.jmock.cglib.MockObjectTestCase;
 import org.jmock.core.Constraint;
 import org.jmock.core.constraint.IsEqual;
 
-import org.codehaus.groovy.intellij.configuration.GroovyConfigurationFactory;
-import org.codehaus.groovy.intellij.configuration.GroovyRunConfiguration;
-
-import com.thoughtworks.xstream.XStream;
+import java.nio.charset.Charset;
+import java.util.Random;
 
 public abstract class GroovyjTestCase extends MockObjectTestCase {
 
@@ -78,18 +70,6 @@ public abstract class GroovyjTestCase extends MockObjectTestCase {
         PathsList pathsList = new PathsList();
         pathsList.add(path);
         return pathsList;
-    }
-
-    protected Constraint startsWith(final String text) {
-        return new Constraint() {
-            public boolean eval(Object o) {
-                return (o instanceof String) && ((String) o).startsWith(text);
-            }
-
-            public StringBuffer describeTo(StringBuffer buffer) {
-                return buffer.append("a string starting with \"").append(text).append("\"");
-            }
-        };
     }
 
     protected Constraint equivalent(Object operand) {
@@ -251,7 +231,7 @@ public abstract class GroovyjTestCase extends MockObjectTestCase {
 
         public ModuleBuilder withProjectJdk() {
             Mock stubProjectJdk = testCase.mock(ProjectJdk.class, "stubProjectJdk");
-            stubProjectJdk.stubs().method("getHomeDirectory").will(testCase.returnValue(new MockVirtualFile()));
+            stubProjectJdk.stubs().method("getHomeDirectory").will(testCase.returnValue(new LightVirtualFile()));
             return withProjectJdk((ProjectJdk) stubProjectJdk.proxy());
         }
 
@@ -289,7 +269,7 @@ public abstract class GroovyjTestCase extends MockObjectTestCase {
         }
 
         private String nameWithoutExtension(String path) {
-            return new MockVirtualFile(path).getNameWithoutExtension();
+            return new LightVirtualFile(path).getNameWithoutExtension();
         }
 
         private String pathToUrl(String path) {

@@ -18,15 +18,14 @@
 
 package org.codehaus.groovy.intellij;
 
-import org.intellij.openapi.testing.MockApplication;
-import org.intellij.openapi.testing.MockApplicationManager;
-
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.options.colors.ColorSettingsPages;
-
+import org.codehaus.groovy.intellij.language.editor.GroovyColourSettingsPage;
+import org.intellij.openapi.testing.MockApplication;
+import org.intellij.openapi.testing.MockApplicationManager;
 import org.jmock.Mock;
 
-import org.codehaus.groovy.intellij.language.editor.GroovyColourSettingsPage;
+import java.util.List;
 
 public class GroovySupportLoaderTest extends GroovyjTestCase {
 
@@ -63,7 +62,8 @@ public class GroovySupportLoaderTest extends GroovyjTestCase {
     private void setExpectationsForInitialisationByIntellijIdea() {
         Mock mockFileTypeManager = mock(FileTypeManager.class);
         mockFileTypeManager.expects(once()).method("registerFileType")
-                .with(same(GroovySupportLoader.GROOVY), eq(new String[] { "groovy", "gvy", "gy", "gsh" }));
+//                .with(same(GroovySupportLoader.GROOVY), eq(new String[] { "groovy", "gvy", "gy", "gsh" }));
+                .with(same(GroovySupportLoader.GROOVY), isA(List.class));
 
         Mock mockColorSettingsPages = mock(ColorSettingsPages.class);
         mockColorSettingsPages.expects(once()).method("registerPage").with(isA(GroovyColourSettingsPage.class));

@@ -18,11 +18,6 @@
 
 package org.codehaus.groovy.intellij;
 
-import java.util.List;
-
-import org.intellij.openapi.testing.MockApplication;
-import org.intellij.openapi.testing.MockApplicationManager;
-
 import com.intellij.openapi.command.CommandListener;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -43,11 +38,14 @@ import com.intellij.psi.PsiTreeChangeAdapter;
 import com.intellij.psi.PsiTreeChangeListener;
 import com.intellij.refactoring.listeners.RefactoringElementListenerProvider;
 import com.intellij.refactoring.listeners.RefactoringListenerManager;
-import com.intellij.testFramework.MockVirtualFile;
+import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.PathUtil;
-
+import org.intellij.openapi.testing.MockApplication;
+import org.intellij.openapi.testing.MockApplicationManager;
 import org.jmock.Mock;
 import org.jmock.cglib.MockObjectTestCase;
+
+import java.util.List;
 
 public abstract class EditorApiTestCase extends MockObjectTestCase {
 
@@ -148,7 +146,7 @@ public abstract class EditorApiTestCase extends MockObjectTestCase {
         assertEquals(PathUtil.getLocalPath(expectedSourceFolder), allSourceFolders.get(0));
     }
 
-    private static class VirtualFileStub extends MockVirtualFile {
+    private static class VirtualFileStub extends LightVirtualFile {
         private final boolean directory;
         private final boolean writable;
 

@@ -23,9 +23,9 @@ import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.options.colors.ColorSettingsPages;
-
 import org.codehaus.groovy.intellij.language.GroovyLanguage;
 import org.codehaus.groovy.intellij.language.editor.GroovyColourSettingsPage;
+import org.jetbrains.annotations.NotNull;
 
 public class GroovySupportLoader implements ApplicationComponent {
 
@@ -43,6 +43,7 @@ public class GroovySupportLoader implements ApplicationComponent {
         this.groovyLibraryManager = groovyLibraryManager;
     }
 
+    @NotNull
     public String getComponentName() {
         return "groovy.support.loader";
     }

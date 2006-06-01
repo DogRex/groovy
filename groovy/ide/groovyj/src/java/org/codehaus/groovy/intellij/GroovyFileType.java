@@ -18,14 +18,12 @@
 
 package org.codehaus.groovy.intellij;
 
-import javax.swing.Icon;
-
 import com.intellij.openapi.fileTypes.LanguageFileType;
 import com.intellij.openapi.vfs.VirtualFile;
-
+import org.codehaus.groovy.intellij.language.GroovyLanguage;
 import org.jetbrains.annotations.NotNull;
 
-import org.codehaus.groovy.intellij.language.GroovyLanguage;
+import javax.swing.*;
 
 public class GroovyFileType extends LanguageFileType {
 
@@ -54,5 +52,9 @@ public class GroovyFileType extends LanguageFileType {
 
     public String getCharset(VirtualFile file) {
         return file.getCharset().name();
+    }
+
+    public boolean isJVMDebuggingSupported() {
+        return true;
     }
 }

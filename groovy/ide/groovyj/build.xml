@@ -55,6 +55,8 @@
         <property name="clover.reports" value="${build.dir}/clover-reports"/>
         <property name="coverage.criteria" value="90%"/>
 
+        <property name="idea.since-build" value="5289"/>
+
         <path id="clover.classpath">
             <pathelement location="${clover.lib.dir}/clover.jar"/>
         </path>
@@ -141,8 +143,16 @@
                 <available classname="org.apache.commons.collections.MultiHashMap"
                            classpathref="compile.classpath"/>
 
+                <available classname="com.intellij.testFramework.LightVirtualFile"
+                           classpathref="compile.classpath"/>
+
                 <not>
                     <available classname="com.intellij.codeFormatting.PseudoTextBuilder"
+                               classpathref="compile.classpath"/>
+                </not>
+
+                <not>
+                    <available classname="com.intellij.testFramework.MockVirtualFile"
                                classpathref="compile.classpath"/>
                 </not>
             </and>
@@ -151,8 +161,8 @@
 
     <target name="idea.available" depends="check.idea.available" unless="idea.available">
         <fail>
-            IntelliJ IDEA 6.0 (Demetra) is not available. Please set the 'idea.home' system property to the path to
-            your IntelliJ IDEA 6.0 installation.
+            IntelliJ IDEA 6.0 (Demetra build #${idea.since-build} or greater) is not available.
+            Please set the 'idea.home' system property to the path to your IntelliJ IDEA 6.0 installation.
         </fail>
     </target>
 
@@ -310,7 +320,7 @@
         <copy todir="${classes.dir}" overwrite="true" preservelastmodified="true">
             <fileset dir="${src.etc.dir}" excludes="styles/**/*, ${binary.extensions}, **/*.xcf"/>
             <filterset>
-                <filter token="PROJECT.IDEA.SINCE-BUILD" value="5231"/>
+                <filter token="PROJECT.IDEA.SINCE-BUILD" value="${idea.since-build}"/>
                 <filter token="PROJECT.IDEA.UNTIL-BUILD" value="5400"/>
                 <filter token="PROJECT.VERSION" value="${project.version} 6.0 (Demetra)"/>
             </filterset>

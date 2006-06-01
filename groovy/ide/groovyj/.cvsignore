@@ -1,7 +1,5 @@
 build
 dist
-*.iml
-*.ipr
-*.iws
-*-notes-*.txt
+GroovyJ.iws
+GroovyJ-notes-*.txt
 build.number
