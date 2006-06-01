@@ -351,7 +351,7 @@
     <option name="ADDITIONAL_OPTIONS_STRING" value="" />
   </component>
   <component name="Scrappy">
-    <scrapTab name="Scrap">System.getProperty(&quot;java.library.path&quot;)`System.getProperty(&quot;java.home&quot;) /System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Home`</scrapTab>
+    <scrapTab name="Scrap" />
     <imports />
   </component>
   <component name="TestDox.ConfigurationController">

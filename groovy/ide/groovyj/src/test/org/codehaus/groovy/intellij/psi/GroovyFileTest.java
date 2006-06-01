@@ -19,22 +19,24 @@
 package org.codehaus.groovy.intellij.psi;
 
 import com.intellij.openapi.fileTypes.FileTypeManager;
-import com.intellij.openapi.fileTypes.impl.FileTypeManagerImpl;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.SingleRootFileViewProvider;
 import com.intellij.testFramework.LightVirtualFile;
 import org.codehaus.groovy.intellij.GroovySupportLoader;
 import org.codehaus.groovy.intellij.GroovyjTestCase;
 import org.codehaus.groovy.intellij.language.GroovyLanguage;
-import org.intellij.openapi.testing.MockApplication;
 import org.intellij.openapi.testing.MockApplicationManager;
+import org.jmock.Mock;
 
 public class GroovyFileTest extends GroovyjTestCase {
 
     private GroovyFile groovyFile;
 
     protected void setUp() throws Exception {
-        MockApplication application = MockApplicationManager.getMockApplication();
-        application.registerComponent(FileTypeManager.class, new FileTypeManagerImpl());
+        Mock mockFileTypeManager = mock(FileTypeManager.class);
+        mockFileTypeManager.expects(once()).method("getFileTypeByFile").with(isA(VirtualFile.class)).will(returnValue(GroovySupportLoader.GROOVY));
+
+        MockApplicationManager.getMockApplication().registerComponent(FileTypeManager.class, mockFileTypeManager.proxy());
         groovyFile = new GroovyFile(new SingleRootFileViewProvider(null, new LightVirtualFile("path", "contents")), GroovyLanguage.findOrCreate());
     }
 
