@@ -39,6 +39,8 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -135,9 +137,13 @@ public class GroovyCompiler implements TranslatingCompiler {
         return new CompilationUnit(compilerConfiguration, null, buildClassLoaderFor(compilerConfiguration));
     }
 
-    GroovyClassLoader buildClassLoaderFor(CompilerConfiguration compilerConfiguration) {
-        URLClassLoader urlClassLoader = new URLClassLoader(convertClasspathToUrls(compilerConfiguration));
-        return new GroovyClassLoader(urlClassLoader, compilerConfiguration);
+    GroovyClassLoader buildClassLoaderFor(final CompilerConfiguration compilerConfiguration) {
+        return AccessController.doPrivileged(new PrivilegedAction<GroovyClassLoader>() {
+            public GroovyClassLoader run() {
+                URLClassLoader urlClassLoader = new URLClassLoader(convertClasspathToUrls(compilerConfiguration));
+                return new GroovyClassLoader(urlClassLoader, compilerConfiguration);
+            }
+        });
     }
 
     private URL[] convertClasspathToUrls(CompilerConfiguration compilerConfiguration) {
