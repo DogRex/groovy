@@ -52,7 +52,7 @@
     </wildcardResourcePatterns>
   </component>
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="$PROJECT_DIR$/../../../../../Library/Caches/IntelliJIDEA60/coverage/org.codehaus.groovy.intellij.es" NAME="All GroovyJ Tests" MODIFIED="1149415047951">
+    <SUITE FILE_PATH="$PROJECT_DIR$/../../../../../Library/Caches/IntelliJIDEA60/coverage/org.codehaus.groovy.intellij.es" NAME="All GroovyJ Tests" MODIFIED="1149463184833">
       <FILTER>org.codehaus.groovy.intellij.*</FILTER>
     </SUITE>
   </component>

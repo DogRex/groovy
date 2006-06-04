@@ -22,14 +22,14 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataConstants;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-
-import org.jmock.Mock;
-
 import org.codehaus.groovy.intellij.GroovyJProjectComponent;
+import org.codehaus.groovy.intellij.GroovySupportLoader;
 import org.codehaus.groovy.intellij.GroovyjTestCase;
 import org.codehaus.groovy.intellij.Mocks;
+import org.jmock.Mock;
 
 public class ActionEventsTest extends GroovyjTestCase {
 
@@ -41,14 +41,14 @@ public class ActionEventsTest extends GroovyjTestCase {
     private final GroovyJProjectComponent projectComponentMock = (GroovyJProjectComponent) Mocks.createGroovyJProjectComponentMock(this).proxy();
     private final ActionEvents actionEvents = new ActionEvents();
 
-    private AnActionEvent anActionEvent;
+    private AnActionEvent actionEvent;
 
     protected void setUp() {
         AnAction action = new AnAction() {
             public void actionPerformed(AnActionEvent event) {}
         };
 
-        anActionEvent = new AnActionEvent(null, (DataContext) mockDataContext.proxy(), "", action.getTemplatePresentation(), null, -1);
+        actionEvent = new AnActionEvent(null, (DataContext) mockDataContext.proxy(), "", action.getTemplatePresentation(), null, -1);
 
         mockDataContext.stubs().method("getData").with(eq(DataConstants.VIRTUAL_FILE)).will(returnValue(virtualFileBuilder.build()));
         mockDataContext.stubs().method("getData").with(eq(DataConstants.PROJECT)).will(returnValue(projectMock));
@@ -58,48 +58,33 @@ public class ActionEventsTest extends GroovyjTestCase {
     }
 
     public void testRetrievesTheVirtualFileFromWhichAGivenActionEventOriginated() {
-        assertSame(virtualFileBuilder.build(), actionEvents.getVirtualFile(anActionEvent));
+        assertSame(virtualFileBuilder.build(), actionEvents.getVirtualFile(actionEvent));
     }
 
     public void testRetrievesTheProjectFromWhichAGivenActionEventOriginated() {
-        assertSame(projectMock, actionEvents.getProject(anActionEvent));
+        assertSame(projectMock, actionEvents.getProject(actionEvent));
     }
 
     public void testRetrievesTheModuleFromWhichAGivenActionEventOriginated() {
-        assertSame(moduleMock, actionEvents.getModule(anActionEvent));
+        assertSame(moduleMock, actionEvents.getModule(actionEvent));
     }
 
     public void testRetrievesTheGroovyjProjectComponentInstanceAssociatedToTheProjectFromWhichAGivenActionEventOriginated() {
-        assertSame(projectComponentMock, actionEvents.getGroovyJProjectComponent(anActionEvent));
+        assertSame(projectComponentMock, actionEvents.getGroovyJProjectComponent(actionEvent));
     }
 
-    public void testDeterminesThatASelectedFileIsAGroovyFileIfItHasTheGroovyExtension() {
-        virtualFileBuilder.withExtension("groovy");
-        assertTrue(actionEvents.isGroovyFile(anActionEvent));
+    public void testDeterminesThatAnEventOriginatedFromAGroovyFileIfItHasTheGroovyFileType() {
+        virtualFileBuilder.withFileType(GroovySupportLoader.GROOVY);
+        assertTrue(actionEvents.isEventOriginatingFromGroovyFile(actionEvent));
     }
 
-    public void testDeterminesThatASelectedFileIsAGroovyFileIfItHasTheGshExtension() {
-        virtualFileBuilder.withExtension("gsh");
-        assertTrue(actionEvents.isGroovyFile(anActionEvent));
+    public void testDeterminesThatAnEventDidNotOriginateFromAGroovyFileIfItDoesNotHaveTheGroovyFileType() {
+        virtualFileBuilder.withFileType(StdFileTypes.JAVA);
+        assertFalse(actionEvents.isEventOriginatingFromGroovyFile(actionEvent));
     }
 
-    public void testDeterminesThatASelectedFileIsAGroovyFileIfItHasTheGvyExtension() {
-        virtualFileBuilder.withExtension("gvy");
-        assertTrue(actionEvents.isGroovyFile(anActionEvent));
-    }
-
-    public void testDeterminesThatASelectedFileIsAGroovyFileIfItHasTheGyExtension() {
-        virtualFileBuilder.withExtension("gy");
-        assertTrue(actionEvents.isGroovyFile(anActionEvent));
-    }
-
-    public void testDeterminesThatASelectedFileIsNotAGroovyFileIfItDoesNotHaveTheGroovyExtension() {
-        virtualFileBuilder.withExtension("java");
-        assertFalse(actionEvents.isGroovyFile(anActionEvent));
-    }
-
-    public void testDeterminesThatNoSelectedFileMeansThatThereIsNoGroovyFileSelected() {
-        mockDataContext.expects(once()).method("getData").with(eq(DataConstants.VIRTUAL_FILE));
-        assertFalse(actionEvents.isGroovyFile(anActionEvent));
+    public void testDeterminesThatAnEventDidNotOriginateFromAGroovyFileWhenNoFileWasSelected() {
+        mockDataContext.expects(once()).method("getData").with(eq(DataConstants.VIRTUAL_FILE)).will(returnValue(null));;
+        assertFalse(actionEvents.isEventOriginatingFromGroovyFile(actionEvent));
     }
 }

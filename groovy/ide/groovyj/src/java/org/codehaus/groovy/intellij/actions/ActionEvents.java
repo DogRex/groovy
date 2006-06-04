@@ -18,15 +18,11 @@
 
 package org.codehaus.groovy.intellij.actions;
 
-import java.util.Arrays;
-import java.util.List;
-
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataConstants;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-
 import org.codehaus.groovy.intellij.GroovyJProjectComponent;
 import org.codehaus.groovy.intellij.GroovySupportLoader;
 
@@ -34,18 +30,13 @@ public class ActionEvents {
 
     static ActionEvents instance = new ActionEvents();
 
-    private final List<String> DEFAULT_ASSOCIATED_EXTENSIONS = Arrays.asList(GroovySupportLoader.DEFAULT_ASSOCIATED_EXTENSIONS);
-
     public GroovyJProjectComponent getGroovyJProjectComponent(AnActionEvent event) {
         return GroovyJProjectComponent.getInstance(getProject(event));
     }
 
-    public boolean isGroovyFile(AnActionEvent event) {
+    public boolean isEventOriginatingFromGroovyFile(AnActionEvent event) {
         VirtualFile file = getVirtualFile(event);
-        if (file != null) {
-            return DEFAULT_ASSOCIATED_EXTENSIONS.contains(file.getExtension());
-        }
-        return false;
+        return file != null && file.getFileType() == GroovySupportLoader.GROOVY;
     }
 
     public VirtualFile getVirtualFile(AnActionEvent event) {

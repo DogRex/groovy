@@ -18,18 +18,16 @@
 
 package org.codehaus.groovy.intellij.actions;
 
-import java.awt.Container;
-import java.awt.event.KeyEvent;
-
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.Presentation;
-
-import org.jmock.Mock;
-
 import org.codehaus.groovy.intellij.GroovyjTestCase;
 import org.codehaus.groovy.intellij.Mocks;
+import org.jmock.Mock;
+
+import java.awt.*;
+import java.awt.event.KeyEvent;
 
 public class BaseActionTest extends GroovyjTestCase {
 
@@ -74,7 +72,7 @@ public class BaseActionTest extends GroovyjTestCase {
         assertEquals("action enabled?", !isGroovyFile, presentation.isEnabled());
         assertEquals("action visible?", true, presentation.isVisible());
 
-        mockActionEvents.expects(once()).method("isGroovyFile").with(isA(AnActionEvent.class)).will(returnValue(isGroovyFile));
+        mockActionEvents.expects(once()).method("isEventOriginatingFromGroovyFile").with(isA(AnActionEvent.class)).will(returnValue(isGroovyFile));
 
         AnActionEvent actionEvent = createAnActionEvent(action);
         action.update(actionEvent);
