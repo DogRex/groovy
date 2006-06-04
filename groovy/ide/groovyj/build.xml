@@ -316,6 +316,23 @@
         <fail message="Coverage criteria not met! Check coverage reports."/>
     </target>
 
+    <target name="find.bugs" depends="compile.plugin" description="Runs FindBugs on the project's codebase">
+        <property name="findbugs.home" value="tools/findbugs"/>
+
+        <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask"/>
+
+        <findbugs home="${findbugs.home}" debug="false" workHard="true" jvmargs="-Xmx256M"
+                  excludeFilter="${findbugs.home}/excludeFilter.xml"
+                  output="xml:withMessages" outputFile="${build.dir}/findbugs-report.xml">
+
+            <auxClasspath refid="compile.classpath"/>
+            <sourcePath path="${src.java.dir}"/>
+            <class location="${classes.dir}"/>
+        </findbugs>
+
+        <style in="${build.dir}/findbugs-report.xml" out="${build.dir}/findbugs-report.html" style="${findbugs.home}/plain.xsl"/>
+    </target>
+
     <target name="jar" depends="compile.plugin" description="Creates an archive of the plug-in as a jar file">
         <copy todir="${classes.dir}" overwrite="true" preservelastmodified="true">
             <fileset dir="${src.etc.dir}" excludes="styles/**/*, ${binary.extensions}, **/*.xcf"/>
@@ -365,7 +382,7 @@
     </target>
 
     <target name="build" description="Creates all installable plug-in distributions"
-            depends="clean, antlr.clean, with.clover, test.reports, coverage.reports, coverage.check, without.clover, zip">
+            depends="clean, antlr.clean, with.clover, test.reports, coverage.reports, coverage.check, without.clover, zip, find.bugs">
         <buildnumber/>
     </target>
 

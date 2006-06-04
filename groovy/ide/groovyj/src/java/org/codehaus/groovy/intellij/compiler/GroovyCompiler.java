@@ -18,6 +18,22 @@
 
 package org.codehaus.groovy.intellij.compiler;
 
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.compiler.CompileContext;
+import com.intellij.openapi.compiler.CompileScope;
+import com.intellij.openapi.compiler.CompilerPaths;
+import com.intellij.openapi.compiler.TranslatingCompiler;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.vfs.VirtualFile;
+import groovy.lang.GroovyClassLoader;
+import org.codehaus.groovy.control.CompilationUnit;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.messages.WarningMessage;
+import org.codehaus.groovy.intellij.EditorAPI;
+import org.codehaus.groovy.intellij.GroovySupportLoader;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
@@ -27,24 +43,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.compiler.CompileContext;
-import com.intellij.openapi.compiler.CompileScope;
-import com.intellij.openapi.compiler.CompilerPaths;
-import com.intellij.openapi.compiler.TranslatingCompiler;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.roots.ModuleRootManager;
-import com.intellij.openapi.vfs.VirtualFile;
-
-import org.codehaus.groovy.control.CompilationUnit;
-import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.control.messages.WarningMessage;
-
-import org.codehaus.groovy.intellij.EditorAPI;
-import org.codehaus.groovy.intellij.GroovySupportLoader;
-
-import groovy.lang.GroovyClassLoader;
 
 public class GroovyCompiler implements TranslatingCompiler {
 
@@ -56,6 +54,7 @@ public class GroovyCompiler implements TranslatingCompiler {
         this.factory = factory;
     }
 
+    @NotNull
     public String getDescription() {
         return "Groovy Compiler";
     }
@@ -81,9 +80,8 @@ public class GroovyCompiler implements TranslatingCompiler {
     private void compile(CompileContext context, VirtualFile[] filesToCompile, List<OutputItem> compiledFiles, List<VirtualFile> filesToRecompile) {
         Map<Module, CompilationUnits> modulesToCompilationUnits = mapModulesToSourceAndTestCompilationUnits(context, filesToCompile);
 
-        for (Module module : modulesToCompilationUnits.keySet()) {
-            CompilationUnits compilationUnits = modulesToCompilationUnits.get(module);
-            compilationUnits.compile(context, compiledFiles, filesToRecompile);
+        for (Map.Entry<Module, CompilationUnits> entry : modulesToCompilationUnits.entrySet()) {
+            entry.getValue().compile(context, compiledFiles, filesToRecompile);
         }
     }
 
