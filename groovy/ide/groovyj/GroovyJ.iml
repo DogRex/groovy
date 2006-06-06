@@ -34,7 +34,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/compile/asm-2.0.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/compile/asm-2.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -43,7 +43,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/compile/asm-analysis-2.0.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/compile/asm-analysis-2.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -52,7 +52,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/compile/asm-attrs-2.0.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/compile/asm-attrs-2.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -61,7 +61,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/compile/asm-tree-2.0.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/compile/asm-tree-2.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -70,7 +70,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/compile/asm-util-2.0.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/compile/asm-util-2.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
