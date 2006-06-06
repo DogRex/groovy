@@ -23,6 +23,8 @@
   <component name="CodeStyleProjectProfileManger">
     <option name="PROJECT_PROFILE" />
     <option name="USE_PROJECT_LEVEL_SETTINGS" value="false" />
+    <scopes />
+    <profiles />
   </component>
   <component name="CodeStyleSettingsManager">
     <option name="PER_PROJECT_SETTINGS" />
@@ -85,13 +87,25 @@
   </component>
   <component name="GUI Designer component loader factory" />
   <component name="Hibero.Configuration">
-    <option name="JdbcDriverClass" value="" />
-    <option name="JdbcUrl" value="" />
-    <option name="JdbcUsername" value="" />
-    <option name="JdbcPassword" value="" />
-    <option name="HibernateVersion" value="HIBERNATE_3" />
-    <option name="LoadJdbcDriverFromProjectClasspath" value="true" />
-    <JdbcDriverFiles />
+    <ConfigurationProfiles />
+    <autoResetConfiguration value="true" />
+    <TranslateHqlQueryOnEditorOpened value="false" />
+    <TranslateHqlQueryOnEditorChanged value="true" />
+    <DiscoverHqlParametersOnEditorOpened value="false" />
+    <DiscoverHqlParametersOnEditorChanged value="true" />
+    <useScrollableResults value="true" />
+    <maxResults value="100" />
+    <autoResizeColumns value="true" />
+    <columnFitToTable value="false" />
+    <columnFitToHeader value="true" />
+    <columnFitToContent value="false" />
+    <hiberoLogLevel level="Info" />
+    <hibernateLogLevel level="Info" />
+    <hibernateConnectionLogLevel level="Info" />
+    <hibernateEngineLogLevel level="Info" />
+    <hibernateHqlLogLevel level="Info" />
+    <hibernateJdbcLogLevel level="Info" />
+    <hibernateSqlLoglevel level="Info" />
   </component>
   <component name="IdProvider" IDEtalkID="8DF3AAA7E2AE57CE05A74866FDAA4451" />
   <component name="InspectionProjectProfileManager">
@@ -115,6 +129,10 @@
             <option name="myName" value="INFO" />
             <option name="myVal" value="100" />
           </information>
+          <server>
+            <option name="myName" value="SERVER PROBLEM" />
+            <option name="myVal" value="100" />
+          </server>
         </used_levels>
         <inspection_tool class="JSUnresolvedVariable" level="WARNING" enabled="true" />
         <inspection_tool class="JSUndeclaredVariable" level="WARNING" enabled="true" />
@@ -313,11 +331,11 @@
   </component>
   <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-name="Demetra SDK" project-jdk-type="IDEA JDK" />
   <component name="ProjectRunConfigurationManager">
-    <configuration default="false" name="All GroovyJ Tests" type="JUnit" factoryName="JUnit" method="Make">
+    <configuration default="false" name="All GroovyJ Tests" type="JUnit" factoryName="JUnit" COVERAGE_ENABLED="false" method="Make">
+      <COVERAGE_PATTERN value="org.codehaus.groovy.intellij.*" />
       <module name="GroovyJ" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="COVERAGE_ENABLED" value="true" />
       <option name="PACKAGE_NAME" value="org.codehaus.groovy.intellij" />
       <option name="MAIN_CLASS_NAME" value="" />
       <option name="METHOD_NAME" value="" />
@@ -329,7 +347,6 @@
       <option name="TEST_SEARCH_SCOPE">
         <value defaultName="singleModule" />
       </option>
-      <COVERAGE_PATTERN value="org.codehaus.groovy.intellij.*" />
       <RunnerSettings RunnerId="Debug">
         <option name="DEBUG_PORT" value="54596" />
         <option name="TRANSPORT" value="0" />
@@ -343,7 +360,7 @@
       <module name="GroovyJ" />
       <option name="VM_PARAMETERS" value="" />
       <option name="PROGRAM_PARAMETERS" value="" />
-      <log_file path="$PROJECT_DIR$/../../../../Library/Preferences/sandbox/system/log/idea.log" checked="false" skipped="true" show_all="false" alias="IDEA LOG" />
+      <log_file path="$PROJECT_DIR$/../../../../../Library/Preferences/sandbox/system/log/idea.log" checked="false" skipped="true" show_all="false" alias="IDEA LOG" />
       <RunnerSettings RunnerId="Debug">
         <option name="DEBUG_PORT" value="61517" />
         <option name="TRANSPORT" value="0" />
@@ -365,6 +382,7 @@
     <scrapTab name="Scrap" />
     <imports />
   </component>
+  <component name="StarteamVcsAdapter" />
   <component name="TestDox.ConfigurationController">
     <option name="allowCustomPackages" value="false" />
     <option name="testNameTemplate" value="&lt;classname&gt;Test" />
@@ -380,13 +398,14 @@
     <option name="usingAnnotations" value="false" />
     <custom-packaging allow="false" />
   </component>
+  <component name="VssVcs" />
   <component name="com.yanaware.intellij.ideaspring.PluginConfigurable">
     <option name="autoscrolling" value="false" />
     <option name="autoscrollingFromSource" value="false" />
   </component>
   <component name="copyright">
     <Base>
-      <setting name="state" value="1" />
+      <setting name="state" value="0" />
     </Base>
   </component>
   <component name="libraryTable" />

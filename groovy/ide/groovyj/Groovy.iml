@@ -9,27 +9,14 @@
       <sourceFolder url="file://$MODULE_DIR$/../../groovy-core/src/main" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../../groovy-core/src/test" isTestSource="true" />
     </content>
-    <content url="file://$MODULE_DIR$/../../groovy-native" />
     <content url="file://$MODULE_DIR$/../groovy-eclipse" />
-    <content url="file://$MODULE_DIR$/../groovy-emacs" />
-    <content url="file://$MODULE_DIR$/../old-groovy-eclipse" />
     <content url="file://$MODULE_DIR$/../../jsr" />
-    <content url="file://$MODULE_DIR$/../../modules" />
     <orderEntry type="jdk" jdkName="1.4" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/../../groovy-core/target/install/lib/mockobjects-core-0.09.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../groovy-core/target/install/lib/groovy-starter.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -273,15 +260,6 @@
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/../../groovy-core/target/install/lib/junit-3.8.1.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../groovy-core/target/install/lib/groovy-1.0-RC-01-SNAPSHOT.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
