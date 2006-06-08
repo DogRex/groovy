@@ -54,8 +54,8 @@ public class GroovyPsiParserTest extends PsiTreeTestCase {
          * DO NOT attempt to break the following string into smaller chuncks BUT RATHER install the StringEditor plug-in
          * to get a more readable and editable view of this code snippet.
          */
-//        String textToParse = "#!/usr/bin/groovy\n\nimport javax.swing.JPanel;\nimport groovy.swing.SwingBuilder\n//                               Bad characters: \\n #\n/**\n * Doc comments for <code>SomeClass</code>.\n *\n * @author The Codehaus\n *\n * @see GroovyTestCase#setUp\n */\n// @Annotation (name=value)\npublic class SomeClass extends GroovyTestCase { // some comment\n\n    /* Block comment */\n    @Property def author = \"Joe Bloggs\"\n    @Property Long random = 1101001010010110L\n\n    private String field = \"Hello World\"\n    private double unusedField = 12345.67890;\n    private UnknownType anotherString = \"Another\\nStrin\\g\";\n    private int[] array = new int[] { 1, 2, 3 };\n    public static int staticField = 0\n\n    public SomeClass(AnInterface param) {\n        //TODO: something\n        int localVar = \"IntelliJ\";       // Error, incompatible types\n        println (anotherString + field + localVar)\n\n        long time = Date.parse(\"1/2/3\"); // Method is deprecated\n        int value = this.staticField\n    }\n\n    interface AnInterface {\n        int CONSTANT = 2\n    }\n\n    void testDoesANumberOfRandomThings() {/*  block\n                     comment */\n        new SomeClass()\n\n        def quadraticClosure = { a, b -> Math.pow(a, 2) + (2 * a * b) + Math.pow(b, 2) }\n        assert quadraticClosure.call(3, 5) == 64\n\n        List aList = [ 3, 5 ]\n        assert aList.collect { i -> return (int) Math.pow(i, 2) } == [ 9, 25 ], 'assertion failed'\n\n        count++\n    }\n}\n";
-        String textToParse = "#!/usr/bin/groovy\n\nimport javax.swing.JPanel;\nimport groovy.swing.SwingBuilder\n//                               Bad characters: \\n #\n/**\n * Doc comments for <code>SomeClass</code>.\n *\n * @author The Codehaus\n *\n * @see GroovyTestCase#setUp\n */\n// @Annotation (name=value)\npublic class SomeClass extends GroovyTestCase { // some comment\n\n    /* Block comment */\n    @Property def author = \"Joe Bloggs\"\n    @Property Long random = 1101001010010110L\n\n    private String field = \"Hello World\"\n    private double unusedField = 12345.67890;\n    private UnknownType anotherString = \"Another\\nStrin|g\";\n    private int[] array = [ 1, 2, 3 ] as int[]\n    public static int staticField = 0\n\n    public SomeClass(AnInterface param) {\n        // TODO: something\n        int localVar = \"IntelliJ\";       // Error, incompatible types\n        println (anotherString + field + localVar)\n\n        long time = Date.parse(\"1/2/3\"); // Method is deprecated\n        int value = this.staticField\n    }\n\n    interface AnInterface {\n        int CONSTANT = 2\n    }\n\n    void testDoesANumberOfRandomThings() {/*  block\n                     comment */\n        new SomeClass()\n\n        def quadraticClosure = { a, b -> Math.pow(a, 2) + (2 * a * b) + Math.pow(b, 2) }\n        assert quadraticClosure.call(3, 5) == 64\n\n        List aList = [ 3, 5 ]\n        assert aList.collect { i -> return (int) Math.pow(i, 2) } == [ 9, 25 ], 'assertion failed'\n\n        count++\n    }\n}\n";
+//        String textToParse = "#!/usr/bin/groovy\n\nimport javax.swing.JPanel;\nimport groovy.swing.SwingBuilder\n//                               Bad characters: \\n #\n/**\n * Doc comments for <code>SomeClass</code>.\n *\n * @author The Codehaus\n *\n * @see GroovyTestCase#setUp\n */\npublic class SomeClass extends GroovyTestCase { // some comment\n\n    /* Block comment */\n    def author = \"Joe Bloggs\"\n    Long random = 1101001010010110L\n\n    private String field = \"Hello World\"\n    private double unusedField = 12345.67890;\n    private UnknownType anotherString = \"Another\\nStrin\\g\";\n    private int[] array = new int[] { 1, 2, 3 };\n    public static int staticField = 0\n\n    public SomeClass(AnInterface param) {\n        //TODO: something\n        int localVar = \"IntelliJ\";       // Error, incompatible types\n        println (anotherString + field + localVar)\n\n        long time = Date.parse(\"1/2/3\"); // Method is deprecated\n        int value = this.staticField\n    }\n\n    interface AnInterface {\n        int CONSTANT = 2\n    }\n\n    void testDoesANumberOfRandomThings() {/*  block\n                     comment */\n        new SomeClass()\n\n        def quadraticClosure = { a, b -> Math.pow(a, 2) + (2 * a * b) + Math.pow(b, 2) }\n        assert quadraticClosure.call(3, 5) == 64\n\n        List aList = [ 3, 5 ]\n        assert aList.collect { i -> return (int) Math.pow(i, 2) } == [ 9, 25 ], 'assertion failed'\n\n        count++\n    }\n}\n";
+        String textToParse = "#!/usr/bin/groovy\n\nimport javax.swing.JPanel;\nimport groovy.swing.SwingBuilder\n//                               Bad characters: \\n #\n/**\n * Doc comments for <code>SomeClass</code>.\n *\n * @author The Codehaus\n *\n * @see GroovyTestCase#setUp\n */\npublic class SomeClass extends GroovyTestCase { // some comment\n\n    /* Block comment */\n    def author = \"Joe Bloggs\"\n    Long random = 1101001010010110L\n\n    private String field = \"Hello World\"\n    private double unusedField = 12345.67890;\n    private UnknownType anotherString = \"Another\\nStrin|g\";\n    private int[] array = [ 1, 2, 3 ] as int[]\n    public static int staticField = 0\n\n    public SomeClass(AnInterface param) {\n        // TODO: something\n        int localVar = \"IntelliJ\";       // Error, incompatible types\n        println (anotherString + field + localVar)\n\n        long time = Date.parse(\"1/2/3\"); // Method is deprecated\n        int value = this.staticField\n    }\n\n    interface AnInterface {\n        int CONSTANT = 2\n    }\n\n    void testDoesANumberOfRandomThings() {/*  block\n                     comment */\n        new SomeClass()\n\n        def quadraticClosure = { a, b -> Math.pow(a, 2) + (2 * a * b) + Math.pow(b, 2) }\n        assert quadraticClosure.call(3, 5) == 64\n\n        List aList = [ 3, 5 ]\n        assert aList.collect { i -> return (int) Math.pow(i, 2) } == [ 9, 25 ], 'assertion failed'\n\n        count++\n    }\n}\n";
 
         ASTNode rootNode = parse(textToParse);
         assertSame("file element type", GroovyElementTypes.FILE, rootNode.getElementType());
@@ -76,9 +76,6 @@ public class GroovyPsiParserTest extends PsiTreeTestCase {
         rootChildNode = assertNextNodeIsASingleLineComment(rootChildNode);
         rootChildNode = assertNextNodeIsAWhiteSpace(rootChildNode);
         rootChildNode = assertNextNodeIsAMultiLineComment(rootChildNode);
-        rootChildNode = assertNextNodeIsAWhiteSpace(rootChildNode);
-        // @Annotation (name=value)
-        rootChildNode = assertNextNodeIsASingleLineComment(rootChildNode);
         rootChildNode = assertNextNodeIsAWhiteSpace(rootChildNode);
 
         // public class SomeClass extends GroovyTestCase {
@@ -105,11 +102,11 @@ public class GroovyPsiParserTest extends PsiTreeTestCase {
         classDefinitionChildNode = assertNextNodeIsAMultiLineComment(classDefinitionChildNode);
         classDefinitionChildNode = assertNextNodeIsAWhiteSpace(classDefinitionChildNode);
 
-        // @Property def author = "Joe Bloggs"
+        // def author = "Joe Bloggs"
         classDefinitionChildNode = assertNextStatementIsAPropertyDeclaration(GroovyTokenTypes.LITERAL_def, GroovyTokenTypes.STRING_LITERAL, classDefinitionChildNode);
         classDefinitionChildNode = assertNextNodeIsAWhiteSpace(classDefinitionChildNode);
 
-        // @Property Long random = 1101001010010110L
+        // Long random = 1101001010010110L
         classDefinitionChildNode = assertNextStatementIsAPropertyDeclaration(GroovyTokenTypes.IDENT, GroovyTokenTypes.NUM_LONG, classDefinitionChildNode);
         classDefinitionChildNode = assertNextNodeIsAWhiteSpace(classDefinitionChildNode);
 
@@ -508,9 +505,6 @@ public class GroovyPsiParserTest extends PsiTreeTestCase {
     }
 
     private ASTNode assertNextStatementIsAPropertyDeclaration(int propertyType, int propertyValue, ASTNode node) {
-        node = assertNextNode(GroovyTokenTypes.AT, node);
-        node = assertNextNode(GroovyTokenTypes.IDENT, node);
-        node = assertNextNodeIsAWhiteSpace(node);
         node = assertNextNode(propertyType, node);
         node = assertNextNodeIsAWhiteSpace(node);
         node = assertNextNode(GroovyTokenTypes.IDENT, node);
