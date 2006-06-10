@@ -226,8 +226,16 @@
    </extension>
    
    <extension point="org.eclipse.ui.popupMenus">
-   		<objectContribution id="org.codehaus.groovy.eclipse.addnature"
+   		<objectContribution id="org.codehaus.groovy.eclipse.addnature.project"
    			objectClass="org.eclipse.core.resources.IProject">
+	   		<action id="org.codehaus.groovy.eclipse.addnature.action"
+	   			label="Add Groovy Nature"
+	   			enablesFor="1"
+	   			class="org.codehaus.groovy.eclipse.actions.AddGroovyNatureAction">
+	   		</action>
+		</objectContribution>
+   		<objectContribution id="org.codehaus.groovy.eclipse.addnature.javaproject"
+   			objectClass="org.eclipse.jdt.core.IJavaProject">
 	   		<action id="org.codehaus.groovy.eclipse.addnature.action"
 	   			label="Add Groovy Nature"
 	   			enablesFor="1"
