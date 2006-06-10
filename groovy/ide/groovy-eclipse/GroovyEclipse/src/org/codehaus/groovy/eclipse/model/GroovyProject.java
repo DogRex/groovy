@@ -16,8 +16,10 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.CompileUnit;
@@ -49,6 +51,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Preferences;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.swt.widgets.Display;
@@ -267,13 +270,13 @@ public class GroovyProject {
 	}
 	/**
 	 * Returns the Eclipse project output path
-	 * @param jProject
+	 * @param project
 	 * @return
 	 * @throws JavaModelException
 	 */
-	private String getOutputPath(IJavaProject jProject) throws JavaModelException {
-		String outputPath = jProject.getProject().getLocation().toString() + IPath.SEPARATOR
-				+ javaProject.getOutputLocation().removeFirstSegments(1).toString();
+	private static String getOutputPath(IJavaProject project) throws JavaModelException {
+		String outputPath = project.getProject().getParent().getLocation().toString() 
+				+ project.getOutputLocation().toString();
 		return outputPath;
 	}
 	/**
@@ -283,31 +286,58 @@ public class GroovyProject {
 	 * @throws JavaModelException
 	 */
 	private void setClassPath(IJavaProject javaProject) throws JavaModelException {
-		IWorkspaceRoot root = javaProject.getProject().getWorkspace().getRoot();
-		IClasspathEntry[] cpEntries = javaProject.getResolvedClasspath(false);
 		StringBuffer classPath = new StringBuffer();
-		for (int i = 0; i < cpEntries.length; i++) {
-			IClasspathEntry entry = cpEntries[i];
-			IResource resource = root.findMember(entry.getPath());
-			if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
-				if (resource != null) {
-					classPath.append(resource.getLocation().toString());
-				} else {
-					classPath.append(entry.getPath().toString());
-				}
-				classPath.append(File.pathSeparator);
-			} else if (entry.getEntryKind() == IClasspathEntry.CPE_PROJECT) {
-				IJavaProject referencedProject = JavaCore.create((IProject) resource);
-				String outputFolder = referencedProject.getOutputLocation().lastSegment();
-				String projectPath = resource.getLocation().toString();
-				classPath.append(projectPath + "/" + outputFolder + File.pathSeparator);
- 			}
-		}
-		classPath.append(getOutputPath(javaProject));
+        final Set set = getClasspath( javaProject, new ArrayList() );
+        final Iterator iterator = set.iterator();
+        while( iterator.hasNext() )
+        {
+            classPath.append( iterator.next().toString() );
+            if( iterator.hasNext() )
+                classPath.append( File.pathSeparator );
+        }
 		GroovyPlugin.trace("groovy cp = " + classPath.toString());
 		compilerConfiguration.setClasspath(classPath.toString());
 	}
-
+	private Set getClasspath( final IJavaProject project,
+                              final List visited ) 
+    throws JavaModelException
+    {
+        final Set set = new LinkedHashSet();
+        if( visited.contains( project ) )
+            return set;
+        visited.add( project );
+        final IPackageFragmentRoot[] fragRoots = project.getPackageFragmentRoots();
+        for( int i = 0; i < fragRoots.length; i++ )
+        {
+            final IPackageFragmentRoot fragRoot = fragRoots[ i ];
+            final IResource resource = fragRoot.getCorrespondingResource();
+            if( resource != null )
+                set.add( resource.getLocation().toString() );
+            else
+                set.add( fragRoot.getPath().toString() );
+        }
+        IWorkspaceRoot root = javaProject.getProject().getWorkspace().getRoot();
+        IClasspathEntry[] cpEntries = javaProject.getResolvedClasspath(false);
+        StringBuffer classPath = new StringBuffer();
+        for (int i = 0; i < cpEntries.length; i++) {
+            IClasspathEntry entry = cpEntries[i];
+            IResource resource = root.findMember(entry.getPath());
+            if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
+                if (resource != null) {
+                    set.add( resource.getLocation().toString() );
+                } else {
+                    set.add( entry.getPath().toString() );
+                }
+            } else if (entry.getEntryKind() == IClasspathEntry.CPE_PROJECT) {
+                IJavaProject referencedProject = JavaCore.create((IProject) resource);
+                set.addAll( getClasspath( referencedProject, visited ) );
+            }
+        }
+        String outputPath = getOutputPath( project );
+        if( !outputPath.trim().equals( "" ) )
+            set.add( outputPath );
+        return set;
+    }
 	/**
 	 * creates a new compiler configuration
 	 * @param characterEncoding
