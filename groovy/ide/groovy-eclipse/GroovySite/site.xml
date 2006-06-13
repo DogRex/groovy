@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/org.codehaus.groovy.groovy.feature_1.0.0.jar" id="org.codehaus.groovy.groovy.feature" version="1.0.0">
-      <category name="Groovy"/>
-   </feature>
+   <description url="http://dist.codehaus.org/groovy/distributions/update">
+      Groovy Distribution Directory
+   </description>
+   <feature url="features/org.codehaus.groovy.eclipse.feature_1.0.0.jar" id="org.codehaus.groovy.eclipse.feature" version="1.0.0"/>
    <category-def name="Groovy" label="Groovy"/>
 </site>
