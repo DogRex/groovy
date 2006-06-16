@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.codehaus.groovy.eclipse.GroovyPlugin;
+import org.codehaus.groovy.eclipse.model.ChangeSet;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.codehaus.groovy.eclipse.model.GroovyProject;
 import org.eclipse.core.resources.IProject;
@@ -48,15 +49,15 @@ public class GroovyBuilder extends IncrementalProjectBuilder {
 		}
 		GroovyPlugin.trace("GroovyBuilder.build project: " + javaProject.getProject().getName() + 
 				"  kind:" + decodeBuildKind(kind));
-		List filesToBuild = null;
+		ChangeSet changeSet = null;
 		if (kind == IncrementalProjectBuilder.FULL_BUILD /* cause endless loop ||
 			kind == IncrementalProjectBuilder.AUTO_BUILD */ ) {
-			filesToBuild = groovyProject.filesForFullBuild();
+			changeSet = groovyProject.filesForFullBuild();
 		} else {
 			IResourceDelta delta = getDelta(getProject());
-			filesToBuild = groovyProject.filesForIncrementalBuild(delta, monitor);
+			changeSet = groovyProject.filesForIncrementalBuild(delta, monitor);
 		}
-		GroovyModel.getModel().buildGroovyContent(javaProject, monitor, kind, filesToBuild);
+		GroovyModel.getModel().buildGroovyContent(javaProject, monitor, kind, changeSet);
 		return null;
 	}
 	private String decodeBuildKind(int kind){

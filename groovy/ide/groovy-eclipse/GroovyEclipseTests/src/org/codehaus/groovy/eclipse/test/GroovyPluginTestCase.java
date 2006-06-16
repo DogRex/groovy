@@ -28,8 +28,8 @@ import org.eclipse.jdt.core.JavaModelException;
 public class GroovyPluginTestCase extends EclipseTestCase {
 	private static final List groovyRuntimeJars = new ArrayList();
 	static{
-		groovyRuntimeJars.add("asm-1.4.3.jar");
-		groovyRuntimeJars.add("groovy-1.0-beta-8-SNAPSHOT.jar");
+		groovyRuntimeJars.add("commons-io-1.2.jar");
+		groovyRuntimeJars.add("groovy-all-1.0-RC-01-SNAPSHOT.jar");
 	};
 	public void testNatureAddAndRemove() throws CoreException {
 		IProject project = testProject.getProject();

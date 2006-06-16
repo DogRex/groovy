@@ -12,8 +12,7 @@
  ******************************************************************************/
 package org.codehaus.groovy.eclipse.test;
 
-import java.util.List;
-
+import org.codehaus.groovy.eclipse.model.ChangeSet;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -21,7 +20,6 @@ import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jdt.core.IJavaModelMarker;
 
 public class GroovyMarkerTestCase extends EclipseTestCase {
 
@@ -37,9 +35,9 @@ public class GroovyMarkerTestCase extends EclipseTestCase {
 	}
 
 	public void testErrorMarker() throws Exception {
-		List filesToBuild = model.getProject(testProject.getProject()).filesForFullBuild(); 
+		ChangeSet changeSet = model.getProject(testProject.getProject()).filesForFullBuild(); 
 		model.buildGroovyContent(testProject.getJavaProject(), new NullProgressMonitor(),
-								IncrementalProjectBuilder.FULL_BUILD, filesToBuild, true);
+								IncrementalProjectBuilder.FULL_BUILD, changeSet, true);
 		IMarker[] markers = getFailureMarkers();
 		assertEquals(1,markers.length);
 		IMarker marker = markers[0];
@@ -51,11 +49,11 @@ public class GroovyMarkerTestCase extends EclipseTestCase {
 	}
 
 	public void testMarkerClearing() throws Exception {
-		List filesToBuild = model.getProject(testProject.getProject()).filesForFullBuild(); 
+		ChangeSet changeSet = model.getProject(testProject.getProject()).filesForFullBuild(); 
 		model.buildGroovyContent(testProject.getJavaProject(), new NullProgressMonitor(),
-				IncrementalProjectBuilder.FULL_BUILD, filesToBuild, true);
+				IncrementalProjectBuilder.FULL_BUILD, changeSet, true);
 		model.buildGroovyContent(testProject.getJavaProject(), new NullProgressMonitor(),
-				IncrementalProjectBuilder.FULL_BUILD, filesToBuild, false);
+				IncrementalProjectBuilder.FULL_BUILD, changeSet, false);
 		IMarker[] markers = getFailureMarkers();
 		assertEquals(1, markers.length);
 	}

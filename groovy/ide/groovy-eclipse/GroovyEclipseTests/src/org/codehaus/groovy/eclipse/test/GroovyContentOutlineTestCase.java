@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.codehaus.groovy.eclipse.editor.contentoutline.GroovyASTContentProvider;
 import org.codehaus.groovy.eclipse.editor.contentoutline.GroovyASTLabelProvider;
+import org.codehaus.groovy.eclipse.model.ChangeSet;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
@@ -66,9 +67,9 @@ public class GroovyContentOutlineTestCase extends EclipseTestCase {
 				getClass().getResource("groovyfiles/"+className).openStream());
 		
 		plugin.addGroovyRuntime(testProject.getProject());
-		List filesToBuild = model.getProject(testProject.getProject()).filesForFullBuild(); 
+		ChangeSet changeSet = model.getProject(testProject.getProject()).filesForFullBuild(); 
 		model.buildGroovyContent(testProject.getJavaProject(), new NullProgressMonitor(),
-								IncrementalProjectBuilder.FULL_BUILD, filesToBuild, true);
+								IncrementalProjectBuilder.FULL_BUILD, changeSet, true);
 		GroovyModel model = GroovyModel.getModel();
 		List moduleNodes = model.getModuleNodes(file);
 		provider = new GroovyASTContentProvider(null);

@@ -39,10 +39,6 @@
 
 
 package org.codehaus.groovy.eclipse.model;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
@@ -54,7 +50,7 @@ import org.eclipse.core.resources.IResourceVisitor;
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
 public class FullGroovyBuilder implements IResourceVisitor {
-	private List filesToBuild = new ArrayList();
+    private final ChangeSet changeSet = new ChangeSet().setFullBuild( true );
 	
 	/*
 	 * (non-Javadoc)
@@ -66,13 +62,13 @@ public class FullGroovyBuilder implements IResourceVisitor {
 			String extension = resource.getFileExtension();
 			IFile file = (IFile) resource;
 			if (extension != null && extension.equalsIgnoreCase("groovy")) {
-				filesToBuild.add(file);
+                changeSet.addFileToBuild( file );
 			}
 		}
 		return true;
 	}
-
-	public List getFilesToBuild() {
-		return filesToBuild;
-	}
+	public ChangeSet getChangeSet()
+    {
+	    return changeSet;
+    }
 }

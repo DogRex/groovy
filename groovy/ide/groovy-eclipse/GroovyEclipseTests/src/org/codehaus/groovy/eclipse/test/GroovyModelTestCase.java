@@ -1,26 +1,22 @@
-/*
- * Created on 15-Jan-2004
- * 
- * To change the template for this generated file go to Window - Preferences -
- * Java - Code Generation - Code and Comments
- */
 package org.codehaus.groovy.eclipse.test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.commons.io.IOUtil;
+import org.codehaus.groovy.eclipse.model.ChangeSet;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.JavaModelException;
 
 /**
  * @author MelamedZ
@@ -51,17 +47,77 @@ public class GroovyModelTestCase extends EclipseTestCase {
 			"expecting the compiled class file MainClass.class to be present",
 			new File(outputPath + Path.SEPARATOR + "MainClass.class").exists());
 	}
+	/**
+     *  Testing that .class files are cleaned up if a script is removed. 
+     * @throws Exception
+	 */
+    public void testModelCleanGroovy() 
+    throws Exception
+    {
+        testModelBuildGroovy();
+        final IResource script = deleteScript();
+        assertFalse( new File( script.getLocation().toString() ).exists() );
+        fullProjectBuild();
+        final String outputPath = outputLocation();
+        assertFalse( "expecting the compiled class file MainClass.class to be gone: " + outputPath,
+                     new File( outputPath + Path.SEPARATOR + "MainClass.class" ).exists() );
+    }
+    /**
+     * This test tries to assure us that if you rename a class within a script,
+     * the old .class file is removed.
+     * @throws Exception
+     */
+    public void testModelRenameGroovy()
+    throws Exception
+    {
+        testModelBuildGroovy();
+        deleteScript();
+        testProject.createGroovyTypeAndPackage( "pack1",
+                                                "MainClass.groovy",
+                                                "class MainClass1 { static void main(args){}}");
+        fullProjectBuild();
+        final String outputPath = outputLocation();
+        assertFalse( "expecting the compiled class file MainClass.class to be gone: " + outputPath,
+                     new File( outputPath + Path.SEPARATOR + "MainClass.class" ).exists() );
+        assertTrue( "expecting the compiled class file MainClass1.class to be there: " + outputPath,
+                    new File( outputPath + Path.SEPARATOR + "MainClass1.class" ).exists() );
+    }
 
+    private String outputLocation() 
+    throws JavaModelException
+    {
+        final String outputPath = testProject.getProject().getLocation().toString() 
+                                + Path.SEPARATOR 
+                                + testProject.getJavaProject().getOutputLocation().removeFirstSegments( 1 ).toString();
+        return outputPath;
+    }
+
+    private IResource deleteScript() 
+    throws CoreException
+    {
+        final IResource script = testProject.getProject().findMember( "src/pack1/MainClass.groovy" );
+        script.delete( true, null );
+        return script;
+    }
+    private void fullProjectBuild()
+    {
+        final ChangeSet changeSet = model.getProject( testProject.getProject() ).filesForFullBuild(); 
+        model.buildGroovyContent( testProject.getJavaProject(),
+                                  new NullProgressMonitor(),
+                                  IncrementalProjectBuilder.FULL_BUILD, changeSet, true);
+    }
+    
 	private void createAndBuildGroovyClassWithMain() throws CoreException {
 		disableAutoGroovySupport();
 		testProject.createGroovyTypeAndPackage(
 			"pack1",
 			"MainClass.groovy",
 			"class MainClass { static void main(args){}}");
+        final IResource script = testProject.getProject().findMember( "src/pack1/MainClass.groovy" );
+        assertNotNull( script );
+        assertTrue( script.exists() );
 		plugin.addGroovyRuntime(testProject.getProject());
-		List filesToBuild = model.getProject(testProject.getProject()).filesForFullBuild(); 
-		model.buildGroovyContent(testProject.getJavaProject(), new NullProgressMonitor(),
-								IncrementalProjectBuilder.FULL_BUILD, filesToBuild, true);
+		fullProjectBuild();
 	}
 
 	public void testRunGroovyMainWithArgs() throws CoreException, IOException, InterruptedException {
@@ -74,9 +130,7 @@ public class GroovyModelTestCase extends EclipseTestCase {
 				getClass().getResource("groovyfiles/write-args-to-file.groovy").openStream());
 
 		plugin.addGroovyRuntime(testProject.getProject());
-		List filesToBuild = model.getProject(testProject.getProject()).filesForFullBuild(); 
-		model.buildGroovyContent(testProject.getJavaProject(), new NullProgressMonitor(),
-								IncrementalProjectBuilder.FULL_BUILD, filesToBuild, true);
+		fullProjectBuild();
 		String[] args = new String[] { tempFileName, "zohar", "james", "jon" };
 		model.runGroovyMain(groovyFile, args);
 		String expectedText = tempFileName + "zoharjamesjonthe end";
@@ -91,9 +145,7 @@ public class GroovyModelTestCase extends EclipseTestCase {
 				getClass().getResource("groovyfiles/write-args-to-file.groovy").openStream());
 		
 		plugin.addGroovyRuntime(testProject.getProject());
-		List filesToBuild = model.getProject(testProject.getProject()).filesForFullBuild(); 
-		model.buildGroovyContent(testProject.getJavaProject(), new NullProgressMonitor(),
-								IncrementalProjectBuilder.FULL_BUILD, filesToBuild, true);
+		fullProjectBuild();
 		final String tempFileName = getTempFileName();
 		String[] args = new String[] { tempFileName, "zohar", "james", "jon" };
 		model.runGroovyMain("TestProject", "pack1.MainClass", args);

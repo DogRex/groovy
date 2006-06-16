@@ -52,19 +52,18 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
  * Preferences - Java - Code Generation - Code and Comments
  */
 public class IncrementalGroovyBuilder implements IResourceDeltaVisitor {
-	List filesToBuild = new ArrayList();
-	boolean doFullBuild = false;
+    private final ChangeSet changeSet = new ChangeSet().setFullBuild( false );
 	
 	public boolean visit(IResourceDelta delta) {
 		String kind = null;
 		switch (delta.getKind()) {
 		case IResourceDelta.ADDED:
 			kind = "ADDED";
-			addFile(delta); // compile newly added files
+			addFileToBuild(delta); // compile newly added files
 			break;
 		case IResourceDelta.CHANGED:
 			kind = "CHANGED";
-			addFile(delta); // compile changes source
+			addFileToBuild(delta); // compile changes source
 			break;
 		case IResourceDelta.TYPE:
 			kind = "TYPE"; // TODO: don't know what this is
@@ -92,7 +91,7 @@ public class IncrementalGroovyBuilder implements IResourceDeltaVisitor {
             break;
 		case IResourceDelta.MOVED_TO:
 			kind = "TYPE MOVED_TO";
-			addFile(delta);
+			addFileToBuild(delta);
             break;
 		case IResourceDelta.NO_CHANGE:
 			kind = "NO_CHANGE";
@@ -102,39 +101,44 @@ public class IncrementalGroovyBuilder implements IResourceDeltaVisitor {
             break;
 		case IResourceDelta.REMOVED:
 			kind = "REMOVED";       // TODO: delete existing class files for source file
+            addFileToRemove( delta );
             break;
 		case IResourceDelta.REMOVED_PHANTOM:
 			kind = "REMOVED_PHANTOM"; // TODO: don't know what this is
             break;
 		case IResourceDelta.REPLACED:
 			kind = "REPLACED";		// recompile file
-			addFile(delta);
+			addFileToBuild(delta);
             break;
 		case IResourceDelta.SYNC:
 			kind = "SYNC";			// TODO: full build ?
             break;
 		}
 		if (".classpath".equals(delta.getResource().getName())){
-			doFullBuild = true;
+            changeSet.setFullBuild( true );
 		}
 		System.out.println("incremental groovy builder resource:" + delta.getResource().getName() +
 				" change kind:" + kind);
 		return true; // visit children too
 	}
 	
-	private void addFile(IResourceDelta delta){
+	private void addFileToBuild(IResourceDelta delta){
 		String fileExtension = delta.getResource().getFileExtension();
 		if (fileExtension != null && fileExtension.equalsIgnoreCase("groovy")){
 			IFile file = (IFile) delta.getResource().getAdapter(IFile.class);
-			filesToBuild.add(file);
+            changeSet.addFileToBuild( file );
 		}
 	}
+    private void addFileToRemove(IResourceDelta delta){
+        String fileExtension = delta.getResource().getFileExtension();
+        if (fileExtension != null && fileExtension.equalsIgnoreCase("groovy")){
+            IFile file = (IFile) delta.getResource().getAdapter(IFile.class);
+            changeSet.addFileToRemove( file );
+        }
+    }
+	public ChangeSet getChangeSet()
+    {
+	    return changeSet;
+    }
 
-	public List getFilesToBuild() {
-		return filesToBuild;
-	}
-
-	public void setFilesToBuild(List filesToBuild) {
-		this.filesToBuild = filesToBuild;
-	}
 }

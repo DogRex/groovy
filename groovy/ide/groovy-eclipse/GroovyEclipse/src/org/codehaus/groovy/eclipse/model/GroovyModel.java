@@ -82,13 +82,13 @@ public class GroovyModel {
 	/**
 	 * @param javaProject
 	 */
-	public void buildGroovyContent(IJavaProject javaProject, IProgressMonitor monitor, int kind, List filesToBuild, boolean generateClassFiles) {
+	public void buildGroovyContent(IJavaProject javaProject, IProgressMonitor monitor, int kind, ChangeSet changeSet, boolean generateClassFiles) {
 		GroovyProject gp = getGroovyProject(javaProject);
-		gp.buildGroovyContent(monitor, kind, filesToBuild, generateClassFiles);
+		gp.buildGroovyContent(monitor, kind, changeSet, generateClassFiles);
 	}
-	public void buildGroovyContent(IJavaProject javaProject, IProgressMonitor monitor, int kind, List filesToBuild) {
+	public void buildGroovyContent(IJavaProject javaProject, IProgressMonitor monitor, int kind, ChangeSet changeSet) {
 		GroovyProject gp = getGroovyProject(javaProject);
-		gp.buildGroovyContent(monitor, kind, filesToBuild);
+		gp.buildGroovyContent(monitor, kind, changeSet);
 	}
 
 	/**

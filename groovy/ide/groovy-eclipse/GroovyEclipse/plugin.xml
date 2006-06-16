@@ -14,6 +14,8 @@
       <library name="lib/groovy-all-1.0-RC-01-SNAPSHOT.jar">
          <export name="*"/>
       </library>
+      <library name="lib/commons-io-1.2.jar">
+      </library>
     </runtime>
    
    <requires>

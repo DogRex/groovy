@@ -5,10 +5,9 @@
  * Java - Code Generation - Code and Comments
  */
 package org.codehaus.groovy.eclipse.model;
-
 import groovy.lang.GroovyClassLoader;
-
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -20,7 +19,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
+import org.apache.commons.io.FileUtils;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.ast.MethodNode;
@@ -68,17 +67,13 @@ public class GroovyProject {
 	private IJavaProject javaProject;
 
 	// maps class name to a list of org.codehaus.groovy.ast.ModuleNode
-	private Map classNameModuleNodeMap = new HashMap();
+	private Map scriptPathModuleNodeMap = new HashMap();
 	
 	private CompilerConfiguration compilerConfiguration = new CompilerConfiguration();
 
 	public static final String GROOVY_ERROR_MARKER = "org.codehaus.groovy.eclipse.groovyFailure";
 
 	private List listeners = new ArrayList();
-	// TODO: (by Scott Hickey - I'm not sure that it makes sense to have this as an
-	// instance variables since the files to build are really passed in by the Groovy Builder
-	// for full and incremental builds.
-	private List filesToBuild = new ArrayList();
 
 	// TODO: We need to keep track if a full build has occurred without errors or not.
 	// If it hasn't, methods that do things like return all runnable classes with a main
@@ -142,43 +137,56 @@ public class GroovyProject {
 	 * @param monitor
 	 * @param kind
 	 */
-	public void buildGroovyContent(IProgressMonitor monitor, int kind, List filesToBuild) {
+	public void buildGroovyContent(IProgressMonitor monitor, int kind, ChangeSet changeSet) {
 		Preferences prefs = GroovyPlugin.getDefault().getPluginPreferences();
 		boolean generateClassFiles = prefs.getBoolean(PreferenceConstants.GROOVY_GENERATE_CLASS_FILES);
-		buildGroovyContent(monitor, kind, filesToBuild, generateClassFiles);
+		buildGroovyContent(monitor, kind, changeSet, generateClassFiles);
 	}
 	/**
 	 * Used by builders to compile Groovy source 
 	 * 
 	 * @param monitor
 	 * @param kind
-	 * @param filesToBuild
+	 * @param changeSet
 	 * @param generateClassFiles
 	 */
-	public void buildGroovyContent(IProgressMonitor monitor, int kind, List filesToBuild, boolean generateClassFiles) {
-		this.filesToBuild.clear();
-		this.filesToBuild.addAll(filesToBuild);
-		try {
-			setClassPath(javaProject);
-			setOutputDirectory(javaProject);
-			compileGroovyFiles(monitor);
-			if (kind == IncrementalProjectBuilder.FULL_BUILD) {
+	public void buildGroovyContent( final IProgressMonitor monitor, 
+                                    final int kind, 
+                                    final ChangeSet changeSet, 
+                                    final boolean generateClassFiles ) 
+    {
+		try 
+        {
+			setClassPath( javaProject );
+			setOutputDirectory( javaProject );
+			compileGroovyFiles( monitor );
+			if( kind == IncrementalProjectBuilder.FULL_BUILD ) 
+            {
 				trace("beginning FULL BUILD - GroovyProject.buildGroovyContent()");
+                // Removing all .class files that we are aware of.
+                //  Making a defensive copy since removeClassFiles() will modify the overlying map.
+                final Set keySet = new LinkedHashSet( scriptPathModuleNodeMap.keySet() );
+                for( final Iterator iterator = keySet.iterator(); iterator.hasNext(); )
+                {
+                    final String scriptPath = ( String )iterator.next();
+                    removeClassFiles( scriptPath );
+                }
 				// get a list of all the groovy files in the project
-				classNameModuleNodeMap.clear();
-			}else {
+				scriptPathModuleNodeMap.clear();
+			} 
+            else 
+            {
 				trace("beginning INCREMENTAL BUILD - GroovyProject.buildGroovyContent()");
+                // Removing .class files associated with changeSet.filesToRemove
+                removeClassFiles( changeSet.filesToRemove() );
 			}
-			for (Iterator it = filesToBuild.iterator(); it.hasNext();) {
-				IFile f = (IFile) it.next();
-				deleteErrorMarkers(f);
-			}
-			String[] fileNames = createFileNameArrayFromIFileList(filesToBuild);
-			trace("filesToBuild:" + filesToBuild);
-			compileGroovyFiles(fileNames, generateClassFiles);
+			for( final Iterator it = changeSet.getFilesToBuild().iterator(); it.hasNext();) 
+				deleteErrorMarkers( ( IFile )it.next() );
+			trace("filesToBuild:" + changeSet);
+			compileGroovyFiles( changeSet, generateClassFiles );
 			monitor.worked(1);
 			// TODO: Do we really want to do this on a full build
-			for (Iterator it = filesToBuild.iterator(); it.hasNext();) {
+			for (Iterator it = changeSet.getFilesToBuild().iterator(); it.hasNext();) {
 				IFile f = (IFile) it.next();
 				fireGroovyFileBuilt(f);
 			}
@@ -187,8 +195,91 @@ public class GroovyProject {
 			GroovyPlugin.getPlugin().logException("error building groovy files", e);
 		}
 	}
-	
 	/**
+     * This method assumes the collection of files are pointing to the groovy source
+     * code files that have been removed.  It extracts the package name by querying the
+     * scriptPathModuleNodeMap attribute and then looks in the java project default output location
+     * for files that have the class names given by the scriptPathModuleNodeMap attribute.
+     * 
+     * @param files
+	 */
+	private void removeClassFiles( final IFile[] files )
+    {
+	    if( files == null || files.length == 0 )
+            return;
+        for( int i = 0; i < files.length; i++ )
+            removeClassFiles( getSourceFileKey( files[ i ] ) );
+    }
+    private void removeClassFiles( final String filePath )
+    {
+        if( filePath == null || filePath.trim().equals( "" ) )
+            return;
+        removeClassFiles( removeModuleNodes( filePath ) );
+    }
+    private void removeClassFiles( final List modules )
+    {
+        if( modules == null || modules.size() == 0 )
+            return;
+        final List classes = getClassesForModules( modules );
+        for( final Iterator iterator = classes.iterator(); iterator.hasNext(); )
+            removeClassFiles( ( ClassNode )iterator.next() );
+    }
+    private void removeClassFiles( final ModuleNode module )
+    {
+        if( module == null )
+            return;
+        final List classes = module.getClasses();
+        for( final Iterator iterator = classes.iterator(); iterator.hasNext(); )
+            removeClassFiles( ( ClassNode )iterator.next() );
+    }
+    private void removeClassFiles( final ClassNode clase )
+    {
+        if( clase == null )
+            return;
+        try
+        {
+            final String output = getOutputOSPath( javaProject );
+            final String packageLocation = clase.hasPackageName() ? output + File.separator + clase.getPackageName().replace( '.', File.separatorChar ) : output;
+            final File directory = new File( packageLocation );
+            if( !directory.exists() || !directory.isDirectory() )
+                return;
+            final File[] directoryFiles = directory.listFiles();
+            removeClassFiles( clase.getNameWithoutPackage(), directoryFiles );
+        }
+        catch( final JavaModelException e )
+        {
+            GroovyPlugin.getPlugin().logException( "Error getting java output location for " + javaProject.getElementName(), e );
+        }
+    }
+    private void removeClassFiles( final String className, 
+                                   final File[] directoryFiles )
+    {
+        if( className == null || className.trim().equals( "" ) || directoryFiles == null )
+            return;
+        for( int i = 0; i < directoryFiles.length; i++ )
+        {
+            try
+            {
+                if( directoryFiles[ i ].getName().equals( className + ".class" ) )
+                {
+                    FileUtils.forceDelete( directoryFiles[ i ] );
+                    continue;
+                }
+                if( directoryFiles[ i ].getName().startsWith( className + "$" )
+                    && directoryFiles[ i ].getName().endsWith( ".class" ) )
+                {
+                    FileUtils.forceDelete( directoryFiles[ i ] );
+                    continue;
+                }
+            }
+            catch( final IOException ioe )
+            {
+                GroovyPlugin.getPlugin().logException( "Error deleting " + directoryFiles[ i ].getName(), ioe );
+            }
+        }
+    }
+
+    /**
 	 * Invokes the Groovy compiler and updates the map that
 	 * contains the AST information for the compiled classes.
 	 * 
@@ -197,9 +288,11 @@ public class GroovyProject {
 	 * @param fileNames
 	 * @param generateClassFiles
 	 */
-	private void compileGroovyFiles(String[] fileNames, boolean generateClassFiles) {
+	private void compileGroovyFiles( final ChangeSet changeSet, 
+                                     final boolean generateClassFiles ) 
+    {
 		CompilationUnit compilationUnit = createCompilationUnit("");
-		compilationUnit.addSources(fileNames);
+		compilationUnit.addSources( changeSet.fileNamesToBuild() );
 		try {
 			// call the compiler
 			compilationUnit.compile(generateClassFiles ? Phases.ALL : Phases.CANONICALIZATION);
@@ -207,7 +300,7 @@ public class GroovyProject {
 			CompileUnit compileUnit = compilationUnit.getAST();
 			updateClassNameModuleNodeMap(compileUnit.getModules());
 		} catch (Exception e) {
-			handleCompilationError(this.filesToBuild, e);
+			handleCompilationError( changeSet.getFilesToBuild(), e);
 		}
 	}
 
@@ -235,25 +328,18 @@ public class GroovyProject {
 	 * yet to be created during the current working session.
 	 * @param file
 	 */
-	public void compileGroovyFile(IFile file){
-		boolean generateClassFiles = false;
-		compileGroovyFile(file, generateClassFiles);
+	public void compileGroovyFile( final IFile file ) 
+    {
+		compileGroovyFile( file, false );
 	}
 	/**
 	 * Recompile a source file and specify the creation of a .class file. 
 	 */
-	public void compileGroovyFile(IFile file, boolean generateClassFiles){
-		List fileList = new ArrayList();
-		fileList.add(file);
-		IProgressMonitor monitor = new NullProgressMonitor();
-		GroovyModel.getModel().buildGroovyContent(javaProject, monitor, IncrementalProjectBuilder.INCREMENTAL_BUILD, fileList, generateClassFiles);
-	}
-	/**
-	 * Recompile a list of source file and specify the creation of a .class file. 
-	 */
-	public void compileGroovyFiles(List listOfIFiles, boolean generateClassFiles){
-		IProgressMonitor monitor = new NullProgressMonitor();
-		GroovyModel.getModel().buildGroovyContent(javaProject, monitor, IncrementalProjectBuilder.INCREMENTAL_BUILD, listOfIFiles, generateClassFiles);
+	public void compileGroovyFile( final IFile file, 
+                                   final boolean generateClassFiles )
+    {
+        final ChangeSet changeSet = new ChangeSet().addFileToBuild( file );
+		GroovyModel.getModel().buildGroovyContent( javaProject, new NullProgressMonitor(), IncrementalProjectBuilder.INCREMENTAL_BUILD, changeSet, generateClassFiles );
 	}
 
 	/**
@@ -279,6 +365,13 @@ public class GroovyProject {
 				+ project.getOutputLocation().toString();
 		return outputPath;
 	}
+    private static String getOutputOSPath( final IJavaProject project ) 
+    throws JavaModelException 
+    {
+        final String outputPath = project.getProject().getParent().getLocation().toOSString() 
+                + project.getOutputLocation().toOSString();
+        return outputPath;
+    }
 	/**
 	 *  Sets the classpath on the project's compiler configuration 
 	 *  instance variable, this.compilerConfiguration
@@ -472,7 +565,7 @@ public class GroovyProject {
 	 */
 	public String[] findAllRunnableClasses() {
 		List results = new ArrayList();
-		for (Iterator iter = classNameModuleNodeMap.values().iterator(); iter.hasNext();) {
+		for (Iterator iter = scriptPathModuleNodeMap.values().iterator(); iter.hasNext();) {
 			List moduleList = (List) iter.next();
 			List classes = getClassesForModules(moduleList);
 			for (Iterator iterator = classes.iterator(); iterator.hasNext();) {
@@ -531,9 +624,13 @@ public class GroovyProject {
 		return javaProject;
 	}
 
-	private List getModuleNodes (String className) {
-		return (List) classNameModuleNodeMap.get(className);
+	private List getModuleNodes (String scriptPath) {
+		return (List) scriptPathModuleNodeMap.get(scriptPath);
 	}
+    private List removeModuleNodes( final String scriptPath ) 
+    {
+        return ( List )scriptPathModuleNodeMap.remove( scriptPath );
+    }
 	public List getModuleNodes (IFile file) {
 		String className = getSourceFileKey(file);
 		List l = getModuleNodes(className);
@@ -573,7 +670,7 @@ public class GroovyProject {
 	 * @param moduleList
 	 * @return
 	 */
-	public List getClassesForModules(List moduleList){
+	public static List getClassesForModules(List moduleList){
 		List l = new ArrayList();
 		if (moduleList != null) {
 			for(Iterator iter = moduleList.iterator(); iter.hasNext();){
@@ -642,52 +739,91 @@ public class GroovyProject {
 			}
 		}
 	}
-	private void updateClassNameModuleNodeMap(List moduleNodes) {
-		Map tmpMap = new HashMap();
-		for(Iterator iter = moduleNodes.iterator(); iter.hasNext();){
-			ModuleNode moduleNode = (ModuleNode) iter.next();
-			String key = moduleNode.getDescription();
-			List moduleNodeList = (List) tmpMap.get(key);
-			if (moduleNodeList == null) { 
+	private void updateClassNameModuleNodeMap( final List moduleNodes ) 
+    {
+		final Map updateMap = new HashMap();
+		for( final Iterator iter = moduleNodes.iterator(); iter.hasNext();)
+        {
+			final ModuleNode moduleNode = ( ModuleNode )iter.next();
+			final String key = moduleNode.getDescription();
+			List moduleNodeList = ( List )updateMap.get( key );
+			if( moduleNodeList == null ) 
+            { 
 				moduleNodeList = new ArrayList();
-				tmpMap.put(key,moduleNodeList);
+				updateMap.put( key, moduleNodeList );
 			}
-			moduleNodeList.add(moduleNode);
+			moduleNodeList.add( moduleNode );
 		}
-		classNameModuleNodeMap.putAll(tmpMap);
+        // Going to check for any removed/renamed class/module nodes.
+        for( final Iterator iterator = updateMap.keySet().iterator(); iterator.hasNext(); )
+        {
+            final String scriptPath = ( String )iterator.next();
+            if( !scriptPathModuleNodeMap.containsKey( scriptPath ) )
+                continue;
+            final List modules = ( List )scriptPathModuleNodeMap.get( scriptPath );
+            final List updatedModules = ( List )updateMap.get( scriptPath );
+            for( final Iterator modulesIterator = modules.iterator(); modulesIterator.hasNext(); )
+            {   
+                final ModuleNode module = ( ModuleNode )modulesIterator.next();
+                boolean found = false;
+                for( final Iterator updatedIterator = updatedModules.iterator(); updatedIterator.hasNext(); )
+                {
+                    final ModuleNode updated = ( ModuleNode )updatedIterator.next();
+                    if( updated.getDescription().equals( module.getDescription() ) )
+                    {
+                        final List removedClasses = compareModuleNodes( updated, module );
+                        for( final Iterator removedIterator = removedClasses.iterator(); removedIterator.hasNext(); )
+                            removeClassFiles( ( ClassNode )removedIterator.next() );
+                        found = true;
+                        break;
+                    }
+                }
+                if( !found )
+                    removeClassFiles( module );
+            }
+        }
+		scriptPathModuleNodeMap.putAll( updateMap );
 	}
-	/**
-	 * create array of filenames from list of IFiles
-	 * This is primarily used to take the IFiles passed in for compiling
-	 * and convert them to strings that can be passed in to the 
-	 * Groovy compiler. 
-	 * 
-	 * @param iFileList
-	 * @return
-	 */
-	private String[] createFileNameArrayFromIFileList(List iFileList) {
-		String[] fileNames = new String[iFileList.size()];
-		for(int i=0; i < iFileList.size(); i++ ){
-			IFile f = (IFile) iFileList.get(i);
-			fileNames[i] = (f.getLocation().toPortableString());
-		}
-		return fileNames;
-	}
-	/**
+    /**
+     * This method returns a list of class nodes that are in module but not in updated,
+     * i.e. the set of ClassNodes that has been removed.
+     * @param updated
+     * @param module
+     * @return
+     */
+	private List compareModuleNodes( final ModuleNode updated, 
+                                     final ModuleNode module )
+    {
+        final List list = new ArrayList();
+        if( updated == null )
+            return module.getClasses();
+        if( module == null )
+            return list;
+        final List updatedClasses = updated.getClasses();
+        for( final Iterator modIterator = module.getClasses().iterator(); modIterator.hasNext(); )
+        {
+            final ClassNode clase = ( ClassNode )modIterator.next();
+            if( !updatedClasses.contains( clase ) )
+                list.add( clase );
+        }
+        return list;
+    }
+
+    /**
 	 * This returns a string for the IFile that is used to generate the keys
 	 * for classNode maps and moduleNode maps.
 	 * @param file
 	 * @return
 	 */
-	public String getSourceFileKey(IFile file){
-		String key = file.getRawLocation().toOSString();
-		return key;
+	public static String getSourceFileKey( final IFile file )
+    {
+		return file.getRawLocation().toOSString();
 	}
 	/**
 	 * Remove the GROOOVY error markers from a groovy file (IFile) in the project
 	 * @param file
 	 */
-	private void deleteErrorMarkers(IFile file){
+	public static void deleteErrorMarkers(IFile file){
 		try {
 			file.deleteMarkers(GROOVY_ERROR_MARKER, false, IResource.DEPTH_INFINITE);
 		} catch (CoreException e) {
@@ -706,7 +842,7 @@ public class GroovyProject {
 	 * 
 	 * @return
 	 */
-	public List filesForFullBuild() {
+	public ChangeSet filesForFullBuild() {
 		FullGroovyBuilder visitor = new FullGroovyBuilder();
 		try {
 			javaProject.getProject().accept(visitor);
@@ -714,7 +850,7 @@ public class GroovyProject {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return visitor.getFilesToBuild();
+		return visitor.getChangeSet();
 	}
 	
 	/**
@@ -726,20 +862,20 @@ public class GroovyProject {
 	 * @param monitor
 	 * @return
 	 */
-	public List filesForIncrementalBuild(IResourceDelta delta, IProgressMonitor monitor) {
-		List filesToBuild = null;
+	public ChangeSet filesForIncrementalBuild(IResourceDelta delta, IProgressMonitor monitor) {
+		ChangeSet changeSet = null;
 		IncrementalGroovyBuilder v = new IncrementalGroovyBuilder();
 		try {
 			delta.accept(v);
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
-		if (v.doFullBuild == true) {
-			filesToBuild = filesForFullBuild();
+		if (v.getChangeSet().isFullBuild()) {
+			changeSet = filesForFullBuild();
 		} else {
-			filesToBuild = v.getFilesToBuild();
+			changeSet = v.getChangeSet();
 		}
-		return filesToBuild;
+		return changeSet;
 	}
 
 }
