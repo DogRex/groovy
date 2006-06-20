@@ -6,6 +6,7 @@
  */
 package org.codehaus.groovy.eclipse.model;
 import groovy.lang.GroovyClassLoader;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -19,7 +20,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.ast.MethodNode;
@@ -43,10 +46,12 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Preferences;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
@@ -128,7 +133,11 @@ public class GroovyProject {
 		// Note that enabling debug will disable class generation
 		// compilerConfiguration.setDebug(true);
 	}
-
+    public GroovyProject rebuildAll( final IProgressMonitor monitor )
+    {
+        buildGroovyContent( monitor, IncrementalProjectBuilder.FULL_BUILD, filesForFullBuild() );
+        return this;
+    }
 	/**
 	 *  Overloaded method used by builders to compile groovy files that
 	 *  defaults to the variable for generating .class files to 
@@ -150,11 +159,12 @@ public class GroovyProject {
 	 * @param changeSet
 	 * @param generateClassFiles
 	 */
-	public void buildGroovyContent( final IProgressMonitor monitor, 
+	public void buildGroovyContent( final IProgressMonitor progressMonitor, 
                                     final int kind, 
                                     final ChangeSet changeSet, 
                                     final boolean generateClassFiles ) 
     {
+        final IProgressMonitor monitor = progressMonitor != null ? progressMonitor : new NullProgressMonitor();
 		try 
         {
 			setClassPath( javaProject );
@@ -277,6 +287,7 @@ public class GroovyProject {
                 GroovyPlugin.getPlugin().logException( "Error deleting " + directoryFiles[ i ].getName(), ioe );
             }
         }
+        refreshOutput();
     }
 
     /**
@@ -411,7 +422,6 @@ public class GroovyProject {
         }
         IWorkspaceRoot root = javaProject.getProject().getWorkspace().getRoot();
         IClasspathEntry[] cpEntries = javaProject.getResolvedClasspath(false);
-        StringBuffer classPath = new StringBuffer();
         for (int i = 0; i < cpEntries.length; i++) {
             IClasspathEntry entry = cpEntries[i];
             IResource resource = root.findMember(entry.getPath());
@@ -478,7 +488,7 @@ public class GroovyProject {
 		GroovyPlugin.trace("compilation error : " + e.getMessage());
 		IFile file = (IFile)(fileList.get(0));
 		try {
-			file.getWorkspace().run(new AddErrorMarker(fileList, e), null);
+			ResourcesPlugin.getWorkspace().run(new AddErrorMarker(fileList, e), null);
 		} catch (CoreException ce) {
 			GroovyPlugin.getPlugin().logException("error compiling " + file.getName(), ce);
 		}
@@ -495,7 +505,7 @@ public class GroovyProject {
 	 */
 	public void runGroovyMain(IFile file, String[] args) throws CoreException {
 		List classNodeList = getClassesForModules( getModuleNodes(file));
-		if (classNodeList == null) {
+		if (classNodeList == null || classNodeList.size() == 0 ) {
 			GroovyPlugin.trace("failed to run " + file.getFullPath().toString() + "due to missing compilation unit ");
 			GroovyPlugin.getPlugin().getDialogProvider().errorRunningGroovyFile(file,
 				new Exception("failed to find a classNode, try rebuilding"));
@@ -517,6 +527,7 @@ public class GroovyProject {
 		} else {
 			className = classNode.getName();
 		}
+        System.out.println( "GroovyProject.runGroovyMain(): " + className );
 		runGroovyMain(className,args);
 	}
 
@@ -710,7 +721,7 @@ public class GroovyProject {
 	/**
 	 * 
 	 */
-	public void addGroovyNature(IProject project) throws CoreException {
+	public static void addGroovyNature(IProject project) throws CoreException {
 		trace("GroovyPlugin.addGroovyNature()");
 		if (project.hasNature(GroovyNature.GROOVY_NATURE))
 			return;
@@ -724,7 +735,7 @@ public class GroovyProject {
 		project.setDescription(description, null);
 	}
 
-	public void removeGroovyNature(IProject project) throws CoreException {
+	public static void removeGroovyNature(IProject project) throws CoreException {
 		trace("GroovyPlugin.removeGroovyNature()");
 		IProjectDescription description = project.getDescription();
 		String[] ids = description.getNatureIds();
@@ -754,6 +765,114 @@ public class GroovyProject {
 			}
 			moduleNodeList.add( moduleNode );
 		}
+        updateRemoved( updateMap );
+		scriptPathModuleNodeMap.putAll( updateMap );
+        refreshOutput();
+	}
+    /**
+     * This method looks for any scripts ( ModuleNodes ) that declare themselves
+     * to be in a package where their location in the source folder hierarchy
+     * says otherwise.  So if you have a Script that has a class A where the 
+     * fully qualified type name for A is pack1.A, then the script had better
+     * been in a source folder under the subdirectory pack1.
+     * 
+     *  This is to resolve JIRA Issue: GROOVY-1361
+     */
+    private void checkForInvalidPackageDeclarations()
+    {
+        for( final Iterator keyIterator = scriptPathModuleNodeMap.keySet().iterator(); keyIterator.hasNext(); )
+        {
+            final String key = ( String )keyIterator.next();
+            final List moduleList = ( List )scriptPathModuleNodeMap.get( key );
+            if( moduleList == null || moduleList.size() == 0 )
+                continue;
+            for( final Iterator moduleIterator = moduleList.iterator(); moduleIterator.hasNext(); )
+            {
+                final ModuleNode module = ( ModuleNode )moduleIterator.next();
+                final String packageNameString = module.getPackageName() != null ? module.getPackageName() : "";
+                final File moduleFile = new File( module.getDescription() );
+                final String packageLocation = moduleFile.getParent();
+                if( packageLocation == null )
+                    continue;
+                final String packageName = packageNameString.endsWith( "." ) ? packageNameString.substring( 0, packageNameString.length() - 1 ) : packageNameString;
+                final String packagePath = packageName.replace( '.', File.separatorChar );
+                if( packagePath.equals( "" ) )
+                {
+                    // This is for the default package... why doesn't java just make it illegal??
+                    final IPath[] entries = getSourceDirectories();
+                    boolean found = false;
+                    for( int i = 0; i < entries.length; i++ )
+                    {
+                        final IPath path = entries[ i ];
+                        if( path.toOSString().equals( packageLocation ) )
+                            found = true;
+                    }
+                    if( found )
+                        continue;
+                }
+                if( !packagePath.equals( "" ) && packageLocation.endsWith( packagePath ) )
+                    continue;
+                final IProject project = javaProject.getProject();
+                final String scriptPathString = StringUtils.removeStart( module.getDescription(), project.getLocation().toOSString() );
+                final IPath scriptPath = new Path( scriptPathString );
+                final IFile scriptFile = project.getFile( scriptPath );
+                if( !scriptFile.exists() )
+                    continue;
+                final List fileList = new ArrayList();
+                fileList.add( scriptFile );
+                final String prefix = "Invalid Package declaration in script: ";
+                final String message = prefix + module.getDescription() + " is not in a source folder matching the package declaration: " + packageName;
+                removeDuplicateMarker( module, scriptFile, prefix );
+                handleCompilationError( fileList, new Exception( message ) );
+            }
+        }
+    }
+    private IPath[] getSourceDirectories()
+    {
+        final List list = new ArrayList();
+        try
+        {
+            final IClasspathEntry[] entries = javaProject.getResolvedClasspath( false );
+            for( int i = 0; i < entries.length; i++ )
+            {
+                final IClasspathEntry entry = entries[ i ];
+                if( entry.getEntryKind() != IClasspathEntry.CPE_SOURCE )
+                    continue;
+                list.add( new Path( ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString() + entry.getPath().toOSString() ) );
+            }
+        }
+        catch( final JavaModelException e )
+        {
+            GroovyPlugin.getPlugin().logException( "Error getting the classpath: " + e, e );
+            return new IPath[ 0 ];
+        }
+        return ( IPath[] )list.toArray( new IPath[ 0 ] );
+    }
+    private void removeDuplicateMarker( final ModuleNode module, 
+                                        final IFile scriptFile,
+                                        final String prefix )
+    {
+        try
+        {
+            final IMarker[] markers = scriptFile.findMarkers( GROOVY_ERROR_MARKER, false, IResource.DEPTH_INFINITE );
+            if( markers == null || markers.length == 0 )
+                return;
+            for( int i = 0; i < markers.length; i++ )
+            {
+                final IMarker marker = markers[ i ];
+                if( !marker.getAttribute( "message", "" ).startsWith( prefix ) )
+                    continue;
+                marker.delete();
+            }
+        }
+        catch( final CoreException e )
+        {
+            GroovyPlugin.getPlugin().logException( "Error getting markers: " + GROOVY_ERROR_MARKER + " for script: " + module.getDescription() + ". " + e, e );
+        }
+        return;
+    }
+    private void updateRemoved( final Map updateMap )
+    {
         // Going to check for any removed/renamed class/module nodes.
         for( final Iterator iterator = updateMap.keySet().iterator(); iterator.hasNext(); )
         {
@@ -782,8 +901,22 @@ public class GroovyProject {
                     removeClassFiles( module );
             }
         }
-		scriptPathModuleNodeMap.putAll( updateMap );
-	}
+    }
+    public GroovyProject refreshOutput()
+    {
+        checkForInvalidPackageDeclarations();
+        try
+        {
+            final IResource output = ResourcesPlugin.getWorkspace().getRoot().findMember( javaProject.getOutputLocation() );
+            if( output != null )
+                output.refreshLocal( IResource.DEPTH_INFINITE, new NullProgressMonitor() );
+        }
+        catch( final CoreException e )
+        {
+            GroovyPlugin.getPlugin().logException( "Error refreshing output location, the navigator view could be out of sync: " + e, e );
+        }
+        return this;
+    }
     /**
      * This method returns a list of class nodes that are in module but not in updated,
      * i.e. the set of ClassNodes that has been removed.
@@ -831,7 +964,7 @@ public class GroovyProject {
 			e.printStackTrace();
 		} //$NON-NLS-1$
 	}
-	private void trace(String string) {
+	private static void trace(String string) {
 		GroovyPlugin.trace(string);
 	}
 	/**
@@ -842,13 +975,16 @@ public class GroovyProject {
 	 * 
 	 * @return
 	 */
-	public ChangeSet filesForFullBuild() {
-		FullGroovyBuilder visitor = new FullGroovyBuilder();
-		try {
-			javaProject.getProject().accept(visitor);
-		} catch (CoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	public ChangeSet filesForFullBuild() 
+    {
+		final FullGroovyBuilder visitor = new FullGroovyBuilder( javaProject );
+		try 
+        {
+			javaProject.getProject().accept( visitor );
+		} 
+        catch( final CoreException e ) 
+        {
+            GroovyPlugin.getPlugin().logException( "Error traversing project: " + javaProject.getProject().getName() + ". " + e, e );
 		}
 		return visitor.getChangeSet();
 	}
@@ -864,7 +1000,7 @@ public class GroovyProject {
 	 */
 	public ChangeSet filesForIncrementalBuild(IResourceDelta delta, IProgressMonitor monitor) {
 		ChangeSet changeSet = null;
-		IncrementalGroovyBuilder v = new IncrementalGroovyBuilder();
+		IncrementalGroovyBuilder v = new IncrementalGroovyBuilder( javaProject );
 		try {
 			delta.accept(v);
 		} catch (CoreException e) {

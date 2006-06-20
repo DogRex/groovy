@@ -16,8 +16,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 import org.apache.commons.io.IOUtil;
 import org.eclipse.core.resources.IContainer;
@@ -30,10 +28,7 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IPluginDescriptor;
-import org.eclipse.core.runtime.IPluginRegistry;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -67,6 +62,7 @@ public class TestProject {
 		javaProject.setRawClasspath(new IClasspathEntry[0], null);
 
 		createOutputFolder(binFolder);
+        createSourceFolder();
 		addSystemLibraries();
 	}
 
@@ -181,9 +177,16 @@ public class TestProject {
 
 	private IPackageFragmentRoot createSourceFolder() throws CoreException {
 		IFolder folder = project.getFolder("src");
-		folder.create(false, true, null);
-		IPackageFragmentRoot root = javaProject.getPackageFragmentRoot(folder);
-
+        if( !folder.exists() )
+            folder.create(false, true, null);
+        final IClasspathEntry[] entries = javaProject.getResolvedClasspath( false );
+		final IPackageFragmentRoot root = javaProject.getPackageFragmentRoot(folder);
+        for( int i = 0; i < entries.length; i++ )
+        {
+            final IClasspathEntry entry = entries[ i ];
+            if( entry.getPath().equals( folder.getFullPath() ) )
+                return root;
+        }
 		IClasspathEntry[] oldEntries = javaProject.getRawClasspath();
 		IClasspathEntry[] newEntries = new IClasspathEntry[oldEntries.length + 1];
 		System.arraycopy(oldEntries, 0, newEntries, 0, oldEntries.length);

@@ -38,12 +38,10 @@
  */
 package org.codehaus.groovy.eclipse.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
+import org.eclipse.jdt.core.IJavaProject;
 
 /**
  * @author Sarah
@@ -53,7 +51,12 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
  */
 public class IncrementalGroovyBuilder implements IResourceDeltaVisitor {
     private final ChangeSet changeSet = new ChangeSet().setFullBuild( false );
-	
+	private final IJavaProject project;
+    
+    public IncrementalGroovyBuilder( final IJavaProject project )
+    {
+        this.project = project;
+    }
 	public boolean visit(IResourceDelta delta) {
 		String kind = null;
 		switch (delta.getKind()) {
@@ -76,6 +79,7 @@ public class IncrementalGroovyBuilder implements IResourceDeltaVisitor {
             break;
 		case IResourceDelta.CONTENT:
 			kind = "CONTENT"; // TODO: don't know that this is
+            //addFileToBuild( delta );
             break;
 		case IResourceDelta.DESCRIPTION:
 			kind = "DESCRIPTION"; // TODO: don't know what this is
@@ -88,10 +92,12 @@ public class IncrementalGroovyBuilder implements IResourceDeltaVisitor {
             break;
 		case IResourceDelta.MOVED_FROM:
 			kind = "TYPE MOVED_FROM"; // TODO: should delete existing .class files and clean or just build new file
+            //addFileToBuild( delta );
+            //addFileToRemove( project.getProject().getFile( delta.getMovedFromPath() ) );
             break;
 		case IResourceDelta.MOVED_TO:
 			kind = "TYPE MOVED_TO";
-			addFileToBuild(delta);
+			//addFileToBuild(delta);
             break;
 		case IResourceDelta.NO_CHANGE:
 			kind = "NO_CHANGE";
@@ -108,7 +114,7 @@ public class IncrementalGroovyBuilder implements IResourceDeltaVisitor {
             break;
 		case IResourceDelta.REPLACED:
 			kind = "REPLACED";		// recompile file
-			addFileToBuild(delta);
+			//addFileToBuild(delta);
             break;
 		case IResourceDelta.SYNC:
 			kind = "SYNC";			// TODO: full build ?
@@ -122,19 +128,40 @@ public class IncrementalGroovyBuilder implements IResourceDeltaVisitor {
 		return true; // visit children too
 	}
 	
-	private void addFileToBuild(IResourceDelta delta){
-		String fileExtension = delta.getResource().getFileExtension();
-		if (fileExtension != null && fileExtension.equalsIgnoreCase("groovy")){
-			IFile file = (IFile) delta.getResource().getAdapter(IFile.class);
-            changeSet.addFileToBuild( file );
-		}
+	private void addFileToBuild( final IResourceDelta delta )
+    {
+        final IFile file = checkForCompiledScript( delta );
+        if( file == null )
+            return;
+        changeSet.addFileToBuild( file );
 	}
-    private void addFileToRemove(IResourceDelta delta){
-        String fileExtension = delta.getResource().getFileExtension();
-        if (fileExtension != null && fileExtension.equalsIgnoreCase("groovy")){
-            IFile file = (IFile) delta.getResource().getAdapter(IFile.class);
-            changeSet.addFileToRemove( file );
-        }
+    private IFile checkForCompiledScript( final IResourceDelta delta )
+    {
+        if( delta == null )
+            return null;
+        if( !FullGroovyBuilder.isGroovyScript( delta.getResource() ) )
+            return null;
+        final IFile file = ( IFile )delta.getResource().getAdapter( IFile.class );
+        if( !FullGroovyBuilder.isInSourceFolder( file, project ) )
+            return null;
+        return file;
+    }
+    private void addFileToRemove( final IFile file )
+    {
+        if( file == null )
+            return;
+        if( !FullGroovyBuilder.isGroovyScript( file ) )
+            return;
+        if( !FullGroovyBuilder.isInSourceFolder( file, project ) )
+            return;
+        changeSet.addFileToRemove( file );
+    }
+    private void addFileToRemove( final IResourceDelta delta )
+    {
+        final IFile file = checkForCompiledScript( delta );
+        if( file == null )
+            return;
+        changeSet.addFileToRemove( file );
     }
 	public ChangeSet getChangeSet()
     {

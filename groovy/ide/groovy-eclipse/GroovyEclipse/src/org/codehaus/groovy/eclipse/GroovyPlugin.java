@@ -18,16 +18,19 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.text.rules.IPartitionTokenScanner;
 import org.eclipse.osgi.util.ManifestElement;
+import org.eclipse.ui.IStartup;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -36,7 +39,10 @@ import org.osgi.framework.Constants;
 /**
  * The main plugin class to be used in the desktop.
  */
-public class GroovyPlugin extends AbstractUIPlugin {
+public class GroovyPlugin 
+extends AbstractUIPlugin
+implements IStartup
+{
 	//The shared instance.
 	private static GroovyPlugin plugin;
 	
@@ -55,6 +61,8 @@ public class GroovyPlugin extends AbstractUIPlugin {
 	private static final String PLUGIN_ID = "org.codehaus.groovy.eclipse";
 
 	private GroovyFilesChangeListner groovyFilesChangeListner;
+
+    private boolean started = false;
 
 	static {
 		String value = Platform
@@ -225,6 +233,11 @@ public class GroovyPlugin extends AbstractUIPlugin {
 				.getSymbolicName(), 0, message, e); //$NON-NLS-1$
 		getLog().log(status);
 	}
+    public void logWarning( final String message ) 
+    {
+        final IStatus status = new Status( IStatus.WARNING, getBundle().getSymbolicName(), 0, message, null ); //$NON-NLS-1$
+        getLog().log( status );
+    }
 	public void logTraceMessage(String message) {
 		IStatus status = new Status(IStatus.INFO, getBundle()
 				.getSymbolicName(), 0, message, null); //$NON-NLS-1$
@@ -262,10 +275,25 @@ public class GroovyPlugin extends AbstractUIPlugin {
 	 */
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
-		listenToChanges();
-		GroovyModel.getModel().updateProjects();
+        earlyStartup();
 	}
 
+    public void earlyStartup()
+    {
+        if( started  )
+            return;
+        started = true;
+        listenToChanges();
+        new Job( "Rebuilding Groovy Classes" )
+        {
+            protected IStatus run( final IProgressMonitor monitor )
+            {
+                GroovyModel.getModel().updateProjects( monitor );
+                return Status.OK_STATUS;
+            }            
+        }.schedule();
+    }
+    
 	/**
 	 * @return
 	 */

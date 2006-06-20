@@ -13,7 +13,7 @@ import java.util.List;
 
 import org.codehaus.groovy.eclipse.builder.GroovyBuilder;
 import org.codehaus.groovy.eclipse.builder.GroovyNature;
-import org.codehaus.groovy.eclipse.model.GroovyModel;
+import org.codehaus.groovy.eclipse.model.GroovyProject;
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -33,23 +33,23 @@ public class GroovyPluginTestCase extends EclipseTestCase {
 	};
 	public void testNatureAddAndRemove() throws CoreException {
 		IProject project = testProject.getProject();
-		GroovyModel.getModel().getProject(project).addGroovyNature(project);
+		GroovyProject.addGroovyNature(project);
 
 		assertTrue(hasGroovyNature());
 		assertTrue(hasGroovyBuilder());
 
-		GroovyModel.getModel().getProject(project).removeGroovyNature(project);
+		GroovyProject.removeGroovyNature(project);
 
 		assertFalse(hasGroovyNature());
 		assertFalse(hasGroovyBuilder());
 	}
 
-	public void testManualAddGroovyRuntime() throws JavaModelException {
+	public void testManualAddGroovyRuntime() throws CoreException {
 
 		List groovyRuntimeJars = verifyNoGroovyRuntime();
 
 		plugin.addGroovyRuntime(testProject.getProject());
-
+		GroovyProject.addGroovyNature( testProject.getProject() );
 		for (Iterator iter = groovyRuntimeJars.iterator(); iter.hasNext();) {
 			String jarName = (String) iter.next();
 			assertTrue("expecting groovy runtime libs", testProject.hasJar(jarName));

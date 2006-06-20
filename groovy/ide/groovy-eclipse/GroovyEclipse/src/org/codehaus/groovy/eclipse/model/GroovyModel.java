@@ -17,6 +17,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 
@@ -127,21 +129,38 @@ public class GroovyModel {
 		GroovyProject project = getGroovyProject(JavaCore.create(file.getProject()));
 		return project.getModuleNodes(file);
 	}
-
-	/**
-	 *  
-	 */
-	public void updateProjects() throws CoreException {
-		IProject[] allProjects = ResourcesPlugin.getWorkspace().getRoot()
-				.getProjects();
-		for (int i = 0; i < allProjects.length; i++) {
-			IProject project = allProjects[i];
-			if (project.isAccessible()) {
-				if (project.hasNature(GroovyNature.GROOVY_NATURE)) {
-					getGroovyProject(JavaCore.create(project));
-				}
-			}
+	public void updateProjects( final IProgressMonitor progressMonitor ) 
+    {
+        final IProgressMonitor monitor = progressMonitor != null ? progressMonitor : new NullProgressMonitor();
+		final IProject[] allProjects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+        monitor.beginTask( "Updating Groovy Projects", allProjects.length );
+		for( int i = 0; i < allProjects.length; i++ )
+        {
+			final IProject project = allProjects[ i ];
+			try
+            {
+                if( !project.isAccessible() || !project.hasNature( GroovyNature.GROOVY_NATURE ) )
+                {
+                    monitor.worked( 1 );
+                    continue;
+                }
+            }
+            catch( final CoreException e )
+            {
+                GroovyPlugin.getPlugin().logException( "Error checking for groovy nature for project: " + project.getName() + ", " + e, e );
+                monitor.worked( 1 );
+                continue;
+            }
+            final GroovyProject groovyProject = getGroovyProject( JavaCore.create( project ) );
+            if( groovyProject == null )
+            {
+                GroovyPlugin.getPlugin().logWarning( "Couldn't generate Groovy Project from " + project.getName() + " even though the project definition contains the Groovy Nature" );
+                monitor.worked( 1 );
+                continue;
+            }
+            groovyProject.rebuildAll( new SubProgressMonitor( monitor, 1 ) );
 		}
+        monitor.done();
 	}
 
 	/**

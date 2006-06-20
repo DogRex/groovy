@@ -3,11 +3,13 @@ package org.codehaus.groovy.eclipse.test;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
+
+import junit.framework.AssertionFailedError;
 
 import org.apache.commons.io.IOUtil;
 import org.codehaus.groovy.eclipse.model.ChangeSet;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
+import org.codehaus.groovy.eclipse.model.GroovyProject;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -26,7 +28,19 @@ import org.eclipse.jdt.core.JavaModelException;
  */
 public class GroovyModelTestCase extends EclipseTestCase {
 
-	public void testFindsAllClassesWithMain() throws CoreException {
+	protected void setUp() 
+    throws Exception
+    {
+        super.setUp();
+    }
+    protected void tearDown() 
+    throws Exception
+    {
+        super.tearDown();
+    }
+    public void testFindsAllClassesWithMain() 
+    throws Exception 
+    {
 		createAndBuildGroovyClassWithMain();
 		String[] classes = GroovyModel.getModel().findAllRunnableClasses(testProject.getJavaProject());
 		for (int i = 0; i < classes.length; i++) {
@@ -36,8 +50,9 @@ public class GroovyModelTestCase extends EclipseTestCase {
 		assertEquals("expecting a single class with main", 1, classes.length);
 		assertEquals("called MainClass", "MainClass", classes[0]);
 	}
-
-	public void testModelBuildGroovy() throws CoreException {
+	public void testModelBuildGroovy() 
+    throws Exception 
+    {
 		createAndBuildGroovyClassWithMain();
 		IProject project = testProject.getProject();
 		IPath outputLocation = testProject.getJavaProject().getOutputLocation();
@@ -100,14 +115,19 @@ public class GroovyModelTestCase extends EclipseTestCase {
         return script;
     }
     private void fullProjectBuild()
+    throws Exception
     {
-        final ChangeSet changeSet = model.getProject( testProject.getProject() ).filesForFullBuild(); 
+        final ChangeSet changeSet = model.getProject( testProject.getProject() ).filesForFullBuild();
         model.buildGroovyContent( testProject.getJavaProject(),
                                   new NullProgressMonitor(),
-                                  IncrementalProjectBuilder.FULL_BUILD, changeSet, true);
+                                  IncrementalProjectBuilder.FULL_BUILD, 
+                                  changeSet, 
+                                  true );
+        Thread.sleep( 2000 );
     }
-    
-	private void createAndBuildGroovyClassWithMain() throws CoreException {
+	private void createAndBuildGroovyClassWithMain() 
+    throws Exception 
+    {
 		disableAutoGroovySupport();
 		testProject.createGroovyTypeAndPackage(
 			"pack1",
@@ -117,10 +137,13 @@ public class GroovyModelTestCase extends EclipseTestCase {
         assertNotNull( script );
         assertTrue( script.exists() );
 		plugin.addGroovyRuntime(testProject.getProject());
+        GroovyProject.addGroovyNature( testProject.getProject() );
 		fullProjectBuild();
 	}
 
-	public void testRunGroovyMainWithArgs() throws CoreException, IOException, InterruptedException {
+	public void testRunGroovyMainWithArgs() 
+    throws Exception 
+    {
 		final String tempFileName = getTempFileName();
 		disableAutoGroovySupport();
 		IFile groovyFile =
@@ -129,7 +152,8 @@ public class GroovyModelTestCase extends EclipseTestCase {
 				"MainClass.groovy",
 				getClass().getResource("groovyfiles/write-args-to-file.groovy").openStream());
 
-		plugin.addGroovyRuntime(testProject.getProject());
+		plugin.addGroovyRuntime( testProject.getProject() );
+        GroovyProject.addGroovyNature( testProject.getProject() );
 		fullProjectBuild();
 		String[] args = new String[] { tempFileName, "zohar", "james", "jon" };
 		model.runGroovyMain(groovyFile, args);
@@ -137,14 +161,16 @@ public class GroovyModelTestCase extends EclipseTestCase {
 		assertFileContentsEquals(tempFileName, expectedText);
 	}
 
-	public void testRunGroovyMainWithArgsBySpecifyingProjectAndClassName() throws CoreException, IOException , InterruptedException{
+	public void testRunGroovyMainWithArgsBySpecifyingProjectAndClassName() 
+    throws Exception
+    {
 		disableAutoGroovySupport();
 		testProject.createGroovyTypeAndPackage(
 				"pack1",
 				"MainClass.groovy",
-				getClass().getResource("groovyfiles/write-args-to-file.groovy").openStream());
-		
+				getClass().getResource("groovyfiles/write-args-to-file.groovy").openStream() );
 		plugin.addGroovyRuntime(testProject.getProject());
+        GroovyProject.addGroovyNature( testProject.getProject() );
 		fullProjectBuild();
 		final String tempFileName = getTempFileName();
 		String[] args = new String[] { tempFileName, "zohar", "james", "jon" };
@@ -153,8 +179,32 @@ public class GroovyModelTestCase extends EclipseTestCase {
 		assertFileContentsEquals(tempFileName, expectedText);
 	}
 	
-	private void assertFileContentsEquals(final String tempFileName, String expectedText) throws InterruptedException, IOException {
-		try {
+	private void assertFileContentsEquals( final String tempFileName, 
+                                           final String expectedText ) 
+    throws Exception 
+    {
+        AssertionFailedError error = null;
+        for( int i = 0; i < 10; i++ )
+        {
+            try
+            {
+                checkContentsEqual( tempFileName, expectedText );
+                return;
+            }
+            catch( final AssertionFailedError afe )
+            {
+                error = afe;
+            }
+        }
+        if( error != null )
+            throw error;
+        fail();
+	}
+    private void checkContentsEqual( final String tempFileName, 
+                                     final String expectedText ) 
+    throws Exception
+    {
+        try {
 			Thread.sleep(2000); 
 			// we have a timing issue with file creation by
 			// 'other' vm
@@ -171,7 +221,7 @@ public class GroovyModelTestCase extends EclipseTestCase {
 		} catch (FileNotFoundException x) { // The file may not exist.
 			fail("file not found, expecting text file:" + tempFileName + " to be created by the groovy class ");
 		}
-	}
+    }
 
 	private String getTempFileName() {
 		String tempDir = System.getProperty("java.io.tmpdir");

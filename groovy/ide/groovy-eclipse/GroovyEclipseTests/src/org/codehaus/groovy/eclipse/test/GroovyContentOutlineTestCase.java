@@ -5,12 +5,12 @@
 package org.codehaus.groovy.eclipse.test;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.codehaus.groovy.eclipse.editor.contentoutline.GroovyASTContentProvider;
 import org.codehaus.groovy.eclipse.editor.contentoutline.GroovyASTLabelProvider;
 import org.codehaus.groovy.eclipse.model.ChangeSet;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
+import org.codehaus.groovy.eclipse.model.GroovyProject;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
@@ -34,7 +34,7 @@ public class GroovyContentOutlineTestCase extends EclipseTestCase {
 		//import has one child
 		//assertEquals(1,provider.getChildren(roots[1]).length);
 		//TestClass has 6 children ( 2 fields 1 ctor 3 methods)
-		Object o = provider.getChildren(roots[2]);
+		provider.getChildren(roots[2]);
 		System.out.println("roots="+provider.getChildren(roots[2]));
 		assertEquals(6,provider.getChildren(roots[2]).length);
 	}
@@ -67,11 +67,12 @@ public class GroovyContentOutlineTestCase extends EclipseTestCase {
 				getClass().getResource("groovyfiles/"+className).openStream());
 		
 		plugin.addGroovyRuntime(testProject.getProject());
+        GroovyProject.addGroovyNature( testProject.getProject() );
 		ChangeSet changeSet = model.getProject(testProject.getProject()).filesForFullBuild(); 
 		model.buildGroovyContent(testProject.getJavaProject(), new NullProgressMonitor(),
 								IncrementalProjectBuilder.FULL_BUILD, changeSet, true);
 		GroovyModel model = GroovyModel.getModel();
-		List moduleNodes = model.getModuleNodes(file);
+		model.getModuleNodes(file);
 		provider = new GroovyASTContentProvider(null);
 		roots = provider.getElements(file);
 		labelProvider = new GroovyASTLabelProvider();

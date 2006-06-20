@@ -31,7 +31,7 @@ public class AddGroovyNatureAction implements IObjectActionDelegate {
 				GroovyProject groovyProject = model.getProject(targetProject);
 				groovyProject.addGrovyExclusionFilter(targetProject);
 				plugin.addGroovyRuntime(targetProject);
-				groovyProject.addGroovyNature(targetProject);		
+				GroovyProject.addGroovyNature(targetProject);		
 			}
 		} catch (CoreException e) {
 			plugin.logException("failed to add groovy support", e);
