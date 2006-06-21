@@ -179,7 +179,7 @@ public class GroovyProject {
                 for( final Iterator iterator = keySet.iterator(); iterator.hasNext(); )
                 {
                     final String scriptPath = ( String )iterator.next();
-                    removeClassFiles( scriptPath );
+                    removeClassFiles( scriptPath, true );
                 }
 				// get a list of all the groovy files in the project
 				scriptPathModuleNodeMap.clear();
@@ -188,7 +188,7 @@ public class GroovyProject {
             {
 				trace("beginning INCREMENTAL BUILD - GroovyProject.buildGroovyContent()");
                 // Removing .class files associated with changeSet.filesToRemove
-                removeClassFiles( changeSet.filesToRemove() );
+                removeClassFiles( changeSet.filesToRemove(), true );
 			}
 			for( final Iterator it = changeSet.getFilesToBuild().iterator(); it.hasNext();) 
 				deleteErrorMarkers( ( IFile )it.next() );
@@ -213,36 +213,41 @@ public class GroovyProject {
      * 
      * @param files
 	 */
-	private void removeClassFiles( final IFile[] files )
+	private void removeClassFiles( final IFile[] files,
+                                   final boolean refreshOutput )
     {
 	    if( files == null || files.length == 0 )
             return;
         for( int i = 0; i < files.length; i++ )
-            removeClassFiles( getSourceFileKey( files[ i ] ) );
+            removeClassFiles( getSourceFileKey( files[ i ] ), refreshOutput );
     }
-    private void removeClassFiles( final String filePath )
+    private void removeClassFiles( final String filePath,
+                                   final boolean refreshOutput )
     {
         if( filePath == null || filePath.trim().equals( "" ) )
             return;
-        removeClassFiles( removeModuleNodes( filePath ) );
+        removeClassFiles( removeModuleNodes( filePath ), refreshOutput );
     }
-    private void removeClassFiles( final List modules )
+    private void removeClassFiles( final List modules,
+                                   final boolean refreshOutput )
     {
         if( modules == null || modules.size() == 0 )
             return;
         final List classes = getClassesForModules( modules );
         for( final Iterator iterator = classes.iterator(); iterator.hasNext(); )
-            removeClassFiles( ( ClassNode )iterator.next() );
+            removeClassFiles( ( ClassNode )iterator.next(), refreshOutput );
     }
-    private void removeClassFiles( final ModuleNode module )
+    private void removeClassFiles( final ModuleNode module,
+                                   final boolean refreshOutput )
     {
         if( module == null )
             return;
         final List classes = module.getClasses();
         for( final Iterator iterator = classes.iterator(); iterator.hasNext(); )
-            removeClassFiles( ( ClassNode )iterator.next() );
+            removeClassFiles( ( ClassNode )iterator.next(), refreshOutput );
     }
-    private void removeClassFiles( final ClassNode clase )
+    private void removeClassFiles( final ClassNode clase,
+                                   final boolean refreshOutput )
     {
         if( clase == null )
             return;
@@ -254,7 +259,7 @@ public class GroovyProject {
             if( !directory.exists() || !directory.isDirectory() )
                 return;
             final File[] directoryFiles = directory.listFiles();
-            removeClassFiles( clase.getNameWithoutPackage(), directoryFiles );
+            removeClassFiles( clase.getNameWithoutPackage(), directoryFiles, refreshOutput );
         }
         catch( final JavaModelException e )
         {
@@ -262,7 +267,8 @@ public class GroovyProject {
         }
     }
     private void removeClassFiles( final String className, 
-                                   final File[] directoryFiles )
+                                   final File[] directoryFiles,
+                                   final boolean refreshOutput )
     {
         if( className == null || className.trim().equals( "" ) || directoryFiles == null )
             return;
@@ -287,7 +293,8 @@ public class GroovyProject {
                 GroovyPlugin.getPlugin().logException( "Error deleting " + directoryFiles[ i ].getName(), ioe );
             }
         }
-        refreshOutput();
+        if( refreshOutput )
+            refreshOutput();
     }
 
     /**
@@ -778,8 +785,9 @@ public class GroovyProject {
      * 
      *  This is to resolve JIRA Issue: GROOVY-1361
      */
-    private void checkForInvalidPackageDeclarations()
+    private IFile[] checkForInvalidPackageDeclarations()
     {
+        final List invalidList = new ArrayList();
         for( final Iterator keyIterator = scriptPathModuleNodeMap.keySet().iterator(); keyIterator.hasNext(); )
         {
             final String key = ( String )keyIterator.next();
@@ -824,8 +832,10 @@ public class GroovyProject {
                 final String message = prefix + module.getDescription() + " is not in a source folder matching the package declaration: " + packageName;
                 removeDuplicateMarker( module, scriptFile, prefix );
                 handleCompilationError( fileList, new Exception( message ) );
+                invalidList.add( scriptFile );
             }
         }
+        return ( IFile[] )invalidList.toArray( new IFile[ 0 ] );
     }
     private IPath[] getSourceDirectories()
     {
@@ -892,19 +902,20 @@ public class GroovyProject {
                     {
                         final List removedClasses = compareModuleNodes( updated, module );
                         for( final Iterator removedIterator = removedClasses.iterator(); removedIterator.hasNext(); )
-                            removeClassFiles( ( ClassNode )removedIterator.next() );
+                            removeClassFiles( ( ClassNode )removedIterator.next(), true );
                         found = true;
                         break;
                     }
                 }
                 if( !found )
-                    removeClassFiles( module );
+                    removeClassFiles( module, true );
             }
         }
     }
     public GroovyProject refreshOutput()
     {
-        checkForInvalidPackageDeclarations();
+        final IFile[] invalidScripts = checkForInvalidPackageDeclarations();
+        removeClassFiles( invalidScripts, false );
         try
         {
             final IResource output = ResourcesPlugin.getWorkspace().getRoot().findMember( javaProject.getOutputLocation() );
