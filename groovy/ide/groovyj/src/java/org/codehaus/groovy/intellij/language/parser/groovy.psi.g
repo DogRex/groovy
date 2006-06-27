@@ -1175,7 +1175,7 @@ enumConstantField!
 
                 // get the list of exceptions that this method is
                 // declared to throw
-                (tc:throwsClause)?
+                ((nls "throws") => tc:throwsClause)?
 
                 ( s2:compoundStatement )?
                 // TODO - verify that 't' is useful/correct here, used to be 'rt'
@@ -1334,7 +1334,7 @@ variableDefinitions[AST mods, AST t, PsiBuilder.Marker marker]  {Token first = L
 
         // get the list of exceptions that this method is
         // declared to throw
-        (   tc:throwsClause!  )?
+        ((nls "throws") =>   tc:throwsClause!  )?
 
         // the method body is an open block
         // but, it may have an optional constructor call (for constructors only)
@@ -1367,7 +1367,7 @@ constructorDefinition[AST mods, PsiBuilder.Marker marker]  {Token first = LT(1);
 
         // get the list of exceptions that this method is
         // declared to throw
-        (   tc:throwsClause!  )? nlsWarn!
+        ((nls "throws") =>   tc:throwsClause!  )? nlsWarn!
 
         // the method body is an open block
         // but, it may have an optional constructor call (for constructors only)
@@ -1473,7 +1473,7 @@ ctorHead
 
 // This is a list of exception classes that the method is declared to throw
 throwsClause
-    :   "throws"^ nls! identifier ( COMMA! nls! identifier )*
+    :   nls! "throws"^ nls! identifier ( COMMA! nls! identifier )*
     ;
 
 /** A list of zero or more formal parameters.
@@ -1731,7 +1731,7 @@ statement[int prevToken]
     |    m:modifiersOpt! typeDefinitionInternal[#m, #marker]
 
     // If-else statement
-    |   "if"^ LPAREN! strictContextExpression RPAREN! nlsWarn! compatibleBodyStatement
+    |   "if"^ LPAREN! assignmentLessExpression RPAREN! nlsWarn! compatibleBodyStatement
         (
             // CONFLICT: the old "dangling-else" problem...
             //           ANTLR generates proper code matching
@@ -2647,6 +2647,15 @@ strictContextExpression  {Token first = LT(1);}
         // For the sake of the AST walker, mark nodes like this very clearly.
         {#strictContextExpression = #(create(EXPR,"EXPR",first,LT(1)),#strictContextExpression);}
     ;
+
+assignmentLessExpression  {Token first = LT(1);}
+    :
+        (   conditionalExpression[0]
+        )
+        // For the sake of the AST walker, mark nodes like this very clearly.
+        {#assignmentLessExpression = #(create(EXPR,"EXPR",first,LT(1)),#assignmentLessExpression);}
+    ;
+
 
 closureConstructorExpression
     :   closedBlock
