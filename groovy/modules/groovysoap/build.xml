@@ -19,7 +19,10 @@
     <target name="init">
         <property file="build.properties"/>
         <tstamp/>
+        <!--
         <property name="version" value="${DSTAMP}"/>
+        -->
+        <property name="version" value="jsr06-0.1"/>
     </target>
 
     <target name="clean" depends="init">
@@ -70,7 +73,6 @@
             <zipfileset src="${log4j.jar}"/>
             <zipfileset src="${wsdl4j.jar}"/>
             <zipfileset src="${xfire-core.jar}"/>
-            <zipfileset src="${xfire-java5.jar}"/>
             <zipfileset src="${XmlSchema.jar}"/>
             <zipfileset src="${commons-logging.jar}"/>
             <zipfileset src="${servletapi.jar}"/>
@@ -78,6 +80,7 @@
             <zipfileset src="${wstx-asl.jar}"/>
             <zipfileset src="${jaxen.jar}"/>
             <zipfileset src="${jdom.jar}"/>
+            <zipfileset src="${javamail.jar}"/>
             <zipfileset src="${xfire-aegis.jar}"/>
             <zipfileset src="${xfire-xmlbeans.jar}"/>
             <zipfileset src="${commons-httpclient.jar}"/>
