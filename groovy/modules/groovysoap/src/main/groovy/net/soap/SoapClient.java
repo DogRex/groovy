@@ -76,7 +76,7 @@ public class SoapClient extends GroovyObjectSupport {
                   if (valence == null) {
                     valence = new Integer(1);
                   } else {
-                    valence ++;
+                    valence = new Integer(valence.intValue()+1);
                   }
                   members.put(n.getNodeName(), valence);
                 }
@@ -133,7 +133,8 @@ public class SoapClient extends GroovyObjectSupport {
                     for (Iterator it1 = members.keySet().iterator(); it1.hasNext();) {
                         String member = (String)it1.next();
                         classSource.append("  @Property ");
-                        if ((Integer)members.get(member) > 1) classSource.append("List ");
+                        Integer value = (Integer)members.get(member);
+                        if (value.intValue() > 1) classSource.append("List ");
                         classSource.append(uncapitalize(member))
                         .append("\n");
                     }
@@ -238,7 +239,8 @@ public class SoapClient extends GroovyObjectSupport {
  
                 if (!opened) {
                     classSource.append(uncapitalize(child.getNodeName()) + ":");
-                    if ((Integer)members.get(child.getNodeName()) > 1) {
+                    Integer value = (Integer)members.get(child.getNodeName());
+                    if (value.intValue() > 1) {
                       classSource.append("[");
                       opened = true;
                     }
@@ -320,7 +322,7 @@ public class SoapClient extends GroovyObjectSupport {
 
             // TODO Parse the answer
             if (response.length == 0) {
-              return true;
+              return Boolean.TRUE;
             } else {
               return toReturn(response[0]);
             }

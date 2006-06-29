@@ -52,7 +52,7 @@ public class SoapServer {
      * @param host the host the web container is running on.
      * @param port the port used by the web container.
      */
-    public SoapServer(String host, Integer port) {
+    public SoapServer(String host, int port) {
         xfire = XFireFactory.newInstance().getXFire();
         server = new XFireHttpServer();
         server.setPort(port);
