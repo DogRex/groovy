@@ -80,42 +80,42 @@ public class GDataCategory {
     }
     
     public static EventFeed getFeed(final CalendarService self, final String url, final Date from, final Date to, int maxEntries) throws IOException, ServiceException {
-    final DateTime from1 = new DateTime(from.getTime());
-    final DateTime to1 = new DateTime(to.getTime());
+    final DateTime from1 = new DateTime(from);
+    final DateTime to1 = new DateTime(to);
 
         return self.getFeed(new URL(url + "?start-min=" + from1 + "&start-max=" + to1+ "&max-results=" + maxEntries), EventFeed.class);
     }
     
     public static EventFeed getFeed(final CalendarService self, final String url, final Date from, final Date to) throws IOException, ServiceException {
-    final DateTime from1 = new DateTime(from.getTime());
-    final DateTime to1 = new DateTime(to.getTime());
+    final DateTime from1 = new DateTime(from);
+    final DateTime to1 = new DateTime(to);
         
         return self.getFeed(new URL(url + "?start-min=" + from1 + "&start-max=" + to1), EventFeed.class);
     }
     
     public static EventFeed getFeed(final CalendarService self, final String url, final Date from, final DatumDependentDuration duration, int maxEntries) throws IOException, ServiceException {
-    final DateTime from1 = new DateTime(from.getTime());
+    final DateTime from1 = new DateTime(from);
     final DateTime to1 = plus(from1, duration);
 
         return self.getFeed(new URL(url + "?start-min=" + from1 + "&start-max=" + to1 + "&max-results=" + maxEntries), EventFeed.class);
     }
     
     public static EventFeed getFeed(final CalendarService self, final String url, final Date from, final DatumDependentDuration duration) throws IOException, ServiceException {
-    final DateTime from1 = new DateTime(from.getTime());
+    final DateTime from1 = new DateTime(from);
     final DateTime to1 = plus(from1, duration);
         
         return self.getFeed(new URL(url + "?start-min=" + from1 + "&start-max=" + to1), EventFeed.class);
     }
     
     public static EventFeed getFeed(final CalendarService self, final String url, final Date from, final Duration duration, int maxEntries) throws IOException, ServiceException {
-    final DateTime from1 = new DateTime(from.getTime());
+    final DateTime from1 = new DateTime(from);
     final DateTime to1 = plus(from1, duration);
 
         return self.getFeed(new URL(url + "?start-min=" + from1 + "&start-max=" + to1 + "&max-results=" + maxEntries), EventFeed.class);
     }
     
     public static EventFeed getFeed(final CalendarService self, final String url, final Date from, final Duration duration) throws IOException, ServiceException {
-    final DateTime from1 = new DateTime(from.getTime());
+    final DateTime from1 = new DateTime(from);
     final DateTime to1 = plus(from1, duration);
         
         return self.getFeed(new URL(url + "?start-min=" + from1 + "&start-max=" + to1), EventFeed.class);
