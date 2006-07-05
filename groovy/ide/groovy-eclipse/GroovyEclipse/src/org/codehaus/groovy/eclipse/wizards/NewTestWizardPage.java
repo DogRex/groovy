@@ -134,8 +134,6 @@ public class NewTestWizardPage extends NewTypeWizardPage {
 		GroovyPlugin.getPlugin().addJunitSupprt(packageFragment.getJavaProject());
 		StringBuffer src = new StringBuffer();
 		monitor.worked(1);
-		src.append("import groovy.util.GroovyTestCase");
-		src.append("\n\n\n");
 		src.append("class ");
 		src.append(getTypeName());
 		src.append(" extends GroovyTestCase");

@@ -27,6 +27,7 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
@@ -379,15 +380,15 @@ public class GroovyProject {
 	 * @throws JavaModelException
 	 */
 	private static String getOutputPath(IJavaProject project) throws JavaModelException {
-		String outputPath = project.getProject().getParent().getLocation().toString() 
-				+ project.getOutputLocation().toString();
+		String outputPath = project.getProject().getLocation().toString() + "/"
+				+ project.getOutputLocation().removeFirstSegments( 1 ).toString();
 		return outputPath;
 	}
     private static String getOutputOSPath( final IJavaProject project ) 
     throws JavaModelException 
     {
-        final String outputPath = project.getProject().getParent().getLocation().toOSString() 
-                + project.getOutputLocation().toOSString();
+        final String outputPath = project.getProject().getLocation().toOSString() + File.separator
+                + project.getOutputLocation().removeFirstSegments( 1 ).toOSString();
         return outputPath;
     }
 	/**
@@ -528,13 +529,18 @@ public class GroovyProject {
 	 */
 	private void runGroovyMain(ClassNode classNode, String[] args) throws CoreException {
 		String className = "";
-		if (isTestCaseClass(classNode)) {
+		if (hasRunnableMain(classNode)) {
+			className = classNode.getName();
+		} else if (isTestCaseClass(classNode)) {
 			className = "junit.textui.TestRunner";
 			args = new String[] { classNode.getName() };
 		} else {
-			className = classNode.getName();
+			GroovyPlugin.getPlugin().getDialogProvider().errorRunningGroovy(
+					new Exception("This script or class could not be run.\nIt should either:\n- have a main method,\n" +
+							"- be a class extending GroovyTestCase,\n- or implement the Runnable interface."));
+			return;
 		}
-        System.out.println( "GroovyProject.runGroovyMain(): " + className );
+//        System.out.println( "GroovyProject.runGroovyMain(): " + className );
 		runGroovyMain(className,args);
 	}
 
@@ -547,7 +553,7 @@ public class GroovyProject {
 	 * @param classNode
 	 * @return
 	 */
-	private boolean isTestCaseClass(ClassNode classNode) {
+	public boolean isTestCaseClass(ClassNode classNode) {
 		ClassNode parent = classNode.getSuperClass();
 		while (parent != null) {
 			// TODO: classes that extend GroovyTestCase have parent object
@@ -588,19 +594,45 @@ public class GroovyProject {
 			List classes = getClassesForModules(moduleList);
 			for (Iterator iterator = classes.iterator(); iterator.hasNext();) {
 				ClassNode classNode = (ClassNode) iterator.next();
-				List mainMethods = classNode.getDeclaredMethods("main");
-				for (Iterator methoodIterator = mainMethods.iterator(); methoodIterator.hasNext();) {
-					MethodNode methodNode = (MethodNode) methoodIterator.next();
-					if (methodNode != null && methodNode.isStatic() && methodNode.isVoidMethod()) {
-						results.add(classNode.getName());
-					}
-				}
-				if (isTestCaseClass(classNode)) {
+				if (hasRunnableMain(classNode) || isTestCaseClass(classNode)) {
 					results.add(classNode.getName());
 				}
 			}
 		}
 		return (String[]) results.toArray(new String[results.size()]);
+	}
+	
+	public boolean hasRunnableMain(ClassNode classNode) {
+		List mainMethods = classNode.getDeclaredMethods("main");
+		for (Iterator methodIterator = mainMethods.iterator(); methodIterator.hasNext();) {
+			MethodNode methodNode = (MethodNode) methodIterator.next();
+			if (methodNode != null && methodNode.isStatic() && methodNode.isVoidMethod()&& 
+					hasAppropriateArrayArgs(methodNode.getParameters())) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private boolean hasAppropriateArrayArgs(Parameter[] params) {
+		if (params.length != 1) return false;
+		ClassNode first = params[0].getType();
+		if (!first.isArray()) return false;
+		String componentName = first.getComponentType().getName();
+		return componentName.equals("java.lang.String") ||
+		    componentName.equals("java.lang.Object");
+	}
+
+	public ClassNode getClassNodeForName(String name) {
+		for (Iterator iter = scriptPathModuleNodeMap.values().iterator(); iter.hasNext();) {
+			List moduleList = (List) iter.next();
+			List classes = getClassesForModules(moduleList);
+			for (Iterator iterator = classes.iterator(); iterator.hasNext();) {
+				ClassNode classNode = (ClassNode) iterator.next();
+				if (classNode.getName().equals(name)) return classNode;
+			}
+		}
+		return null;
 	}
 
 	/**

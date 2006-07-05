@@ -26,6 +26,10 @@ public class GroovyDialogProvider {
 		MessageDialog.openError(getShell(),"Groovy Runner Error ","Error running "+file.getName()+" "+e.getMessage());
 	}
 	
+	public void errorRunningGroovy(Exception e){
+		MessageDialog.openError(getShell(),"Groovy Runner Error ",e.getMessage());
+	}
+	
 	Shell getShell(){
 		IWorkbenchWindow window= PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		if (window == null)
