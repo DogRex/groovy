@@ -55,7 +55,7 @@
         <property name="clover.reports" value="${build.dir}/clover-reports"/>
         <property name="coverage.criteria" value="90%"/>
 
-        <property name="idea.since-build" value="5321"/>
+        <property name="idea.since-build" value="5368"/>
 
         <path id="clover.classpath">
             <pathelement location="${clover.lib.dir}/clover.jar"/>
@@ -144,6 +144,9 @@
                            classpathref="compile.classpath"/>
 
                 <available classname="com.intellij.testFramework.LightVirtualFile"
+                           classpathref="compile.classpath"/>
+
+                <available classname="com.intellij.openapi.util.UserDataHolderBase"
                            classpathref="compile.classpath"/>
 
                 <not>

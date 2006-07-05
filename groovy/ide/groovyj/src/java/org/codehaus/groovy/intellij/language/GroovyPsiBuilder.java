@@ -18,15 +18,13 @@
 
 package org.codehaus.groovy.intellij.language;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.Language;
 import com.intellij.lang.ParserDefinition;
 import com.intellij.lang.PsiBuilder;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.UserDataHolderBase;
 import com.intellij.psi.impl.source.tree.ChameleonElement;
 import com.intellij.psi.impl.source.tree.CompositeElement;
 import com.intellij.psi.impl.source.tree.FileElement;
@@ -42,7 +40,10 @@ import com.intellij.psi.tree.TokenSet;
 import com.intellij.util.CharTable;
 import com.intellij.util.text.CharArrayUtil;
 
-public class GroovyPsiBuilder implements PsiBuilder {
+import java.util.ArrayList;
+import java.util.List;
+
+public class GroovyPsiBuilder extends UserDataHolderBase implements PsiBuilder {
 
     private static final Logger LOGGER = Logger.getInstance("#org.codehaus.groovy.intellij.language.GroovyPsiBuilder");
 
@@ -130,19 +131,19 @@ public class GroovyPsiBuilder implements PsiBuilder {
         return startMarkerCopy;
     }
 
-    public void rollbackTo(Marker marker) {
+    private void rollbackTo(ProductionMarker marker) {
         currentTokenIndex = ((StartMarker) marker).lexemIndex;
         int markerIndex = markers.lastIndexOf(marker);
         LOGGER.assertTrue(markerIndex >= 0, "The marker must be added before rolled back to.");
         markers.removeRange(markerIndex, markers.size());
     }
 
-    public void drop(Marker marker) {
+    private void drop(ProductionMarker marker) {
         boolean markerRemoved = markers.remove(markers.lastIndexOf(marker)) == marker;
         LOGGER.assertTrue(markerRemoved, "The marker must be added before it is dropped.");
     }
 
-    public void done(Marker marker) {
+    private void done(ProductionMarker marker) {
         LOGGER.assertTrue(((StartMarker) marker).doneMarker == null, "Marker already done.");
 
         int markerIndex = markers.lastIndexOf(marker);
@@ -207,7 +208,6 @@ public class GroovyPsiBuilder implements PsiBuilder {
                      productionMarker.lexemIndex < tokens.size()
                      && whitespaceTokens.contains(tokens.get(productionMarker.lexemIndex).getType());
                      productionMarker.lexemIndex++) {
-                    ;
                 }
                 continue;
             }
@@ -221,7 +221,6 @@ public class GroovyPsiBuilder implements PsiBuilder {
                  && productionMarker.lexemIndex < tokens.size()
                  && whitespaceTokens.contains(tokens.get(productionMarker.lexemIndex - 1).getType());
                  productionMarker.lexemIndex--) {
-                ;
             }
         }
 
@@ -334,11 +333,11 @@ public class GroovyPsiBuilder implements PsiBuilder {
         }
     }
 
-    private static class ProductionMarker {
+    private static abstract class ProductionMarker {
 
         int lexemIndex;
 
-        public ProductionMarker(int lexemIndex) {
+        protected ProductionMarker(int lexemIndex) {
             this.lexemIndex = lexemIndex;
         }
     }
