@@ -48,7 +48,7 @@ public class GroovyModelTestCase extends EclipseTestCase {
 		}
 		
 		assertEquals("expecting a single class with main", 1, classes.length);
-		assertEquals("called MainClass", "MainClass", classes[0]);
+		assertEquals("called MainClass", "pack1.MainClass", classes[0]);
 	}
 	public void testModelBuildGroovy() 
     throws Exception 
@@ -60,7 +60,7 @@ public class GroovyModelTestCase extends EclipseTestCase {
 			project.getLocation().toString() + Path.SEPARATOR + outputLocation.removeFirstSegments(1).toString();
 		assertTrue(
 			"expecting the compiled class file MainClass.class to be present",
-			new File(outputPath + Path.SEPARATOR + "MainClass.class").exists());
+			new File(outputPath + Path.SEPARATOR + "pack1/MainClass.class").exists());
 	}
 	/**
      *  Testing that .class files are cleaned up if a script is removed. 
@@ -89,13 +89,13 @@ public class GroovyModelTestCase extends EclipseTestCase {
         deleteScript();
         testProject.createGroovyTypeAndPackage( "pack1",
                                                 "MainClass.groovy",
-                                                "class MainClass1 { static void main(args){}}");
+                                                "class MainClass1 { static void main(String[] args){}}");
         fullProjectBuild();
         final String outputPath = outputLocation();
         assertFalse( "expecting the compiled class file MainClass.class to be gone: " + outputPath,
                      new File( outputPath + Path.SEPARATOR + "MainClass.class" ).exists() );
         assertTrue( "expecting the compiled class file MainClass1.class to be there: " + outputPath,
-                    new File( outputPath + Path.SEPARATOR + "MainClass1.class" ).exists() );
+                    new File( outputPath + Path.SEPARATOR + "pack1/MainClass1.class" ).exists() );
     }
 
     private String outputLocation() 
@@ -123,6 +123,7 @@ public class GroovyModelTestCase extends EclipseTestCase {
                                   IncrementalProjectBuilder.FULL_BUILD, 
                                   changeSet, 
                                   true );
+        System.out.println("changeSet for fullProjectBuild:" + changeSet);
         Thread.sleep( 2000 );
     }
 	private void createAndBuildGroovyClassWithMain() 
@@ -132,7 +133,7 @@ public class GroovyModelTestCase extends EclipseTestCase {
 		testProject.createGroovyTypeAndPackage(
 			"pack1",
 			"MainClass.groovy",
-			"class MainClass { static void main(args){}}");
+			"class MainClass { static void main(String[] args){}}");
         final IResource script = testProject.getProject().findMember( "src/pack1/MainClass.groovy" );
         assertNotNull( script );
         assertTrue( script.exists() );

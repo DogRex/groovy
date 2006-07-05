@@ -127,7 +127,7 @@ public class TestProject {
 		String encoding = javaProject.getOption(JavaCore.CORE_ENCODING, true);
 		InputStream stream;
 		try {
-			stream = new ByteArrayInputStream(encoding == null ? source.getBytes() : source.getBytes(encoding));
+			stream = new ByteArrayInputStream(encoding == null ? buf.toString().getBytes() : buf.toString().getBytes(encoding));
 		} catch (UnsupportedEncodingException e) {
 			throw new CoreException(
 				new Status(
