@@ -50,9 +50,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.control.ErrorCollector;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.eclipse.GroovyPlugin;
+import org.codehaus.groovy.syntax.RuntimeParserException;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -211,11 +213,23 @@ class AddErrorMarker implements IWorkspaceRunnable {
 			MultipleCompilationErrorsException multiple = (MultipleCompilationErrorsException) e;
 			ErrorCollector collector = multiple.getErrorCollector();
 			for (int i = 0; i < collector.getErrorCount(); ++i) {
-				SyntaxException exception = collector.getSyntaxError(i);
-				// This replaces all double backslash with a single backslash
-				// Yes - it takes 4 backslash to equal one for the Java regular expressions
-				String key = exception.getSourceLocator().replaceAll("\\\\\\\\","\\\\");
-				fFile = (IFile) fileNameIFileMap.get(key);
+				Exception exception = collector.getException(i);
+				if (exception instanceof SyntaxException) {
+					// This replaces all double backslash with a single backslash
+					// Yes - it takes 4 backslash to equal one for the Java regular expressions
+					String key = ((SyntaxException)exception).getSourceLocator().replaceAll("\\\\\\\\","\\\\");
+					fFile = (IFile) fileNameIFileMap.get(key);
+				} else if (exception instanceof RuntimeParserException) {
+					RuntimeParserException rex = ((RuntimeParserException)exception);
+					String key = rex.getModule().getDescription().replaceAll("\\\\\\\\","\\\\");
+					fFile = (IFile) fileNameIFileMap.get(key);
+				}
+
+				// fFile is null if the file with errors is an external file,
+				// and not one in the change set.
+				if (fFile == null)
+					continue;
+
 				fileLineNumberList = getFileLineNumberList(fFile);
 				markerFromException(collector.getException(i));
 			}
@@ -239,6 +253,22 @@ class AddErrorMarker implements IWorkspaceRunnable {
 			trace = new StringWriter();
 			se.printStackTrace(new PrintWriter(trace));
 			createMarker(IMarker.SEVERITY_ERROR, exception.getMessage(), trace.toString(), line, startCol, endCol);
+		} else if (exception instanceof RuntimeParserException 
+				&& ((RuntimeParserException)exception).getNode() != null) {
+			RuntimeParserException rex = (RuntimeParserException)exception;
+			// Need to extract info from the node.
+			ASTNode node = rex.getNode();
+			line = node.getLineNumber();
+			startCol = node.getColumnNumber();
+			endCol = node.getLastColumnNumber();
+			trace = new StringWriter();
+			rex.printStackTrace(new PrintWriter(trace));
+			String message = rex.getMessageWithoutLocationText();
+			// After newline is the AST node where the error was found.
+			int ix = message.indexOf("\n");
+			if (ix != -1)
+				message = message.substring(0, ix);
+			createMarker(IMarker.SEVERITY_ERROR, message, trace.toString(), line, startCol, endCol);
 		} else {
 			trace = new StringWriter();
 			exception.printStackTrace(new PrintWriter(trace));
