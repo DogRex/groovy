@@ -1,10 +1,10 @@
 // START SNIPPET: gram
 
-persistentClasses = classes.findAll { it.getAnnotation("hibernate.class") != null }
+def persistentClasses = classes.findAll { it.getAnnotation("hibernate.class") != null }
 
 println "Found ${persistentClasses.size()} instances out of ${classes.size()}"
 
-persistentClasses.each { c |
+persistentClasses.each { c ->
     println c.simpleName
 
     for (p in c.properties) {
