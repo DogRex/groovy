@@ -2,7 +2,7 @@
 <feature
       id="org.codehaus.groovy.eclipse.feature"
       label="GroovyFeature"
-      version="1.0.0">
+      version="1.0.0.20060711">
 
    <description url="http://groovy.codehaus.org/">
       Eclipse plugin for developing groovy scripts/projects.
@@ -16,6 +16,6 @@
          id="org.codehaus.groovy.eclipse"
          download-size="0"
          install-size="0"
-         version="1.0.0"/>
+         version="0.0.0"/>
 
 </feature>

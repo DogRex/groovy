@@ -3,7 +3,7 @@
 <plugin
    id="org.codehaus.groovy.eclipse"
    name="Groovy Plug-in"
-   version="1.0.0.20060705"
+   version="1.0.0.20060711"
    provider-name="codehaus "
    class="org.codehaus.groovy.eclipse.GroovyPlugin">
 
