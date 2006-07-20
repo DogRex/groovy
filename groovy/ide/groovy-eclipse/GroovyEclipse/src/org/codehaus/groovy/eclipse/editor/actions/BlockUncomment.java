@@ -8,7 +8,7 @@ import org.eclipse.jface.text.ITextSelection;
  *
  * @author emp
  */
-class BlockUncomment extends CommentAction {
+public class BlockUncomment extends CommentAction {
 	public BlockUncomment() {
 		super(true);
 	}
