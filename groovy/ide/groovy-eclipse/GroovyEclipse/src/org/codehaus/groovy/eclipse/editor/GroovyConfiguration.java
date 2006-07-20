@@ -124,13 +124,22 @@ public class GroovyConfiguration extends SourceViewerConfiguration {
      * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getAutoEditStrategies(org.eclipse.jface.text.source.ISourceViewer, java.lang.String)
      */
     public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
-        String partitioning= getConfiguredDocumentPartitioning(sourceViewer);
+        // TODO: from what I can see in the debugger, JAVA_DOC and JAVA_STRING
+		// are never passed to this method.
+    	// It would be nice to have a GROOVY_CHARACTER partition too.
+    	String partitioning = getConfiguredDocumentPartitioning(sourceViewer);
         if (IJavaPartitions.JAVA_DOC.equals(contentType) || IJavaPartitions.JAVA_MULTI_LINE_COMMENT.equals(contentType))
             return new IAutoEditStrategy[] { new JavaDocAutoIndentStrategy(partitioning) };
         else if (IJavaPartitions.JAVA_STRING.equals(contentType))
             return new IAutoEditStrategy[] { new SmartSemicolonAutoEditStrategy(partitioning), new JavaStringAutoIndentStrategy(partitioning) };
         else if (IJavaPartitions.JAVA_CHARACTER.equals(contentType) || IDocument.DEFAULT_CONTENT_TYPE.equals(contentType))
-            return new IAutoEditStrategy[] { new SmartSemicolonAutoEditStrategy(partitioning), new JavaAutoIndentStrategy(partitioning, getJavaProject()) };
+            return new IAutoEditStrategy[] { new SmartSemicolonAutoEditStrategy(partitioning), 
+        		new JavaAutoIndentStrategy(partitioning, getJavaProject()),
+        		new AutoEnclosingPairStrategy(IJavaPartitions.JAVA_CHARACTER) };
+        else if (GroovyPartitionScanner.GROOVY_SINGLELINE_STRINGS.equals(contentType))
+        	return new IAutoEditStrategy[] { new AutoEnclosingPairStrategy(GroovyPartitionScanner.GROOVY_SINGLELINE_STRINGS) };
+        else if (GroovyPartitionScanner.GROOVY_MULTILINE_STRINGS.equals(contentType))
+        	return new IAutoEditStrategy[] { new AutoEnclosingPairStrategy(GroovyPartitionScanner.GROOVY_MULTILINE_STRINGS) };
         else
             return new IAutoEditStrategy[] { new JavaAutoIndentStrategy(partitioning, getJavaProject()) };
             //return new IAutoEditStrategy[] { new DefaultIndentLineAutoEditStrategy() };
