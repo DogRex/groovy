@@ -3,7 +3,7 @@
 <plugin
    id="org.codehaus.groovy.eclipse"
    name="Groovy Plug-in"
-   version="1.0.0.20060711"
+   version="1.0.0.20060720"
    provider-name="codehaus "
    class="org.codehaus.groovy.eclipse.GroovyPlugin">
 
@@ -200,6 +200,12 @@
                actionID="RulerDoubleClick"
                id="org.codehaus.groovy.eclipse.actions.ToggleGroovyBreakpointAction">
          </action>
+         <action
+               class="org.codehaus.groovy.eclipse.actions.RunGroovy"
+               definitionId="org.codehaus.groovy.eclipse.command.RunGroovy"
+               id="org.codehaus.groovy.eclipse.actions.RunGroovy"
+               label="Run Groovy"
+               />
       </editorContribution>
    </extension>
    <extension
@@ -252,5 +258,103 @@
          point="org.eclipse.ui.startup">
       <startup/>
    </extension>
-	
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            description="Groovy source code editor category"
+            id="org.codehaus.groovy.eclipse.editor.category.source"
+            name="Groovy - Editor"/>
+      <category
+            description="Groovy run and debug category"
+            id="org.codehaus.groovy.eclipse.editor.category.rundebug"
+            name="Groovy - Run/Debug"/>
+      <command
+            categoryId="org.codehaus.groovy.eclipse.editor.category.source"
+            description="Toggle line comments at the current location/selection"
+            id="org.codehaus.groovy.eclipse.editor.command.ToggleComment"
+            name="Toggle Comment"/>
+      <command
+            categoryId="org.codehaus.groovy.eclipse.editor.category.source"
+            description="Add a block comment to the current selection"
+            id="org.codehaus.groovy.eclipse.editor.command.BlockComment"
+            name="Block Comment"/>
+      <command
+            categoryId="org.codehaus.groovy.eclipse.editor.category.source"
+            description="Remove block comments from the current selection"
+            id="org.codehaus.groovy.eclipse.editor.command.BlockUncomment"
+            name="Block Uncomment"/>
+      <command
+            category="org.codehaus.groovy.eclipse.editor.category.rundebug"
+            description="Run Groovy File"
+            id="org.codehaus.groovy.eclipse.command.RunGroovy"
+            name="Run Groovy"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.contexts">
+      <context
+            id="org.codehaus.groovy.eclipse.editor.GroovyEditorScope"
+            name="Editing Groovy Source"
+            parentId="org.eclipse.ui.textEditorScope"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="org.codehaus.groovy.eclipse.editor.command.ToggleComment"
+            contextId="org.codehaus.groovy.eclipse.editor.GroovyEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="Ctrl+/"/>
+      <key
+            commandId="org.codehaus.groovy.eclipse.editor.command.BlockComment"
+            contextId="org.codehaus.groovy.eclipse.editor.GroovyEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+/"/>
+      <key
+            commandId="org.codehaus.groovy.eclipse.editor.command.BlockUncomment"
+            contextId="org.codehaus.groovy.eclipse.editor.GroovyEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+\"/>
+      <key
+            commandId="org.codehaus.groovy.eclipse.command.RunGroovy"
+            contextId="org.codehaus.groovy.eclipse.editor.GroovyEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M2+M3+X G"/>
+      <key
+            commandId="org.codehaus.groovy.eclipse.command.RunGroovy"
+            contextId="org.codehaus.groovy.eclipse.editor.GroovyEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M2+M3+D G"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editorActions">
+      <editorContribution
+            id="org.codehaus.groovy.eclipse.editor.action.editorContribution"
+            targetID="org.codehaus.groovy.eclipse.editor.GroovyEditor">
+         <menu
+               id="org.codehaus.groovy.eclipse.editor.menu.source"
+               label="&amp;Source"
+               path="edit">
+            <separator name="editGroup"/>
+         </menu>
+         <action
+               class="org.codehaus.groovy.eclipse.editor.actions.ToggleComment"
+               definitionId="org.codehaus.groovy.eclipse.editor.command.ToggleComment"
+               id="org.codehaus.groovy.eclipse.editor.action.ToggleComment"
+               label="&amp;Toggle Comment"
+               menubarPath="org.codehaus.groovy.eclipse.editor.menu.source/editGroup"/>
+         <action
+               class="org.codehaus.groovy.eclipse.editor.actions.BlockComment"
+               definitionId="org.codehaus.groovy.eclipse.editor.command.BlockComment"
+               enablesFor="+"
+               id="org.codehaus.groovy.eclipse.editor.action.BlockComment"
+               label="Block &amp;Comment"
+               menubarPath="org.codehaus.groovy.eclipse.editor.menu.source/editGroup"/>
+         <action
+               class="org.codehaus.groovy.eclipse.editor.actions.BlockUncomment"
+               definitionId="org.codehaus.groovy.eclipse.editor.command.BlockUncomment"
+               enablesFor="+"
+               id="org.codehaus.groovy.eclipse.editor.action.BlockUncomment"
+               label="Block &amp;Uncomment"
+               menubarPath="org.codehaus.groovy.eclipse.editor.menu.source/editGroup"/>
+      </editorContribution>
+   </extension>
 </plugin>
