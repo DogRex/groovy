@@ -121,7 +121,7 @@ class ConstructorAdapter extends TreeAdapter {
 
 class ImportContainer extends TreeAdapter {
 	ImportContainer(ModuleNode moduleNode) {
-		name = "import declerations";
+		name = "import declarations";
 		List imports = moduleNode.getImports();
 		if (imports.size() > 0) {
 			children = new Object[imports.size()];
