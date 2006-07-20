@@ -2,6 +2,7 @@ package org.codehaus.groovy.eclipse.editor;
 import org.codehaus.groovy.eclipse.editor.contentoutline.GroovyContentOutline;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
@@ -15,7 +16,16 @@ public class GroovyEditor extends AbstractDecoratedTextEditor{
 		GroovyConfiguration groovyConfiguration = new GroovyConfiguration(colorManager);
 		groovyConfiguration.setEditor(this);
 		setSourceViewerConfiguration(groovyConfiguration);
-		
+	}
+	
+	/**
+	 * The GroovyEditor scope is:
+	 * org.codehaus.groovy.eclipse.editor.GroovyEditorScope
+	 * GroovyEditor specific key bindings use this as their 'contextId' so that 
+	 * they are active only when a GroovyEditor has focus.
+	 */
+	protected void initializeKeyBindingScopes() {
+		setKeyBindingScopes(new String[] { "org.codehaus.groovy.eclipse.editor.GroovyEditorScope" });
 	}
 	
 	/*
@@ -33,6 +43,16 @@ public class GroovyEditor extends AbstractDecoratedTextEditor{
 	public void dispose() {
 		colorManager.dispose();
 		super.dispose();
+	}
+	
+	public int getCaretOffset() {
+		ISourceViewer viewer = getSourceViewer();
+		return viewer.getTextWidget().getCaretOffset();
+	}
+	
+	public void setCaretOffset(int offset) {
+		ISourceViewer viewer = getSourceViewer();
+		viewer.getTextWidget().setCaretOffset(offset);
 	}
     
 	protected void editorContextMenuAboutToShow(IMenuManager menu) {
