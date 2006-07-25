@@ -880,7 +880,10 @@ public class GroovyProject {
                 final IClasspathEntry entry = entries[ i ];
                 if( entry.getEntryKind() != IClasspathEntry.CPE_SOURCE )
                     continue;
-                list.add( new Path( ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString() + entry.getPath().toOSString() ) );
+                final IResource resource = javaProject.getProject().findMember( entry.getPath().removeFirstSegments( 1 ) );
+                if( !resource.exists() )
+                    continue;
+                list.add( resource.getRawLocation() );
             }
         }
         catch( final JavaModelException e )
