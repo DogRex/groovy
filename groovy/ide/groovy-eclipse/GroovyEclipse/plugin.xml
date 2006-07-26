@@ -284,7 +284,7 @@
             id="org.codehaus.groovy.eclipse.editor.command.BlockUncomment"
             name="Block Uncomment"/>
       <command
-            category="org.codehaus.groovy.eclipse.editor.category.rundebug"
+            categoryId="org.codehaus.groovy.eclipse.editor.category.rundebug"
             description="Run Groovy File"
             id="org.codehaus.groovy.eclipse.command.RunGroovy"
             name="Run Groovy"/>
@@ -302,7 +302,12 @@
             commandId="org.codehaus.groovy.eclipse.editor.command.ToggleComment"
             contextId="org.codehaus.groovy.eclipse.editor.GroovyEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="Ctrl+/"/>
+            sequence="M1+/"/>
+      <key
+            commandId="org.codehaus.groovy.eclipse.editor.command.ToggleComment"
+            contextId="org.codehaus.groovy.eclipse.editor.GroovyEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+7"/>
       <key
             commandId="org.codehaus.groovy.eclipse.editor.command.BlockComment"
             contextId="org.codehaus.groovy.eclipse.editor.GroovyEditorScope"
