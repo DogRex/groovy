@@ -1,9 +1,5 @@
 package org.intellij.openapi.testing.irida;
 
-import java.awt.Component;
-
-import org.intellij.openapi.testing.MockApplication;
-
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.openapi.application.ApplicationListener;
 import com.intellij.openapi.application.ModalityState;
@@ -14,8 +10,10 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Key;
 import com.intellij.peer.PeerFactory;
 import com.intellij.psi.EmptySubstitutor;
-
+import org.intellij.openapi.testing.MockApplication;
 import org.picocontainer.PicoContainer;
+
+import java.awt.*;
 
 public class MockIridaApplication extends MockUserDataHolder implements MockApplication {
 
@@ -153,6 +151,12 @@ public class MockIridaApplication extends MockUserDataHolder implements MockAppl
     public IdeaPluginDescriptor[] getPlugins() {
         return new IdeaPluginDescriptor[0];
     }
+
+    public boolean isDisposed() {
+        return false;
+    }
+
+    public void dispose() {}
 
     public boolean isDispatchThread() {
         return false;

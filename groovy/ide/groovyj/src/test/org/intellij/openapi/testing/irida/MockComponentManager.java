@@ -1,14 +1,13 @@
 package org.intellij.openapi.testing.irida;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.intellij.openapi.components.BaseComponent;
 import com.intellij.openapi.components.ComponentManager;
 import com.intellij.openapi.util.Key;
-
 import org.picocontainer.PicoContainer;
 import org.picocontainer.defaults.DefaultPicoContainer;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MockComponentManager implements ComponentManager {
 
@@ -56,4 +55,6 @@ public class MockComponentManager implements ComponentManager {
     }
 
     public <T> void putUserData(Key<T> key, T value) {}
+
+    public void dispose() {}
 }

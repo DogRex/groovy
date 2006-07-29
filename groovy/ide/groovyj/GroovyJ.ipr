@@ -156,6 +156,7 @@
     <option name="OPTION_DEPRECATED_LIST" value="true" />
     <option name="OTHER_OPTIONS" value="" />
     <option name="HEAP_SIZE" />
+    <option name="LOCALE" />
     <option name="OPEN_IN_BROWSER" value="true" />
   </component>
   <component name="JikesSettings">
@@ -326,7 +327,7 @@
   </component>
   <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-name="Demetra SDK" project-jdk-type="IDEA JDK" />
   <component name="ProjectRunConfigurationManager">
-    <configuration default="false" name="All GroovyJ Tests" type="JUnit" factoryName="JUnit" enabled="false" merge="false" method="Make">
+    <configuration default="false" name="All GroovyJ Tests" type="JUnit" factoryName="JUnit" enabled="false" merge="false">
       <module name="GroovyJ" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
@@ -350,7 +351,7 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
     </configuration>
-    <configuration default="false" name="GroovyJ" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType" factoryName="Plugin" method="Make">
+    <configuration default="false" name="GroovyJ" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType" factoryName="Plugin">
       <module name="GroovyJ" />
       <option name="VM_PARAMETERS" value="" />
       <option name="PROGRAM_PARAMETERS" value="" />

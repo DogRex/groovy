@@ -55,7 +55,7 @@
         <property name="clover.reports" value="${build.dir}/clover-reports"/>
         <property name="coverage.criteria" value="90%"/>
 
-        <property name="idea.since-build" value="5368"/>
+        <property name="idea.since-build" value="5581"/>
 
         <path id="clover.classpath">
             <pathelement location="${clover.lib.dir}/clover.jar"/>
