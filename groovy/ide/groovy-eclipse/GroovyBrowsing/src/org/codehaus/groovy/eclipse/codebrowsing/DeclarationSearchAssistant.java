@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
@@ -12,11 +14,14 @@ import org.codehaus.groovy.ast.expr.MethodPointerExpression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.eclipse.GroovyPlugin;
+import org.codehaus.groovy.eclipse.codebrowsing.impl.ClassParentsFileFindingProcessor;
+import org.codehaus.groovy.eclipse.codebrowsing.impl.FieldTypeFileFindingProcessor;
 import org.codehaus.groovy.eclipse.codebrowsing.impl.ThisClassExpressionProcessor;
 import org.codehaus.groovy.eclipse.codebrowsing.impl.ThisMethodCallExpressionProcessor;
 import org.codehaus.groovy.eclipse.codebrowsing.impl.ThisMethodPointerExpressionProcessor;
 import org.codehaus.groovy.eclipse.codebrowsing.impl.ThisPropertyExpressionProcessor;
 import org.codehaus.groovy.eclipse.codebrowsing.impl.ThisVariableExpressionProcessor;
+import org.codehaus.groovy.eclipse.codebrowsing.impl.VariableTypeFileFindingProcessor;
 import org.codehaus.groovy.eclipse.editor.actions.EditorPartFacade;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.eclipse.core.resources.IFile;
@@ -41,7 +46,6 @@ public class DeclarationSearchAssistant implements IDeclarationSearchAssistant {
 	}
 
 	private DeclarationSearchAssistant() {
-		// TODO: a processor to jump to parameters.
 		DeclarationSearchProcessorRegistry
 				.registerProcessor(VariableExpression.class,
 						new ThisVariableExpressionProcessor());
@@ -56,6 +60,12 @@ public class DeclarationSearchAssistant implements IDeclarationSearchAssistant {
 				new ThisMethodPointerExpressionProcessor());
 		DeclarationSearchProcessorRegistry.registerProcessor(
 				ClassExpression.class, new ThisClassExpressionProcessor());
+		DeclarationSearchProcessorRegistry.registerProcessor(
+				ClassNode.class, new ClassParentsFileFindingProcessor());
+		DeclarationSearchProcessorRegistry.registerProcessor(
+				FieldNode.class, new FieldTypeFileFindingProcessor());
+		DeclarationSearchProcessorRegistry.registerProcessor(
+				VariableExpression.class, new VariableTypeFileFindingProcessor());
 	}
 
 	public List getProposals(IEditorPart editor, IRegion region) {
@@ -113,9 +123,7 @@ public class DeclarationSearchAssistant implements IDeclarationSearchAssistant {
 					.next();
 			List proposals = processor.getProposals(new DeclarationSearchInfo(
 					result, editor, region));
-			if (proposals != null && proposals.size() > 0) {
-				results.addAll(proposals);
-			}
+			results.addAll(proposals);
 		}
 	}
 }

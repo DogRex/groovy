@@ -1,6 +1,5 @@
 package org.codehaus.groovy.eclipse.codebrowsing;
 
-import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.IRegion;
 
 /**
@@ -39,7 +38,7 @@ public interface IDeclarationMatchProposal {
 	/**
 	 * @return The target containing the declaration, normally an IFile.
 	 */
-	public IResource getTarget();
+	public Object getTarget();
 
 	/**
 	 * @return The highlight region, which may be null if the resource is not

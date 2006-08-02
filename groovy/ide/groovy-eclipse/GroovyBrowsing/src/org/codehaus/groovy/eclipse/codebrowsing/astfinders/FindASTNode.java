@@ -17,6 +17,7 @@ import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.StaticMethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.eclipse.codebrowsing.ASTUtils;
 
 /**
  * Given an identifier and its location in the document, find the ASTNode that
@@ -48,9 +49,19 @@ public class FindASTNode extends ClassCodeVisitorSupport {
 		this.column = column;
 
 		List classes = node.getClasses();
+
 		for (Iterator iter = classes.iterator(); iter.hasNext();) {
 			classNode = (ClassNode) iter.next();
-			classNode.visitContents(this);
+			ClassNode superClassNode = classNode.getSuperClass();
+			ClassNode[] interfaceNodes = classNode.getInterfaces();
+
+			visitClass(superClassNode);
+			for (int i = 0; i < interfaceNodes.length; ++i) {
+				visitClass(interfaceNodes[i]);
+			}
+
+			visitClass(classNode);
+			// classNode.visitContents(this);
 		}
 	}
 
@@ -65,12 +76,30 @@ public class FindASTNode extends ClassCodeVisitorSupport {
 	public void visitField(FieldNode node) {
 		if (validCoords(node)) {
 			System.out.println("FieldNode: " + node.getName());
+			if (node.getName().equals(identifier)
+					|| node.getType().getNameWithoutPackage()
+							.equals(identifier)) {
+				testForMatch(node);
+			}
 		}
 		super.visitField(node);
 	}
 
 	public void visitPropertyExpression(PropertyExpression expr) {
 		if (validCoords(expr)) {
+			// Patch same last coord to length. This only seems to occur with
+			// this.prop. Not strictly correct, as it should be the entire
+			// expression to be consistent with other property expressions.
+			if (expr.getLastLineNumber() == expr.getLineNumber()) {
+				expr.setLastLineNumber(expr.getLineNumber()
+						+ expr.getProperty().length());
+			}
+
+			if (expr.getLastColumnNumber() == expr.getColumnNumber()) {
+				expr.setLastColumnNumber(expr.getColumnNumber()
+						+ expr.getProperty().length());
+			}
+
 			if (identifier.equals(expr.getProperty())) {
 				System.out.println("Property: " + expr.getProperty());
 				testForMatch(expr);
@@ -82,11 +111,29 @@ public class FindASTNode extends ClassCodeVisitorSupport {
 	}
 
 	public void visitVariableExpression(VariableExpression expr) {
-		if (validCoords(expr) && identifier.equals(expr.getName())) {
-			System.out.println("Variable: " + expr.getName());
-			testForMatch(expr);
+		// Patch odd zero last coords.
+		if (expr.getLastLineNumber() == 0) {
+			expr.setLastLineNumber(expr.getLineNumber()
+					+ expr.getName().length());
 		}
-		super.visitVariableExpression(expr);
+
+		if (expr.getLastColumnNumber() == 0) {
+			expr.setLastColumnNumber(expr.getColumnNumber()
+					+ expr.getName().length());
+		}
+
+		// First visit the parent, else a case like:
+		// def insets = parent.insets
+		// will match the 'insets' of 'parent.insets' to the 'def insets'.
+		// TODO: how to visit rhs first?
+		if (validCoords(expr)) {
+			if (identifier.equals(expr.getName())
+					|| identifier
+							.equals(expr.getType().getNameWithoutPackage())) {
+				System.out.println("Variable: " + expr.getName());
+				testForMatch(expr);
+			}
+		}
 	}
 
 	public void visitMethodCallExpression(MethodCallExpression call) {
@@ -131,6 +178,31 @@ public class FindASTNode extends ClassCodeVisitorSupport {
 		super.visitClassExpression(expr);
 	}
 
+	public void visitClass(ClassNode node) {
+		// TODO: find the real "class Blah" length
+		if (validCoords(node) && ASTUtils.isInsideNode(node, line, column)) {
+			// TODO: want qualified identifier.
+			if (identifier.equals(node.getNameWithoutPackage())) {
+				throw new ASTNodeFoundException(moduleNode, classNode, node,
+						identifier, line, column);
+			} else if (identifier.equals(node.getSuperClass()
+					.getNameWithoutPackage())) {
+				throw new ASTNodeFoundException(moduleNode, classNode, node
+						.getSuperClass(), identifier, line, column);
+			} else {
+				ClassNode[] interfaceNodes = node.getInterfaces();
+				for (int i = 0; i < interfaceNodes.length; ++i) {
+					if (identifier.equals(interfaceNodes[i]
+							.getNameWithoutPackage())) {
+						throw new ASTNodeFoundException(moduleNode, classNode,
+								interfaceNodes[i], identifier, line, column);
+					}
+				}
+			}
+		}
+		super.visitClass(node);
+	}
+
 	public void visitMethodPointerExpression(MethodPointerExpression expr) {
 		if (validCoords(expr) && identifier.equals(expr.getMethodName())) {
 			System.out.println("Method Pointer: " + expr.getMethodName());
@@ -161,17 +233,9 @@ public class FindASTNode extends ClassCodeVisitorSupport {
 	}
 
 	private void testForMatch(ASTNode astNode) {
-		if ((astNode.getLineNumber() == line
-				&& astNode.getLastLineNumber() == line
-				&& astNode.getColumnNumber() <= column && column <= astNode
-				.getLastColumnNumber())
-				|| (astNode.getLineNumber() == line
-						&& line < astNode.getLastLineNumber() && astNode
-						.getColumnNumber() <= column)
-				|| (astNode.getLineNumber() < line && line < astNode
-						.getLastLineNumber())
-				|| (astNode.getLastLineNumber() == line && column <= astNode
-						.getLastColumnNumber())) {
+		if (ASTUtils.isInsideSpan(astNode.getLineNumber(), astNode
+				.getColumnNumber(), astNode.getLastLineNumber(), astNode
+				.getLastColumnNumber(), line, column)) {
 			throw new ASTNodeFoundException(moduleNode, classNode, astNode,
 					identifier, line, column);
 		}

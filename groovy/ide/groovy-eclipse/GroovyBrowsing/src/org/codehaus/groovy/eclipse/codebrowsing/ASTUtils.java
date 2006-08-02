@@ -2,8 +2,11 @@ package org.codehaus.groovy.eclipse.codebrowsing;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
@@ -15,6 +18,9 @@ import org.eclipse.jface.text.Region;
 
 public class ASTUtils {
 	/**
+	 * Get a region starting at the nodes lineNumber/columnNumber and ending at
+	 * the nodes lastLineNumber/lastColumnNumber.
+	 * 
 	 * @param facade
 	 * @param node
 	 * @return The region, or null if one could not be created for the
@@ -33,6 +39,9 @@ public class ASTUtils {
 	}
 
 	/**
+	 * Get a region with offset starting at the first node and length is the
+	 * distance from the first node to the second node.
+	 * 
 	 * @param facade
 	 * @param first
 	 * @param next
@@ -58,6 +67,9 @@ public class ASTUtils {
 	}
 
 	/**
+	 * Get a region starting at the specified nodes lineNumber/columnNumber with
+	 * the given length.
+	 * 
 	 * @param facade
 	 * @param node
 	 * @param length
@@ -86,6 +98,17 @@ public class ASTUtils {
 		List result = new ArrayList();
 		result.add(proposal);
 		return result;
+	}
+
+	/**
+	 * Creates a string suitable for display. This method should be used
+	 * wherever possible for consistent results.
+	 * 
+	 * @param node
+	 * @return The display string.
+	 */
+	public static String createDisplayString(ClassNode node) {
+		return node.getName();
 	}
 
 	/**
@@ -160,36 +183,71 @@ public class ASTUtils {
 	}
 
 	/**
-	 * @see #isSurroundingNode(ASTNode, ASTNode)
+	 * Check if some reference line/number coordinate is inside a span.
+	 * 
+	 * @param line0
+	 * @param line1
+	 * @param col0
+	 * @param col1
+	 * @param refLine
+	 * @param refCol
+	 * @return True if line0..line1 and col0..<col1 are surrounding the
+	 *         reference line/col.
 	 */
-	public static boolean isSurroundingNode(ASTNode candidate, ASTNode reference) {
-		return isSurroundingNode(candidate, reference.getLineNumber(),
-				reference.getColumnNumber());
+	public static boolean isInsideSpan(int line0, int col0, int line1,
+			int col1, int refLine, int refCol) {
+		if ((line0 == refLine && line1 == refLine && col0 <= refCol && refCol < col1)
+				|| (line0 == refLine && refLine < line1 && col0 <= refCol)
+				|| (line0 < refLine && refLine < line1)
+				|| (line1 == refLine && refCol < col1)) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
-	 * Check if one node is surrounded by another. This is not a trivial check,
-	 * as nodes can span multiple lines.
+	 * Check if one node is inside another.
 	 * 
 	 * @param candidate
 	 *            The candidate that might surround the reference.
 	 * @param reference
-	 *            The reference that might be surrounded by the candidate.
+	 *            The reference that might be inside the candidate.
 	 * @return True if surrounding, else false.
 	 */
-	public static boolean isSurroundingNode(ASTNode candidate, int line, int col) {
+	public static boolean isInsideNode(ASTNode candidate, ASTNode reference) {
+		return isInsideNode(candidate, reference.getLineNumber(), reference
+				.getColumnNumber());
+	}
+
+	/**
+	 * @see #isInsideNode(ASTNode, ASTNode)
+	 */
+	public static boolean isInsideNode(ASTNode candidate, int line, int col) {
 		int cline0 = candidate.getLineNumber();
 		int cline1 = candidate.getLastLineNumber();
 		int ccol0 = candidate.getColumnNumber();
 		int ccol1 = candidate.getLastColumnNumber();
 
-		if ((cline0 == line && cline1 == line && ccol0 <= col && col <= ccol1)
-				|| (cline0 == line && line < cline1 && ccol0 <= col)
-				|| (cline0 < line && line < cline1)
-				|| (cline1 == line && col <= ccol1)) {
-			return true;
-		}
-		return false;
+		return isInsideSpan(cline0, ccol0, cline1, ccol1, line, col);
+	}
+
+	/**
+	 * Check to see if a reference node is between two other nodes.
+	 * 
+	 * @param candidate1
+	 * @param candidate2
+	 * @param reference
+	 * @return True if in between, else false.
+	 */
+	public static boolean isBetweenNodes(ASTNode candidate1,
+			ASTNode candidate2, ASTNode reference) {
+		int line1 = candidate1.getLineNumber();
+		int col1 = candidate1.getColumnNumber();
+		int line2 = candidate2.getLineNumber();
+		int col2 = candidate2.getColumnNumber();
+		int line = reference.getLineNumber();
+		int col = reference.getColumnNumber();
+		return isInsideSpan(line1, col1, line2, col2, line, col);
 	}
 
 	/**
@@ -201,17 +259,15 @@ public class ASTUtils {
 	 * @return The offset, or -1 if there is no match.
 	 */
 	public static int findIdentifierOffset(String text, String identifier) {
-//		Pattern pattern = Pattern.compile("");
-//		Matcher matcher = pattern.matcher(text);
-//		if (matcher.find()) {
-//			return matcher.start();
-//		}
-		
-		// TODO: really needs a regex, as the method name could be a superset
-		// of the identifier name - that goes for other identifiers before the
-		// one we are searching for.
-		return text.indexOf(identifier);
-		
-//		return -1;
+		String notIdent = "[^a-zA-Z0-9_]";
+
+		Pattern pattern = Pattern.compile(notIdent + "(" + identifier + ")"
+				+ notIdent);
+		Matcher matcher = pattern.matcher(text);
+		if (matcher.find()) {
+			return matcher.start(1);
+		}
+
+		return -1;
 	}
 }

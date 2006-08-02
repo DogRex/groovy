@@ -54,7 +54,7 @@ public class FindSurroundingMethod extends ClassCodeVisitorSupport {
 	}
 
 	public void visitMethod(MethodNode node) {
-		if (ASTUtils.isSurroundingNode(node, lineNumber, columnNumber)) {
+		if (ASTUtils.isInsideNode(node, lineNumber, columnNumber)) {
 			throw new ASTNodeFoundException(moduleNode, classNode, node,
 					"method node", node.getLineNumber(), node.getColumnNumber());
 		}

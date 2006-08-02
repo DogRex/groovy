@@ -1,5 +1,6 @@
 package org.codehaus.groovy.eclipse.codebrowsing.impl;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -57,7 +58,7 @@ public class ThisClassExpressionProcessor implements IDeclarationSearchProcessor
 				}
 			} catch (BadLocationException e) {
 				GroovyPlugin.getPlugin().logException("Should not happen", e);
-				return null;
+				return Collections.emptyList();
 			}
 		}
 		
@@ -68,6 +69,6 @@ public class ThisClassExpressionProcessor implements IDeclarationSearchProcessor
 							.getName(), facade.getFile(), region));
 		}
 
-		return null;
+		return Collections.emptyList();
 	}
 }

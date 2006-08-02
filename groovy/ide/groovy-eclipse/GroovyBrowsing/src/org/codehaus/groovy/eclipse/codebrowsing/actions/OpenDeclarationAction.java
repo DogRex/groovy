@@ -4,15 +4,24 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.codehaus.groovy.eclipse.codebrowsing.IDeclarationMatchProposal;
+import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.codehaus.groovy.eclipse.codebrowsing.DeclarationSearchAssistant;
+import org.codehaus.groovy.eclipse.codebrowsing.IDeclarationMatchProposal;
 import org.codehaus.groovy.eclipse.editor.actions.EditingAction;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.ui.IEditorDescriptor;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.ITextEditor;
 
 /**
  * The action that attempts to open the declaration of the identifier under the
@@ -33,8 +42,26 @@ public class OpenDeclarationAction extends EditingAction {
 			if (proposals.size() > 0) {
 				IDeclarationMatchProposal proposal = (IDeclarationMatchProposal) proposals
 						.get(0);
-				IRegion hregion = proposal.getHighlightRegion();
-				select(hregion.getOffset(), hregion.getLength());
+				if (proposal.getTarget() instanceof IFile) {
+					IFile file = (IFile) proposal.getTarget();
+					IWorkbenchPage page = editor.getSite().getWorkbenchWindow()
+							.getActivePage();
+					IEditorDescriptor desc = PlatformUI.getWorkbench()
+							.getEditorRegistry().getDefaultEditor(
+									file.getName());
+					try {
+						IEditorPart part = page.openEditor(new FileEditorInput(
+								file), desc.getId());
+						IRegion hregion = proposal.getHighlightRegion();
+						ITextEditor editor = (ITextEditor) part;
+						editor.selectAndReveal(hregion.getOffset(), hregion
+								.getLength());
+					} catch (PartInitException e) {
+						GroovyPlugin.getPlugin().logException(
+								"Should not happen.", e);
+						e.printStackTrace();
+					}
+				}
 			}
 		}
 	}

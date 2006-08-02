@@ -1,6 +1,7 @@
 package org.codehaus.groovy.eclipse.codebrowsing.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -42,7 +43,7 @@ public class ThisMethodCallExpressionProcessor implements
 				}
 			}
 		}
-		return null;
+		return Collections.emptyList();
 	}
 
 	private List createMethodCallProposal(String category,

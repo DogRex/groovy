@@ -28,7 +28,7 @@ public class DeclarationMatchProposal implements IDeclarationMatchProposal {
 		return displayName;
 	}
 
-	public IResource getTarget() {
+	public Object getTarget() {
 		return target;
 	}
 

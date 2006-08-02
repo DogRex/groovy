@@ -1,5 +1,6 @@
 package org.codehaus.groovy.eclipse.codebrowsing.impl;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.codehaus.groovy.ast.FieldNode;
@@ -27,12 +28,12 @@ public class ThisPropertyExpressionProcessor implements
 			VariableExpression vexpr = (VariableExpression) expr
 					.getObjectExpression();
 			if (!vexpr.getName().equals("this"))
-				return null;
+				return Collections.emptyList();
 
 			FieldNode fieldNode = info.getClassNode().getField(
 					expr.getProperty());
 			if (fieldNode == null)
-				return null;
+				return Collections.emptyList();
 
 			EditorPartFacade facade = new EditorPartFacade(info.getEditor());
 			IRegion highlight = ASTUtils.getRegion(facade, fieldNode);
@@ -43,6 +44,6 @@ public class ThisPropertyExpressionProcessor implements
 								.getFile(), highlight));
 			}
 		}
-		return null;
+		return Collections.emptyList();
 	}
 }

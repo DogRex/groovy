@@ -1,5 +1,6 @@
 package org.codehaus.groovy.eclipse.codebrowsing.impl;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.codehaus.groovy.ast.ASTNode;
@@ -30,6 +31,12 @@ public class ThisVariableExpressionProcessor implements
 		IDeclarationSearchProcessor {
 	public List getProposals(IDeclarationSearchInfo info) {
 		VariableExpression expr = (VariableExpression) info.getASTNode();
+		
+		// Clicked on something other than the name.
+		if (!expr.getName().equals(info.getIdentifier())) {
+			return Collections.emptyList();
+		}
+		
 		Variable var = expr.getAccessedVariable();
 
 		if (var instanceof FieldNode) {
@@ -40,7 +47,7 @@ public class ThisVariableExpressionProcessor implements
 			return processParameter(info, expr, (Parameter) var);
 		}
 
-		return null;
+		return Collections.emptyList();
 	}
 
 	private List processFieldNode(IDeclarationSearchInfo info,
@@ -54,7 +61,7 @@ public class ThisVariableExpressionProcessor implements
 							.createDisplayString(fieldNode), facade.getFile(),
 					highlight));
 		}
-		return null;
+		return Collections.emptyList();
 	}
 
 	private List processVariableExpression(IDeclarationSearchInfo info,
@@ -68,23 +75,23 @@ public class ThisVariableExpressionProcessor implements
 							.createDisplayString(expr), facade.getFile(),
 					highlight));
 		}
-		return null;
+		return Collections.emptyList();
 	}
 
 	private List processParameter(IDeclarationSearchInfo info,
 			VariableExpression expr, Parameter param) {
 		ASTNodeSearchResult result = ASTNodeFinder.findSurroundingClosure(info
 				.getModuleNode(), expr);
-		if (result != null) {
-			return processClosureOrMethodExpression(info, param, result);
+		
+		if (result == null) {
+			result = ASTNodeFinder
+			.findSurroundingMethod(info.getModuleNode(), expr);
 		}
 
-		result = ASTNodeFinder
-				.findSurroundingMethod(info.getModuleNode(), expr);
 		if (result != null) {
 			return processClosureOrMethodExpression(info, param, result);
 		}
-		return null;
+		return Collections.emptyList();
 	}
 
 	private List processClosureOrMethodExpression(IDeclarationSearchInfo info,
@@ -116,6 +123,6 @@ public class ThisVariableExpressionProcessor implements
 		} catch (BadLocationException e) {
 			GroovyPlugin.getPlugin().logException("Should not happen", e);
 		}
-		return null;
+		return Collections.emptyList();
 	}
 }

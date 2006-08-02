@@ -1,7 +1,10 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Groovy Code Browsing Fragment
-Bundle-SymbolicName: org.codehaus.goovy.eclipse.codebrowsing; singleton:=true
-Bundle-Version: 1.0.20050728
+Bundle-SymbolicName: org.codehaus.groovy.eclipse.codebrowsing; singleton:=true
+Bundle-Version: 1.0.20050801
 Fragment-Host: org.codehaus.groovy.eclipse;bundle-version="[1.0.0.20060725,2.0.0)"
 Bundle-Localization: plugin
+Export-Package: org.codehaus.groovy.eclipse.codebrowsing,
+ org.codehaus.groovy.eclipse.codebrowsing.astfinders
+Require-Bundle: org.eclipse.ui.ide
