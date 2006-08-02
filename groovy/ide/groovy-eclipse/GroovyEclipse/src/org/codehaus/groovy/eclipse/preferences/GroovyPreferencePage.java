@@ -71,7 +71,15 @@ public class GroovyPreferencePage extends FieldEditorPreferencePage implements
 				PreferenceConstants.GROOVY_EDITOR_HIGHLIGHT_GROOVYKEYWORDS_COLOR,
 				"&Groovy keyword color", getFieldEditorParent()));
 		
-		// Generate Class File Pref
+        // Bracket Matcher prefs 
+        addField(new BooleanFieldEditor(
+                PreferenceConstants.GROOVY_EDITOR_PAIR_MATCHING_ENABLED,
+                "Enable bracket &matching", getFieldEditorParent()));
+        addField(new ColorFieldEditor(
+                PreferenceConstants.GROOVY_EDITOR_PAIR_MATCHING_COLOR,
+                "Bracket &matching color", getFieldEditorParent()));
+
+        // Generate Class File Pref
 		addField(new BooleanFieldEditor(
 				PreferenceConstants.GROOVY_GENERATE_CLASS_FILES,
 				"&Enable Groovy Compiler Generating Class Files",
