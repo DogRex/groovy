@@ -50,12 +50,16 @@ public class EditorPartFacade {
 	}
 
 	public ITextEditor getTextEditor() {
-		try {
-			return (ITextEditor) editor;
-		} catch (ClassCastException e) {
-			throw new IllegalStateException("Expecting a text editor, found "
-					+ editor.getClass().getName(), e);
-		}
+		// IllegalStateException c_tor is 1.5 only, leaving it as
+		// ClassCastException
+		// until I decide what is needed. It took until 1.5 to get this c_tor?
+		// -emp
+		// try {
+		return (ITextEditor) editor;
+		// } catch (ClassCastException e) {
+		// throw new IllegalStateException("Expecting a text editor, found "
+		// + editor.getClass().getName(), e);
+		// }
 	}
 
 	public IFile getFile() {
