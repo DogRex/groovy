@@ -21,12 +21,12 @@ public class ASTNodeFinder {
 	 * @param column
 	 * @return The search result, or null if no ASTNode was found.
 	 */
-	public static ASTNodeSearchResult findASTNode(ModuleNode moduleNode,
+	public static ASTSearchResult findASTNode(ModuleNode moduleNode,
 			String identifier, int line, int column) {
 		try {
 			new FindASTNode().doFind(moduleNode, identifier, line, column);
 		} catch (ASTNodeFoundException e) {
-			return new ASTNodeSearchResult(e);
+			return new ASTSearchResult(e);
 		}
 		return null;
 	}
@@ -37,13 +37,13 @@ public class ASTNodeFinder {
 	 * @param reference
 	 * @return The search result, or null if no ASTNode was found.
 	 */
-	public static ASTNodeSearchResult findSurroundingClosure(
+	public static ASTSearchResult findSurroundingClosure(
 			ModuleNode moduleNode, ASTNode reference) {
 		try {
 			new FindSurroundingClosure().doFind(moduleNode, reference
 					.getLineNumber(), reference.getColumnNumber());
 		} catch (ASTNodeFoundException e) {
-			return new ASTNodeSearchResult(e);
+			return new ASTSearchResult(e);
 		}
 		return null;
 	}
@@ -54,13 +54,13 @@ public class ASTNodeFinder {
 	 * @param reference
 	 * @return The search result, or null if no ASTNode was found.
 	 */
-	public static ASTNodeSearchResult findSurroundingMethod(
+	public static ASTSearchResult findSurroundingMethod(
 			ModuleNode moduleNode, ASTNode reference) {
 		try {
 			new FindSurroundingMethod().doFind(moduleNode, reference
 					.getLineNumber(), reference.getColumnNumber());
 		} catch (ASTNodeFoundException e) {
-			return new ASTNodeSearchResult(e);
+			return new ASTSearchResult(e);
 		}
 		return null;
 	}

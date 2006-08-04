@@ -1,22 +1,56 @@
 package org.codehaus.groovy.eclipse.codebrowsing;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.eclipse.editor.GroovyEditor;
 import org.codehaus.groovy.eclipse.editor.actions.EditorPartFacade;
+import org.codehaus.groovy.eclipse.model.GroovyModel;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
+import org.eclipse.ui.PlatformUI;
 
 public class ASTUtils {
+	/**
+	 * Get the ModuleNode for the active editor. If the editor content has
+	 * changed and resolve is true, then an updated ModuleNode is returned.
+	 * However this can only occur if there have been no compile errors.
+	 * 
+	 * @param resolve
+	 *            If true, resolve the ModuleNode for the current editor state.
+	 * @return The ModuleNode for the active editor, or null if there is no
+	 *         ModuleNode or no active editor.
+	 */
+	public static ModuleNode getCurrentModuleNode(boolean resolve) {
+		GroovyEditor editor;
+		try {
+			editor = (GroovyEditor) PlatformUI.getWorkbench()
+					.getActiveWorkbenchWindow().getActivePage()
+					.getActiveEditor();
+		} catch (ClassCastException e) {
+			return null;
+		} catch (NullPointerException e) {
+			return null;
+		}
+
+		IFile file = new EditorPartFacade(editor).getFile();
+
+		List moduleNodes = GroovyModel.getModel().getModuleNodes(file);
+		if (moduleNodes == null)
+			return null;
+
+		ModuleNode moduleNode = (ModuleNode) moduleNodes.get(0);
+		return moduleNode;
+	}
+
 	/**
 	 * Get a region starting at the nodes lineNumber/columnNumber and ending at
 	 * the nodes lastLineNumber/lastColumnNumber.
@@ -85,19 +119,6 @@ public class ASTUtils {
 		} catch (BadLocationException e) {
 		}
 		return null;
-	}
-
-	/**
-	 * Proposals are returned in a list as there may be more than one proposal.
-	 * However, often there is only one, so wrap it in a list.
-	 * 
-	 * @param proposal
-	 * @return The wrapped proposal.
-	 */
-	public static List wrapProposal(IDeclarationMatchProposal proposal) {
-		List result = new ArrayList();
-		result.add(proposal);
-		return result;
 	}
 
 	/**
@@ -248,26 +269,5 @@ public class ASTUtils {
 		int line = reference.getLineNumber();
 		int col = reference.getColumnNumber();
 		return isInsideSpan(line1, col1, line2, col2, line, col);
-	}
-
-	/**
-	 * Given some text, find the offset to the first match of some identifier in
-	 * the text.
-	 * 
-	 * @param text
-	 * @param identifier
-	 * @return The offset, or -1 if there is no match.
-	 */
-	public static int findIdentifierOffset(String text, String identifier) {
-		String notIdent = "[^a-zA-Z0-9_]";
-
-		Pattern pattern = Pattern.compile(notIdent + "(" + identifier + ")"
-				+ notIdent);
-		Matcher matcher = pattern.matcher(text);
-		if (matcher.find()) {
-			return matcher.start(1);
-		}
-
-		return -1;
 	}
 }

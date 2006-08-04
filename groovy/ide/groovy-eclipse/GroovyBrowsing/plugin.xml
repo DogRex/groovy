@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
-<fragment>
+<plugin>
+   <extension-point id="declarationSearch" name="Groovy Code Browsing" schema="schema/declarationSearch.exsd"/>
+
    <extension
          point="org.eclipse.ui.contexts">
       <context
@@ -40,5 +42,10 @@
                style="push"/>
       </editorContribution>
    </extension>
-
-</fragment>
+   <extension
+         point="org.codehaus.groovy.eclipse.hyperlinkDetectors">
+      <hyperlinkDetector
+            class="org.codehaus.groovy.eclipse.codebrowsing.HyperlinkDetector"
+            name="Groovy Declarations"/>
+   </extension>
+</plugin>

@@ -24,7 +24,7 @@ public class DeclarationSearchInfo implements IDeclarationSearchInfo {
 
 	private ASTNode astNode;
 
-	public DeclarationSearchInfo(ASTNodeSearchResult result,
+	public DeclarationSearchInfo(ASTSearchResult result,
 			IEditorPart editor, IRegion region) {
 		this(result.getIdentifier(), editor, region, result.getModuleNode(),
 				result.getClassNode(), result.getASTNode());

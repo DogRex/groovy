@@ -16,6 +16,27 @@ import org.eclipse.core.runtime.CoreException;
 
 public class FileUtils {
 	/**
+	 * Given a qualified class name, find the file in the classpath that
+	 * implements this class.
+	 * 
+	 * @param className
+	 *            The qualified class name.
+	 * @param extensions
+	 *            What file extensions to search for.
+	 * @return The file or null if no file was found.
+	 */
+	public static IFile findFileInProject(String classname, String[] extensions) {
+		// FIXME: this temporarily accesses the workspace files, not the class
+		// path files.
+		String filename = classname.replace('.', '/');
+		IFile[] files = findFilesInWorkspace(filename, extensions);
+		if (files.length > 0) {
+			return files[0];
+		}
+		return null;
+	}
+
+	/**
 	 * Given a partial path to a file, find all files matching this file with
 	 * the given extension. The path separator is '/'.
 	 * 
@@ -64,8 +85,7 @@ public class FileUtils {
 				int offset = 0;
 				int delimLength = System.getProperty("line.separator").length();
 				while ((line = reader.readLine()) != null) {
-					int ix = ASTUtils
-							.findIdentifierOffset(line, identifier);
+					int ix = TextUtils.findIdentifierOffset(line, identifier);
 					if (ix != -1) {
 						offset += ix;
 						return offset;

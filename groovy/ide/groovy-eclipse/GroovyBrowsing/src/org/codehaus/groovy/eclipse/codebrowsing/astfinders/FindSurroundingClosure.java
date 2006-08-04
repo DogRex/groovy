@@ -11,6 +11,8 @@ import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.SourceUnit;
 
+// TODO: this doesn't take care of nested closures.
+
 /**
  * Given some lineNumber, columnNumber, find the closure surrounding the
  * lineNumber, columnNumber.
@@ -23,8 +25,6 @@ public class FindSurroundingClosure extends ClassCodeVisitorSupport {
 	private ClassNode classNode;
 
 	private int lineNumber;
-
-//	private int columnNumber;
 
 	protected SourceUnit getSourceUnit() {
 		// Nothing to do.

@@ -6,14 +6,14 @@ import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.eclipse.codebrowsing.astfinders.ASTNodeFoundException;
 
 /**
- * Object encapsulating the result of an ASTNode search.
+ * The result of searching an AST.
  * 
  * @author emp
  */
-public class ASTNodeSearchResult {
+public class ASTSearchResult {
 	private ASTNodeFoundException exception;
 
-	public ASTNodeSearchResult(ASTNodeFoundException e) {
+	public ASTSearchResult(ASTNodeFoundException e) {
 		this.exception = e;
 	}
 

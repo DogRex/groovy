@@ -7,16 +7,26 @@ import java.util.List;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.expr.MethodPointerExpression;
 import org.codehaus.groovy.eclipse.codebrowsing.ASTUtils;
+import org.codehaus.groovy.eclipse.codebrowsing.DeclarationCategory;
+import org.codehaus.groovy.eclipse.codebrowsing.FileSourceCode;
+import org.codehaus.groovy.eclipse.codebrowsing.IDeclarationProposal;
 import org.codehaus.groovy.eclipse.codebrowsing.IDeclarationSearchInfo;
 import org.codehaus.groovy.eclipse.codebrowsing.IDeclarationSearchProcessor;
-import org.codehaus.groovy.eclipse.codebrowsing.IDeclarationMatchProposal;
-import org.codehaus.groovy.eclipse.codebrowsing.DeclarationMatchProposal;
+import org.codehaus.groovy.eclipse.codebrowsing.DeclarationProposal;
 import org.codehaus.groovy.eclipse.editor.actions.EditorPartFacade;
 import org.eclipse.jface.text.IRegion;
 
-public class ThisMethodPointerExpressionProcessor implements
+/**
+ * <pre>
+ *   a.&amp;b
+ *      &circ;
+ * </pre>
+ * 
+ * @author emp
+ */
+public class MethodPointerExpressionProcessor implements
 		IDeclarationSearchProcessor {
-	public List getProposals(IDeclarationSearchInfo info) {
+	public IDeclarationProposal[] getProposals(IDeclarationSearchInfo info) {
 		MethodPointerExpression expr = (MethodPointerExpression) info
 				.getASTNode();
 		String methodName = expr.getMethodName();
@@ -29,14 +39,15 @@ public class ThisMethodPointerExpressionProcessor implements
 				IRegion region = ASTUtils.getRegion(facade, methodNode, info
 						.getIdentifier().length());
 				if (region != null) {
-					results.add(new DeclarationMatchProposal(
-							IDeclarationMatchProposal.METHOD_CATEGORY, ASTUtils
-									.createDisplayString(methodNode), facade
-									.getFile(), region));
+					results.add(new DeclarationProposal(
+							DeclarationCategory.METHOD, ASTUtils
+									.createDisplayString(methodNode),
+							new FileSourceCode(facade.getFile(), region)));
 				}
 			}
 		}
 
-		return results;
+		return (IDeclarationProposal[]) results
+				.toArray(new IDeclarationProposal[results.size()]);
 	}
 }

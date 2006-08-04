@@ -17,5 +17,5 @@ package org.codehaus.groovy.eclipse.codebrowsing;
  * @author emp
  */
 public interface IDeclarationSearchContext {
-	public String getCurrentContext();
+	public boolean isActiveContext();
 }

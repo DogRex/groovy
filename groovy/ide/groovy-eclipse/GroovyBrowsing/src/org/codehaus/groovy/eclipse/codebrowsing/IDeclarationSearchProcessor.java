@@ -1,6 +1,5 @@
 package org.codehaus.groovy.eclipse.codebrowsing;
 
-import java.util.List;
 
 /**
  * Processes a search for a declaration. There are many such processors, some
@@ -10,5 +9,10 @@ import java.util.List;
  * @author emp
  */
 public interface IDeclarationSearchProcessor {
-	public List getProposals(IDeclarationSearchInfo info);
+	/**
+	 * Get declaration match proposals, if any.
+	 * @param info
+	 * @return An array of proposals, or an empty array if there weren't any.
+	 */
+	public IDeclarationProposal[] getProposals(IDeclarationSearchInfo info);
 }

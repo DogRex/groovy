@@ -1,8 +1,12 @@
 package org.codehaus.groovy.eclipse.codebrowsing;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
@@ -14,17 +18,22 @@ import org.codehaus.groovy.ast.expr.MethodPointerExpression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.eclipse.GroovyPlugin;
-import org.codehaus.groovy.eclipse.codebrowsing.impl.ClassParentsFileFindingProcessor;
-import org.codehaus.groovy.eclipse.codebrowsing.impl.FieldTypeFileFindingProcessor;
-import org.codehaus.groovy.eclipse.codebrowsing.impl.ThisClassExpressionProcessor;
-import org.codehaus.groovy.eclipse.codebrowsing.impl.ThisMethodCallExpressionProcessor;
-import org.codehaus.groovy.eclipse.codebrowsing.impl.ThisMethodPointerExpressionProcessor;
-import org.codehaus.groovy.eclipse.codebrowsing.impl.ThisPropertyExpressionProcessor;
-import org.codehaus.groovy.eclipse.codebrowsing.impl.ThisVariableExpressionProcessor;
-import org.codehaus.groovy.eclipse.codebrowsing.impl.VariableTypeFileFindingProcessor;
+import org.codehaus.groovy.eclipse.codebrowsing.impl.ClassNodeProcessor;
+import org.codehaus.groovy.eclipse.codebrowsing.impl.FieldNodeProcessor;
+import org.codehaus.groovy.eclipse.codebrowsing.impl.ClassExpressionProcessor;
+import org.codehaus.groovy.eclipse.codebrowsing.impl.MethodCallExpressionProcessor;
+import org.codehaus.groovy.eclipse.codebrowsing.impl.MethodPointerExpressionProcessor;
+import org.codehaus.groovy.eclipse.codebrowsing.impl.PropertyExpressionProcessor;
+import org.codehaus.groovy.eclipse.codebrowsing.impl.VariableExpressionProcessor;
 import org.codehaus.groovy.eclipse.editor.actions.EditorPartFacade;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtension;
+import org.eclipse.core.runtime.IExtensionPoint;
+import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.swt.graphics.Point;
@@ -36,7 +45,87 @@ import org.eclipse.ui.IEditorPart;
  * @author emp
  */
 public class DeclarationSearchAssistant implements IDeclarationSearchAssistant {
+	private static final String GROOVY_CONTEXT_ID = "org.codehaus.groovy";
+
 	private static IDeclarationSearchAssistant instance;
+
+	// [contextId: context]
+	private static Map mapContextIdToContext = new HashMap();
+
+	// [contextId : [astClassName : [processors]]
+	private static Map mapContextIdToProcessorMap = new HashMap();
+
+	static {
+		registerContext(GROOVY_CONTEXT_ID, new GroovyContext());
+		
+		IExtensionRegistry reg = Platform.getExtensionRegistry();
+		IExtensionPoint ep = reg
+				.getExtensionPoint("org.codehaus.groovy.eclipse.codebrowsing.declarationSearch");
+		IExtension[] extensions = ep.getExtensions();
+		for (int i = 0; i < extensions.length; i++) {
+			IExtension extension = extensions[i];
+			IConfigurationElement[] configElements = extension
+					.getConfigurationElements();
+
+			// First get all the contexts.
+			for (int j = 0; j < configElements.length; j++) {
+				try {
+					IConfigurationElement element = configElements[j];
+					if (element.getName().equals("searchContext")) {
+						IDeclarationSearchContext context = (IDeclarationSearchContext) element
+								.createExecutableExtension("class");
+						String contextId = element.getAttribute("contextId");
+						registerContext(contextId, context);
+					}
+				} catch (CoreException e) {
+					// LOG: where to?
+					e.printStackTrace();
+				}
+			}
+
+			// Now get all the processors.
+			for (int j = 0; j < configElements.length; j++) {
+				try {
+					IConfigurationElement element = configElements[j];
+					if (element.getName().equals("searchProcessor")) {
+						String contextId = element.getAttribute("contextId");
+						String astNodeClassName = element
+								.getAttribute("astNodeClass");
+						IDeclarationSearchProcessor processor = (IDeclarationSearchProcessor) element
+								.createExecutableExtension("class");
+						registerProcessor(contextId, astNodeClassName,
+								processor);
+					}
+				} catch (CoreException e) {
+					// LOG: where to?
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	public static void registerProcessor(String contextId,
+			String astNodeClassName, IDeclarationSearchProcessor processor) {
+		if (contextId.equals("")) {
+			contextId = GROOVY_CONTEXT_ID;
+		}
+		
+		Map mapASTClassToProcessors = (Map) mapContextIdToProcessorMap
+				.get(contextId);
+		List processors = (List) mapASTClassToProcessors.get(astNodeClassName);
+		if (processors == null) {
+			processors = new ArrayList();
+			mapASTClassToProcessors.put(astNodeClassName, processors);
+		}
+
+		processors.add(processor);
+	}
+
+	public static void registerContext(String contextId,
+			IDeclarationSearchContext context) {
+		mapContextIdToContext.put(contextId, context);
+		mapContextIdToProcessorMap.put(contextId, new HashMap());
+	}
 
 	public static IDeclarationSearchAssistant getInstance() {
 		if (instance == null) {
@@ -46,29 +135,27 @@ public class DeclarationSearchAssistant implements IDeclarationSearchAssistant {
 	}
 
 	private DeclarationSearchAssistant() {
-		DeclarationSearchProcessorRegistry
-				.registerProcessor(VariableExpression.class,
-						new ThisVariableExpressionProcessor());
-		DeclarationSearchProcessorRegistry
-				.registerProcessor(PropertyExpression.class,
-						new ThisPropertyExpressionProcessor());
-		DeclarationSearchProcessorRegistry.registerProcessor(
-				MethodCallExpression.class,
-				new ThisMethodCallExpressionProcessor());
-		DeclarationSearchProcessorRegistry.registerProcessor(
-				MethodPointerExpression.class,
-				new ThisMethodPointerExpressionProcessor());
-		DeclarationSearchProcessorRegistry.registerProcessor(
-				ClassExpression.class, new ThisClassExpressionProcessor());
-		DeclarationSearchProcessorRegistry.registerProcessor(
-				ClassNode.class, new ClassParentsFileFindingProcessor());
-		DeclarationSearchProcessorRegistry.registerProcessor(
-				FieldNode.class, new FieldTypeFileFindingProcessor());
-		DeclarationSearchProcessorRegistry.registerProcessor(
-				VariableExpression.class, new VariableTypeFileFindingProcessor());
+		// Register the built in processors.
+		registerProcessor(GROOVY_CONTEXT_ID,
+				VariableExpression.class.getName(),
+				new VariableExpressionProcessor());
+		registerProcessor(GROOVY_CONTEXT_ID,
+				PropertyExpression.class.getName(),
+				new PropertyExpressionProcessor());
+		registerProcessor(GROOVY_CONTEXT_ID, MethodCallExpression.class
+				.getName(), new MethodCallExpressionProcessor());
+		registerProcessor(GROOVY_CONTEXT_ID, MethodPointerExpression.class
+				.getName(), new MethodPointerExpressionProcessor());
+		registerProcessor(GROOVY_CONTEXT_ID, ClassExpression.class.getName(),
+				new ClassExpressionProcessor());
+		registerProcessor(GROOVY_CONTEXT_ID, ClassNode.class.getName(),
+				new ClassNodeProcessor());
+		registerProcessor(GROOVY_CONTEXT_ID, FieldNode.class.getName(),
+				new FieldNodeProcessor());
 	}
 
-	public List getProposals(IEditorPart editor, IRegion region) {
+	public IDeclarationProposal[] getProposals(IEditorPart editor,
+			IRegion region) {
 		// Setup
 		EditorPartFacade facade = new EditorPartFacade(editor);
 		String identifier;
@@ -99,31 +186,44 @@ public class DeclarationSearchAssistant implements IDeclarationSearchAssistant {
 		++rowcol.x;
 		++rowcol.y;
 
-		List results = new ArrayList();
-		ASTNodeSearchResult result = ASTNodeFinder.findASTNode(moduleNode,
+		ASTSearchResult result = ASTNodeFinder.findASTNode(moduleNode,
 				identifier, rowcol.y, rowcol.x);
 		if (result != null) {
 			System.out.println("Found at " + result.getLine() + ", "
 					+ result.getColumn() + ": " + result.getASTNode());
-			processAST(editor, region, results, result);
+			List results = processAST(editor, region, result);
+			return (IDeclarationProposal[]) results
+			.toArray(new IDeclarationProposal[results.size()]);
 		}
-		return results;
+		return null;
 	}
 
-	private void processAST(IEditorPart editor, IRegion region, List results,
-			ASTNodeSearchResult result) {
-		ASTNode node = result.getASTNode();
-		List processors = DeclarationSearchProcessorRegistry
-				.getProcessorsForASTClass(node.getClass());
-		if (processors == null)
-			return;
+	private List processAST(IEditorPart editor, IRegion region,
+			ASTSearchResult result) {
+		List results = new ArrayList();
 
-		for (Iterator iter = processors.iterator(); iter.hasNext();) {
-			IDeclarationSearchProcessor processor = (IDeclarationSearchProcessor) iter
-					.next();
-			List proposals = processor.getProposals(new DeclarationSearchInfo(
-					result, editor, region));
-			results.addAll(proposals);
+		ASTNode node = result.getASTNode();
+		
+		Set contextIds = mapContextIdToContext.keySet();
+		for (Iterator iterCtx = contextIds.iterator(); iterCtx.hasNext();) {
+			String contextId = (String)iterCtx.next();
+			IDeclarationSearchContext context = (IDeclarationSearchContext) mapContextIdToContext.get(contextId);
+			if (context.isActiveContext()) {
+				Map mapASTClassNameToProcessors = (Map)mapContextIdToProcessorMap.get(contextId);
+				List processors = (List)mapASTClassNameToProcessors.get(node.getClass().getName());
+				if (processors != null) {
+					for (Iterator iter = processors.iterator(); iter.hasNext();) {
+						IDeclarationSearchProcessor processor = (IDeclarationSearchProcessor) iter
+								.next();
+						IDeclarationProposal[] proposals = processor
+								.getProposals(new DeclarationSearchInfo(result, editor,
+										region));
+						results.addAll(Arrays.asList(proposals));
+					}
+				}
+			}
 		}
+		
+		return results;
 	}
 }
