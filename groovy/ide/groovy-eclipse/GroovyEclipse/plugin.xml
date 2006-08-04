@@ -40,7 +40,7 @@
       <import plugin="org.eclipse.ui.views"/>
       <import plugin="org.eclipse.core.filebuffers"/>
    </requires>
-
+   <extension-point id="hyperlinkDetectors" name="Groovy Hyperlink Detectors" schema="schema/hyperlinkDetector.exsd"/>
 
    <extension
          id="groovyNature"

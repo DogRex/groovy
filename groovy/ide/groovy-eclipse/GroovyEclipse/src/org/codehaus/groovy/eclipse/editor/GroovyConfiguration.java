@@ -13,6 +13,7 @@ import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.TextAttribute;
+import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.rules.BufferedRuleBasedScanner;
@@ -143,6 +144,10 @@ public class GroovyConfiguration extends SourceViewerConfiguration {
         else
             return new IAutoEditStrategy[] { new JavaAutoIndentStrategy(partitioning, getJavaProject()) };
             //return new IAutoEditStrategy[] { new DefaultIndentLineAutoEditStrategy() };
+    }
+    
+    public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
+    	return new IHyperlinkDetector[] { new GroovyHyperlinkDetector() };
     }
 
      private IJavaProject getJavaProject() {
