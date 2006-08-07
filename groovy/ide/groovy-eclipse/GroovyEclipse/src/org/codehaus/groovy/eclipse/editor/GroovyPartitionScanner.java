@@ -19,7 +19,8 @@ public class GroovyPartitionScanner extends RuleBasedPartitionScanner {
 	public final static String GROOVY_MULTILINE_COMMENT= "__groovy_multiline_comment"; //$NON-NLS-1$
     public final static String GROOVY_SINGLELINE_STRINGS= "__groovy_singleline_string"; //$NON-NLS-1$
 	public final static String GROOVY_MULTILINE_STRINGS= "__groovy_multiline_string"; //$NON-NLS-1$
-	public final static String[] GROOVY_PARTITION_TYPES= new String[] { GROOVY_MULTILINE_COMMENT,GROOVY_MULTILINE_STRINGS,GROOVY_SINGLELINE_STRINGS};
+    public final static String GROOVY_SINGLELINE_COMMENT= "__groovy_singleline_comment"; //$NON-NLS-1$
+	public final static String[] GROOVY_PARTITION_TYPES= new String[] { GROOVY_MULTILINE_COMMENT,GROOVY_MULTILINE_STRINGS,GROOVY_SINGLELINE_STRINGS,GROOVY_SINGLELINE_COMMENT};
 
 	/**
 	 * Detector for empty comments.
@@ -78,11 +79,12 @@ public class GroovyPartitionScanner extends RuleBasedPartitionScanner {
 		IToken comment= new Token(GROOVY_MULTILINE_COMMENT);
 		IToken mString = new Token(GROOVY_MULTILINE_STRINGS);
         IToken sString = new Token(GROOVY_SINGLELINE_STRINGS);
+        IToken sComment= new Token(GROOVY_SINGLELINE_COMMENT);
 
 		List rules= new ArrayList();
 
 		// Add rule for single line comments.
-		rules.add(new EndOfLineRule("//", Token.UNDEFINED)); //$NON-NLS-1$
+		rules.add(new EndOfLineRule("//", sComment)); //$NON-NLS-1$
 
 
 		// Add rule for strings and character constants.

@@ -51,7 +51,8 @@ public class GroovyConfiguration extends SourceViewerConfiguration {
                 IDocument.DEFAULT_CONTENT_TYPE,
                 GroovyPartitionScanner.GROOVY_MULTILINE_COMMENT,
                 GroovyPartitionScanner.GROOVY_MULTILINE_STRINGS,
-                GroovyPartitionScanner.GROOVY_SINGLELINE_STRINGS
+                GroovyPartitionScanner.GROOVY_SINGLELINE_STRINGS,
+                GroovyPartitionScanner.GROOVY_SINGLELINE_COMMENT
 		};
 	}
 	public ITextDoubleClickStrategy getDoubleClickStrategy(
@@ -106,6 +107,10 @@ public class GroovyConfiguration extends SourceViewerConfiguration {
 		dr= new DefaultDamagerRepairer(getMultiLineCommentScanner());
 		reconciler.setDamager(dr, GroovyPartitionScanner.GROOVY_MULTILINE_COMMENT);
 		reconciler.setRepairer(dr, GroovyPartitionScanner.GROOVY_MULTILINE_COMMENT);
+        
+        dr= new DefaultDamagerRepairer(getMultiLineCommentScanner());
+        reconciler.setDamager(dr, GroovyPartitionScanner.GROOVY_SINGLELINE_COMMENT);
+        reconciler.setRepairer(dr, GroovyPartitionScanner.GROOVY_SINGLELINE_COMMENT);
 
 		dr= new DefaultDamagerRepairer(getStringScanner());
 		reconciler.setDamager(dr, GroovyPartitionScanner.GROOVY_MULTILINE_STRINGS);
