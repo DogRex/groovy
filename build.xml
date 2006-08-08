@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+Gant: A Groovy build tool based on scripting Ant tasks
+
+Copyright (C) 2006 Russel Winder
+
+This library is free software; you can redistribute it and/or modify it under the terms of
+the GNU Lesser General Public License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License along with this
+library; if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
+Boston, MA 02110-1301 USA
+
+Author : Russel Winder
+Version : $LastChangedRevision:$ $LastChagedDate:$
+
+-->
+
+<project name="Gant" default="test" basedir=".">
+
+  <property environment="env"/>
+
+  <property name="buildDirectory" value="build"/>
+  <property name="sourceDirectory" value="source"/>
+  <property name="groovyHome" value="${env.GROOVY_HOME}"/>
+
+  <path id="compilePath">
+    <fileset dir="${groovyHome}/embeddable" includes="groovy-all*.jar"/>
+  </path>
+
+  <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc" classpathref="compilePath"/>
+
+  <target name="initialize">
+    <mkdir dir="${buildDirectory}"/>
+    <mkdir dir="${buildDirectory}/lib"/>
+  </target>
+
+  <target name="compile" depends="initialize">
+    <javac srcdir="${sourceDirectory}" destdir="${buildDirectory}" classpathref="compilePath"/>
+    <groovyc srcdir="${sourceDirectory}" destdir="${buildDirectory}" classpath="${buildDirectory}"/>
+    <jar destfile="${buildDirectory}/lib/gant.jar" basedir="${buildDirectory}" includes="org/**"/>
+  </target>
+
+  <target name="test" depends="compile"/>
+
+  <target name="install" depends="compile">
+    <copy todir="${groovyHome}">
+      <fileset dir="${sourceDirectory}" includes="bin/gant*"/>
+      <fileset dir="${buildDirectory}" includes="lib/gant.jar"/>
+    </copy>
+    <chmod perm="a+x">
+      <fileset dir="${groovyHome}/bin" includes="gant*"/>
+    </chmod>
+  </target>
+
+  <target name="clean">
+    <delete dir="${buildDirectory}" quiet="true"/>
+    <delete quiet="true">
+      <fileset dir="." includes="**/*~" defaultexcludes="false"/>
+    </delete>
+  </target>
+
+</project>
