@@ -1,0 +1,63 @@
+# -*- mode:shell-script -*-
+
+#  Gant -- A Groovy build tool based on scripting Ant tasks
+
+#  Copyright (C) 2006 Russel Winder <russel@russel.org.uk>
+
+# Programmable completion for the Groovy Ant (gant) command under bash.
+# This file draws heavily on the rake and subversion file that come as standard with Bash 3.
+
+#  Author:  Russel Winder
+#  Version:  2006-08-07T07:55
+
+_gant()
+{
+    local cur prev gantf i
+
+    COMPREPLY=()
+    cur=${COMP_WORDS[COMP_CWORD]}
+    prev=${COMP_WORDS[COMP_CWORD-1]}
+    gantf="build.groovy"
+
+    if [[ "$prev" == "-f" ]]; then
+        _filedir
+        return 0
+    fi
+
+    if [[ "$cur" == *=* ]]; then
+        prev=${cur/=*/}
+        cur=${cur/*=/}
+        if [[ "$prev" == "--gantfile=" ]]; then
+            _filedir -o nospace
+            return 0
+        fi
+    fi
+
+    if [[ "$cur" == -* ]]; then
+        COMPREPLY=( $( compgen -W '-s --silent -T --tasks -f '--gantfile='\
+            -g '--gantlib=''\
+            -- $cur ))
+    else
+
+        for (( i=0; i < ${#COMP_WORDS[@]}; i++)); do
+            case "${COMP_WORDS[i]}" in
+            -f)
+                eval gantf=${COMP_WORDS[i+1]}
+                break
+                ;;
+            --gantfile=*|--gantfile\=*)
+                eval gantf=${COMP_WORDS[i]/*=/}
+                break
+                ;;
+            esac
+        done
+
+        [ ! -f $gantf ] && return 0
+
+        COMPREPLY=( $( gant -s -f "$gantf" -T | \
+            awk -F ' ' '/^gant / { print $2 }' | \
+            command grep "^$cur" ))
+
+    fi
+}
+complete -F _gant $filenames gant
