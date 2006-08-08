@@ -3,6 +3,7 @@ import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.codehaus.groovy.eclipse.editor.contentoutline.GroovyContentOutline;
 import org.codehaus.groovy.eclipse.preferences.PreferenceConstants;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -22,6 +23,7 @@ public class GroovyEditor extends AbstractDecoratedTextEditor{
         setPreferenceStore(new ChainedPreferenceStore(
                 new IPreferenceStore[] {
                         getPreferenceStore(),
+                        JavaPlugin.getDefault().getPreferenceStore(),
                         GroovyPlugin.getDefault().getPreferenceStore()
                 }));
 
@@ -76,8 +78,8 @@ public class GroovyEditor extends AbstractDecoratedTextEditor{
     protected void configureSourceViewerDecorationSupport(SourceViewerDecorationSupport support) {
         support.setCharacterPairMatcher(pairMatcher);
         support.setMatchingCharacterPainterPreferenceKeys(
-                PreferenceConstants.GROOVY_EDITOR_PAIR_MATCHING_ENABLED,
-                PreferenceConstants.GROOVY_EDITOR_PAIR_MATCHING_COLOR);
+                org.eclipse.jdt.ui.PreferenceConstants.EDITOR_MATCHING_BRACKETS,
+                org.eclipse.jdt.ui.PreferenceConstants.EDITOR_MATCHING_BRACKETS_COLOR);
         super.configureSourceViewerDecorationSupport(support);
     }
 }

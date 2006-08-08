@@ -28,10 +28,7 @@ public class PreferenceConstants {
 	public static final String GROOVY_EDITOR_HIGHLIGHT_NUMBERS_ENABLED = "groovy.editor.highlight.numbers.enabled";
 	public static final String GROOVY_EDITOR_HIGHLIGHT_NUMBERS_COLOR = "groovy.editor.highlight.numbers.color";
 
-    public static final String GROOVY_EDITOR_PAIR_MATCHING_ENABLED = "groovy.editor.pair.matching.enabled";
-    public static final String GROOVY_EDITOR_PAIR_MATCHING_COLOR = "groovy.editor.pair.matching.color";
-
-    public static final String GROOVY_GENERATE_CLASS_FILES = "groovy.generate.class.files";
+	public static final String GROOVY_GENERATE_CLASS_FILES = "groovy.generate.class.files";
 	// this preference will add the plugin trace statements to the error in order
 	// to make it easier to track down problems at runtime
 	public static final String GROOVY_LOG_TRACE_MESSAGES_ENABLED = "groovy.log.trace.messages.enabled";

@@ -71,23 +71,10 @@ public class GroovyPreferencePage extends FieldEditorPreferencePage implements
 				PreferenceConstants.GROOVY_EDITOR_HIGHLIGHT_GROOVYKEYWORDS_COLOR,
 				"&Groovy keyword color", getFieldEditorParent()));
 		
-        // Bracket Matcher prefs 
-        addField(new BooleanFieldEditor(
-                PreferenceConstants.GROOVY_EDITOR_PAIR_MATCHING_ENABLED,
-                "Enable bracket &matching", getFieldEditorParent()));
-        addField(new ColorFieldEditor(
-                PreferenceConstants.GROOVY_EDITOR_PAIR_MATCHING_COLOR,
-                "Bracket &matching color", getFieldEditorParent()));
-
-        // Generate Class File Pref
+		// Generate Class File Pref
 		addField(new BooleanFieldEditor(
 				PreferenceConstants.GROOVY_GENERATE_CLASS_FILES,
 				"&Enable Groovy Compiler Generating Class Files",
-				getFieldEditorParent()));
-		// Add plugin trace messages to erorr log view
-		addField(new BooleanFieldEditor(
-				PreferenceConstants.GROOVY_LOG_TRACE_MESSAGES_ENABLED,
-				"&Enable Displaying Plugin Trace Messages in Error Log View",
 				getFieldEditorParent()));
 	}
 
