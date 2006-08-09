@@ -6,6 +6,7 @@ import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.codehaus.groovy.eclipse.model.GroovyProject;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -21,18 +22,22 @@ public class AddGroovyNatureAction implements IObjectActionDelegate {
 	IWorkbenchPart targetPart ;
 	IAction action;
 	public void run(IAction action) {
-		GroovyPlugin.trace("AddGroovySupportActoin.run()");
+		GroovyPlugin.trace("AddGroovySupportAction.run()");
 		GroovyPlugin plugin = GroovyPlugin.getPlugin();
 		IStructuredSelection s = (IStructuredSelection)selection;
-		IProject targetProject = (IProject)s.getFirstElement();
+        final Object selected = s.getFirstElement();
+        if( !( selected instanceof IProject )
+            && !( selected instanceof IJavaProject ) )
+            return;
+		IProject targetProject = selected instanceof IProject ? (IProject)selected : (( IJavaProject )selected).getProject();
 		try {
-			if (! targetProject.hasNature(GroovyNature.GROOVY_NATURE)){
-				GroovyModel model = GroovyModel.getModel();
-				GroovyProject groovyProject = model.getProject(targetProject);
-				groovyProject.addGrovyExclusionFilter(targetProject);
-				plugin.addGroovyRuntime(targetProject);
-				GroovyProject.addGroovyNature(targetProject);		
-			}
+			if (targetProject.hasNature(GroovyNature.GROOVY_NATURE))
+                return;
+			GroovyModel model = GroovyModel.getModel();
+			GroovyProject groovyProject = model.getProject(targetProject);
+			groovyProject.addGrovyExclusionFilter(targetProject);
+			plugin.addGroovyRuntime(targetProject);
+			GroovyProject.addGroovyNature(targetProject);		
 		} catch (CoreException e) {
 			plugin.logException("failed to add groovy support", e);
 		} finally {
