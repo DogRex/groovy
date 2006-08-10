@@ -24,7 +24,7 @@ import org.codehaus.groovy.gant.infrastructure.Target
  *  specifications when the clean or clobber methods are called.
  *
  *  @author Russel Winder
- *  @version $LastChangedRevision:$ $LastChagedDate:$
+ *  @version $LastChangedRevision$ $LastChangedDate:$
  */
 final class Clean {
   private final cleanPatternList = []

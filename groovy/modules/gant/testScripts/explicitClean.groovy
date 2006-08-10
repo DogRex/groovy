@@ -21,7 +21,7 @@
  *  description method call.
  *
  *  @author Russel Winder
- *  @version $LastChangedRevision:$ $LastChagedDate:$
+ *  @version $LastChangedRevision$ $LastChangedDate:$
  */
 class build {
   public Target 'default' ( ) { // Parse fails if public removed.  Why?

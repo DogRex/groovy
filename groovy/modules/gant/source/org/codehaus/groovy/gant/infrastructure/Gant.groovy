@@ -70,7 +70,7 @@ package org.codehaus.groovy.gant.infrastructure
  *  builds, but hopefully you get the idea.</p>
  *
  *  @author Russel Winder <russel@russel.org.uk>
- *  @version $LastChangedRevision:$ $LastChagedDate:$
+ *  @version $LastChangedRevision$ $LastChangedDate:$
  */
 final class Gant {
   private buildFileName = 'build.groovy'

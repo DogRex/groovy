@@ -57,7 +57,7 @@ import org.codehaus.groovy.runtime.InvokerHelper ;
  *  the implementation of the algorithm within this one class and so easier to maintain.</p>
  *
  *  @author Russel Winder
- *  @version $LastChangedRevision:$ $LastChangedDate:$
+ *  @version $LastChangedRevision$ $LastChangedDate$
  */
 public final class TargetListMetaClass extends MetaClassImpl {
   private final ArrayList delegates = new ArrayList ( ) ;
