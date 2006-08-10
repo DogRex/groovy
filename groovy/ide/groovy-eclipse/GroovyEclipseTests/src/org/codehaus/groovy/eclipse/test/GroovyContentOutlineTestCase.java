@@ -43,7 +43,7 @@ public class GroovyContentOutlineTestCase extends EclipseTestCase {
 		// package name is pack1
 		assertEquals("pack1.",labelProvider.getText(roots[0]));
 		// import node just says "import declerations"
-		assertEquals("import declerations",labelProvider.getText(roots[1]));
+		assertEquals("import declarations",labelProvider.getText(roots[1]));
 		// the class is MyClass
 		assertEquals("MyClass",labelProvider.getText(roots[2]));
 		// now chcek the class members

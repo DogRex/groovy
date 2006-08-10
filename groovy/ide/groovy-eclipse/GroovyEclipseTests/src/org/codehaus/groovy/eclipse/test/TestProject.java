@@ -16,7 +16,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-
 import org.apache.commons.io.IOUtil;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -40,8 +39,9 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
-import org.eclipse.jdt.core.search.ITypeNameRequestor;
 import org.eclipse.jdt.core.search.SearchEngine;
+import org.eclipse.jdt.core.search.SearchPattern;
+import org.eclipse.jdt.core.search.TypeNameRequestor;
 import org.eclipse.jdt.launching.JavaRuntime;
 
 public class TestProject {
@@ -212,30 +212,18 @@ public class TestProject {
 //		return new Path(localJarURL.getPath());
 //	}
 //
-	private void waitForIndexer() throws JavaModelException {
-		new SearchEngine()
-			.searchAllTypeNames(
-				ResourcesPlugin.getWorkspace(),
-				null,
-				null,
-				IJavaSearchConstants.EXACT_MATCH,
-				IJavaSearchConstants.CASE_SENSITIVE,
-				IJavaSearchConstants.CLASS,
-				SearchEngine.createJavaSearchScope(new IJavaElement[0]),
-				new ITypeNameRequestor() {
-			public void acceptClass(
-				char[] packageName,
-				char[] simpleTypeName,
-				char[][] enclosingTypeNames,
-				String path) {
-			}
-			public void acceptInterface(
-				char[] packageName,
-				char[] simpleTypeName,
-				char[][] enclosingTypeNames,
-				String path) {
-			}
-		}, IJavaSearchConstants.WAIT_UNTIL_READY_TO_SEARCH, null);
+	private void waitForIndexer() 
+    throws JavaModelException 
+    {
+        final TypeNameRequestor requestor = new TypeNameRequestor() {};
+        new SearchEngine().searchAllTypeNames( null, 
+                                               null, 
+                                               SearchPattern.R_EXACT_MATCH | SearchPattern.R_CASE_SENSITIVE, 
+                                               IJavaSearchConstants.CLASS, 
+                                               SearchEngine.createJavaSearchScope( new IJavaElement[ 0 ] ), 
+                                               requestor, 
+                                               IJavaSearchConstants.WAIT_UNTIL_READY_TO_SEARCH, 
+                                               null );
 	}
 
 }

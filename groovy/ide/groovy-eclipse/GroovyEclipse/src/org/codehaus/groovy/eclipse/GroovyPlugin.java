@@ -5,7 +5,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.eclipse.editor.GroovyPartitionScanner;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.codehaus.groovy.eclipse.ui.GroovyDialogProvider;
@@ -18,6 +18,7 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
@@ -34,6 +35,7 @@ import org.eclipse.ui.IStartup;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 
 /**
@@ -169,29 +171,40 @@ implements IStartup
 	/**
 	 * @param project
 	 */
-	public void addGroovyRuntime(IProject project) {
-		trace("GroovyPlugin.addGroovyRuntime()");
-		String requires = (String) getBundle().getHeaders().get(
-				org.osgi.framework.Constants.BUNDLE_CLASSPATH);
-		ManifestElement[] elements;
-		try {
-			elements = ManifestElement.parseHeader(Constants.BUNDLE_CLASSPATH,
-					requires);
-			// add all jars exported by this plugin apart from Groovy.jar which
-			// contains this class..
-			for (int i = 0; i < elements.length; i++) {
-				String libName = elements[i].getValue();
-				if (!libName.endsWith("groovy-eclipse.jar")) {
-					addJar(JavaCore.create(project), PLUGIN_ID, libName);
-				}
-
-			}
-		} catch (Exception e) {
-			logException("Failed to add groovy runtime support",e);
-		}
-
-	}
-
+	public void addGroovyRuntime( final IProject project )
+    {
+        trace( "GroovyPlugin.addGroovyRuntime()" );
+        try
+        {
+            if( project == null || !project.hasNature( JavaCore.NATURE_ID ))
+                return;
+            final ManifestElement[] elements = getBundleClasspath();
+            // add all jars exported by this plugin apart from Groovy.jar which
+            // contains this class..
+            for( int i = 0; i < elements.length; i++ )
+            {
+                final String libName = elements[ i ].getValue();
+                if( !libName.endsWith( "groovy-eclipse.jar" ) )
+                    addJar( JavaCore.create( project ), PLUGIN_ID, libName );
+            }
+        }
+        catch( Exception e )
+        {
+            logException( "Failed to add groovy runtime support", e );
+        }
+    }
+    private ManifestElement[] getBundleClasspath() 
+    throws BundleException
+    {
+        return getBundleClasspath( "" + getBundle().getHeaders().get( Constants.BUNDLE_CLASSPATH ) );
+    }
+    private ManifestElement[] getBundleClasspath( final String requires ) 
+    throws BundleException
+    {
+        if( StringUtils.isBlank( requires ) )
+            return new ManifestElement[ 0 ];
+        return ManifestElement.parseHeader( Constants.BUNDLE_CLASSPATH, requires );
+    }
 	public void addJunitSupprt(IJavaProject project)
 			throws MalformedURLException, JavaModelException, IOException {
 		trace("GroovyPlugin.addJunitSupprt()");
@@ -208,18 +221,30 @@ implements IStartup
 		}
 	}
 
-	private void addJar(IJavaProject javaProject, String srcPlugin, String jar)
-			throws MalformedURLException, IOException, JavaModelException {
-		Path result = findFileInPlugin(srcPlugin, jar);
-		IClasspathEntry[] oldEntries = javaProject.getRawClasspath();
-		IClasspathEntry[] newEntries = new IClasspathEntry[oldEntries.length + 1];
-		System.arraycopy(oldEntries, 0, newEntries, 0, oldEntries.length);
-		newEntries[oldEntries.length] = JavaCore.newLibraryEntry(result, null,
-				null);
-		javaProject.setRawClasspath(newEntries, null);
-	}
+	private void addJar( final IJavaProject javaProject, 
+                         final String srcPlugin, 
+                         final String jar ) 
+    throws MalformedURLException, IOException, JavaModelException
+    {
+        final IPath result = findFileInPlugin( srcPlugin, jar );
+        final IClasspathEntry[] oldEntries = javaProject.getRawClasspath();
+        // Checking to see that duplicate libs are not added to the JavaProject.
+        //  This is a basic check, if the jar names are the same, then ignore.
+        //  The jars could be different in version number, but then this check 
+        //  would let it go.
+        for( int i = 0; i < oldEntries.length; i++ )
+        {
+            final IClasspathEntry entry = oldEntries[ i ];
+            if( entry.getPath().lastSegment().equals( result.lastSegment() ) )
+                return;
+        }
+        final IClasspathEntry[] newEntries = new IClasspathEntry[ oldEntries.length + 1 ];
+        System.arraycopy( oldEntries, 0, newEntries, 0, oldEntries.length );
+        newEntries[ oldEntries.length ] = JavaCore.newLibraryEntry( result, null, null );
+        javaProject.setRawClasspath( newEntries, null );
+    }
 
-	private Path findFileInPlugin(String srcPlugin, String file)
+	private IPath findFileInPlugin(String srcPlugin, String file)
 			throws MalformedURLException, IOException {
 		Bundle bundle = Platform.getBundle(srcPlugin);
 		URL pluginURL = bundle.getEntry("/");
