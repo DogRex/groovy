@@ -19,7 +19,7 @@ library; if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fi
 Boston, MA 02110-1301 USA
 
 Author : Russel Winder
-Version : $LastChangedRevision$ $LastChangedDate:$
+Version : $LastChangedRevision$ $LastChangedDate$
 
 -->
 
@@ -32,7 +32,7 @@ Version : $LastChangedRevision$ $LastChangedDate:$
   <property name="groovyHome" value="${env.GROOVY_HOME}"/>
 
   <path id="compilePath">
-    <fileset dir="${groovyHome}/embeddable" includes="groovy-all*.jar"/>
+    <fileset dir="${groovyHome}/lib" includes="*.jar"/>
   </path>
 
   <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc" classpathref="compilePath"/>

@@ -6,13 +6,8 @@ In an include statement, if the class name cannot be found then you get a weird 
           at groovy.lang.MetaClassImpl.getProperty(MetaClassImpl.java:734)
 
 
-println and print used in a Gant script cause serious problems.  Must be a lookup problem.  This
-also highlights that MissingMethodException can occur in multiple places and these need to be
-separated out so as to avoid incorrect errors -- e.g. if println is used in a target then the
-error message is that the target doesn't exist.
-
-If there has been an include statement so that there are delegates then looking for a target
-that doesn't exist causes infinite recursion and a stack overflow.
+println and print used in a Gant script cause internal MissingMethodException.  Must be a lookup
+problem.
 
 Need to trap all exception that might sensibly happen due to reasonable errors in Gant scripts
 so that sensible error messages can be issued.
@@ -20,7 +15,7 @@ so that sensible error messages can be issued.
 It is irritating to have to have null at the end of a target method if the last real statement
 is an ant call.  Is there a way of making Target a synonym for void?
 
-Need to find a way of not having the problem of --tasks actually executing ant tasks if there is
+Need to find a way of not having the problem of --targets actually executing ant tasks if there is
 no function call before them in the target method.
 
 If there are compilation errors in the Gant file then currently an exception occurs and the line
