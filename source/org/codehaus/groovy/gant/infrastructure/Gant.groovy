@@ -73,26 +73,32 @@ package org.codehaus.groovy.gant.infrastructure
  *  @version $LastChangedRevision$ $LastChangedDate$
  */
 final class Gant {
+
+  public final static SILENT = 0 , QUIET = 1 , NORMAL = 2 , VERBOSE = 3
+  def verbosity = NORMAL
+  def dryRun = false
+
   private buildFileName = 'build.groovy'
   private buildFileText = ''
-  private final List gantLib ; {
+  private List gantLib ; {
     def item = System.getenv ( ).GANTLIB ;
     if ( item == null ) { gantLib = [] }
     else { gantLib = Arrays.asList ( item.split ( System.properties.'path.separator' ) ) }
   }
-  private final javaIdentifierRegexAsString = /\b\p{javaJavaIdentifierStart}(?:\p{javaJavaIdentifierPart})*\b/
-  private final javaQualifiedNameRegexAsString = /\b${javaIdentifierRegexAsString}(?:[.\/]${javaIdentifierRegexAsString})*\b/
+
   private Gant ( ) { }
   private Class compileBuildFile ( final String metaClassName ) {
     def buildClassOpening = ''
     def buildClassName = ''
+    final javaIdentifierRegexAsString = /\b\p{javaJavaIdentifierStart}(?:\p{javaJavaIdentifierPart})*\b/
+    final javaQualifiedNameRegexAsString = /\b${javaIdentifierRegexAsString}(?:[.\/]${javaIdentifierRegexAsString})*\b/
     buildFileText.eachMatch ( /(?:(?:public|final))*[ \t\n]*class[ \t\n]*(${javaIdentifierRegexAsString})[ \t\n]*(?:extends[ \t\n]*${javaQualifiedNameRegexAsString})*[ \t\n]*\{/ ) { classOpening , className ->
       buildClassOpening = classOpening
       buildClassName = className
     }
     assert buildClassOpening != ''
     assert buildClassName != ''
-    buildFileText = buildFileText.replace ( buildClassOpening , buildClassOpening + """
+    buildFileText = 'import org.codehaus.groovy.gant.infrastructure.Target\n\n' + buildFileText.replace ( buildClassOpening , buildClassOpening + """
 private final ant = new AntBuilder ( ) ; {
   setMetaClass ( new org.codehaus.groovy.gant.infrastructure.${metaClassName} ( ${buildClassName} ) )
 }
@@ -103,13 +109,11 @@ private final ant = new AntBuilder ( ) ; {
   }
   private targetList ( targets ) {
     def documentation = new TreeMap ( )
-    def buildClassClass = compileBuildFile ( 'TargetListMetaClass' )
-    def buildObject = buildClassClass.newInstance ( )
+    def buildObject = compileBuildFile ( 'TargetListMetaClass' ).newInstance ( )
     for ( p in ( (Map) buildObject.retrieveAllDescriptions ( ) ).entrySet ( ) ) { println ( 'gant ' + p.getKey ( ) + '  --  ' + p.getValue ( ) ) }
   }
   private dispatch ( targets ) {
-    def buildClassClass = compileBuildFile ( 'ExecutionMetaClass' )
-    def buildObject = buildClassClass.newInstance ( )
+    def buildObject = compileBuildFile ( 'ExecutionMetaClass' ).newInstance ( )
     if ( targets.size ( ) > 0 ) { targets.each { target ->
         try { buildObject.invokeMethod ( target , null ) }
         catch ( MissingMethodException mme ) {
@@ -120,47 +124,54 @@ private final ant = new AntBuilder ( ) ; {
     else { buildObject.'default' ( ) }
   }
   private process ( args ) {
-    def i = 0
-    def targets = []
-    def function = 'dispatch'
-
     def cli = new CliBuilder ( usage : 'gant [option]* [target]*' , writer : new PrintWriter ( System.out ) )
     cli.f ( longOpt : 'gantfile' , args : 1 , argName : 'build-file' , 'Use the named build file instead of the default, build.groovy.' )
     cli.h ( longOpt : 'help' , 'Print out this message.' )
     cli.l ( longOpt : 'gantlib' , args : 1 , argName : 'library' , 'A directory that contains classes to be used as extra Gant modules,' )
-    cli.q ( longOpt : 'quiet' , 'Do not print out much when executing.' )
+    cli.n ( longOpt : 'dry-run' , 'Do not actually action any tasks.' )
     cli.p ( longOpt : 'projecthelp' , 'Print out a list of the possible targets.' )
+    cli.q ( longOpt : 'quiet' , 'Do not print out much when executing.' )
     cli.s ( longOpt : 'silent' , 'Print out nothing when executing.' )
+    cli.v ( longOpt : 'verbose' , 'Print lots of extra information.' )
     cli.T ( longOpt : 'targets' , 'Print out a list of the possible targets.' )
+    cli.V ( longOpt : 'version' , 'Print lots of extra information.' )
     def options = cli.parse ( args )
-    if ( options.h ) { cli.usage ( ) ; return }
+    // options is supposed to be null if there has been any error.  CliBuilder is supposed to
+    // have dealt with all ParseExceptions (by printing a usage message) but this is patently
+    // not the case and especially so for unexpected single character options which just seem to
+    // dissappear.  Experiment indicates that Commons CLI is at fault here, see GROOVY-1455.
+    // Then there is the problem with multicharacter options with a single hyphen -- the
+    // behaviour is most bizarre!
+    if ( options == null ) { println ( 'Error in processing command line options.' ) ; return }
+    def function = 'dispatch'
     if ( options.f ) { buildFileName = options.f }
-    if ( options.l ) { gantLib = options.l }
-    if ( options.T ) { function = 'targetList' }
-    targets = options.arguments ( )
-
-    /*  
-    while ( i < args.size ( ) ) { 
-      switch ( args[i] ) {
-        case '-f' : buildFileName = args[++i] ; break
-        case ~'--gantfile=[^ \t\n]*' : buildFileName = args[i][( args[i].indexOf ( '=' ) +1 )..-1] ; break
-        case '-l' : gantLib = args[++i] ; break
-        case ~'--gantlib=[^ \t\n]*' : gantLib = args[i][( args[i].indexOf ( '=' ) +1 )..-1].split ( ';' ) ; break
-        case ~'(-h|--help)' : return
-        case ~'(-q|--quiet|-s|--silent)' : break
-        case ~'(-T|--targets|-p|--projecthelp)' : function = 'targetList' ; break
-        case ~'-[^ \t\n]*' : println 'Unknown option: ' + args[i] ; return
-        default : targets += args[i] ; break
+    if ( options.h ) { cli.usage ( ) ; return }
+    if ( options.l ) { gantLib = options.l.split ( System.properties.'path.separator' ) }
+    if ( options.n ) { dryRun = true }
+    if ( options.p || options.T ) { function = 'targetList' }
+    if ( options.q ) { verbosity = QUIET }
+    if ( options.s ) { verbosity = SILENT }
+    if ( options.v ) { verbosity = VERBOSE }
+    if ( options.V ) { println 'Gant version 0.1.0' ; return }
+    def targets = options.arguments ( )
+    //  We need to deal with unknown options, which should have been unprocessed by CliBuilder.
+    //  We know though that unexpected single charactere options get absorbed by Commons CLI.
+    //  There is also a serious problem with multicharacter options with a single minus, they
+    //  behave very strangely indeed.
+    def gotUnknownOptions = false ;
+    targets.each { target ->
+      if ( target[0] == '-' ) {
+        println ( 'Unknown option: ' + target ) 
+        gotUnknownOptions = true
       }
-      ++i
     }
-    */
+    if ( gotUnknownOptions ) { cli.usage ( ) ; return ; }
     def file = new File ( buildFileName ) 
     if ( ! file.isFile ( ) ) {
       println ( 'Cannot open file ' + buildFileName ) 
     }
     else {
-      buildFileText =  'import org.codehaus.groovy.gant.infrastructure.Target\n\n' + ( new File ( buildFileName ) ).text
+      buildFileText =  ( new File ( buildFileName ) ).text
       assert buildFileText != ''
       invokeMethod ( function , targets )
     }
