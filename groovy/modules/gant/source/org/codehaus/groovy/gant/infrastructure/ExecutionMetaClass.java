@@ -41,6 +41,7 @@ import org.codehaus.groovy.runtime.InvokerHelper ;
  */
 public final class ExecutionMetaClass extends MetaClassImpl {
   private final static ArrayList delegates = new ArrayList ( ) ;
+  private static boolean isDelegated = false ;
   public ExecutionMetaClass ( final Class theClass ) throws IntrospectionException {
     super ( InvokerHelper.getInstance ( ).getMetaRegistry ( ) , theClass ) ;
   }
@@ -61,23 +62,21 @@ public final class ExecutionMetaClass extends MetaClassImpl {
     }
     else if ( methodName.equals ( "description" ) ) { }
     else {
-
-      //System.err.println ( "Attempting " + object.getClass ( ).getName ( ) + "." + methodName ) ;
-
       try { returnObject = super.invokeMethod ( object , methodName , arguments ) ; }
       catch ( final MissingMethodException mme_a ) {
-        Iterator i = delegates.iterator ( ) ;
-        while ( i.hasNext ( ) ) {
-          GroovyObject delegate = (GroovyObject) i.next ( )  ;
-          
-          try {
-
-            //System.err.println ( "  Delegate attempting " + delegate.getClass ( ).getName ( ) + "." + methodName ) ;
-            
-            returnObject = delegate.invokeMethod ( methodName , arguments ) ;
-            return returnObject ;
+        if ( ! isDelegated ) {
+          isDelegated = true ;
+          Iterator i = delegates.iterator ( ) ;
+          while ( i.hasNext ( ) ) {
+            GroovyObject delegate = (GroovyObject) i.next ( )  ;
+            try {
+              returnObject = delegate.invokeMethod ( methodName , arguments ) ;
+              isDelegated = false ;
+              return returnObject ;
+            }
+            catch ( final MissingMethodException mme_b ) { }
           }
-          catch ( final MissingMethodException mme_b ) { }
+          isDelegated = false ;
         }
         throw mme_a ;
       }
