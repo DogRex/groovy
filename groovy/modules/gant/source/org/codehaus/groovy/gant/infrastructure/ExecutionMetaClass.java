@@ -18,6 +18,7 @@ package org.codehaus.groovy.gant.infrastructure ;
 
 import java.beans.IntrospectionException ;
 import java.util.ArrayList ;
+import java.util.Iterator ;
 
 import java.lang.reflect.Method ;
 
@@ -36,18 +37,18 @@ import org.codehaus.groovy.runtime.InvokerHelper ;
  *  <code>include</code> calls, all others are passed to the superclass.</p>
  *
  *  @author Russel Winder
- *  @version $LastChangedRevision:$ $LastChangedDate:$
+ *  @version $LastChangedRevision$ $LastChangedDate$
  */
 public final class ExecutionMetaClass extends MetaClassImpl {
-  private final static ArrayList<GroovyObject> delegates = new ArrayList<GroovyObject> ( ) ;
-  public ExecutionMetaClass ( final Class<?> theClass ) throws IntrospectionException {
+  private final static ArrayList delegates = new ArrayList ( ) ;
+  public ExecutionMetaClass ( final Class theClass ) throws IntrospectionException {
     super ( InvokerHelper.getInstance ( ).getMetaRegistry ( ) , theClass ) ;
   }
-  @Override public Object invokeMethod ( final Object object , final String methodName , final Object[] arguments ) {
+  public Object invokeMethod ( final Object object , final String methodName , final Object[] arguments ) {
     Object returnObject = null ;
     if ( methodName.equals ( "include" ) ) {
       for ( int i = 0 ; i < arguments.length ; ++i ) {
-        final Class<?> delegateClass = (Class) arguments[i] ;
+        final Class delegateClass = (Class) arguments[i] ;
         try {
           final GroovyObject delegate = (GroovyObject) delegateClass.newInstance ( ) ;
           delegate.setMetaClass ( new ExecutionMetaClass ( delegate.getClass ( ) ) ) ;
@@ -65,7 +66,10 @@ public final class ExecutionMetaClass extends MetaClassImpl {
 
       try { returnObject = super.invokeMethod ( object , methodName , arguments ) ; }
       catch ( final MissingMethodException mme_a ) {
-        for ( GroovyObject delegate : delegates ) {
+        Iterator i = delegates.iterator ( ) ;
+        while ( i.hasNext ( ) ) {
+          GroovyObject delegate = (GroovyObject) i.next ( )  ;
+          
           try {
 
             //System.err.println ( "  Delegate attempting " + delegate.getClass ( ).getName ( ) + "." + methodName ) ;

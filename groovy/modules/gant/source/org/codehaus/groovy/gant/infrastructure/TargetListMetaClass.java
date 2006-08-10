@@ -60,31 +60,33 @@ import org.codehaus.groovy.runtime.InvokerHelper ;
  *  @version $LastChangedRevision:$ $LastChangedDate:$
  */
 public final class TargetListMetaClass extends MetaClassImpl {
-  private final ArrayList<GroovyObject> delegates = new ArrayList<GroovyObject> ( ) ;
-  private final Map<String,String> documentation = new TreeMap<String,String> ( ) ;
+  private final ArrayList delegates = new ArrayList ( ) ;
+  private final Map documentation = new TreeMap ( ) ;
   private String temporaryMethodName ;
   private boolean findingTargets = false ;
   private class TerminateExecutionException extends RuntimeException { }
-  public TargetListMetaClass ( final Class<?> theClass ) throws IntrospectionException {
+  public TargetListMetaClass ( final Class theClass ) throws IntrospectionException {
     super ( InvokerHelper.getInstance ( ).getMetaRegistry ( ) , theClass ) ;
   }
   private void getTargetsOf ( final Object object ) {
     final Method[] methods = object.getClass ( ).getMethods ( ) ;
-    for ( Method m : methods ) {
-      if ( m.getReturnType ( ) == Target.class ) {
-        temporaryMethodName = m.getName ( ) ;
+    for ( int i = 0 ; i < methods.length ; ++i ) {
+      Method method = methods[i] ;
+      if ( method.getReturnType ( ) == Target.class ) {
+        temporaryMethodName = method.getName ( ) ;
         findingTargets = true ;
-        try { m.invoke ( object ) ; }
+        // Java 5 way: try { method.invoke ( object ) ; }
+        try { method.invoke ( object , null ) ; }
         catch ( Exception e ) { }
         findingTargets = false ;
       }
     }
   }
-  @Override public Object invokeMethod ( final Object object , final String methodName , final Object[] arguments ) {
+  public Object invokeMethod ( final Object object , final String methodName , final Object[] arguments ) {
     Object returnObject = null ;
     if ( methodName.equals ( "include" ) ) {
       for ( int i = 0 ; i < arguments.length ; ++i ) {
-        final Class<?> delegateClass = (Class) arguments[i] ;
+        final Class delegateClass = (Class) arguments[i] ;
         try {
           final GroovyObject delegate = (GroovyObject ) delegateClass.newInstance ( ) ;
           delegate.setMetaClass ( this ) ; // Yes it is unusual to use a metaclass for the wrong class but...
@@ -103,7 +105,8 @@ public final class TargetListMetaClass extends MetaClassImpl {
     else if ( methodName.equals ( "retrieveAllDescriptions" ) ) {
       if ( theClass != object.getClass ( ) ) { throw new RuntimeException ( "retrieveAllDescriptions failure." ) ; }
       getTargetsOf ( object ) ;
-      for ( Object d : delegates ) { getTargetsOf ( d ) ; }
+      Iterator i = delegates.iterator ( ) ;
+      while ( i.hasNext ( ) ) { getTargetsOf ( i.next ( ) ) ; }
       returnObject = documentation ;
     }
     else if ( findingTargets ) { throw new TerminateExecutionException ( ) ; }

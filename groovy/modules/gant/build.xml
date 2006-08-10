@@ -19,7 +19,7 @@ library; if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fi
 Boston, MA 02110-1301 USA
 
 Author : Russel Winder
-Version : $LastChangedRevision:$ $LastChagedDate:$
+Version : $LastChangedRevision$ $LastChagedDate:$
 
 -->
 
@@ -43,7 +43,7 @@ Version : $LastChangedRevision:$ $LastChagedDate:$
   </target>
 
   <target name="compile" depends="initialize">
-    <javac srcdir="${sourceDirectory}" destdir="${buildDirectory}" classpathref="compilePath"/>
+    <javac srcdir="${sourceDirectory}" destdir="${buildDirectory}" source="1.4" classpathref="compilePath"/>
     <groovyc srcdir="${sourceDirectory}" destdir="${buildDirectory}" classpath="${buildDirectory}"/>
     <jar destfile="${buildDirectory}/lib/gant.jar" basedir="${buildDirectory}" includes="org/**"/>
   </target>

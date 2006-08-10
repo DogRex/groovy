@@ -19,7 +19,7 @@
  *  usably in some way.
  *
  *  @author Russel Winder
- *  @version $LastChangedRevision:$ $LastChagedDate:$
+ *  @version $LastChangedRevision$ $LastChagedDate:$
  */
 class build {
   private final buildDirectory = 'build'
@@ -44,7 +44,7 @@ class build {
   Target compile ( ) {
     description ( 'Compile everything needed.' )
     initialize ( )
-    ant.javac ( srcdir : sourceDirectory , destDir : buildDirectory , classpathref : 'compilePath' )
+    ant.javac ( srcdir : sourceDirectory , destDir : buildDirectory , source : '1.4' , classpathref : 'compilePath' )
     ant.groovyc ( srcdir : sourceDirectory , destDir : buildDirectory , classpath : buildDirectory )
     ant.jar ( destfile : buildDirectory + '/lib/gant.jar' , basedir : buildDirectory , includes : 'org/**' )
     null
