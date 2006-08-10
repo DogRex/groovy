@@ -19,7 +19,7 @@ _gant()
     prev=${COMP_WORDS[COMP_CWORD-1]}
     gantf="build.groovy"
 
-    if [[ "$prev" == "-f" ]]; then
+    if [[ "$prev" == "-f" || "$prev" == "-l" ]]; then
         _filedir
         return 0
     fi
@@ -27,21 +27,24 @@ _gant()
     if [[ "$cur" == *=* ]]; then
         prev=${cur/=*/}
         cur=${cur/*=/}
-        if [[ "$prev" == "--gantfile=" ]]; then
+        if [[ "$prev" == "--gantfile=" || "$prev" == "--gantlib=" ]]; then
             _filedir -o nospace
             return 0
         fi
     fi
 
     if [[ "$cur" == -* ]]; then
-        COMPREPLY=( $( compgen -W '-s --silent -T --tasks -f '--gantfile='\
-            -g '--gantlib=''\
+        COMPREPLY=( $( compgen -W '-q --quiet -s --silent\
+            -h --help\
+            -T --targets -p --projecthelp\
+            -f '--gantfile='\
+            -l '--gantlib=''\
             -- $cur ))
     else
 
         for (( i=0; i < ${#COMP_WORDS[@]}; i++)); do
             case "${COMP_WORDS[i]}" in
-            -f)
+            -f|-file|-buildfile)
                 eval gantf=${COMP_WORDS[i+1]}
                 break
                 ;;
@@ -54,7 +57,7 @@ _gant()
 
         [ ! -f $gantf ] && return 0
 
-        COMPREPLY=( $( gant -s -f "$gantf" -T | \
+        COMPREPLY=( $( gant -q -f "$gantf" -T | \
             awk -F ' ' '/^gant / { print $2 }' | \
             command grep "^$cur" ))
 
