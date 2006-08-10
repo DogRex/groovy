@@ -19,7 +19,7 @@
  *  usably in some way.
  *
  *  @author Russel Winder
- *  @version $LastChangedRevision$ $LastChagedDate:$
+ *  @version $LastChangedRevision$ $LastChangedDate:$
  */
 class build {
   private final buildDirectory = 'build'

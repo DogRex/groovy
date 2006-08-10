@@ -23,7 +23,7 @@
  *  method call.
  *
  *  @author Russel Winder
- *  @version $LastChangedRevision:$ $LastChagedDate:$
+ *  @version $LastChangedRevision$ $LastChangedDate:$
  */
 class build {
   public build ( ) {

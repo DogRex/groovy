@@ -23,7 +23,7 @@ package org.codehaus.groovy.gant.targets
  *  <p>Requires Java SE 5 as it used <code>ProcessBuilder</code>.</p>
  *
  *  @author Russel Winder
- *  @version $LastChangedRevision:$ $LastChagedDate:$
+ *  @version $LastChangedRevision$ $LastChangedDate:$
  */
 final class SubAnt {
   private forAllSubdirectoriesRunAnt ( target ) {
