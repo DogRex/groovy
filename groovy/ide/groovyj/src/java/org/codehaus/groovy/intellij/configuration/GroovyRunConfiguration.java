@@ -36,10 +36,8 @@ import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.JDOMExternalizable;
 import com.intellij.util.PathUtil;
-
-import org.jdom.Element;
-
 import org.codehaus.groovy.intellij.EditorAPI;
+import org.jdom.Element;
 
 public class GroovyRunConfiguration extends RunConfigurationBase implements LocatableConfiguration {
 
@@ -143,12 +141,13 @@ public class GroovyRunConfiguration extends RunConfigurationBase implements Loca
     // RunProfile ------------------------------------------------------------------------------------------------------
 
     public void checkConfiguration() throws RuntimeConfigurationException {
-        if (getScriptPath() == null || getScriptPath().trim().length() == 0) {
-            throw new RuntimeConfigurationError("Groovy script not specified");
-        }
+        assertValid(getScriptPath(), "Groovy script not specified");
+        assertValid(getModuleName(), "Module not selected");
+    }
 
-        if (getModuleName() == null || getModuleName().trim().length() == 0) {
-            throw new RuntimeConfigurationError("Module not selected");
+    private void assertValid(String value, String message) throws RuntimeConfigurationError {
+        if (value == null || value.trim().length() == 0) {
+            throw new RuntimeConfigurationError(message);
         }
     }
 
