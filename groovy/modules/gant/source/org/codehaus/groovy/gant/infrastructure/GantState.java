@@ -17,10 +17,11 @@
 package org.codehaus.groovy.gant.infrastructure ;
 
 /**
- *  A class to hold the global shared state for a run of Gant.  We need this because parts of
+ *  A class to hold the global shared state for a run of Gant.  This is needed because parts of
  *  Gant are written in Java and parts in Groovy and it is not possible to compile them all at
- *  the same time so we must avoid any references to Groovy classes in the Java parts so that
- *  the Java can be compiled and then the Groovy compiled.
+ *  the same time.  All references to Groovy classes must be avoided in the Java classes so that
+ *  the Java can be compiled and then the Groovy compiled.  This class contains things that
+ *  should be in the <code>Gant</code> class but cannot be.
  *
  *  @author Russel Winder
  *  @version $LastChangedRevision$ $LastChangedDate$
@@ -28,6 +29,5 @@ package org.codehaus.groovy.gant.infrastructure ;
 class GantState {
   public final static int SILENT = 0 , QUIET = 1 , NORMAL = 2 , VERBOSE = 3 ;
   static int verbosity = NORMAL ;
-  
   static boolean dryRun = false ;
 }

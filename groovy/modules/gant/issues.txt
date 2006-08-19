@@ -1,4 +1,4 @@
-Need some better documentation -- in the source, as manual pages and on teh Groovy website.
+Need some better documentation -- in the source, as manual pages and on the Groovy website.
 
 In an include statement, if the class name cannot be found then you get a weird error message:
 
@@ -14,9 +14,6 @@ so that sensible error messages can be issued.
 
 It is irritating to have to have null at the end of a target method if the last real statement
 is an ant call.  Is there a way of making Target a synonym for void?
-
-Need to find a way of not having the problem of --targets actually executing ant tasks if there is
-no function call before them in the target method.
 
 If there are compilation errors in the Gant file then currently an exception occurs and the line
 numbers are wrong.  Need to trap the exception and recalculate the line number to give the right
