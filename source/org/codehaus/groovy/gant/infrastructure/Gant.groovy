@@ -97,9 +97,9 @@ final class Gant {
     buildFileText = '''import org.codehaus.groovy.gant.infrastructure.GantBuilder
 import org.apache.tools.ant.Task
 ''' + buildFileText.replace ( buildClassOpening , buildClassOpening + """
-private final ant = new GantBuilder ( ) ; {
-  setMetaClass ( new org.codehaus.groovy.gant.infrastructure.${metaClassName} ( ${buildClassName} ) )
-}
+private final buildClassMetaClass = new org.codehaus.groovy.gant.infrastructure.${metaClassName} ( ${buildClassName} )
+private final ant = new GantBuilder ( buildClassMetaClass )
+; { setMetaClass ( buildClassMetaClass ) }
 """)
     def buildClassClass = ( new GroovyShell ( ) ).evaluate ( buildFileText + '; return ' + buildClassName + '.class'  )
     assert buildClassClass != null

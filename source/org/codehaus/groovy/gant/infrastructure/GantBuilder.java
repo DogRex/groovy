@@ -26,9 +26,24 @@ import groovy.lang.Closure ;
 import groovy.lang.GroovyObjectSupport ;
 import groovy.util.AntBuilder ;
 
+/**
+ *  An instance of this class is effectively just a Proxy for an <code>AntBuilder</code> object
+ *  to provide dry-run capability and to deal with all the verbosity issues.
+ *
+ *  @author Russel Winder <russel@russel.org.uk>
+ *  @version $LastChangedRevision$ $LastChangedDate$
+ */
 public final class GantBuilder extends GroovyObjectSupport {
   private final static AntBuilder ant = new AntBuilder ( ) ;
+  private final MetaClassImpl buildClassMetaClass ;
+  public GantBuilder ( final MetaClassImpl buildClassMetaClass ) { this.buildClassMetaClass = buildClassMetaClass ; }
   public Object invokeMethod ( final String name , final Object arguments ) {
+    if ( buildClassMetaClass instanceof TargetListMetaClass ) {
+      if ( buildClassMetaClass.getFindingTargets ( ) ) { reutrn null ; }
+    }
+    
+    System.err.println ( "GantBuilder.invokeMethod " + name ) ;
+
     if ( GantState.dryRun ) {
       if ( GantState.verbosity > GantState.SILENT ) {
         int padding = 9 - name.length ( ) ;

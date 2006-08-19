@@ -50,7 +50,7 @@ import org.apache.tools.ant.Task ;
  *  descriptions is returned.</p>
  *
  *  <p>Known "mis-feature": Things go totally haywire if the first statements of a target method
- *  are not calls to method of the class.</p>
+ *  are not calls to method of the class to the <code>GantBuilder</code> object.</p>
  *
  *  <p>This metaclass is implemented so that an instance can safely be shared by objects of the
  *  associated class or delegates of any class &ndash; normally you would expect separate
@@ -70,6 +70,7 @@ public final class TargetListMetaClass extends MetaClassImpl {
   public TargetListMetaClass ( final Class theClass ) throws IntrospectionException {
     super ( InvokerHelper.getInstance ( ).getMetaRegistry ( ) , theClass ) ;
   }
+  boolean getFindingTargets ( ) { return findingTargets ; }
   private void getTargetsOf ( final Object object ) {
     final Method[] methods = object.getClass ( ).getMethods ( ) ;
     for ( int i = 0 ; i < methods.length ; ++i ) {
