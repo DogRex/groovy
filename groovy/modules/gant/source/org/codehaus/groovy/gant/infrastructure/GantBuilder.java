@@ -16,58 +16,27 @@
 
 package org.codehaus.groovy.gant.infrastructure ;
 
-import java.util.Iterator ;
-import java.util.Map ;
-
-import java.io.ByteArrayOutputStream ;
-import java.io.PrintStream ;
-
-import groovy.lang.Closure ;
 import groovy.lang.GroovyObjectSupport ;
-import groovy.util.AntBuilder ;
 
 /**
- *  An instance of this class is effectively just a Proxy for an <code>AntBuilder</code> object
- *  to provide dry-run capability and to deal with all the verbosity issues.
+ *  A class to provide access to the <code>GantBuilder</code> object that actual does all the
+ *  Ant work.  Needed for building tools,
+ *  e.g. <code>org.codehaus.groovy.gant.target.Clean</code>.
  *
  *  @author Russel Winder <russel@russel.org.uk>
  *  @version $LastChangedRevision$ $LastChangedDate$
  */
-public final class GantBuilder extends GroovyObjectSupport {
-  private final static AntBuilder ant = new AntBuilder ( ) ;
-  private final MetaClassImpl buildClassMetaClass ;
-  public GantBuilder ( final MetaClassImpl buildClassMetaClass ) { this.buildClassMetaClass = buildClassMetaClass ; }
-  public Object invokeMethod ( final String name , final Object arguments ) {
-    if ( buildClassMetaClass instanceof TargetListMetaClass ) {
-      if ( buildClassMetaClass.getFindingTargets ( ) ) { reutrn null ; }
-    }
-    
-    System.err.println ( "GantBuilder.invokeMethod " + name ) ;
-
-    if ( GantState.dryRun ) {
-      if ( GantState.verbosity > GantState.SILENT ) {
-        int padding = 9 - name.length ( ) ;
-        if ( padding < 0 ) { padding = 0 ; }
-        System.out.print ( "         ".substring ( 0 , padding ) + "[" + name + "] ") ;
-        //  Assume that we have an arguments object that is an array of length 1 or 2 where the
-        //  first argument is a Hashmap and the secon, if present, is a Closure.  Rely on
-        //  casting exceptions to detect any errors.  Hacky but will do for now.
-        final Object[] args = (Object[]) arguments ;
-        final Iterator i = ( (Map) args[0] ).entrySet ( ).iterator ( ) ;
-        while ( i.hasNext ( ) ) {
-          final Map.Entry e = (Map.Entry) i.next ( ) ;
-          System.out.print ( e.getKey ( ) + ":" + e.getValue ( ) ) ;
-          if ( i.hasNext ( ) ) { System.out.print ( " , " ) ; }
-        }
-        if ( args.length == 2 ) {
-          System.out.println ( ) ;
-          ( (Closure) args[1] ).call ( ) ;
-        } else {
-          System.out.println ( ) ;
-        }
-      }
-      return null ;
-    }
-    return ant.invokeMethod ( name , arguments ) ;
+public abstract class GantBuilder extends GroovyObjectSupport {
+  public static String targetList = "TargetList" ;
+  public static String execution = "Execution" ;
+  private static GantBuilder builder = null ;
+  public static GantBuilder createInstance ( final String type ) {
+    if ( builder != null ) { throw new RuntimeException ( "Attempt to reinitialize GantBuilder." ) ; }
+    if ( type.equals ( targetList ) ) { builder = new TargetListGantBuilder ( ) ; }
+    else if ( type.equals ( execution ) ) { builder = new ExecutionGantBuilder ( ) ; }
+    else { throw new RuntimeException ( "Unknown GantBuilder type `" + type + "'" ) ; }
+    return builder ;
   }
+  public static GantBuilder getInstance ( ) { return builder ; }
+  public abstract Object invokeMethod ( final String name , final Object arguments ) ;
 }
