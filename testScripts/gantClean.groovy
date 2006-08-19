@@ -23,7 +23,7 @@
  *  method call.
  *
  *  @author Russel Winder
- *  @version $LastChangedRevision$ $LastChangedDate:$
+ *  @version $LastChangedRevision$ $LastChangedDate$
  */
 class build {
   public build ( ) {
@@ -31,13 +31,13 @@ class build {
     addCleanPattern ( [ '**/*~' ,  '**/*.bak' ] )
     addCleanDirectory ( 'build' )
   }
-  public Target 'default' ( ) { // Parse fails if public removed.  Why?
+  public Task 'default' ( ) { // Parse fails if public removed.  Why?
     description ( 'The default target.' )
     System.out.println ( 'Default' )
     clean ( )
     otherStuff ( )
   }
-  Target otherStuff ( ) {
+  Task otherStuff ( ) {
     description ( 'Other stuff' )
     System.out.println ( 'OtherStuff' )
     clean ( )

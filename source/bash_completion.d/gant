@@ -7,8 +7,9 @@
 # Programmable completion for the Groovy Ant (gant) command under bash.
 # This file draws heavily on the rake and subversion file that come as standard with Bash 3.
 
-#  Author:  Russel Winder
-#  Version:  2006-08-07T07:55
+#  Author :  Russel Winder
+#  Version :  2006-08-07T07:55
+#  Licence : GPL
 
 _gant()
 {

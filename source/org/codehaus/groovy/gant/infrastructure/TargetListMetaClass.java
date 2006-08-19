@@ -30,6 +30,8 @@ import groovy.lang.MissingMethodException ;
 
 import org.codehaus.groovy.runtime.InvokerHelper ;
 
+import org.apache.tools.ant.Task ;
+
 /**
  *  This class is the custom metaclass used for supporting creating tasks lists in Gant.
  *
@@ -38,10 +40,10 @@ import org.codehaus.groovy.runtime.InvokerHelper ;
  *  behaviour is undefined.</p>
  *
  *  <p>The algorithm here is to search the top-level class and all included classes (delegates)
- *  for methods that return type <code>org.codehaus.groovy.gant.infrastructure.Target</code>
- *  (should be nullary methods but this is not yet checked) and then to execute the method.  The
- *  first statement of the method is assumed to be a call to the method description with a
- *  single <code>String</code> parameter.  The method call is trapped and the method name and
+ *  for methods that return type <code>org.apache.tools.ant.Task</code> (should be nullary
+ *  methods but this is not yet checked) and then to execute the method.  The first statement of
+ *  the method is assumed to be a call to the method description with a single
+ *  <code>String</code> parameter.  The method call is trapped and the method name and
  *  description stored in a <code>Map</code>.  Execution of the method is then terminated by
  *  throwing an exception which is caught and ignored but in a way that means the method call
  *  terminates.When all methods have been executed the <code>Map</code> containing all the
@@ -72,7 +74,7 @@ public final class TargetListMetaClass extends MetaClassImpl {
     final Method[] methods = object.getClass ( ).getMethods ( ) ;
     for ( int i = 0 ; i < methods.length ; ++i ) {
       Method method = methods[i] ;
-      if ( method.getReturnType ( ) == Target.class ) {
+      if ( method.getReturnType ( ) == Task.class ) {
         temporaryMethodName = method.getName ( ) ;
         findingTargets = true ;
         // Java 5 way: try { method.invoke ( object ) ; }
