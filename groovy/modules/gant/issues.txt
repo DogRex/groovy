@@ -28,3 +28,13 @@ Need to create a test suite.
 Get the GANTLIB stuff finished so it actually works.  The bits in the Gant source are probably
 wrong, this almost certainly needs doing in the shell scripts so that the CLASSPATH is right
 before Java starts.  This probably means startingGroovy needs amendment.
+
+If the constructor of a build class is not public then we get a:
+
+Caused by: java.lang.IllegalAccessException: Class gjdk.java.lang.Class_GroovyReflector can not access a member of class build with modifiers "private"
+        at sun.reflect.Reflection.ensureMemberAccess(Reflection.java:65)
+        at java.lang.Class.newInstance0(Class.java:344)
+        at java.lang.Class.newInstance(Class.java:303)
+        at gjdk.java.lang.Class_GroovyReflector.invoke(Unknown Source)
+
+which isn't exactly a good error message for the user.

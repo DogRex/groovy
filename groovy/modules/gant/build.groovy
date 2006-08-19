@@ -19,41 +19,36 @@
  *  usably in some way.
  *
  *  @author Russel Winder
- *  @version $LastChangedRevision$ $LastChangedDate:$
+ *  @version $LastChangedRevision$ $LastChangedDate$
  */
 class build {
   private final buildDirectory = 'build'
   private final sourceDirectory = 'source'
   private final groovyHome = System.getenv ( 'GROOVY_HOME' ) ; { assert groovyHome != '' }
-  private final String groovyJarPath ; {
-    ( new File ( groovyHome + '/embeddable' ) ).eachFileMatch ( ~'groovy-all.*.jar' ) { groovyJarPath = it.path }
-  }
   def build ( ) {
     include ( org.codehaus.groovy.gant.targets.Clean )
     addCleanPattern ( '**/*~' )
     addCleanDirectory ( buildDirectory )
-    ant.path ( id : 'compilePath' ) { ant.pathelement ( location : groovyJarPath ) }
+    ant.path ( id : 'compilePath' ) { ant.fileset ( dir : groovyHome + '/lib' , includes : '*.jar' ) }
     ant.taskdef ( name : 'groovyc' , classname : 'org.codehaus.groovy.ant.Groovyc' , classpathref : 'compilePath' )
   }
-  Target initialize ( ) {
+  Task initialize ( ) {
     description ( 'Initialize prior to a build' )
     ant.mkdir ( dir : buildDirectory )
     ant.mkdir ( dir : buildDirectory + '/lib' )
-    null
   }
-  Target compile ( ) {
+  Task compile ( ) {
     description ( 'Compile everything needed.' )
     initialize ( )
     ant.javac ( srcdir : sourceDirectory , destDir : buildDirectory , source : '1.4' , classpathref : 'compilePath' )
     ant.groovyc ( srcdir : sourceDirectory , destDir : buildDirectory , classpath : buildDirectory )
     ant.jar ( destfile : buildDirectory + '/lib/gant.jar' , basedir : buildDirectory , includes : 'org/**' )
-    null
   }
-  Target test ( ) {
+  Task test ( ) {
     description ( 'Test a build.' )
     compile ( )
   }
-  Target install ( ) {
+  Task install ( ) {
     description ( 'Compile everything and install it to ' + groovyHome + '.' )
     compile ( )
     ant.copy ( todir : groovyHome ) {
@@ -63,9 +58,8 @@ class build {
     ant.chmod ( perm : 'a+x' ) {
       ant.fileset ( dir : groovyHome + '/bin' , includes : 'gant*' )
     }
-    null
   }
-  public Target 'default' ( ) { // Parse fails if public removed.  Why?
+  public Task 'default' ( ) { // Parse fails if public removed.  Why?
     description ( 'The default target, currently test.' )
     test ( )
   }

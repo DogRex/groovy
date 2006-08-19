@@ -17,9 +17,17 @@
 package org.codehaus.groovy.gant.infrastructure ;
 
 /**
- *  This is a marker class for methods that are to be treated as targets in a Gant script.
+ *  A class to hold the global shared state for a run of Gant.  We need this because parts of
+ *  Gant are written in Java and parts in Groovy and it is not possible to compile them all at
+ *  the same time so we must avoid any references to Groovy classes in the Java parts so that
+ *  the Java can be compiled and then the Groovy compiled.
  *
- *  @author Russel Winder <russel@russel.org.uk>
- *  @version $LastChangedRevision:$ $LastChangedDate:$ 
+ *  @author Russel Winder
+ *  @version $LastChangedRevision$ $LastChangedDate$
  */
-public final class Target { }
+class GantState {
+  public final static int SILENT = 0 , QUIET = 1 , NORMAL = 2 , VERBOSE = 3 ;
+  static int verbosity = NORMAL ;
+  
+  static boolean dryRun = false ;
+}

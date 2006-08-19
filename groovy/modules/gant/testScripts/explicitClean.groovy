@@ -24,24 +24,23 @@
  *  @version $LastChangedRevision$ $LastChangedDate$
  */
 class build {
-  public Target 'default' ( ) { // Parse fails if public removed.  Why?
+  public Task 'default' ( ) { // Parse fails if public removed.  Why?
     description ( 'The default target.' )
     System.out.println ( 'Default' )
     clean ( )
     otherStuff ( )
   }
-  Target otherStuff ( ) {
+  Task otherStuff ( ) {
     description ('Other stuff.' )
     System.out.println ( 'OtherStuff' )
     clean ( )
   }
-  Target clean ( ) {
+  Task clean ( ) {
     description ( 'Clean the directory and subdirectories.' )
     System.out.println ( 'Clean' )
     ant.delete ( dir : 'build' , quiet : 'true' )
     ant.delete ( quiet : 'true' ) {
       ant.fileset ( dir : '.' , includes : '**/*~,**/*.bak' , defaultexcludes : 'no' )
     }
-    null
   }
 }

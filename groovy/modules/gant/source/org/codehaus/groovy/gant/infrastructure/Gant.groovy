@@ -23,10 +23,10 @@ package org.codehaus.groovy.gant.infrastructure
  *  of scripting Ant tasks; the Ant tasks do all the dependency management.
  *
  *  <p>A Gant build specification file (default name build.groovy) is assumed to contain one or
- *  more classes where the first is the main class whose public nullary functions are the
- *  targets -- in the Ant sense.  Dependencies between targets are handled as function calls
- *  within functions. Execution of Ant tasks is by calling methods on the object called `ant',
- *  which is predefined as an <code>AntBuilder</code> instance.</p>
+ *  more classes where the first is the main class whose public nullary functions returning a
+ *  <code>Task</code> are the targets -- in the Ant sense.  Dependencies between targets are
+ *  handled as function calls within functions. Execution of Ant tasks is by calling methods on
+ *  the object called `ant', which is predefined as an <code>GantBuilder</code> instance.</p>
  *
  *  <p>On execution of the gant command, the Gant build specification will be injected with a
  *  number of features.  An object called `ant' is automatically created so methods can use this
@@ -41,16 +41,16 @@ package org.codehaus.groovy.gant.infrastructure
  *  <pre>
  *        
  *        class build {
- *          public Target 'default' ( ) { // Parse fails if public removed.  Why?
+ *          public Task 'default' ( ) { // Parse fails if public removed.  Why?
  *            description ( 'The default target.' )
  *            clean ( )
  *            otherStuff ( )
  *          }
- *          Target otherStuff ( ) {
+ *          Task otherStuff ( ) {
  *            description ('Other stuff' )
  *            clean ( )
  *          }
- *          Target clean ( ) {
+ *          Task clean ( ) {
  *            description ( 'Clean the directory and subdirectories' )
  *            ant.delete ( dir : 'build' , quiet : 'true' )
  *            ant.delete ( quiet : 'true' ) {
@@ -74,10 +74,6 @@ package org.codehaus.groovy.gant.infrastructure
  */
 final class Gant {
 
-  public final static SILENT = 0 , QUIET = 1 , NORMAL = 2 , VERBOSE = 3
-  def verbosity = NORMAL
-  def dryRun = false
-
   private buildFileName = 'build.groovy'
   private buildFileText = ''
   private List gantLib ; {
@@ -98,8 +94,10 @@ final class Gant {
     }
     assert buildClassOpening != ''
     assert buildClassName != ''
-    buildFileText = 'import org.codehaus.groovy.gant.infrastructure.Target\n\n' + buildFileText.replace ( buildClassOpening , buildClassOpening + """
-private final ant = new AntBuilder ( ) ; {
+    buildFileText = '''import org.codehaus.groovy.gant.infrastructure.GantBuilder
+import org.apache.tools.ant.Task
+''' + buildFileText.replace ( buildClassOpening , buildClassOpening + """
+private final ant = new GantBuilder ( ) ; {
   setMetaClass ( new org.codehaus.groovy.gant.infrastructure.${metaClassName} ( ${buildClassName} ) )
 }
 """)
@@ -147,11 +145,11 @@ private final ant = new AntBuilder ( ) ; {
     if ( options.f ) { buildFileName = options.f }
     if ( options.h ) { cli.usage ( ) ; return }
     if ( options.l ) { gantLib = options.l.split ( System.properties.'path.separator' ) }
-    if ( options.n ) { dryRun = true }
+    if ( options.n ) { GantState.dryRun = true }
     if ( options.p || options.T ) { function = 'targetList' }
-    if ( options.q ) { verbosity = QUIET }
-    if ( options.s ) { verbosity = SILENT }
-    if ( options.v ) { verbosity = VERBOSE }
+    if ( options.q ) { GantState.verbosity = GantState.QUIET }
+    if ( options.s ) { GantState.verbosity = GantState.SILENT }
+    if ( options.v ) { GantState.verbosity = GantState.VERBOSE }
     if ( options.V ) { println 'Gant version 0.1.0' ; return }
     def targets = options.arguments ( )
     //  We need to deal with unknown options, which should have been unprocessed by CliBuilder.
@@ -167,9 +165,7 @@ private final ant = new AntBuilder ( ) ; {
     }
     if ( gotUnknownOptions ) { cli.usage ( ) ; return ; }
     def file = new File ( buildFileName ) 
-    if ( ! file.isFile ( ) ) {
-      println ( 'Cannot open file ' + buildFileName ) 
-    }
+    if ( ! file.isFile ( ) ) { println ( 'Cannot open file ' + buildFileName ) }
     else {
       buildFileText =  ( new File ( buildFileName ) ).text
       assert buildFileText != ''

@@ -16,7 +16,9 @@
 
 package org.codehaus.groovy.gant.targets
 
-import org.codehaus.groovy.gant.infrastructure.Target 
+import org.codehaus.groovy.gant.infrastructure.GantBuilder
+
+import org.apache.tools.ant.Task
 
 /**
  *  A class to provide clean and clobber actions for Gant build scripts.  Maintains separate lists of
@@ -24,14 +26,14 @@ import org.codehaus.groovy.gant.infrastructure.Target
  *  specifications when the clean or clobber methods are called.
  *
  *  @author Russel Winder
- *  @version $LastChangedRevision$ $LastChangedDate:$
+ *  @version $LastChangedRevision$ $LastChangedDate$
  */
 final class Clean {
   private final cleanPatternList = []
   private final cleanDirectoryList = []
   private final clobberPatternList = []
   private final clobberDirectoryList = []
-  private final ant = new AntBuilder ( )
+  private final ant = new GantBuilder ( )
   private performPatternAction ( List l ) {
     ant.delete ( quiet : 'false' ) {
       ant.fileset (
@@ -53,12 +55,12 @@ final class Clean {
   private addClobberPattern ( final List l ) { clobberPatternList += l }
   private addClobberDirectory ( final String s ) { clobberDirectoryList += [ s ] }
   private addClobberDirectory ( final List l ) { clobberDirectoryList += l }
-  Target clean ( ) {
+  Task clean ( ) {
     description ( "Action the cleaning." )
     performPatternAction ( cleanPatternList )
     performDirectoryAction ( cleanDirectoryList )
   }
-  Target clobber ( ) {
+  Task clobber ( ) {
     description ( "Action the clobbering.  Does the cleaning first." ) 
     clean ( )
     performPatternAction ( clobberPatternList )
