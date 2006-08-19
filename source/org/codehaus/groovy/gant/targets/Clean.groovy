@@ -33,7 +33,7 @@ final class Clean {
   private final cleanDirectoryList = []
   private final clobberPatternList = []
   private final clobberDirectoryList = []
-  private final ant = new GantBuilder ( )
+  private final ant = GantBuilder.instance
   private performPatternAction ( List l ) {
     ant.delete ( quiet : 'false' ) {
       ant.fileset (

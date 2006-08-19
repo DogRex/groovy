@@ -83,7 +83,7 @@ final class Gant {
   }
 
   private Gant ( ) { }
-  private Class compileBuildFile ( final String metaClassName ) {
+  private Class compileBuildFile ( final String metaClassType ) {
     def buildClassOpening = ''
     def buildClassName = ''
     final javaIdentifierRegexAsString = /\b\p{javaJavaIdentifierStart}(?:\p{javaJavaIdentifierPart})*\b/
@@ -94,24 +94,20 @@ final class Gant {
     }
     assert buildClassOpening != ''
     assert buildClassName != ''
-    buildFileText = '''import org.codehaus.groovy.gant.infrastructure.GantBuilder
-import org.apache.tools.ant.Task
-''' + buildFileText.replace ( buildClassOpening , buildClassOpening + """
-private final buildClassMetaClass = new org.codehaus.groovy.gant.infrastructure.${metaClassName} ( ${buildClassName} )
-private final ant = new GantBuilder ( buildClassMetaClass )
-; { setMetaClass ( buildClassMetaClass ) }
-""")
+    buildFileText = "import org.codehaus.groovy.gant.infrastructure.GantBuilder; import org.apache.tools.ant.Task;" +
+     buildFileText.replace ( buildClassOpening , buildClassOpening +
+                             "private final ant = GantBuilder.createInstance ( \"${metaClassType}\" ) ; { setMetaClass ( new org.codehaus.groovy.gant.infrastructure.${metaClassType}MetaClass ( ${buildClassName} ) ) }" )
     def buildClassClass = ( new GroovyShell ( ) ).evaluate ( buildFileText + '; return ' + buildClassName + '.class'  )
     assert buildClassClass != null
     return buildClassClass
   }
   private targetList ( targets ) {
     def documentation = new TreeMap ( )
-    def buildObject = compileBuildFile ( 'TargetListMetaClass' ).newInstance ( )
+    def buildObject = compileBuildFile ( GantBuilder.targetList ).newInstance ( )
     for ( p in ( (Map) buildObject.retrieveAllDescriptions ( ) ).entrySet ( ) ) { println ( 'gant ' + p.getKey ( ) + '  --  ' + p.getValue ( ) ) }
   }
   private dispatch ( targets ) {
-    def buildObject = compileBuildFile ( 'ExecutionMetaClass' ).newInstance ( )
+    def buildObject = compileBuildFile ( GantBuilder.execution ).newInstance ( )
     if ( targets.size ( ) > 0 ) { targets.each { target ->
         try { buildObject.invokeMethod ( target , null ) }
         catch ( MissingMethodException mme ) {

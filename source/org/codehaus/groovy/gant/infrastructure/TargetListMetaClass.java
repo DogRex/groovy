@@ -70,7 +70,6 @@ public final class TargetListMetaClass extends MetaClassImpl {
   public TargetListMetaClass ( final Class theClass ) throws IntrospectionException {
     super ( InvokerHelper.getInstance ( ).getMetaRegistry ( ) , theClass ) ;
   }
-  boolean getFindingTargets ( ) { return findingTargets ; }
   private void getTargetsOf ( final Object object ) {
     final Method[] methods = object.getClass ( ).getMethods ( ) ;
     for ( int i = 0 ; i < methods.length ; ++i ) {
