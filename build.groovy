@@ -40,7 +40,7 @@ class build {
   Task compile ( ) {
     description ( 'Compile everything needed.' )
     initialize ( )
-    ant.javac ( srcdir : sourceDirectory , destDir : buildDirectory , source : '1.4' , classpathref : 'compilePath' )
+    ant.javac ( srcdir : sourceDirectory , destDir : buildDirectory , source : '1.4' , debug : 'on' , debuglevel : 'lines,vars,source' , classpathref : 'compilePath' )
     ant.groovyc ( srcdir : sourceDirectory , destDir : buildDirectory , classpath : buildDirectory )
     ant.jar ( destfile : buildDirectory + '/lib/gant.jar' , basedir : buildDirectory , includes : 'org/**' )
   }
