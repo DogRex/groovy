@@ -159,13 +159,17 @@ final class Gant {
       }
     }
     if ( gotUnknownOptions ) { cli.usage ( ) ; return ; }
-    def file = new File ( buildFileName ) 
-    if ( ! file.isFile ( ) ) { println ( 'Cannot open file ' + buildFileName ) }
+    if ( buildFileName == '-' ) { buildFileText = System.in.text }
     else {
+      def file = new File ( buildFileName ) 
+      if ( ! file.isFile ( ) ) {
+        println ( 'Cannot open file ' + buildFileName )
+        return
+      }
       buildFileText =  ( new File ( buildFileName ) ).text
-      assert buildFileText != ''
-      invokeMethod ( function , targets )
     }
+    assert buildFileText != ''
+    invokeMethod ( function , targets )
   }
   public static main ( args ) { ( new Gant ( ) ).process ( args ) }
 }
