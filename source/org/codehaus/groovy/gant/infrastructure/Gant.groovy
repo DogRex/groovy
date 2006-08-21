@@ -56,7 +56,6 @@ package org.codehaus.groovy.gant.infrastructure
  *            ant.delete ( quiet : 'true' ) {
  *              ant.fileset ( dir : '.' , includes : '** /*~'  , defaultexcludes : 'no' )
  *            }
- *            null // Need this to avoid an ant call being the return value.
  *          }
  *        }
  *
@@ -111,8 +110,8 @@ final class Gant {
     if ( targets.size ( ) > 0 ) { targets.each { target ->
         try { buildObject.invokeMethod ( target , null ) }
         catch ( MissingMethodException mme ) {
-          println ( "Target ${target} does not exist." )
-        }                            
+          println ( ( mme.method == target ) ? "Target ${mme.method} does not exist." : "Could not execute method ${mme.method}." )
+        }
       }
     }
     else { buildObject.'default' ( ) }
