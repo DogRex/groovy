@@ -36,6 +36,13 @@ import org.codehaus.groovy.runtime.InvokerHelper ;
  *  <code>description</code>method calls and the handling of the delegates specified in
  *  <code>include</code> calls, all others are passed to the superclass.</p>
  *
+ *  <p>A separate instance of this class is used as the metaclass for each delegate as well
+ *  there being a distinct instance for the user's build class metaclass.  This is needed as any
+ *  and all of these classes can have tasks with descriptions.  Static data is used as a shared
+ *  state between all instances.  In particular, the list of delegates and the boolean that
+ *  determines whether the user build class or a delegate is currently being searched &ndash;
+ *  delegates cannot delegate!</p>
+ *
  *  @author Russel Winder
  *  @version $LastChangedRevision$ $LastChangedDate$
  */
