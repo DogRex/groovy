@@ -43,7 +43,7 @@ Version : $LastChangedRevision$ $LastChangedDate$
   </target>
 
   <target name="compile" depends="initialize">
-    <javac srcdir="${sourceDirectory}" destdir="${buildDirectory}" source="1.4" classpathref="compilePath"/>
+    <javac srcdir="${sourceDirectory}" destdir="${buildDirectory}" source="1.4" debug="on" debuglevel="lines,vars,source" classpathref="compilePath"/>
     <groovyc srcdir="${sourceDirectory}" destdir="${buildDirectory}" classpath="${buildDirectory}"/>
     <jar destfile="${buildDirectory}/lib/gant.jar" basedir="${buildDirectory}" includes="org/**"/>
   </target>
