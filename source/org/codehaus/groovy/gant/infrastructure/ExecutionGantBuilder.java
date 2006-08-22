@@ -44,7 +44,7 @@ final class ExecutionGantBuilder extends GantBuilder {
         final Iterator i = ( (Map) args[0] ).entrySet ( ).iterator ( ) ;
         while ( i.hasNext ( ) ) {
           final Map.Entry e = (Map.Entry) i.next ( ) ;
-          System.out.print ( e.getKey ( ) + ":" + e.getValue ( ) ) ;
+          System.out.print ( e.getKey ( ) + " : '" + e.getValue ( ) + "'" ) ;
           if ( i.hasNext ( ) ) { System.out.print ( " , " ) ; }
         }
         if ( args.length == 2 ) {
