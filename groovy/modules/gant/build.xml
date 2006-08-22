@@ -71,9 +71,9 @@ Version : $LastChangedRevision$ $LastChangedDate$
         <fileset dir="${buildTestsDirectory}" includes="**/*_Test.class"/>
       </batchtest>
       <classpath>
-        <path refid="compilePath"/>
-        <pathelement location="${buildClassesDirectory}"/>
         <pathelement location="${buildTestsDirectory}"/>
+        <pathelement location="${buildClassesDirectory}"/>
+        <path refid="compilePath"/>
       </classpath>
     </junit>
   </target>
