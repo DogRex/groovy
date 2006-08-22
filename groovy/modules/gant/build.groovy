@@ -23,9 +23,14 @@
  */
 class build {
   private final version = '0.1.0-SNAPSHOT'
-  private final buildDirectory = 'build'
   private final sourceDirectory = 'source'
+  private final testsDirectory = 'tests'  
   private final groovyHome = System.getenv ( 'GROOVY_HOME' ) ; { assert groovyHome != '' }
+  private final buildDirectory = 'build'
+  private final buildClassesDirectory = buildDirectory + '/classes' 
+  private final buildTestsDirectory = buildDirectory + '/tests' 
+  private final buildLibDirectory = buildDirectory + '/lib'
+  private final buildReportsDirectory = buildDirectory + '/reports'                                                              
   def build ( ) {
     include ( org.codehaus.groovy.gant.targets.Clean )
     addCleanPattern ( '**/*~' )
@@ -35,27 +40,35 @@ class build {
   }
   Task initialize ( ) {
     description ( 'Initialize prior to a build' )
-    ant.mkdir ( dir : buildDirectory )
-    ant.mkdir ( dir : buildDirectory + '/lib' )
+    ant.mkdir ( dir : buildClassesDirectory )
+    ant.mkdir ( dir : buildTestsDirectory )
+    ant.mkdir ( dir : buildLibDirectory )
+    ant.mkdir ( dir : buildReportsDirectory )
   }
   Task compile ( ) {
     description ( 'Compile everything needed.' )
     initialize ( )
-    ant.javac ( srcdir : sourceDirectory , destDir : buildDirectory , source : '1.4' , debug : 'on' , debuglevel : 'lines,vars,source' , classpathref : 'compilePath' )
-    ant.groovyc ( srcdir : sourceDirectory , destDir : buildDirectory , classpath : buildDirectory )
-    ant.jar ( destfile : buildDirectory + "/lib/gant-${version}.jar" , basedir : buildDirectory , includes : 'org/**' )
+    ant.javac ( srcdir : sourceDirectory , destDir : buildClassesDirectory , source : '1.4' , debug : 'on' , debuglevel : 'lines,vars,source' , classpathref : 'compilePath' )
+    ant.groovyc ( srcdir : sourceDirectory , destDir : buildClassesDirectory , classpath : buildClassesDirectory )
+    ant.jar ( destfile : buildLibDirectory + "/gant-${version}.jar" , basedir : buildClassesDirectory , includes : 'org/**' )
+  }
+  Task compileTests ( ) {
+    description ( 'Compile all the tests.' )
+    compile ( )
+    ant.groovyc ( srcdir : testsDirectory , destdir : buildTestsDirectory , classpath : buildClassesDirectory )
   }
   Task test ( ) {
     description ( 'Test a build.' )
-    compile ( )
+    compileTests ( )
     ant.junit ( printsummary : 'yes' ) {
       ant.formatter ( type : 'plain' )
-      ant.batchtest ( fork : 'yes' ) {
-        ant.fileset ( dir : buildDirectory , includes : '**/*_Test.class' )
+      ant.batchtest ( fork : 'yes' , todir : buildReportsDirectory ) {
+        ant.fileset ( dir : buildTestsDirectory , includes : '**/*_Test.class' )
       }
       ant.classpath {
         ant.path ( refid : 'compilePath' )
-        ant.pathelement ( location : buildDirectory )
+        ant.pathelement ( location : buildClassesDirectory )
+        ant.pathelement ( location : buildTestsDirectory )
       }
     }
   }
