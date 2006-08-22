@@ -77,7 +77,7 @@ class build {
     compile ( )
     ant.copy ( todir : groovyHome ) {
       ant.fileset ( dir : sourceDirectory , includes : 'bin/gant*' )
-      ant.fileset ( dir : buildDirectory , includes : 'lib/gant.jar' )
+      ant.fileset ( dir : buildDirectory , includes : 'lib/gant*.jar' )
     }
     ant.chmod ( perm : 'a+x' ) {
       ant.fileset ( dir : groovyHome + '/bin' , includes : 'gant*' )
