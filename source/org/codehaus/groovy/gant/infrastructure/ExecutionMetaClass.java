@@ -20,8 +20,6 @@ import java.beans.IntrospectionException ;
 import java.util.ArrayList ;
 import java.util.Iterator ;
 
-import java.lang.reflect.Method ;
-
 import groovy.lang.GroovyObject ;
 import groovy.lang.MetaClassImpl ;
 import groovy.lang.MissingMethodException ;

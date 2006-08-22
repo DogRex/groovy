@@ -31,7 +31,7 @@ class build {
     otherStuff ( )
   }
   Task otherStuff ( ) {
-    description ('Other stuff.' )
+    description ( 'Other stuff.' )
     System.out.println ( 'OtherStuff' )
     clean ( )
   }
