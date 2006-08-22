@@ -16,11 +16,14 @@
 
 package org.codehaus.groovy.gant.infrastructure ;
 
+import java.beans.IntrospectionException ;
+
 import java.util.ArrayList ;
 import java.util.Iterator ;
 
 import groovy.lang.GroovyObject ;
-import groovy.lang.DelegatingMetaClass ;
+//import groovy.lang.DelegatingMetaClass ;
+import groovy.lang.MetaClassImpl ;
 import groovy.lang.MissingMethodException ;
 
 import org.codehaus.groovy.runtime.InvokerHelper ;
@@ -43,11 +46,13 @@ import org.codehaus.groovy.runtime.InvokerHelper ;
  *  @author Russel Winder
  *  @version $LastChangedRevision$ $LastChangedDate$
  */
-public final class ExecutionMetaClass extends DelegatingMetaClass {
+public final class ExecutionMetaClass extends MetaClassImpl { // DelegatingMetaClass {
   private final static ArrayList delegates = new ArrayList ( ) ;
   private static boolean isDelegated = false ;
-  public ExecutionMetaClass ( final Class theClass ) {
-    super ( InvokerHelper.getMetaClass ( theClass ) ) ;
+  public ExecutionMetaClass ( final Class theClass ) throws IntrospectionException {
+    super ( InvokerHelper.getInstance ( ).getMetaRegistry ( ) , theClass ) ;
+    //public ExecutionMetaClass ( final Class theClass ) {
+    //super ( InvokerHelper.getMetaClass ( theClass ) ) ;
   }
   public Object invokeMethod ( final Object object , final String methodName , final Object[] arguments ) {
     Object returnObject = null ;
@@ -56,11 +61,12 @@ public final class ExecutionMetaClass extends DelegatingMetaClass {
         final Class delegateClass = (Class) arguments[i] ;
         try {
           final GroovyObject delegate = (GroovyObject) delegateClass.newInstance ( ) ;
-          delegate.setMetaClass ( new ExecutionMetaClass ( delegate.getClass ( ) ) ) ;
+          delegate.setMetaClass ( new ExecutionMetaClass ( delegateClass ) ) ;
           delegates.add ( delegate ) ;
         }
         catch ( final InstantiationException ie ) { throw new RuntimeException ( "InstantiationException" ) ; }  
         catch ( final IllegalAccessException iae ) { throw new RuntimeException ( "IllegalAccessException" ) ; }  
+        catch ( final IntrospectionException iae ) { throw new RuntimeException ( "IntrospectionException" ) ; }  
       }
     }
     else if ( methodName.equals ( "description" ) ) { }

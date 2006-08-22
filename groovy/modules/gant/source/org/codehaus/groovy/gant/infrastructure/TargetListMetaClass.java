@@ -16,6 +16,8 @@
 
 package org.codehaus.groovy.gant.infrastructure ;
 
+import java.beans.IntrospectionException ;
+
 import java.util.ArrayList ;
 import java.util.Iterator ;
 import java.util.Map ;
@@ -24,7 +26,8 @@ import java.util.TreeMap ;
 import java.lang.reflect.Method ;
 
 import groovy.lang.GroovyObject ;
-import groovy.lang.DelegatingMetaClass ;
+//import groovy.lang.DelegatingMetaClass ;
+import groovy.lang.MetaClassImpl ;
 
 import org.codehaus.groovy.runtime.InvokerHelper ;
 
@@ -53,20 +56,22 @@ import org.apache.tools.ant.Task ;
  *  <p>This metaclass is implemented so that an instance can safely be shared by objects of the
  *  associated class or delegates of any class &ndash; normally you would expect separate
  *  instances of a metaclass for each class of object since the metaclass knows the class it was
- *  instantiated for.  This is doen to avoid proliferation of classes and objects, i.e. to keep
+ *  instantiated for.  This is done to avoid proliferation of classes and objects, i.e. to keep
  *  the implementation of the algorithm within this one class and so easier to maintain.</p>
  *
  *  @author Russel Winder
  *  @version $LastChangedRevision$ $LastChangedDate$
  */
-public final class TargetListMetaClass extends DelegatingMetaClass {
+public final class TargetListMetaClass extends MetaClassImpl { //DelegatingMetaClass {
   private final ArrayList delegates = new ArrayList ( ) ;
   private final Map documentation = new TreeMap ( ) ;
   private String temporaryMethodName ;
   private boolean findingTargets = false ;
   private class TerminateExecutionException extends RuntimeException { }
-  public TargetListMetaClass ( final Class theClass ) {
-    super ( InvokerHelper.getMetaClass ( theClass ) ) ;
+  public TargetListMetaClass ( final Class theClass ) throws IntrospectionException {
+    super ( InvokerHelper.getInstance ( ).getMetaRegistry ( ) , theClass ) ;
+    //public TargetListMetaClass ( final Class theClass ) {
+    //super ( InvokerHelper.getMetaClass ( theClass ) ) ;
   }
   private void getTargetsOf ( final Object object ) {
     final Method[] methods = object.getClass ( ).getMethods ( ) ;

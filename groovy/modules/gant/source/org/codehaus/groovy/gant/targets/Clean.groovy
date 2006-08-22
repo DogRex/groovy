@@ -47,14 +47,14 @@ final class Clean {
       ant.delete ( dir : item , quiet : 'true' )
     }
   }
-  private addCleanPattern ( final String s ) { cleanPatternList += [ s ] }
-  private addCleanPattern ( final List l ) { cleanPatternList += l }
-  private addCleanDirectory ( final String s ) { cleanDirectoryList += [ s ] }
-  private addCleanDirectory ( final List l ) { cleanDirectoryList += l }
-  private addClobberPattern ( final String s ) { clobberPattern += [ s ] }
-  private addClobberPattern ( final List l ) { clobberPatternList += l }
-  private addClobberDirectory ( final String s ) { clobberDirectoryList += [ s ] }
-  private addClobberDirectory ( final List l ) { clobberDirectoryList += l }
+  void addCleanPattern ( final String s ) { cleanPatternList += [ s ] }
+  void addCleanPattern ( final List l ) { cleanPatternList += l }
+  void addCleanDirectory ( final String s ) { cleanDirectoryList += [ s ] }
+  void addCleanDirectory ( final List l ) { cleanDirectoryList += l }
+  void addClobberPattern ( final String s ) { clobberPattern += [ s ] }
+  void addClobberPattern ( final List l ) { clobberPatternList += l }
+  void addClobberDirectory ( final String s ) { clobberDirectoryList += [ s ] }
+  void addClobberDirectory ( final List l ) { clobberDirectoryList += l }
   Task clean ( ) {
     description ( "Action the cleaning." )
     performPatternAction ( cleanPatternList )
