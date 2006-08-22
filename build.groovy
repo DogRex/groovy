@@ -66,9 +66,9 @@ class build {
         ant.fileset ( dir : buildTestsDirectory , includes : '**/*_Test.class' )
       }
       ant.classpath {
-        ant.path ( refid : 'compilePath' )
-        ant.pathelement ( location : buildClassesDirectory )
         ant.pathelement ( location : buildTestsDirectory )
+        ant.pathelement ( location : buildClassesDirectory )
+        ant.path ( refid : 'compilePath' )
       }
     }
   }

@@ -21,9 +21,8 @@ import java.util.Iterator ;
 
 import groovy.lang.GroovyObject ;
 import groovy.lang.DelegatingMetaClass ;
+import groovy.lang.MetaClassRegistry ;
 import groovy.lang.MissingMethodException ;
-
-import org.codehaus.groovy.runtime.InvokerHelper ;
 
 /**
  *  This class is the custom metaclass used for supporting execution of build descriptions in
@@ -47,7 +46,8 @@ public final class ExecutionMetaClass extends DelegatingMetaClass {
   private final static ArrayList delegates = new ArrayList ( ) ;
   private static boolean isDelegated = false ;
   public ExecutionMetaClass ( final Class theClass ) {
-    super ( InvokerHelper.getMetaClass ( theClass ) ) ;
+    //  NB getIntance is the name of the method !
+    super ( MetaClassRegistry.getIntance ( 0 ).getMetaClass ( theClass ) ) ;
   }
   public Object invokeMethod ( final Object object , final String methodName , final Object[] arguments ) {
     Object returnObject = null ;
