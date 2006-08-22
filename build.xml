@@ -81,7 +81,7 @@ Version : $LastChangedRevision$ $LastChangedDate$
   <target name="install" depends="compile">
     <copy todir="${groovyHome}">
       <fileset dir="${sourceDirectory}" includes="bin/gant*"/>
-      <fileset dir="${buildLibDirectory}" includes="gant*.jar"/>
+      <fileset dir="${buildDirectory}" includes="lib/gant*.jar"/>
     </copy>
     <chmod perm="a+x">
       <fileset dir="${groovyHome}/bin" includes="gant*"/>

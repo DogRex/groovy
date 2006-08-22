@@ -35,9 +35,9 @@ final class Subdirectories {
     def process = command.execute ( null , directory )
     if ( GantState.verbosity > GantState.QUIET ) { process.in.eachLine { line -> println line } }
   }
-  private void forAllSubdirectoriesRun ( String command ) {
+  void forAllSubdirectoriesRun ( String command ) {
     ( new File ( '.' ) ).eachDir { directory -> runSubprocess ( directory , command ) }
   }
-  private void forAllSubdirectoriesAnt ( String target ) { forAllSubdirectoriesRun ( 'ant ' + target ) }
-  private void forAllSubdirectoriesGant ( String target ) { forAllSubdirectoriesRun ( 'gant ' + target ) }  
+  void forAllSubdirectoriesAnt ( String target ) { forAllSubdirectoriesRun ( 'ant ' + target ) }
+  void forAllSubdirectoriesGant ( String target ) { forAllSubdirectoriesRun ( 'gant ' + target ) }  
 }
