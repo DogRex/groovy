@@ -24,7 +24,7 @@ import org.codehaus.groovy.gant.infrastructure.Gant
  *  @author Russel Winder
  *  @version $LastChangedRevision$ $LastChangedDate$
  */
-final class Targets extends GroovyTestCase {
+final class Targets_Test extends GroovyTestCase {
   private  ByteArrayOutputStream buffer 
 
   void setUp ( ) {
