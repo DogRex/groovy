@@ -26,7 +26,6 @@ import java.lang.reflect.Method ;
 
 import groovy.lang.GroovyObject ;
 import groovy.lang.MetaClassImpl ;
-import groovy.lang.MissingMethodException ;
 
 import org.codehaus.groovy.runtime.InvokerHelper ;
 
