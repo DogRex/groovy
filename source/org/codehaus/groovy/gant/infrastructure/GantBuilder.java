@@ -31,7 +31,7 @@ public abstract class GantBuilder extends GroovyObjectSupport {
   public static String execution = "Execution" ;
   private static GantBuilder builder = null ;
   public static GantBuilder createInstance ( final String type ) {
-    if ( builder != null ) { throw new RuntimeException ( "Attempt to reinitialize GantBuilder." ) ; }
+    //if ( builder != null ) { throw new RuntimeException ( "Attempt to reinitialize GantBuilder." ) ; }
     if ( type.equals ( targetList ) ) { builder = new TargetListGantBuilder ( ) ; }
     else if ( type.equals ( execution ) ) { builder = new ExecutionGantBuilder ( ) ; }
     else { throw new RuntimeException ( "Unknown GantBuilder type `" + type + "'" ) ; }

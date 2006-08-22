@@ -35,3 +35,6 @@ Caused by: java.lang.IllegalAccessException: Class gjdk.java.lang.Class_GroovyRe
         at gjdk.java.lang.Class_GroovyReflector.invoke(Unknown Source)
 
 which isn't exactly a good error message for the user.
+
+The way in which versions are specified is wrong.  There are three copies of the string and
+there should only be one.
