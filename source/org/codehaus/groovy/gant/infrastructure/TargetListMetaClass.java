@@ -16,7 +16,7 @@
 
 package org.codehaus.groovy.gant.infrastructure ;
 
-import java.beans.IntrospectionException ;
+//import java.beans.IntrospectionException ;
 
 import java.util.ArrayList ;
 import java.util.Iterator ;
@@ -26,8 +26,8 @@ import java.util.TreeMap ;
 import java.lang.reflect.Method ;
 
 import groovy.lang.GroovyObject ;
-//import groovy.lang.DelegatingMetaClass ;
-import groovy.lang.MetaClassImpl ;
+import groovy.lang.DelegatingMetaClass ;
+//import groovy.lang.MetaClassImpl ;
 
 import org.codehaus.groovy.runtime.InvokerHelper ;
 
@@ -62,16 +62,16 @@ import org.apache.tools.ant.Task ;
  *  @author Russel Winder
  *  @version $LastChangedRevision$ $LastChangedDate$
  */
-public final class TargetListMetaClass extends MetaClassImpl { //DelegatingMetaClass {
+public final class TargetListMetaClass extends DelegatingMetaClass { // MetaClassImpl { //DelegatingMetaClass {
   private final ArrayList delegates = new ArrayList ( ) ;
   private final Map documentation = new TreeMap ( ) ;
   private String temporaryMethodName ;
   private boolean findingTargets = false ;
   private class TerminateExecutionException extends RuntimeException { }
-  public TargetListMetaClass ( final Class theClass ) throws IntrospectionException {
-    super ( InvokerHelper.getInstance ( ).getMetaRegistry ( ) , theClass ) ;
-    //public TargetListMetaClass ( final Class theClass ) {
-    //super ( InvokerHelper.getMetaClass ( theClass ) ) ;
+  //public TargetListMetaClass ( final Class theClass ) throws IntrospectionException {
+  //super ( InvokerHelper.getInstance ( ).getMetaRegistry ( ) , theClass ) ;
+  public TargetListMetaClass ( final Class theClass ) {
+    super ( InvokerHelper.getMetaClass ( theClass ) ) ;
   }
   private void getTargetsOf ( final Object object ) {
     final Method[] methods = object.getClass ( ).getMethods ( ) ;
