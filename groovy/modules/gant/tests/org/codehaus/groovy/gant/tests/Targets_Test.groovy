@@ -22,11 +22,11 @@ import org.codehaus.groovy.gant.infrastructure.Gant
  *  A test to ensure that the target listing works. 
  *
  *  @author Russel Winder
- *  @version $LastChangedRevision: 3993 $ $LastChangedDate: 2006-08-19 15:45:07 +0100 (Sat, 19 Aug 2006) $
+ *  @version $LastChangedRevision$ $LastChangedDate$
  */
-final class Targets_Test extends GroovyTestCase {
-  def gant
-  def buffer 
+final class Targets extends GroovyTestCase {
+  private  ByteArrayOutputStream buffer 
+
   void setUp ( ) {
     buffer = new ByteArrayOutputStream ( )
     System.setOut ( new PrintStream ( buffer ) )
