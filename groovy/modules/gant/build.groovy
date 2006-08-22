@@ -22,6 +22,7 @@
  *  @version $LastChangedRevision$ $LastChangedDate$
  */
 class build {
+  private final version = '0.1.0-SNAPSHOT'
   private final buildDirectory = 'build'
   private final sourceDirectory = 'source'
   private final groovyHome = System.getenv ( 'GROOVY_HOME' ) ; { assert groovyHome != '' }
@@ -42,11 +43,21 @@ class build {
     initialize ( )
     ant.javac ( srcdir : sourceDirectory , destDir : buildDirectory , source : '1.4' , debug : 'on' , debuglevel : 'lines,vars,source' , classpathref : 'compilePath' )
     ant.groovyc ( srcdir : sourceDirectory , destDir : buildDirectory , classpath : buildDirectory )
-    ant.jar ( destfile : buildDirectory + '/lib/gant.jar' , basedir : buildDirectory , includes : 'org/**' )
+    ant.jar ( destfile : buildDirectory + "/lib/gant-${version}.jar" , basedir : buildDirectory , includes : 'org/**' )
   }
   Task test ( ) {
     description ( 'Test a build.' )
     compile ( )
+    ant.junit ( printsummary : 'yes' ) {
+      ant.formatter ( type : 'plain' )
+      ant.batchtest ( fork : 'yes' ) {
+        ant.fileset ( dir : buildDirectory , includes : '**/*_Test.class' )
+      }
+      ant.classpath {
+        ant.path ( refid : 'compilePath' )
+        ant.pathelement ( location : buildDirectory )
+      }
+    }
   }
   Task install ( ) {
     description ( 'Compile everything and install it to ' + groovyHome + '.' )

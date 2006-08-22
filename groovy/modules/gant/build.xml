@@ -25,10 +25,13 @@ Version : $LastChangedRevision$ $LastChangedDate$
 
 <project name="Gant" default="test" basedir=".">
 
+  <property name="version" value="0.1.0-SNAPSHOT"/>
+
   <property environment="env"/>
 
   <property name="buildDirectory" value="build"/>
   <property name="sourceDirectory" value="source"/>
+  <property name="testsDirectory" value="tests"/>
   <property name="groovyHome" value="${env.GROOVY_HOME}"/>
 
   <path id="compilePath">
@@ -45,15 +48,31 @@ Version : $LastChangedRevision$ $LastChangedDate$
   <target name="compile" depends="initialize">
     <javac srcdir="${sourceDirectory}" destdir="${buildDirectory}" source="1.4" debug="on" debuglevel="lines,vars,source" classpathref="compilePath"/>
     <groovyc srcdir="${sourceDirectory}" destdir="${buildDirectory}" classpath="${buildDirectory}"/>
-    <jar destfile="${buildDirectory}/lib/gant.jar" basedir="${buildDirectory}" includes="org/**"/>
+    <jar destfile="${buildDirectory}/lib/gant-${version}.jar" basedir="${buildDirectory}" includes="org/**"/>
   </target>
 
-  <target name="test" depends="compile"/>
+  <!--taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask" classpathref="compilePath"/-->
+
+  <target name="test" depends="compile">
+    <groovyc srcdir="${testsDirectory}" destdir="${buildDirectory}"/> 
+<!--
+    <junit printsummary="yes">
+      <formatter type="plain"/>
+      <batchtest fork="yes">
+        <fileset dir="${buildDirectory}" includes="**/*_Test.class"/>
+      </batchtest>
+      <classpath>
+        <path refid="compilePath"/>
+        <pathelement location="${buildDirectory}"/>
+      </classpath>
+    </junit>
+-->
+  </target>
 
   <target name="install" depends="compile">
     <copy todir="${groovyHome}">
       <fileset dir="${sourceDirectory}" includes="bin/gant*"/>
-      <fileset dir="${buildDirectory}" includes="lib/gant.jar"/>
+      <fileset dir="${buildDirectory}" includes="lib/gant*.jar"/>
     </copy>
     <chmod perm="a+x">
       <fileset dir="${groovyHome}/bin" includes="gant*"/>
