@@ -22,7 +22,7 @@ package org.codehaus.groovy.gant.infrastructure
  *  dependency programming systems based on Ruby and Python respectively, Gant is simply a way
  *  of scripting Ant tasks; the Ant tasks do all the dependency management.
  *
- *  <p>A Gant build specification file (default name build.groovy) is assumed to contain one or
+ *  <p>A Gant build specification file (default name build.gant) is assumed to contain one or
  *  more classes where the first is the main class whose public nullary functions returning a
  *  <code>Task</code> are the targets -- in the Ant sense.  Dependencies between targets are
  *  handled as function calls within functions. Execution of Ant tasks is by calling methods on
@@ -73,7 +73,7 @@ package org.codehaus.groovy.gant.infrastructure
  */
 final class Gant {
 
-  private buildFileName = 'build.groovy'
+  private buildFileName = 'build.gant'
   private buildFileText = ''
   private List gantLib ; {
     def item = System.getenv ( ).GANTLIB ;
@@ -118,7 +118,7 @@ final class Gant {
   }
   private process ( args ) {
     def cli = new CliBuilder ( usage : 'gant [option]* [target]*' , writer : new PrintWriter ( System.out ) )
-    cli.f ( longOpt : 'gantfile' , args : 1 , argName : 'build-file' , 'Use the named build file instead of the default, build.groovy.' )
+    cli.f ( longOpt : 'gantfile' , args : 1 , argName : 'build-file' , 'Use the named build file instead of the default, build.gant.' )
     cli.h ( longOpt : 'help' , 'Print out this message.' )
     cli.l ( longOpt : 'gantlib' , args : 1 , argName : 'library' , 'A directory that contains classes to be used as extra Gant modules,' )
     cli.n ( longOpt : 'dry-run' , 'Do not actually action any tasks.' )

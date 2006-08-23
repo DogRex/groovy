@@ -18,7 +18,7 @@ _gant()
     COMPREPLY=()
     cur=${COMP_WORDS[COMP_CWORD]}
     prev=${COMP_WORDS[COMP_CWORD-1]}
-    gantf="build.groovy"
+    gantf="build.gant"
 
     if [[ "$prev" == "-f" || "$prev" == "-l" ]]; then
         _filedir
