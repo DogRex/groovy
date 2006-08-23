@@ -695,7 +695,7 @@ public class GroovyProject {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			if (markers == null || markers.length ==  0) {
+			if ((markers == null || markers.length ==  0) && FullGroovyBuilder.isInSourceFolder( file, javaProject)) {
 				trace("GroovyProject.getModuleNodes() - starting compile for file:"+file);
 				//List files = fullBuild();
 				compileGroovyFile(file);
