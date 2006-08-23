@@ -11,6 +11,10 @@ import javax.xml.transform.TransformerException;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.xfire.client.Client;
+import org.codehaus.xfire.client.XFireProxy;
+import org.codehaus.xfire.client.XFireProxyFactory;
+import org.codehaus.xfire.service.Service;
+import org.codehaus.xfire.service.binding.ObjectServiceFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -22,6 +26,8 @@ import groovy.lang.GroovyShell;
 
 import org.apache.log4j.Logger;
 
+import org.codehaus.xfire.service.Service;
+import org.codehaus.xfire.service.binding.ObjectServiceFactory;
 import org.codehaus.xfire.util.DOMUtils;
 /**
  * <p>Dynamic Groovy proxy around Xfire stack.</p>
@@ -32,6 +38,7 @@ import org.codehaus.xfire.util.DOMUtils;
 public class SoapClient extends GroovyObjectSupport {
     
     private Client client;
+
     static private Logger logger=Logger.getLogger(SoapClient.class);
     /**
      * <p>Transform a string so that it can be used in a Groovy
@@ -331,6 +338,10 @@ public class SoapClient extends GroovyObjectSupport {
             return null;
         }
         
+    }
+    
+    public void setProperty(String name, Object value) {
+    	client.setProperty(name, value);
     }
 
     Object testGoogle(String fileName) {
