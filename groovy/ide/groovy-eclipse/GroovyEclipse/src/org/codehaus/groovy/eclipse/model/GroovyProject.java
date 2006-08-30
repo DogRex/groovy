@@ -6,7 +6,6 @@
  */
 package org.codehaus.groovy.eclipse.model;
 import groovy.lang.GroovyClassLoader;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -20,7 +19,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.ast.ClassNode;
@@ -39,7 +37,9 @@ import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.codehaus.groovy.eclipse.builder.GroovyNature;
 import org.codehaus.groovy.eclipse.launchers.GroovyRunner;
 import org.codehaus.groovy.eclipse.preferences.PreferenceConstants;
+import org.codehaus.groovy.eclipse.preferences.PropertyChangeListener;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -47,19 +47,25 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Preferences;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 /**
  * The main groovy project class used to configure the project settings, and do
@@ -70,7 +76,8 @@ import org.eclipse.swt.widgets.Display;
  */
 public class GroovyProject {
 
-	private IJavaProject javaProject;
+	private final IJavaProject javaProject;
+    private final IPersistentPreferenceStore preferenceStore;
 
 	// maps class name to a list of org.codehaus.groovy.ast.ModuleNode
 	private Map scriptPathModuleNodeMap = new HashMap();
@@ -106,14 +113,11 @@ public class GroovyProject {
 				if (plugin.getDialogProvider().doesUserWantGroovySupport()) {
 					addGrovyExclusionFilter(project);
 					plugin.addGroovyRuntime(project);
-					addGroovyNature(project);
 				} else {
 					Preferences preferences = plugin.getPluginPreferences();
 					preferences.setValue(project.getName() + "NoSupport", true);
 					plugin.savePluginPreferences();
 				}
-			} catch (CoreException e) {
-				plugin.logException("failed to add groovy support", e);
 			} finally {
 				synchronized (GroovyProject.this) {
 					pendingResponse = false;
@@ -128,12 +132,20 @@ public class GroovyProject {
 	 * 
 	 * @param javaProject
 	 */
-	public GroovyProject(IJavaProject javaProject) {
+	public GroovyProject( final IJavaProject javaProject ) 
+    {
 		this.javaProject = javaProject;
+        preferenceStore = new ScopedPreferenceStore( new ProjectScope( javaProject.getProject() ), "org.codehaus.groovy.eclipse.preferences" );
+        preferenceStore.addPropertyChangeListener( new PropertyChangeListener( javaProject.getProject() ) );
+        GroovyPlugin.getDefault().getPreferenceStore().addPropertyChangeListener( new PropertyChangeListener( javaProject.getProject() ) );
 		trace("constructing Groovy Project " + javaProject.getElementName());
 		// Note that enabling debug will disable class generation
 		// compilerConfiguration.setDebug(true);
 	}
+    public IPersistentPreferenceStore getPreferenceStore()
+    {
+        return preferenceStore;
+    }
     public GroovyProject rebuildAll( final IProgressMonitor monitor )
     {
         buildGroovyContent( monitor, IncrementalProjectBuilder.FULL_BUILD, filesForFullBuild() );
@@ -373,23 +385,65 @@ public class GroovyProject {
 		GroovyPlugin.trace("groovy output = " + outputPath);
 		compilerConfiguration.setTargetDirectory(outputPath);
 	}
+    public static IPersistentPreferenceStore preferenceStore( final IJavaProject javaProject )
+    {
+        return GroovyModel.getModel().getProject( javaProject.getProject() ).getPreferenceStore();
+    }
+    public static String getProjectOutputPath( final IJavaProject javaProject )
+    {
+        final String projectPreference = preferenceStore( javaProject ).getString( PreferenceConstants.GROOVY_COMPILER_OUTPUT_PATH );
+        if( StringUtils.isNotBlank( projectPreference ) )
+            return projectPreference;
+        return GroovyPlugin.getDefault().getPreferenceStore().getString( PreferenceConstants.GROOVY_COMPILER_OUTPUT_PATH );
+    }
 	/**
 	 * Returns the Eclipse project output path
 	 * @param project
 	 * @return
 	 * @throws JavaModelException
 	 */
-	private static String getOutputPath(IJavaProject project) throws JavaModelException {
-		String outputPath = project.getProject().getLocation().toString() + "/"
-				+ project.getOutputLocation().removeFirstSegments( 1 ).toString();
+	private static String getOutputPath( final IJavaProject project ) 
+    throws JavaModelException 
+    {
+		final String outputPath = project.getProject().getLocation().toString() + "/" + getProjectOutputPath( project );
 		return outputPath;
 	}
     private static String getOutputOSPath( final IJavaProject project ) 
     throws JavaModelException 
     {
-        final String outputPath = project.getProject().getLocation().toOSString() + File.separator
-                + project.getOutputLocation().removeFirstSegments( 1 ).toOSString();
+        final String outputPath = project.getProject().getLocation().toOSString() + File.separator + getProjectOutputPath( project ).replace(  '/', File.separatorChar );
         return outputPath;
+    }
+    public void setOutputPath( final String oldPath,
+                               final String newPath )
+    {
+        if( StringUtils.equals( newPath, oldPath ) )
+            return;
+        new WorkspaceJob( "Updating Groovy output location for project: " + javaProject.getProject().getName() )
+        {
+            public IStatus runInWorkspace( final IProgressMonitor monitor ) 
+            throws CoreException
+            {
+                final IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+                final IProject project = javaProject.getProject();
+                final String savedWorkspacePath = project.getFullPath() + "/" + oldPath;
+                final IFolder savedFolder = StringUtils.isNotBlank( oldPath ) ? root.getFolder( new Path( savedWorkspacePath ) ) : null;
+                if( savedFolder != null && savedFolder.exists() && !javaProject.getOutputLocation().equals( savedFolder.getFullPath() ) )
+                {
+                    GroovyPlugin.removeLibrary( javaProject, savedFolder.getFullPath() );
+                    savedFolder.delete( true, monitor );
+                }
+                final IFolder folder = StringUtils.isNotBlank( newPath ) ? project.getFolder( newPath ) : project.getFolder( javaProject.getOutputLocation() );
+                if( !javaProject.getOutputLocation().equals( folder.getFullPath() ) && !folder.exists() )
+                    folder.create( true, false, null );
+                if( !javaProject.getOutputLocation().equals( folder.getFullPath() ) )
+                    GroovyPlugin.addLibrary( javaProject, folder.getFullPath() );
+                project.build( IncrementalProjectBuilder.FULL_BUILD, monitor );
+                final GroovyProject gProject = GroovyModel.getModel().getProject( project );
+                gProject.rebuildAll( monitor );
+                return Status.OK_STATUS;
+            }
+        }.schedule();
     }
 	/**
 	 *  Sets the classpath on the project's compiler configuration 
@@ -953,9 +1007,7 @@ public class GroovyProject {
         removeClassFiles( invalidScripts, false );
         try
         {
-            final IResource output = ResourcesPlugin.getWorkspace().getRoot().findMember( javaProject.getOutputLocation() );
-            if( output != null )
-                output.refreshLocal( IResource.DEPTH_INFINITE, new NullProgressMonitor() );
+            javaProject.getProject().refreshLocal( IResource.DEPTH_INFINITE, new NullProgressMonitor() );
         }
         catch( final CoreException e )
         {

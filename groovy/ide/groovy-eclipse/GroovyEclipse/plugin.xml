@@ -228,8 +228,18 @@
          point="org.eclipse.ui.preferencePages">
       <page
             class="org.codehaus.groovy.eclipse.preferences.GroovyPreferencePage"
-            id="org.codehaus.groovy.eclipse.preferences.GroovyPreferencePage"
+            id="org.codehaus.groovy.eclipse.preferences"
             name="Groovy Preferences"/>
+   </extension>
+   <extension id="org.codehaus.groovy.properties"
+		      name="Groovy Properties"
+	          point="org.eclipse.ui.propertyPages">
+	  <page objectClass="org.eclipse.core.resources.IProject"
+	        adaptable="true"
+	        name="Groovy Project Properties" 
+	        class="org.codehaus.groovy.eclipse.preferences.GroovyPreferencePage"
+	        id="org.codehaus.groovy.eclipse.propertyPage.project">
+	  </page>
    </extension>
    <extension
          point="org.eclipse.core.runtime.preferences">

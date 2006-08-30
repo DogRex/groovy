@@ -1,13 +1,14 @@
 package org.codehaus.groovy.eclipse.editor;
 import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.codehaus.groovy.eclipse.editor.contentoutline.GroovyContentOutline;
-import org.codehaus.groovy.eclipse.preferences.PreferenceConstants;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.ui.texteditor.*;
+import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
+import org.eclipse.ui.texteditor.ChainedPreferenceStore;
+import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 

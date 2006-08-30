@@ -1,11 +1,10 @@
 package org.codehaus.groovy.eclipse.preferences;
 
+import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.swt.graphics.Color;
-
-import org.codehaus.groovy.eclipse.GroovyPlugin;
 
 /**
  * Class used to initialize default preference values.
@@ -20,6 +19,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 	public void initializeDefaultPreferences() {
 		IPreferenceStore store = GroovyPlugin.getDefault().getPreferenceStore();
 		store.setDefault(PreferenceConstants.GROOVY_GENERATE_CLASS_FILES, true);
+        store.setDefault( PreferenceConstants.GROOVY_COMPILER_OUTPUT_PATH, "bin-groovy" );
 		store.setDefault(PreferenceConstants.GROOVY_LOG_TRACE_MESSAGES_ENABLED, false);
 		
 		// GJDK Prefs

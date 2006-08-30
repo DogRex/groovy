@@ -3,19 +3,15 @@ package org.codehaus.groovy.eclipse.test;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-
 import junit.framework.AssertionFailedError;
-
 import org.apache.commons.io.IOUtil;
 import org.codehaus.groovy.eclipse.model.ChangeSet;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.codehaus.groovy.eclipse.model.GroovyProject;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.JavaModelException;
@@ -54,10 +50,7 @@ public class GroovyModelTestCase extends EclipseTestCase {
     throws Exception 
     {
 		createAndBuildGroovyClassWithMain();
-		IProject project = testProject.getProject();
-		IPath outputLocation = testProject.getJavaProject().getOutputLocation();
-		String outputPath =
-			project.getLocation().toString() + Path.SEPARATOR + outputLocation.removeFirstSegments(1).toString();
+		final String outputPath = outputLocation();
 		assertTrue(
 			"expecting the compiled class file MainClass.class to be present",
 			new File(outputPath + Path.SEPARATOR + "pack1/MainClass.class").exists());
@@ -103,7 +96,7 @@ public class GroovyModelTestCase extends EclipseTestCase {
     {
         final String outputPath = testProject.getProject().getLocation().toString() 
                                 + Path.SEPARATOR 
-                                + testProject.getJavaProject().getOutputLocation().removeFirstSegments( 1 ).toString();
+                                + "bin-groovy";
         return outputPath;
     }
 
@@ -138,7 +131,6 @@ public class GroovyModelTestCase extends EclipseTestCase {
         assertNotNull( script );
         assertTrue( script.exists() );
 		plugin.addGroovyRuntime(testProject.getProject());
-        GroovyProject.addGroovyNature( testProject.getProject() );
 		fullProjectBuild();
 	}
 

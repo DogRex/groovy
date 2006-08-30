@@ -5,10 +5,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.eclipse.editor.GroovyPartitionScanner;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
+import org.codehaus.groovy.eclipse.model.GroovyProject;
+import org.codehaus.groovy.eclipse.preferences.PreferenceConstants;
 import org.codehaus.groovy.eclipse.ui.GroovyDialogProvider;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -29,6 +33,8 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jface.preference.IPersistentPreferenceStore;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.rules.IPartitionTokenScanner;
 import org.eclipse.osgi.util.ManifestElement;
 import org.eclipse.ui.IStartup;
@@ -129,7 +135,7 @@ implements IStartup
 		} catch (MissingResourceException x) {
 			resourceBundle = null;
 		}
-	}
+    }
 
 
 
@@ -178,6 +184,7 @@ implements IStartup
         {
             if( project == null || !project.hasNature( JavaCore.NATURE_ID ))
                 return;
+            final IJavaProject javaProject = JavaCore.create( project );
             final ManifestElement[] elements = getBundleClasspath();
             // add all jars exported by this plugin apart from Groovy.jar which
             // contains this class..
@@ -185,8 +192,16 @@ implements IStartup
             {
                 final String libName = elements[ i ].getValue();
                 if( !libName.endsWith( "groovy-eclipse.jar" ) )
-                    addJar( JavaCore.create( project ), PLUGIN_ID, libName );
+                    addJar( javaProject, PLUGIN_ID, libName );
             }
+            final IFolder folder = project.getFolder( getPreferenceStore().getString( PreferenceConstants.GROOVY_COMPILER_OUTPUT_PATH ) );
+            if( !folder.exists() )
+                folder.create( false, true, null );
+            GroovyProject.addGroovyNature( project );
+            final IPersistentPreferenceStore preferenceStore = GroovyModel.getModel().getProject( project ).getPreferenceStore();
+            preferenceStore.setValue( PreferenceConstants.GROOVY_COMPILER_OUTPUT_PATH, folder.getProjectRelativePath().toString() );
+            preferenceStore.save();
+            addLibrary( javaProject, folder.getFullPath() );
         }
         catch( Exception e )
         {
@@ -221,12 +236,17 @@ implements IStartup
 		}
 	}
 
-	private void addJar( final IJavaProject javaProject, 
-                         final String srcPlugin, 
-                         final String jar ) 
+	public static void addJar( final IJavaProject javaProject, 
+                               final String srcPlugin, 
+                               final String jar ) 
     throws MalformedURLException, IOException, JavaModelException
     {
-        final IPath result = findFileInPlugin( srcPlugin, jar );
+        addLibrary( javaProject, findFileInPlugin( srcPlugin, jar ) );
+    }
+    public static void addLibrary( final IJavaProject javaProject, 
+                                   final IPath libraryPath ) 
+    throws JavaModelException
+    {
         final IClasspathEntry[] oldEntries = javaProject.getRawClasspath();
         // Checking to see that duplicate libs are not added to the JavaProject.
         //  This is a basic check, if the jar names are the same, then ignore.
@@ -235,16 +255,29 @@ implements IStartup
         for( int i = 0; i < oldEntries.length; i++ )
         {
             final IClasspathEntry entry = oldEntries[ i ];
-            if( entry.getPath().lastSegment().equals( result.lastSegment() ) )
+            if( entry.getPath().lastSegment().equals( libraryPath.lastSegment() ) )
                 return;
         }
-        final IClasspathEntry[] newEntries = new IClasspathEntry[ oldEntries.length + 1 ];
-        System.arraycopy( oldEntries, 0, newEntries, 0, oldEntries.length );
-        newEntries[ oldEntries.length ] = JavaCore.newLibraryEntry( result, null, null );
+        final IClasspathEntry[] newEntries = ( IClasspathEntry[] )ArrayUtils.add( oldEntries, JavaCore.newLibraryEntry( libraryPath, null, null, true ) );
         javaProject.setRawClasspath( newEntries, null );
     }
-
-	private IPath findFileInPlugin(String srcPlugin, String file)
+    public static void removeLibrary( final IJavaProject javaProject, 
+                                      final IPath libraryPath ) 
+    throws JavaModelException
+    {
+        final IClasspathEntry[] oldEntries = javaProject.getRawClasspath();
+        for( int i = 0; i < oldEntries.length; i++ )
+        {
+            final IClasspathEntry entry = oldEntries[ i ];
+            if( entry.getPath().equals( libraryPath ) )
+            {
+                final IClasspathEntry[] newEntries = ( IClasspathEntry[] )ArrayUtils.remove( oldEntries, i );
+                javaProject.setRawClasspath( newEntries, null );
+                return;
+            }
+        }
+    }
+	public static IPath findFileInPlugin(String srcPlugin, String file)
 			throws MalformedURLException, IOException {
 		Bundle bundle = Platform.getBundle(srcPlugin);
 		URL pluginURL = bundle.getEntry("/");
@@ -350,4 +383,10 @@ implements IStartup
 	public static AbstractUIPlugin getDefault() {
 		return plugin;
 	}
+
+    public IPreferenceStore getPreferenceStore()
+    {
+        return super.getPreferenceStore();
+    }
+    
 }

@@ -29,6 +29,7 @@ public class PreferenceConstants {
 	public static final String GROOVY_EDITOR_HIGHLIGHT_NUMBERS_COLOR = "groovy.editor.highlight.numbers.color";
 
 	public static final String GROOVY_GENERATE_CLASS_FILES = "groovy.generate.class.files";
+    public static final String GROOVY_COMPILER_OUTPUT_PATH = "groovy.compiler.output.path";
 	// this preference will add the plugin trace statements to the error in order
 	// to make it easier to track down problems at runtime
 	public static final String GROOVY_LOG_TRACE_MESSAGES_ENABLED = "groovy.log.trace.messages.enabled";
