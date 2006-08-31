@@ -66,10 +66,10 @@ public class ToggleGroovyBreakpointAction extends Action implements IAction {
         IResource resource = getResource();
 		IFile file = (IFile) resource;
 		GroovyProject groovyProject = model.getProject(file.getProject());
-		List classes  = groovyProject.getClassesForFile(file);
+		List classes  = groovyProject.model().getClassesForFile( file );
 		if (classes.isEmpty()) {
 			groovyProject.compileGroovyFile(file, false); //generateClassFiles
-			classes = groovyProject.getClassesForFile(file);
+			classes = groovyProject.model().getClassesForFile( file );
 			GroovyPlugin.trace("creating modules inside of createBreakPoint(), file:" + file);
 		}
 		// TODO: This is suspect - get(0) works for most cases but can't work for all cases

@@ -44,11 +44,14 @@ public class GroovyModel {
 	/**
 	 * @param javaProject
 	 */
-	public String[] findAllRunnableClasses(IJavaProject javaProject) {
-		GroovyProject gp = getGroovyProject(javaProject);
-		return gp.findAllRunnableClasses();
+	public String[] findAllRunnableClasses( final IJavaProject javaProject ) 
+    {
+		return getGroovyProject( javaProject ).model().findAllRunnableClasses();
 	}
-
+	public GroovyProjectModel getProjectModel( final IJavaProject javaProject )
+    {
+	    return getGroovyProject( javaProject ).model();
+    }
 	public void runGroovyMain(String projectName, String className,
 			String[] args) throws CoreException {
 		for (Iterator iter = projects.values().iterator(); iter.hasNext();) {
@@ -120,14 +123,9 @@ public class GroovyModel {
 			groovyProject.removeBuildListener(listener);
 		}
 	}
-
-	/**
-	 * @param file
-	 * @return
-	 */
-	public List getModuleNodes(IFile file) {
-		GroovyProject project = getGroovyProject(JavaCore.create(file.getProject()));
-		return project.getModuleNodes(file);
+	public List getModuleNodes( final IFile file ) 
+    {
+		return getGroovyProject( JavaCore.create( file.getProject() ) ).model().getModuleNodes( file );
 	}
 	public void updateProjects( final IProgressMonitor progressMonitor ) 
     {

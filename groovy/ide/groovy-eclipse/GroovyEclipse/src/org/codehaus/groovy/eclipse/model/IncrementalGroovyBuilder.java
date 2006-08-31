@@ -146,16 +146,16 @@ public class IncrementalGroovyBuilder implements IResourceDeltaVisitor {
             return null;
         return file;
     }
-    private void addFileToRemove( final IFile file )
-    {
-        if( file == null )
-            return;
-        if( !FullGroovyBuilder.isGroovyScript( file ) )
-            return;
-        if( !FullGroovyBuilder.isInSourceFolder( file, project ) )
-            return;
-        changeSet.addFileToRemove( file );
-    }
+//    private void addFileToRemove( final IFile file )
+//    {
+//        if( file == null )
+//            return;
+//        if( !FullGroovyBuilder.isGroovyScript( file ) )
+//            return;
+//        if( !FullGroovyBuilder.isInSourceFolder( file, project ) )
+//            return;
+//        changeSet.addFileToRemove( file );
+//    }
     private void addFileToRemove( final IResourceDelta delta )
     {
         final IFile file = checkForCompiledScript( delta );

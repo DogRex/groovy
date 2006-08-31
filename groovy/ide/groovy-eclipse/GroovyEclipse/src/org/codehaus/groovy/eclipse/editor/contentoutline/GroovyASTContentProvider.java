@@ -58,8 +58,8 @@ public class GroovyASTContentProvider implements ITreeContentProvider {
 			List rootElements = new ArrayList();
 			GroovyModel model = GroovyModel.getModel();
 			GroovyProject project = model.getProject(file.getProject());
-			createPackageAndImportElements(project.getModuleNodes(file), rootElements);
-			createClassElements(project.getClassesForFile(file), rootElements);
+			createPackageAndImportElements(project.model().getModuleNodes(file), rootElements);
+			createClassElements(project.model().getClassesForFile(file), rootElements);
 			return rootElements.toArray();
 		}
 		TreeAdapter adapter = (TreeAdapter) inputElement;

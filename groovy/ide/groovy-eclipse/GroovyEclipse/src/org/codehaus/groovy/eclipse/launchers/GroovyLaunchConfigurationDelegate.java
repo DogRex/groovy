@@ -3,6 +3,7 @@ package org.codehaus.groovy.eclipse.launchers;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.codehaus.groovy.eclipse.model.GroovyProject;
+import org.codehaus.groovy.eclipse.model.GroovyProjectModel;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
@@ -27,9 +28,9 @@ public class GroovyLaunchConfigurationDelegate extends JavaLaunchDelegate  {
 		GroovyModel gm = GroovyModel.getModel();
 		GroovyProject gp = gm.getProject(project.getProject());
 		String className = configuration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, (String)null);
-		ClassNode classNode = gp.getClassNodeForName(className);
+		ClassNode classNode = gp.model().getClassNodeForName(className);
 		ILaunchConfigurationWorkingCopy config = null;
-		if (!gp.hasRunnableMain(classNode) && gp.isTestCaseClass(classNode)) {
+		if (!GroovyProjectModel.hasRunnableMain(classNode) && GroovyProjectModel.isTestCaseClass(classNode)) {
 			config = configuration.getWorkingCopy();
 			config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, "junit.textui.TestRunner");
 			config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROGRAM_ARGUMENTS, className);
