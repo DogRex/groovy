@@ -299,7 +299,7 @@ implements IWorkbenchPropertyPage
         try
         {
             // create a new instance of the current class
-            final IPreferencePage page = this.getClass().newInstance();
+            final IPreferencePage page = ( IPreferencePage )this.getClass().newInstance();
             page.setTitle( getTitle() );
             page.setImageDescriptor( image );
             // and show it
