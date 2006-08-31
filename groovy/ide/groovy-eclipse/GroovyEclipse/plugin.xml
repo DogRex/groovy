@@ -239,6 +239,9 @@
 	        name="Groovy Project Properties" 
 	        class="org.codehaus.groovy.eclipse.preferences.GroovyPreferencePage"
 	        id="org.codehaus.groovy.eclipse.propertyPage.project">
+      <filter
+            name="projectNature"
+            value="org.codehaus.groovy.eclipse.groovyNature"/>
 	  </page>
    </extension>
    <extension
