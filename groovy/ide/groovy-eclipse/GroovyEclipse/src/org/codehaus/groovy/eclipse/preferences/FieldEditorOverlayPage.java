@@ -4,10 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jface.preference.FieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceNode;
@@ -19,11 +16,8 @@ import org.eclipse.jface.preference.PreferenceNode;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPropertyPage;
@@ -36,15 +30,15 @@ implements IWorkbenchPropertyPage
      * * Name of resource property for the selection of workbench or project
      * settings **
      */
-    public static final String USEPROJECTSETTINGS = "useProjectSettings"; //$NON-NLS-1$
-    private static final String FALSE = "false"; //$NON-NLS-1$
-    private static final String TRUE = "true"; //$NON-NLS-1$
+    //public static final String USEPROJECTSETTINGS = "useProjectSettings"; //$NON-NLS-1$
+    //private static final String FALSE = "false"; //$NON-NLS-1$
+    //private static final String TRUE = "true"; //$NON-NLS-1$
     // Stores all created field editors
     private final List editors = new ArrayList();
     // Stores owning element of properties
     private IAdaptable element;
     // Additional buttons for property pages
-    private Button useWorkspaceSettingsButton, useProjectSettingsButton, configureButton;
+    // private Button useWorkspaceSettingsButton, useProjectSettingsButton, configureButton;
     // Overlay preference store for property pages
     private IPreferenceStore overlayStore;
     // The image descriptor of this pages title image
@@ -166,49 +160,49 @@ implements IWorkbenchPropertyPage
         final Composite radioGroup = new Composite( comp, SWT.NONE );
         radioGroup.setLayout( new GridLayout() );
         radioGroup.setLayoutData( new GridData( GridData.FILL_HORIZONTAL ) );
-        useWorkspaceSettingsButton = createRadioButton( radioGroup, Messages.getString( "OverlayPage.Use_Workspace_Settings" ) ); //$NON-NLS-1$
-        useProjectSettingsButton = createRadioButton( radioGroup, Messages.getString( "OverlayPage.Use_Project_Settings" ) ); //$NON-NLS-1$
-        configureButton = new Button( comp, SWT.PUSH );
-        configureButton.setText( Messages.getString( "OverlayPage.Configure_Workspace_Settings" ) ); //$NON-NLS-1$
-        configureButton.addSelectionListener( new SelectionAdapter()
-        {
-            public void widgetSelected( final SelectionEvent e )
-            {
-                configureWorkspaceSettings();
-            }
-        } );
+        //useWorkspaceSettingsButton = createRadioButton( radioGroup, Messages.getString( "OverlayPage.Use_Workspace_Settings" ) ); //$NON-NLS-1$
+        //useProjectSettingsButton = createRadioButton( radioGroup, Messages.getString( "OverlayPage.Use_Project_Settings" ) ); //$NON-NLS-1$
+        //configureButton = new Button( comp, SWT.PUSH );
+        //configureButton.setText( Messages.getString( "OverlayPage.Configure_Workspace_Settings" ) ); //$NON-NLS-1$
+//        configureButton.addSelectionListener( new SelectionAdapter()
+//        {
+//            public void widgetSelected( final SelectionEvent e )
+//            {
+//                configureWorkspaceSettings();
+//            }
+//        } );
         // Set workspace/project radio buttons
-        try
-        {
-            final String use = ( ( IResource )getElement() ).getProject().getPersistentProperty( new QualifiedName( pageID, USEPROJECTSETTINGS ) );
-            if( TRUE.equals( use ) )
-            {
-                useProjectSettingsButton.setSelection( true );
-                configureButton.setEnabled( false );
-            }
-            else
-                useWorkspaceSettingsButton.setSelection( true );
-        }
-        catch( final CoreException e )
-        {
-            useWorkspaceSettingsButton.setSelection( true );
-        }
+//        try
+//        {
+//            final String use = ( ( IResource )getElement() ).getProject().getPersistentProperty( new QualifiedName( pageID, USEPROJECTSETTINGS ) );
+//            if( TRUE.equals( use ) )
+//            {
+//                useProjectSettingsButton.setSelection( true );
+//                configureButton.setEnabled( false );
+//            }
+//            else
+//                useWorkspaceSettingsButton.setSelection( true );
+//        }
+//        catch( final CoreException e )
+//        {
+//            useWorkspaceSettingsButton.setSelection( true );
+//        }
     }
-    private Button createRadioButton( final Composite parent, 
-                                      final String label )
-    {
-        final Button button = new Button( parent, SWT.RADIO );
-        button.setText( label );
-        button.addSelectionListener( new SelectionAdapter()
-        {
-            public void widgetSelected( final SelectionEvent e )
-            {
-                configureButton.setEnabled( button == useWorkspaceSettingsButton );
-                updateFieldEditors();
-            }
-        } );
-        return button;
-    }
+//    private Button createRadioButton( final Composite parent, 
+//                                      final String label )
+//    {
+//        final Button button = new Button( parent, SWT.RADIO );
+//        button.setText( label );
+//        button.addSelectionListener( new SelectionAdapter()
+//        {
+//            public void widgetSelected( final SelectionEvent e )
+//            {
+//                //configureButton.setEnabled( button == useWorkspaceSettingsButton );
+//                updateFieldEditors();
+//            }
+//        } );
+//        return button;
+//    }
     /**
      * Returns in case of property pages the overlay store, in case of
      * preference pages the standard preference store
@@ -227,8 +221,8 @@ implements IWorkbenchPropertyPage
     private void updateFieldEditors()
     {
         // We iterate through all field editors
-        final boolean enabled = useProjectSettingsButton.getSelection();
-        updateFieldEditors( enabled );
+        //final boolean enabled = useProjectSettingsButton.getSelection();
+        updateFieldEditors( true );
     }
     /**
      * Enables or disables the field editors and buttons of this page Subclasses
@@ -257,19 +251,19 @@ implements IWorkbenchPropertyPage
     public boolean performOk()
     {
         final boolean result = super.performOk();
-        if( result && isPropertyPage() )
-        {
-            // Save state of radiobuttons in project properties
-            final IResource resource = (( IResource )getElement()).getProject();
-            try
-            {
-                final String value = useProjectSettingsButton.getSelection() ? TRUE : FALSE;
-                resource.setPersistentProperty( new QualifiedName( pageID, USEPROJECTSETTINGS ), value );
-            }
-            catch( final CoreException e )
-            {
-            }
-        }
+//        if( result && isPropertyPage() )
+//        {
+//            // Save state of radiobuttons in project properties
+//            final IResource resource = (( IResource )getElement()).getProject();
+//            try
+//            {
+//                final String value = useProjectSettingsButton.getSelection() ? TRUE : FALSE;
+//                resource.setPersistentProperty( new QualifiedName( pageID, USEPROJECTSETTINGS ), value );
+//            }
+//            catch( final CoreException e )
+//            {
+//            }
+//        }
         return result;
     }
     /**
@@ -282,9 +276,9 @@ implements IWorkbenchPropertyPage
     {
         if( isPropertyPage() )
         {
-            useWorkspaceSettingsButton.setSelection( true );
-            useProjectSettingsButton.setSelection( false );
-            configureButton.setEnabled( true );
+            //useWorkspaceSettingsButton.setSelection( true );
+            //useProjectSettingsButton.setSelection( false );
+            //configureButton.setEnabled( true );
             updateFieldEditors();
         }
         super.performDefaults();
@@ -322,7 +316,8 @@ implements IWorkbenchPropertyPage
      * @param page -
      *            the preference page
      */
-    protected void showPreferencePage( final String id, final IPreferencePage page )
+    protected void showPreferencePage( final String id, 
+                                       final IPreferencePage page )
     {
         final IPreferenceNode targetNode = new PreferenceNode( id, page );
         final PreferenceManager manager = new PreferenceManager();
