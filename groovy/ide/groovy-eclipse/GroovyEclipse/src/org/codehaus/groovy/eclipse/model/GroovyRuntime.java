@@ -34,6 +34,8 @@ public class GroovyRuntime
         {
             if( project == null || !project.hasNature( JavaCore.NATURE_ID ))
                 return;
+            if( project.hasNature( GroovyNature.GROOVY_NATURE ) )
+                return;
             final IJavaProject javaProject = JavaCore.create( project );
             final ManifestElement[] elements = GroovyPlugin.getBundleClasspath();
             // add all jars exported by this plugin apart from Groovy.jar which

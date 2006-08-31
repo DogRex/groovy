@@ -472,9 +472,9 @@ public class GroovyProject {
 	 *  Sets the classpath on the project's compiler configuration 
 	 *  instance variable, this.compilerConfiguration
 	 * @param javaProject
-	 * @throws JavaModelException
+	 * @throws CoreException 
 	 */
-	private void setClassPath(IJavaProject javaProject) throws JavaModelException {
+	private void setClassPath(IJavaProject javaProject) throws CoreException {
 		StringBuffer classPath = new StringBuffer();
         final Set set = getClasspath( javaProject, new ArrayList() );
         final Iterator iterator = set.iterator();
@@ -487,9 +487,9 @@ public class GroovyProject {
 		GroovyPlugin.trace("groovy cp = " + classPath.toString());
 		compilerConfiguration.setClasspath(classPath.toString());
 	}
-	private Set getClasspath( final IJavaProject project,
-                              final List visited ) 
-    throws JavaModelException
+	public static Set getClasspath( final IJavaProject project,
+                                    final List visited ) 
+    throws CoreException
     {
         final Set set = new LinkedHashSet();
         if( visited.contains( project ) )
@@ -505,8 +505,8 @@ public class GroovyProject {
             else
                 set.add( fragRoot.getPath().toString() );
         }
-        IWorkspaceRoot root = javaProject.getProject().getWorkspace().getRoot();
-        IClasspathEntry[] cpEntries = javaProject.getResolvedClasspath(false);
+        IWorkspaceRoot root = project.getProject().getWorkspace().getRoot();
+        IClasspathEntry[] cpEntries = project.getResolvedClasspath(false);
         for (int i = 0; i < cpEntries.length; i++) {
             IClasspathEntry entry = cpEntries[i];
             IResource resource = root.findMember(entry.getPath());
@@ -525,9 +525,11 @@ public class GroovyProject {
                 if( entry.getOutputLocation() != null )
                     set.add( root.getFolder( entry.getOutputLocation() ).getRawLocation().toString() );
                 else
-                    set.add( root.getFolder( javaProject.getOutputLocation() ).getRawLocation().toString() );
+                    set.add( root.getFolder( project.getOutputLocation() ).getRawLocation().toString() );
             }
         }
+        if( !project.getProject().hasNature( GroovyNature.GROOVY_NATURE ) )
+            return set;
         String outputPath = getOutputPath( project );
         if( !outputPath.trim().equals( "" ) )
             set.add( outputPath );
