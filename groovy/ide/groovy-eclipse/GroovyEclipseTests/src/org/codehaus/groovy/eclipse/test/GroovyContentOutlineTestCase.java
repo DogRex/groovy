@@ -5,12 +5,11 @@
 package org.codehaus.groovy.eclipse.test;
 
 import java.io.IOException;
-
 import org.codehaus.groovy.eclipse.editor.contentoutline.GroovyASTContentProvider;
 import org.codehaus.groovy.eclipse.editor.contentoutline.GroovyASTLabelProvider;
 import org.codehaus.groovy.eclipse.model.ChangeSet;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
-import org.codehaus.groovy.eclipse.model.GroovyProject;
+import org.codehaus.groovy.eclipse.model.GroovyRuntime;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
@@ -66,8 +65,7 @@ public class GroovyContentOutlineTestCase extends EclipseTestCase {
 		IFile file = testProject.createGroovyTypeAndPackage("pack1",className,
 				getClass().getResource("groovyfiles/"+className).openStream());
 		
-		plugin.addGroovyRuntime(testProject.getProject());
-        GroovyProject.addGroovyNature( testProject.getProject() );
+		GroovyRuntime.addGroovyRuntime(testProject.getProject());
 		ChangeSet changeSet = model.getProject(testProject.getProject()).filesForFullBuild(); 
 		model.buildGroovyContent(testProject.getJavaProject(), new NullProgressMonitor(),
 								IncrementalProjectBuilder.FULL_BUILD, changeSet, true);

@@ -8,6 +8,7 @@ import org.apache.commons.io.IOUtil;
 import org.codehaus.groovy.eclipse.model.ChangeSet;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.codehaus.groovy.eclipse.model.GroovyProject;
+import org.codehaus.groovy.eclipse.model.GroovyRuntime;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
@@ -130,7 +131,7 @@ public class GroovyModelTestCase extends EclipseTestCase {
         final IResource script = testProject.getProject().findMember( "src/pack1/MainClass.groovy" );
         assertNotNull( script );
         assertTrue( script.exists() );
-		plugin.addGroovyRuntime(testProject.getProject());
+		GroovyRuntime.addGroovyRuntime(testProject.getProject());
 		fullProjectBuild();
 	}
 
@@ -145,8 +146,7 @@ public class GroovyModelTestCase extends EclipseTestCase {
 				"MainClass.groovy",
 				getClass().getResource("groovyfiles/write-args-to-file.groovy").openStream());
 
-		plugin.addGroovyRuntime( testProject.getProject() );
-        GroovyProject.addGroovyNature( testProject.getProject() );
+		GroovyRuntime.addGroovyRuntime( testProject.getProject() );
 		fullProjectBuild();
 		String[] args = new String[] { tempFileName, "zohar", "james", "jon" };
 		model.runGroovyMain(groovyFile, args);
@@ -162,8 +162,7 @@ public class GroovyModelTestCase extends EclipseTestCase {
 				"pack1",
 				"MainClass.groovy",
 				getClass().getResource("groovyfiles/write-args-to-file.groovy").openStream() );
-		plugin.addGroovyRuntime(testProject.getProject());
-        GroovyProject.addGroovyNature( testProject.getProject() );
+		GroovyRuntime.addGroovyRuntime(testProject.getProject());
 		fullProjectBuild();
 		final String tempFileName = getTempFileName();
 		String[] args = new String[] { tempFileName, "zohar", "james", "jon" };

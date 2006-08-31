@@ -42,7 +42,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -112,7 +111,7 @@ public class GroovyProject {
 				trace("AddGroovySupport.run()");
 				if (plugin.getDialogProvider().doesUserWantGroovySupport()) {
 					addGrovyExclusionFilter(project);
-					plugin.addGroovyRuntime(project);
+					GroovyRuntime.addGroovyRuntime(project);
 				} else {
 					Preferences preferences = plugin.getPluginPreferences();
 					preferences.setValue(project.getName() + "NoSupport", true);
@@ -430,14 +429,14 @@ public class GroovyProject {
                 final IFolder savedFolder = StringUtils.isNotBlank( oldPath ) ? root.getFolder( new Path( savedWorkspacePath ) ) : null;
                 if( savedFolder != null && savedFolder.exists() && !javaProject.getOutputLocation().equals( savedFolder.getFullPath() ) )
                 {
-                    GroovyPlugin.removeLibrary( javaProject, savedFolder.getFullPath() );
+                    GroovyRuntime.removeLibrary( javaProject, savedFolder.getFullPath() );
                     savedFolder.delete( true, monitor );
                 }
                 final IFolder folder = StringUtils.isNotBlank( newPath ) ? project.getFolder( newPath ) : project.getFolder( javaProject.getOutputLocation() );
                 if( !javaProject.getOutputLocation().equals( folder.getFullPath() ) && !folder.exists() )
                     folder.create( true, false, null );
                 if( !javaProject.getOutputLocation().equals( folder.getFullPath() ) )
-                    GroovyPlugin.addLibrary( javaProject, folder.getFullPath() );
+                    GroovyRuntime.addLibrary( javaProject, folder.getFullPath() );
                 project.build( IncrementalProjectBuilder.FULL_BUILD, monitor );
                 final GroovyProject gProject = GroovyModel.getModel().getProject( project );
                 gProject.rebuildAll( monitor );
@@ -814,35 +813,6 @@ public class GroovyProject {
 	/**
 	 * 
 	 */
-	public static void addGroovyNature(IProject project) throws CoreException {
-		trace("GroovyPlugin.addGroovyNature()");
-		if (project.hasNature(GroovyNature.GROOVY_NATURE))
-			return;
-
-		IProjectDescription description = project.getDescription();
-		String[] ids = description.getNatureIds();
-		String[] newIds = new String[ids.length + 1];
-		System.arraycopy(ids, 0, newIds, 0, ids.length);
-		newIds[ids.length] = GroovyNature.GROOVY_NATURE;
-		description.setNatureIds(newIds);
-		project.setDescription(description, null);
-	}
-
-	public static void removeGroovyNature(IProject project) throws CoreException {
-		trace("GroovyPlugin.removeGroovyNature()");
-		IProjectDescription description = project.getDescription();
-		String[] ids = description.getNatureIds();
-		for (int i = 0; i < ids.length; ++i) {
-			if (ids[i].equals(GroovyNature.GROOVY_NATURE)) {
-				String[] newIds = new String[ids.length - 1];
-				System.arraycopy(ids, 0, newIds, 0, i);
-				System.arraycopy(ids, i + 1, newIds, i, ids.length - i - 1);
-				description.setNatureIds(newIds);
-				project.setDescription(description, null);
-				return;
-			}
-		}
-	}
 	private void updateClassNameModuleNodeMap( final List moduleNodes ) 
     {
 		final Map updateMap = new HashMap();

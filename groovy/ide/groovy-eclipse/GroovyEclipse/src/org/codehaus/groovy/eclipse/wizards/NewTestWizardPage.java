@@ -10,8 +10,7 @@ package org.codehaus.groovy.eclipse.wizards;
  */
 import java.io.IOException;
 import java.net.MalformedURLException;
-
-import org.codehaus.groovy.eclipse.GroovyPlugin;
+import org.codehaus.groovy.eclipse.model.GroovyRuntime;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -131,7 +130,7 @@ public class NewTestWizardPage extends NewTypeWizardPage {
 		monitor.beginTask("Creating Groovy Test...",2);
 		IPackageFragment packageFragment = getPackageFragment();
 		// add junit if required
-		GroovyPlugin.getPlugin().addJunitSupprt(packageFragment.getJavaProject());
+		GroovyRuntime.addJunitSupport(packageFragment.getJavaProject());
 		StringBuffer src = new StringBuffer();
 		monitor.worked(1);
 		src.append("class ");

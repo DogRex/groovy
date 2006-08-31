@@ -3,6 +3,7 @@ import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.codehaus.groovy.eclipse.builder.GroovyNature;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.codehaus.groovy.eclipse.model.GroovyProject;
+import org.codehaus.groovy.eclipse.model.GroovyRuntime;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaProject;
@@ -34,8 +35,7 @@ implements IObjectActionDelegate
             final GroovyModel model = GroovyModel.getModel();
             final GroovyProject groovyProject = model.getProject( targetProject );
             groovyProject.addGrovyExclusionFilter( targetProject );
-            plugin.addGroovyRuntime( targetProject );
-            GroovyProject.addGroovyNature( targetProject );
+            GroovyRuntime.addGroovyRuntime( targetProject );
         }
         catch( final CoreException e )
         {

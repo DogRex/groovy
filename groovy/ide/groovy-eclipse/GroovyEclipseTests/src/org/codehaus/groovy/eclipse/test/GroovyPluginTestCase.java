@@ -5,15 +5,13 @@
  * Java - Code Generation - Code and Comments
  */
 package org.codehaus.groovy.eclipse.test;
-
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import org.codehaus.groovy.eclipse.builder.GroovyBuilder;
 import org.codehaus.groovy.eclipse.builder.GroovyNature;
-import org.codehaus.groovy.eclipse.model.GroovyProject;
+import org.codehaus.groovy.eclipse.model.GroovyRuntime;
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -35,12 +33,12 @@ public class GroovyPluginTestCase extends EclipseTestCase {
 	};
 	public void testNatureAddAndRemove() throws CoreException {
 		IProject project = testProject.getProject();
-		GroovyProject.addGroovyNature(project);
+		GroovyRuntime.addGroovyRuntime( project );
 
 		assertTrue(hasGroovyNature());
 		assertTrue(hasGroovyBuilder());
 
-		GroovyProject.removeGroovyNature(project);
+		GroovyRuntime.removeGroovyNature( project );
 
 		assertFalse(hasGroovyNature());
 		assertFalse(hasGroovyBuilder());
@@ -50,8 +48,7 @@ public class GroovyPluginTestCase extends EclipseTestCase {
     throws Exception 
     {
 		verifyNoGroovyRuntime();
-		plugin.addGroovyRuntime(testProject.getProject());
-		GroovyProject.addGroovyNature( testProject.getProject() );
+		GroovyRuntime.addGroovyRuntime( testProject.getProject() );
         verifyGroovyRuntime();
 	}
     
@@ -59,10 +56,10 @@ public class GroovyPluginTestCase extends EclipseTestCase {
     throws Exception
     {
         testManualAddGroovyRuntime();
-        GroovyProject.removeGroovyNature( testProject.getProject() );
+        GroovyRuntime.removeGroovyNature( testProject.getProject() );
         verifyGroovyRuntime();
         final IClasspathEntry[] oldEntries = testProject.getJavaProject().getRawClasspath();
-        GroovyProject.addGroovyNature( testProject.getProject() );
+        GroovyRuntime.addGroovyRuntime( testProject.getProject() );
         final IClasspathEntry[] newEntries = testProject.getJavaProject().getRawClasspath();
         assertTrue( Arrays.equals( oldEntries, newEntries ) );
     }
