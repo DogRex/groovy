@@ -398,8 +398,22 @@ public class GroovyProject {
     {
         final String projectPreference = preferenceStore( javaProject ).getString( PreferenceConstants.GROOVY_COMPILER_OUTPUT_PATH );
         if( StringUtils.isNotBlank( projectPreference ) )
+        {
+            if( !javaProject.getProject().getFolder( projectPreference ).exists() )
+                GroovyModel.getModel().getProject( javaProject.getProject() ).setOutputPath( projectPreference, projectPreference );
             return projectPreference;
-        return GroovyPlugin.getDefault().getPreferenceStore().getString( PreferenceConstants.GROOVY_COMPILER_OUTPUT_PATH );
+        }
+        final String outputPath = GroovyPlugin.getDefault().getPreferenceStore().getString( PreferenceConstants.GROOVY_COMPILER_OUTPUT_PATH );
+        preferenceStore( javaProject ).setValue( PreferenceConstants.GROOVY_COMPILER_OUTPUT_PATH, outputPath );
+        try
+        {
+            preferenceStore( javaProject ).save();
+        }
+        catch( final IOException e )
+        {
+            GroovyPlugin.getPlugin().logException( "Trying to save the preference store of project: " + javaProject.getProject().getName() + ". " + e.getMessage(), e );
+        }
+        return outputPath;
     }
 	/**
 	 * Returns the Eclipse project output path
@@ -422,15 +436,19 @@ public class GroovyProject {
     public void setOutputPath( final String oldPath,
                                final String newPath )
     {
-        if( StringUtils.equals( newPath, oldPath ) )
-            return;
+        final IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+        final IProject project = javaProject.getProject();
+        if( StringUtils.equals( newPath, oldPath ) && StringUtils.isNotBlank( newPath ) )
+        {
+            final IFolder folder = root.getFolder( new Path( project.getFullPath() + "/" + newPath ) );
+            if( folder.exists() )
+                return;
+        }
         new WorkspaceJob( "Updating Groovy output location for project: " + javaProject.getProject().getName() )
         {
             public IStatus runInWorkspace( final IProgressMonitor monitor ) 
             throws CoreException
             {
-                final IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-                final IProject project = javaProject.getProject();
                 final String savedWorkspacePath = project.getFullPath() + "/" + oldPath;
                 final IFolder savedFolder = StringUtils.isNotBlank( oldPath ) ? root.getFolder( new Path( savedWorkspacePath ) ) : null;
                 if( savedFolder != null && savedFolder.exists() && !javaProject.getOutputLocation().equals( savedFolder.getFullPath() ) )
