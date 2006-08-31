@@ -186,7 +186,7 @@ public class GroovyProjectModel
                 GroovyPlugin.trace( "ProjectModel.getModuleNodes() - starting compile for file:" + file );
                 //List files = fullBuild();
                 project.compileGroovyFile( file );
-                list.clear();
+               	list.clear();
                 list.addAll( getModuleNodes( className ) );
             }
         }
@@ -194,7 +194,12 @@ public class GroovyProjectModel
     }
     public List getModuleNodes( final String scriptPath ) 
     {
-        return ( List ) scriptPathModuleNodeMap.get( scriptPath );
+        	List l = ( List ) scriptPathModuleNodeMap.get( scriptPath );
+        	if (l == null) {
+        		l = new ArrayList();
+        		
+        	}
+    	return  l;
     }
     public List removeModuleNodes( final String scriptPath ) 
     {
