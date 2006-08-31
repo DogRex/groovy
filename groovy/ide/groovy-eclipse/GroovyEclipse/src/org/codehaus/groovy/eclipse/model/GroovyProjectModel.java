@@ -167,7 +167,7 @@ public class GroovyProjectModel
     {
         final String className = getSourceFileKey( file );
         final List list = getModuleNodes(className);
-        if( list == null || list.isEmpty() ) 
+        if( list.isEmpty() ) 
         {     
             // If there are error markers on the file, then it means that the file
             // has been compiled already and there is no ModuleNode info available

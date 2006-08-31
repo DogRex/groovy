@@ -728,7 +728,7 @@ public class GroovyProject {
         {
             final String key = ( String )keyIterator.next();
             final List moduleList = model.getModuleNodes( key );
-            if( moduleList == null || moduleList.size() == 0 )
+            if( moduleList.isEmpty())
                 continue;
             for( final Iterator moduleIterator = moduleList.iterator(); moduleIterator.hasNext(); )
             {
