@@ -502,6 +502,13 @@ public class GroovyProject {
                 IJavaProject referencedProject = JavaCore.create((IProject) resource);
                 set.addAll( getClasspath( referencedProject, visited ) );
             }
+            else if( entry.getEntryKind() == IClasspathEntry.CPE_SOURCE )
+            {
+                if( entry.getOutputLocation() != null )
+                    set.add( root.getFolder( entry.getOutputLocation() ).getRawLocation().toString() );
+                else
+                    set.add( root.getFolder( javaProject.getOutputLocation() ).getRawLocation().toString() );
+            }
         }
         String outputPath = getOutputPath( project );
         if( !outputPath.trim().equals( "" ) )
