@@ -1,6 +1,6 @@
 package org.codehaus.groovy.eclipse.editor;
-
 import org.codehaus.groovy.eclipse.GroovyPlugin;
+import org.codehaus.groovy.eclipse.editor.contentAssist.GroovyContentAssistProcessor;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
 import org.eclipse.jdt.internal.ui.text.java.JavaAutoIndentStrategy;
@@ -13,6 +13,8 @@ import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.TextAttribute;
+import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
@@ -122,7 +124,14 @@ public class GroovyConfiguration extends SourceViewerConfiguration {
 
 		return reconciler;
 	}
-
+	
+    public IContentAssistant getContentAssistant( final ISourceViewer sourceViewer )
+    {
+        final ContentAssistant assistant = new ContentAssistant();
+        assistant.setContentAssistProcessor( new GroovyContentAssistProcessor(), IDocument.DEFAULT_CONTENT_TYPE );
+        assistant.setInformationControlCreator( getInformationControlCreator( sourceViewer ) );
+        return assistant;
+    }
     public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
         return new MarkerHover();
     }

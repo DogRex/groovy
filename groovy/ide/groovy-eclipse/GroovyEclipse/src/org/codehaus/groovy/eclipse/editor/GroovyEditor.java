@@ -1,13 +1,17 @@
 package org.codehaus.groovy.eclipse.editor;
+import java.util.ResourceBundle;
 import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.codehaus.groovy.eclipse.editor.contentoutline.GroovyContentOutline;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
+import org.eclipse.ui.texteditor.ContentAssistAction;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
@@ -82,5 +86,13 @@ public class GroovyEditor extends AbstractDecoratedTextEditor{
                 org.eclipse.jdt.ui.PreferenceConstants.EDITOR_MATCHING_BRACKETS,
                 org.eclipse.jdt.ui.PreferenceConstants.EDITOR_MATCHING_BRACKETS_COLOR);
         super.configureSourceViewerDecorationSupport(support);
+    }
+
+    protected void createActions()
+    {
+        super.createActions();
+        final Action action = new ContentAssistAction( ResourceBundle.getBundle( GroovyEditor.class.getPackage().getName() + ".messages" ), "ContentAssistProposal.", this );
+        action.setActionDefinitionId( ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS );
+        setAction( "ContentAssist", action );
     }
 }
