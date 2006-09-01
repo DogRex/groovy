@@ -7,7 +7,6 @@ import junit.framework.AssertionFailedError;
 import org.apache.commons.io.IOUtil;
 import org.codehaus.groovy.eclipse.model.ChangeSet;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
-import org.codehaus.groovy.eclipse.model.GroovyProject;
 import org.codehaus.groovy.eclipse.model.GroovyRuntime;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
