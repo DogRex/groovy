@@ -6,5 +6,8 @@
    <feature url="features/org.codehaus.groovy.eclipse.feature_1.0.0.jar" id="org.codehaus.groovy.eclipse.feature" version="1.0.0"/>
    <feature url="features/org.codehaus.groovy.eclipse.feature_1.0.0.20060711.jar" id="org.codehaus.groovy.eclipse.feature" version="1.0.0.20060711"/>
    <feature url="features/org.codehaus.groovy.eclipse.feature_1.0.0.20060724.jar" id="org.codehaus.groovy.eclipse.feature" version="1.0.0.20060724"/>
+   <feature url="features/org.codehaus.groovy.eclipse.feature_1.0.0.20060905.jar" id="org.codehaus.groovy.eclipse.feature" version="1.0.0.20060905">
+      <category name="Groovy"/>
+   </feature>
    <category-def name="Groovy" label="Groovy"/>
 </site>
