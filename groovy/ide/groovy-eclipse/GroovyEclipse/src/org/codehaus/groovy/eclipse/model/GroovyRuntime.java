@@ -46,14 +46,25 @@ public class GroovyRuntime
                 if( !libName.endsWith( "groovy-eclipse.jar" ) )
                     addJar( javaProject, GroovyPlugin.PLUGIN_ID, libName );
             }
-            final IFolder folder = project.getFolder( GroovyPlugin.getPlugin().getPreferenceStore().getString( PreferenceConstants.GROOVY_COMPILER_OUTPUT_PATH ) );
-            if( !folder.exists() )
-                folder.create( false, true, null );
+            IFolder groovyOutputFolder = null;
+
+            // Get a handle to the Groovy output folder if Project folder isn't the project output location
+            // and create it if it doesn't exit
+            if (!javaProject.getOutputLocation().equals(javaProject.getPath())) {
+            	groovyOutputFolder = project.getFolder( GroovyPlugin.getPlugin().getPreferenceStore().getString( PreferenceConstants.GROOVY_COMPILER_OUTPUT_PATH ) );
+            	if( !groovyOutputFolder.exists() ) {
+            		groovyOutputFolder.create( false, true, null );
+            	}
+                addLibrary( javaProject, groovyOutputFolder.getFullPath() );
+            }
             addGroovyNature( project );
             final IPersistentPreferenceStore preferenceStore = GroovyModel.getModel().getProject( project ).getPreferenceStore();
-            preferenceStore.setValue( PreferenceConstants.GROOVY_COMPILER_OUTPUT_PATH, folder.getProjectRelativePath().toString() );
+            if (groovyOutputFolder != null){
+            	preferenceStore.setValue( PreferenceConstants.GROOVY_COMPILER_OUTPUT_PATH, groovyOutputFolder.getProjectRelativePath().toString() );
+            } else {
+            	preferenceStore.setValue( PreferenceConstants.GROOVY_COMPILER_OUTPUT_PATH, "" );
+            }
             preferenceStore.save();
-            addLibrary( javaProject, folder.getFullPath() );
         }
         catch( Exception e )
         {

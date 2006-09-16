@@ -394,16 +394,19 @@ public class GroovyProject {
     {
         return GroovyModel.getModel().getProject( javaProject.getProject() ).getPreferenceStore();
     }
+    // Tries to get Groovy output path
     public static String getProjectOutputPath( final IJavaProject javaProject )
     {
         final String projectPreference = preferenceStore( javaProject ).getString( PreferenceConstants.GROOVY_COMPILER_OUTPUT_PATH );
         if( StringUtils.isNotBlank( projectPreference ) )
         {
-            if( !javaProject.getProject().getFolder( projectPreference ).exists() )
-                GroovyModel.getModel().getProject( javaProject.getProject() ).setOutputPath( projectPreference, projectPreference );
+            if( !javaProject.getProject().getFolder( projectPreference ).exists() ){
+            	GroovyPlugin.trace("Trying to set Groovy output path inside of GroovyProject.getProjectOutputPath()");
+            	GroovyModel.getModel().getProject( javaProject.getProject() ).setOutputPath( projectPreference, projectPreference );
+            }
             return projectPreference;
         }
-        final String outputPath = GroovyPlugin.getDefault().getPreferenceStore().getString( PreferenceConstants.GROOVY_COMPILER_OUTPUT_PATH );
+        final String outputPath = "";/*GroovyPlugin.getDefault().getPreferenceStore().getString( PreferenceConstants.GROOVY_COMPILER_OUTPUT_PATH );
         preferenceStore( javaProject ).setValue( PreferenceConstants.GROOVY_COMPILER_OUTPUT_PATH, outputPath );
         try
         {
@@ -413,6 +416,8 @@ public class GroovyProject {
         {
             GroovyPlugin.getPlugin().logException( "Trying to save the preference store of project: " + javaProject.getProject().getName() + ". " + e.getMessage(), e );
         }
+        */
+        
         return outputPath;
     }
 	/**
@@ -433,11 +438,25 @@ public class GroovyProject {
         final String outputPath = project.getProject().getLocation().toOSString() + File.separator + getProjectOutputPath( project ).replace(  '/', File.separatorChar );
         return outputPath;
     }
+    /**
+     * called when setting the Eclipse Project preference for compiled groovy output
+     *  - create the new folder if it exists
+     *  - delete the old folder
+     *  - add the new folder to the Project classpath
+     *  - rebuild the project
+     * 
+     * 
+     * @param oldPath
+     * @param newPath
+     */
     public void setOutputPath( final String oldPath,
                                final String newPath )
     {
+    	GroovyPlugin.trace("in GroovyProject.setOutputPath() - attempting to change output path from " + oldPath + " to " + newPath);
         final IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
         final IProject project = javaProject.getProject();
+        
+        // if the old equals the new and it already exists, nothing to do
         if( StringUtils.equals( newPath, oldPath ) && StringUtils.isNotBlank( newPath ) )
         {
             final IFolder folder = root.getFolder( new Path( project.getFullPath() + "/" + newPath ) );
@@ -451,16 +470,21 @@ public class GroovyProject {
             {
                 final String savedWorkspacePath = project.getFullPath() + "/" + oldPath;
                 final IFolder savedFolder = StringUtils.isNotBlank( oldPath ) ? root.getFolder( new Path( savedWorkspacePath ) ) : null;
+                // delete the old Groovy output folder 
                 if( savedFolder != null && savedFolder.exists() && !javaProject.getOutputLocation().equals( savedFolder.getFullPath() ) )
                 {
                     GroovyRuntime.removeLibrary( javaProject, savedFolder.getFullPath() );
                     savedFolder.delete( true, monitor );
                 }
-                final IFolder folder = StringUtils.isNotBlank( newPath ) ? project.getFolder( newPath ) : project.getFolder( javaProject.getOutputLocation() );
-                if( !javaProject.getOutputLocation().equals( folder.getFullPath() ) && !folder.exists() )
+                // user folder typed in
+                if (StringUtils.isNotBlank( newPath )){
+                	final IFolder folder =  project.getFolder( newPath ); //: project.getFolder( javaProject.getOutputLocation() );
+                	System.out.println("new output folder equals:" + folder); 
+                	if( !javaProject.getOutputLocation().equals( folder.getFullPath() ) && !folder.exists() )
                     folder.create( true, false, null );
-                if( !javaProject.getOutputLocation().equals( folder.getFullPath() ) )
+                	if( !javaProject.getOutputLocation().equals( folder.getFullPath() ) )
                     GroovyRuntime.addLibrary( javaProject, folder.getFullPath() );
+                }
                 project.build( IncrementalProjectBuilder.FULL_BUILD, monitor );
                 final GroovyProject gProject = GroovyModel.getModel().getProject( project );
                 gProject.rebuildAll( monitor );
@@ -524,8 +548,10 @@ public class GroovyProject {
             {
                 if( entry.getOutputLocation() != null )
                     set.add( root.getFolder( entry.getOutputLocation() ).getRawLocation().toString() );
-                else
-                    set.add( root.getFolder( project.getOutputLocation() ).getRawLocation().toString() );
+                else{
+                	IPath projectOutputLocation = project.getOutputLocation();
+                    set.add( root.findMember(projectOutputLocation).getLocation().toString() );
+                }
             }
         }
         if( !project.getProject().hasNature( GroovyNature.GROOVY_NATURE ) )
@@ -789,7 +815,7 @@ public class GroovyProject {
                 final IResource resource = javaProject.getProject().findMember( entry.getPath().removeFirstSegments( 1 ) );
                 if( !resource.exists() )
                     continue;
-                list.add( resource.getRawLocation() );
+                list.add( resource.getLocation() );
             }
         }
         catch( final JavaModelException e )
