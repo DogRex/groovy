@@ -48,14 +48,19 @@ class build {
   Task compile ( ) {
     description ( 'Compile everything needed.' )
     initialize ( )
-    ant.javac ( srcdir : sourceDirectory , destDir : buildClassesDirectory , source : '1.4' , debug : 'on' , debuglevel : 'lines,vars,source' , classpathref : 'compilePath' )
+    ant.javac ( srcdir : sourceDirectory , destDir : buildClassesDirectory , source : '1.4' , debug : 'on' , classpathref : 'compilePath' )
     ant.groovyc ( srcdir : sourceDirectory , destDir : buildClassesDirectory , classpath : buildClassesDirectory )
     ant.jar ( destfile : buildLibDirectory + "/gant-${version}.jar" , basedir : buildClassesDirectory , includes : 'org/**' )
   }
   Task compileTests ( ) {
     description ( 'Compile all the tests.' )
     compile ( )
-    ant.groovyc ( srcdir : testsDirectory , destdir : buildTestsDirectory , classpath : buildClassesDirectory )
+    ant.groovyc ( srcdir : testsDirectory , destdir : buildTestsDirectory ) {
+      classpath {
+        pathelement ( location : buildClassesDirectory )
+        pathelement ( location : buildTestsDirectory )
+      }
+    }
   }
   Task test ( ) {
     description ( 'Test a build.' )

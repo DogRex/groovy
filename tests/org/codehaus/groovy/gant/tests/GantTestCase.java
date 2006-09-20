@@ -14,33 +14,22 @@
 //  library; if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 //  Boston, MA 02110-1301 USA
 
+package org.codehaus.groovy.gant.tests ;
+
+import java.io.ByteArrayOutputStream ;
+import java.io.PrintStream ;
+import groovy.util.GroovyTestCase ;
+
 /**
- *  A class showing an example build script for Gant.  This shows how tasks are specified and
- *  dependents specified as procedure calls. Also shows how to deal with target names that are
- *  groovy reserved words!  It is also interesting to see how targets are documented using the
- *  description method call.
+ *  A Gant test case: Adds the required input stream manipulation features to avoid replication of code.
  *
  *  @author Russel Winder
  *  @version $LastChangedRevision$ $LastChangedDate$
  */
-class build {
-  public Task 'default' ( ) { // Parse fails if public removed.  Why?
-    description ( 'The default target.' )
-    println ( 'Default' )
-    clean ( )
-    otherStuff ( )
-  }
-  Task otherStuff ( ) {
-    description ( 'Other stuff.' )
-    println ( 'OtherStuff' )
-    clean ( )
-  }
-  Task clean ( ) {
-    description ( 'Clean the directory and subdirectories.' )
-    println ( 'Clean' )
-    ant.delete ( dir : 'build' , quiet : 'true' )
-    ant.delete ( quiet : 'true' ) {
-      ant.fileset ( dir : '.' , includes : '**/*~,**/*.bak' , defaultexcludes : 'no' )
-    }
+public class GantTestCase extends GroovyTestCase {
+  protected ByteArrayOutputStream output ;
+  protected void setUp ( ) {
+    output = new ByteArrayOutputStream ( ) ;
+    System.setOut ( new PrintStream ( output ) ) ;
   }
 }

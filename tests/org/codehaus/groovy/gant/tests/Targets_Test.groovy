@@ -24,14 +24,7 @@ import org.codehaus.groovy.gant.infrastructure.Gant
  *  @author Russel Winder
  *  @version $LastChangedRevision$ $LastChangedDate$
  */
-final class Targets_Test extends GroovyTestCase {
-  private  ByteArrayOutputStream buffer 
-
-  void setUp ( ) {
-    buffer = new ByteArrayOutputStream ( )
-    System.setOut ( new PrintStream ( buffer ) )
-  }
-    
+final class Targets_Test extends GantTestCase {
   void testSomething ( ) {
     System.setIn ( new StringBufferInputStream ( '''
 class build {
@@ -46,7 +39,7 @@ class build {
     Gant.main ( [ '-T' ,  '-f' ,  '-' ] as String[] )
     assertEquals ( '''gant something  --  Do something.
 gant somethingElse  --  Do something else.
-''' , buffer.toString ( ) ) 
+''' , output.toString ( ) ) 
   }
   
   void testSomethingAndClean ( ) {
@@ -66,6 +59,6 @@ class build {
 gant clobber  --  Action the clobbering.  Does the cleaning first.
 gant something  --  Do something.
 gant somethingElse  --  Do something else.
-''' , buffer.toString ( ) ) 
+''' , output.toString ( ) ) 
   }
 }
