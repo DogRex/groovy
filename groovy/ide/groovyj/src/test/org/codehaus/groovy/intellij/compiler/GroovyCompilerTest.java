@@ -21,8 +21,10 @@ package org.codehaus.groovy.intellij.compiler;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompileScope;
 import com.intellij.openapi.compiler.TranslatingCompiler;
+import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.fileTypes.StdFileTypes;
+import com.intellij.openapi.fileTypes.impl.FileTypeManagerImpl;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
@@ -46,13 +48,12 @@ public class GroovyCompilerTest extends GroovyjTestCase {
 
     private final Mock mockEditorAPI = mock(EditorAPI.class);
     private final Mock mockCompilationUnitsFactory = mock(CompilationUnitsFactory.class);
-    private final Mock mockFileTypeManager = mock(FileTypeManager.class);
 
     private final GroovyCompiler groovyCompiler = new GroovyCompiler((EditorAPI) mockEditorAPI.proxy(),
                                                                      (CompilationUnitsFactory) mockCompilationUnitsFactory.proxy());
 
     protected void setUp() {
-        MockApplicationManager.getMockApplication().registerComponent(FileTypeManager.class, mockFileTypeManager.proxy());
+        MockApplicationManager.getMockApplication().registerComponent(FileTypeManager.class, new FileTypeManagerImpl());
     }
 
     protected void tearDown() {
@@ -68,14 +69,17 @@ public class GroovyCompilerTest extends GroovyjTestCase {
     }
 
     public void testDeterminesThatAGivenFileIsCompilableWhenItsCorrespondingFileTypeIsTheGroovyOne() {
-        VirtualFile file = new LightVirtualFile();
-        mockFileTypeManager.expects(once()).method("getFileTypeByFile").with(same(file)).will(returnValue(GroovySupportLoader.GROOVY));
-        assertEquals("is compilable?", true, groovyCompiler.isCompilableFile(file, compileContext()));
+        VirtualFile groovyFile = createVirtualFile(GroovySupportLoader.GROOVY);
+        assertEquals("is compilable?", true, groovyCompiler.isCompilableFile(groovyFile, compileContext()));
     }
 
     public void testDeterminesThatAGivenFileIsNotCompilableWhenItsCorrespondingFileTypeIsNotTheGroovyOne() {
-        VirtualFile file = new LightVirtualFile(someString(), StdFileTypes.JAVA, new StringBuilder(), -1L);
-        assertEquals("is compilable?", false, groovyCompiler.isCompilableFile(file, compileContext()));
+        VirtualFile javaFile = createVirtualFile(StdFileTypes.JAVA);
+        assertEquals("is compilable?", false, groovyCompiler.isCompilableFile(javaFile, compileContext()));
+    }
+
+    private VirtualFile createVirtualFile(FileType fileType) {
+        return new LightVirtualFile(someString(), fileType, new StringBuilder(), -1L);
     }
 
     public void testDoesNothingWhenThereAreNoFilesToCompile() {
