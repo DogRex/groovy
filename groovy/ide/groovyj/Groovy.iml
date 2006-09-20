@@ -5,10 +5,7 @@
     <output url="file://$MODULE_DIR$/../../groovy-core/build/classes" />
     <exclude-output />
     <output-test url="file://$MODULE_DIR$/../../groovy-core/build/test-classes" />
-    <content url="file://$MODULE_DIR$/../../groovy-core">
-      <sourceFolder url="file://$MODULE_DIR$/../../groovy-core/src/main" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../groovy-core/src/test" isTestSource="true" />
-    </content>
+    <content url="file://$MODULE_DIR$/../../groovy-core" />
     <content url="file://$MODULE_DIR$/../groovy-eclipse" />
     <content url="file://$MODULE_DIR$/../../jsr" />
     <orderEntry type="jdk" jdkName="1.4" jdkType="JavaSDK" />

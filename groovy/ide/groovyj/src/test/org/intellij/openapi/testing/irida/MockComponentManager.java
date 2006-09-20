@@ -3,6 +3,7 @@ package org.intellij.openapi.testing.irida;
 import com.intellij.openapi.components.BaseComponent;
 import com.intellij.openapi.components.ComponentManager;
 import com.intellij.openapi.util.Key;
+import org.jetbrains.annotations.NotNull;
 import org.picocontainer.PicoContainer;
 import org.picocontainer.defaults.DefaultPicoContainer;
 
@@ -22,10 +23,11 @@ public class MockComponentManager implements ComponentManager {
         componentRegistry.remove(componentClass);
     }
 
-    public boolean hasComponent(Class componentClass) {
+    public boolean hasComponent(@NotNull Class componentClass) {
         return false;
     }
 
+    @NotNull
     public <T> T[] getComponents(Class<T> interfaceClass) {
         return null;
     }
@@ -34,6 +36,7 @@ public class MockComponentManager implements ComponentManager {
         return picoContainer;
     }
 
+    @NotNull
     public Class[] getComponentInterfaces() {
         return new Class[0];
     }
@@ -55,6 +58,10 @@ public class MockComponentManager implements ComponentManager {
     }
 
     public <T> void putUserData(Key<T> key, T value) {}
+
+    public boolean isDisposed() {
+        return false;
+    }
 
     public void dispose() {}
 }

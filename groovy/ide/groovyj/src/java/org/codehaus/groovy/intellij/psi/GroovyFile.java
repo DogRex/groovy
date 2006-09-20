@@ -29,12 +29,10 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.impl.source.PsiFileImpl;
 import com.intellij.psi.impl.source.tree.FileElement;
 import com.intellij.psi.tree.IElementType;
-
-import org.jetbrains.annotations.NotNull;
-
 import org.codehaus.groovy.intellij.GroovySupportLoader;
 import org.codehaus.groovy.intellij.language.GroovyLanguage;
 import org.codehaus.groovy.intellij.language.GroovyPsiBuilder;
+import org.jetbrains.annotations.NotNull;
 
 public class GroovyFile extends PsiFileImpl implements GroovyElement {
 
@@ -79,7 +77,7 @@ public class GroovyFile extends PsiFileImpl implements GroovyElement {
         return fileElement;
     }
 
-    public void accept(PsiElementVisitor psiElementVisitor) {
+    public void accept(@NotNull PsiElementVisitor psiElementVisitor) {
         psiElementVisitor.visitFile(this);
     }
 }

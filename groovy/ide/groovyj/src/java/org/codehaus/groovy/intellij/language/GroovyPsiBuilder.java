@@ -216,7 +216,7 @@ public class GroovyPsiBuilder extends UserDataHolderBase implements PsiBuilder {
                 continue;
             }
 
-            for (int i1 = ((ProductionMarker) markers.get(k - 1)).lexemIndex;
+            for (int i1 = markers.get(k - 1).lexemIndex;
                  productionMarker.lexemIndex > i1
                  && productionMarker.lexemIndex < tokens.size()
                  && whitespaceTokens.contains(tokens.get(productionMarker.lexemIndex - 1).getType());
@@ -295,7 +295,7 @@ public class GroovyPsiBuilder extends UserDataHolderBase implements PsiBuilder {
         }
 
         if (elementType instanceof IChameleonElementType) {
-            return new ChameleonElement(elementType, lexer.getBuffer(), token.startOffset, token.endOffset, token.state);
+            return new ChameleonElement(elementType, lexer.getBuffer(), token.startOffset, token.endOffset, token.state, charTable);
         }
 
         return new LeafPsiElement(elementType, lexer.getBuffer(), token.startOffset, token.endOffset, token.state, charTable);

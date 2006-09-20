@@ -18,22 +18,17 @@
 
 package org.codehaus.groovy.intellij.configuration;
 
-import junitx.framework.ObjectAssert;
-
-import org.intellij.openapi.testing.MockApplicationManager;
-
 import com.intellij.execution.configurations.RuntimeConfigurationException;
-import com.intellij.execution.filters.TextConsoleBuidlerFactory;
-import com.intellij.execution.filters.TextConsoleBuidlerFactoryImpl;
+import com.intellij.execution.filters.TextConsoleBuilderFactory;
+import com.intellij.execution.filters.TextConsoleBuilderFactoryImpl;
 import com.intellij.openapi.module.JavaModuleType;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.WebModuleType;
-
-import org.jdom.Element;
-
-import org.jmock.Mock;
-
+import junitx.framework.ObjectAssert;
 import org.codehaus.groovy.intellij.EditorAPI;
+import org.intellij.openapi.testing.MockApplicationManager;
+import org.jdom.Element;
+import org.jmock.Mock;
 
 public class GroovyRunConfigurationTest extends GroovyConfigurationTestCase {
 
@@ -96,7 +91,7 @@ public class GroovyRunConfigurationTest extends GroovyConfigurationTestCase {
     }
 
     public void testCreatesACommandLineStateAsTheRunProfileState() {
-        MockApplicationManager.getMockApplication().registerComponent(TextConsoleBuidlerFactory.class, new TextConsoleBuidlerFactoryImpl());
+        MockApplicationManager.getMockApplication().registerComponent(TextConsoleBuilderFactory.class, new TextConsoleBuilderFactoryImpl());
 
         mockEditorApi.expects(once()).method("getModuleAndDependentModules").withAnyArguments().will(returnValue(Module.EMPTY_ARRAY));
 

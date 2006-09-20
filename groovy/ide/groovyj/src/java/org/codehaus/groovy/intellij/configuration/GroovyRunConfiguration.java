@@ -26,7 +26,7 @@ import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.configurations.RunnerSettings;
 import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.execution.configurations.RuntimeConfigurationException;
-import com.intellij.execution.filters.TextConsoleBuidlerFactory;
+import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.runners.JavaProgramRunner;
 import com.intellij.execution.runners.RunnerInfo;
 import com.intellij.openapi.actionSystem.DataContext;
@@ -159,7 +159,7 @@ public class GroovyRunConfiguration extends RunConfigurationBase implements Loca
     public RunProfileState getState(DataContext dataContext, RunnerInfo runnerInfo, RunnerSettings runnerSettings,
                                     ConfigurationPerRunnerSettings configurationSettings) {
         GroovyCommandLineState commandLineState = new GroovyCommandLineState(this, runnerSettings, configurationSettings);
-        commandLineState.setConsoleBuilder(TextConsoleBuidlerFactory.getInstance().createBuilder(getProject()));
+        commandLineState.setConsoleBuilder(TextConsoleBuilderFactory.getInstance().createBuilder(getProject()));
         commandLineState.setModulesToCompile(editorApi.getModuleAndDependentModules(getModule()));
         return commandLineState;
     }

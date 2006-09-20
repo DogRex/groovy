@@ -3,15 +3,11 @@
   <component name="AntConfiguration">
     <defaultAnt bundledAnt="true" />
     <buildFile url="file://$PROJECT_DIR$/build.xml">
-      <additionalClassPath>
-        <entry path="file://$PROJECT_DIR$/tools/findbugs/lib/findbugs-ant.jar" />
-      </additionalClassPath>
+      <additionalClassPath />
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
-      <properties>
-        <property name="idea.home" value="$APPLICATION_HOME_DIR$" />
-      </properties>
+      <properties />
     </buildFile>
   </component>
   <component name="BuildJarProjectSettings">
@@ -23,8 +19,6 @@
   <component name="CodeStyleProjectProfileManger">
     <option name="PROJECT_PROFILE" />
     <option name="USE_PROJECT_LEVEL_SETTINGS" value="false" />
-    <scopes />
-    <profiles />
   </component>
   <component name="CodeStyleSettingsManager">
     <option name="PER_PROJECT_SETTINGS" />
@@ -108,7 +102,7 @@
     <option name="USE_PROJECT_LEVEL_SETTINGS" value="true" />
     <scopes />
     <profiles>
-      <profile version="1.0">
+      <profile version="1.0" is_locked="false">
         <option name="myName" value="Project Default" />
         <option name="myLocal" value="false" />
         <used_levels>
@@ -366,6 +360,7 @@
       <ConfigurationWrapper RunnerId="Run" />
     </configuration>
   </component>
+  <component name="RAILS_PROJECT_VIEW_PANE" />
   <component name="RmicSettings">
     <option name="IS_EANABLED" value="false" />
     <option name="DEBUGGING_INFO" value="true" />
@@ -394,6 +389,13 @@
     <custom-packaging allow="false" />
   </component>
   <component name="VssVcs" />
+  <component name="com.intellij.jsf.UserDefinedFacesConfigs">
+    <option name="USER_DEFINED_CONFIGS">
+      <value>
+        <list size="0" />
+      </value>
+    </option>
+  </component>
   <component name="com.yanaware.intellij.ideaspring.PluginConfigurable">
     <option name="autoscrolling" value="false" />
     <option name="autoscrollingFromSource" value="false" />
