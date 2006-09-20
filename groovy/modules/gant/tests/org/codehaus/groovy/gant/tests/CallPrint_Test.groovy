@@ -16,47 +16,39 @@
 
 package org.codehaus.groovy.gant.tests
 
-import groovy.lang.MissingMethodException
-
 import org.codehaus.groovy.gant.infrastructure.Gant
 
 /**
- *  A test to ensure that the target listing works. 
+ *  A test to ensure that using standard Groovy functions works.
  *
  *  @author Russel Winder
  *  @version $LastChangedRevision$ $LastChangedDate$
  */
-final class DryRun_Test extends GantTestCase {
-  void setUp ( ) {
-    super.setUp ( )
+final class CallPrint_Test extends GantTestCase {
+  void testSystemOutPrintln ( ) {
     System.setIn ( new StringBufferInputStream ( '''
 class build {
-  Task something ( ) {
+  Task systemOutPrintln ( ) {
     description ( "Do something." )
-    ant.echo ( message : "Did something." )
-  }
-  Task somethingElse ( ) {
-    description ( "Do something else." )
-    ant.echo ( message : "Did something else." )
+    System.out.println ( "Hello World" )
   }
 }
-''' ) )  }
-    
-  void testDefault ( ) {
-    try { Gant.main ( [ '-n' ,  '-f' ,  '-'  ] as String[] ) }
-    catch ( final MissingMethodException mme ) { return }
-    fail ( 'Failed to throw a MissingMethodException.' )
+''' ) )
+    Gant.main ( [ '-f' , '-' , 'systemOutPrintln' ] as String[] )
+    assertEquals ( '''Hello World
+''' , output.toString ( ) ) 
   }
-  void testBlah ( ) {
-    Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'blah'] as String[] )
-    assertEquals ( 'Target blah does not exist.\n' , output.toString ( ) ) 
+  void testPrintln ( ) {
+    System.setIn ( new StringBufferInputStream ( '''
+class build {
+  Task testPrintln ( ) {
+    description ( "Do something." )
+    println ( "Hello World" )
   }
-  void testSomething ( ) {
-    Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'something'] as String[] )
-    assertEquals ( "     [echo] message : 'Did something.'\n" , output.toString ( ) ) 
-  }
-  void testSomethingElse ( ) {
-    Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'somethingElse'] as String[] )
-    assertEquals ( "     [echo] message : 'Did something else.'\n" , output.toString ( ) ) 
+}
+''' ) )
+    Gant.main ( [ '-f' , '-' , 'testPrintln' ] as String[] )
+    assertEquals ( '''Hello World
+''' , output.toString ( ) ) 
   }
 }

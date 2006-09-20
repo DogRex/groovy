@@ -53,13 +53,19 @@ Version : $LastChangedRevision$ $LastChangedDate$
   </target>
 
   <target name="compile" depends="initialize">
-    <javac srcdir="${sourceDirectory}" destdir="${buildClassesDirectory}" source="1.4" debug="on" debuglevel="lines,vars,source" classpathref="compilePath"/>
+    <javac srcdir="${sourceDirectory}" destdir="${buildClassesDirectory}" source="1.4" debug="on" classpathref="compilePath"/>
     <groovyc srcdir="${sourceDirectory}" destdir="${buildClassesDirectory}" classpath="${buildClassesDirectory}"/>
     <jar destfile="${buildLibDirectory}/gant-${version}.jar" basedir="${buildClassesDirectory}" includes="org/**"/>
   </target>
 
   <target name="compileTests" depends="compile">
-    <groovyc srcdir="${testsDirectory}" destdir="${buildTestsDirectory}"/> 
+    <javac srcdir="${testsDirectory}" destdir="${buildTestsDirectory}" source="1.4" debug="on" classpathref="compilePath"/>
+    <groovyc srcdir="${testsDirectory}" destdir="${buildTestsDirectory}">
+      <classpath>
+        <pathelement location="${buildClassesDirectory}"/>
+        <pathelement location="${buildTestsDirectory}"/>
+      </classpath>
+    </groovyc>
   </target>
 
   <taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask" classpathref="compilePath"/>

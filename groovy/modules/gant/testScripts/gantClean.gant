@@ -33,13 +33,13 @@ class build {
   }
   public Task 'default' ( ) { // Parse fails if public removed.  Why?
     description ( 'The default target.' )
-    System.out.println ( 'Default' )
+    println ( 'Default' )
     clean ( )
     otherStuff ( )
   }
   Task otherStuff ( ) {
     description ( 'Other stuff' )
-    System.out.println ( 'OtherStuff' )
+    println ( 'OtherStuff' )
     clean ( )
   }
 }

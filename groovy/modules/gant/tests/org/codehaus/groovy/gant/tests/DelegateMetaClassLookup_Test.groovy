@@ -26,12 +26,9 @@ import org.codehaus.groovy.gant.infrastructure.Gant
  *  @author Russel Winder
  *  @version $LastChangedRevision$ $LastChangedDate$
  */
-final class DelegateMetaClassLookup_Test extends GroovyTestCase {
-  private  ByteArrayOutputStream buffer 
-
+final class DelegateMetaClassLookup_Test extends GantTestCase {
   void setUp ( ) {
-    buffer = new ByteArrayOutputStream ( )
-    System.setOut ( new PrintStream ( buffer ) )
+    super.setUp ( )
     System.setIn ( new StringBufferInputStream ( '''
 class build {
   def build ( ) {
@@ -57,21 +54,20 @@ class build {
 
   void testClean ( ) {
     Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'clean'] as String[] )
-    System.err.println ( buffer )
     assertEquals ( """   [delete] quiet : 'false'
   [fileset] defaultexcludes : 'no' , includes : ',**/*~' , dir : '.'
-""" , buffer.toString ( ) ) 
+""" , output.toString ( ) ) 
   }
   void testDefault ( ) {
     Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'something'] as String[] )
-    assertEquals ( "     [echo] message : 'Did something.'\n" , buffer.toString ( ) ) 
+    assertEquals ( "     [echo] message : 'Did something.'\n" , output.toString ( ) ) 
   }
   void testBlah ( ) {
     Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'blah'] as String[] )
-    assertEquals ( 'Target blah does not exist.\n' , buffer.toString ( ) ) 
+    assertEquals ( 'Target blah does not exist.\n' , output.toString ( ) ) 
   }
   void testSomething ( ) {
     Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'something'] as String[] )
-    assertEquals ( "     [echo] message : 'Did something.'\n" , buffer.toString ( ) ) 
+    assertEquals ( "     [echo] message : 'Did something.'\n" , output.toString ( ) ) 
   }
 }
