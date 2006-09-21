@@ -82,11 +82,7 @@ final class Gant {
     if ( item == null ) { gantLib = [] }
     else { gantLib = Arrays.asList ( item.split ( System.properties.'path.separator' ) ) }
   }
-  //  Prior to revision 4024, tools.jar was preloaded and so all the core Ant Tasks worked.  As of 4024,
-  //  tools.jar is no longer pre-loaded which means that any Ant task that relies on classes in tools.jar
-  //  fails unless there is extra intevention.  So Gant on JSR-06 worked fine but no longer works on
-  //  Subversion HEAD without this classpath jiggery pokery.  This may well break Gant running on JSR-06.
-  private Gant ( ) { RootLoader.classLoader.addURL ( new URL ( 'file:///' + System.getenv ( ).JAVA_HOME + '/lib/tools.jar') ) }
+  private Gant ( ) { }
   private Class compileBuildFile ( final String metaClassType ) {
     def buildClassOpening = ''
     def buildClassName = ''
