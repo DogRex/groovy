@@ -16,6 +16,9 @@
 
 package org.codehaus.groovy.gant.infrastructure
 
+import java.net.URL
+import org.codehaus.groovy.tools.RootLoader
+
 /**
  *  This class provides infrastructure and an executable command for using Groovy + AntBuilder
  *  as a build tool in a way similar to Rake and SCons.  However, where Rake and SCons are
@@ -72,7 +75,6 @@ package org.codehaus.groovy.gant.infrastructure
  *  @version $LastChangedRevision$ $LastChangedDate$
  */
 final class Gant {
-
   private buildFileName = 'build.gant'
   private buildFileText = ''
   private List gantLib ; {
@@ -80,8 +82,11 @@ final class Gant {
     if ( item == null ) { gantLib = [] }
     else { gantLib = Arrays.asList ( item.split ( System.properties.'path.separator' ) ) }
   }
-
-  private Gant ( ) { }
+  //  Prior to revision 4024, tools.jar was preloaded and so all the core Ant Tasks worked.  As of 4024,
+  //  tools.jar is no longer pre-loaded which means that any Ant task that relies on classes in tools.jar
+  //  fails unless there is extra intevention.  So Gant on JSR-06 worked fine but no longer works on
+  //  Subversion HEAD without this classpath jiggery pokery.  This may well break Gant running on JSR-06.
+  private Gant ( ) { RootLoader.classLoader.addURL ( new URL ( 'file:///' + System.getenv ( ).JAVA_HOME + '/lib/tools.jar') ) }
   private Class compileBuildFile ( final String metaClassType ) {
     def buildClassOpening = ''
     def buildClassName = ''
