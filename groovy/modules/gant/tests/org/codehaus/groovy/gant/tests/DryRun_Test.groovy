@@ -16,8 +16,6 @@
 
 package org.codehaus.groovy.gant.tests
 
-import groovy.lang.MissingMethodException
-
 import org.codehaus.groovy.gant.infrastructure.Gant
 
 /**
@@ -42,10 +40,9 @@ class build {
 }
 ''' ) )  }
     
-  void testDefault ( ) {
-    try { Gant.main ( [ '-n' ,  '-f' ,  '-'  ] as String[] ) }
-    catch ( final MissingMethodException mme ) { return }
-    fail ( 'Failed to throw a MissingMethodException.' )
+  void testMissingDefault ( ) {
+    Gant.main ( [ '-n' ,  '-f' ,  '-'  ] as String[] )
+    assertEquals ( 'Default target not set.\n' , output.toString ( ) )
   }
   void testBlah ( ) {
     Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'blah'] as String[] )

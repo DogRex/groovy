@@ -117,7 +117,10 @@ final class Gant {
         }
       }
     }
-    else { buildObject.'default' ( ) }
+    else {
+      try { buildObject.'default' ( ) }
+      catch ( MissingMethodException mme ) { println ( 'Default target not set.' ) }
+    }
   }
   private process ( args ) {
     def cli = new CliBuilder ( usage : 'gant [option]* [target]*' , writer : new PrintWriter ( System.out ) )
