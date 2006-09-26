@@ -113,13 +113,13 @@ final class Gant {
     if ( targets.size ( ) > 0 ) { targets.each { target ->
         try { buildObject.invokeMethod ( target , null ) }
         catch ( MissingMethodException mme ) {
-          println ( ( mme.method == target ) ? "Target ${mme.method} does not exist." : "Could not execute method ${mme.method}." )
+          println ( ( mme.method == target ) ? "Target ${mme.method} does not exist." : "Could not execute method ${mme.method}.\n${mme.message}" )
         }
       }
     }
     else {
       try { buildObject.'default' ( ) }
-      catch ( MissingMethodException mme ) { println ( 'Default target not set.' ) }
+      catch ( MissingMethodException mme ) { println (  ( mme.method == 'default' ) ? 'Default target not set.' : "Could not execute method ${mme.method}.\n${mme.message}" ) }
     }
   }
   private process ( args ) {
