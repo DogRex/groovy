@@ -16,8 +16,7 @@
 
 package org.codehaus.groovy.gant.infrastructure
 
-import java.net.URL
-import org.codehaus.groovy.tools.RootLoader
+import org.codehaus.groovy.control.MultipleCompilationErrorsException
 
 /**
  *  This class provides infrastructure and an executable command for using Groovy + AntBuilder
@@ -84,22 +83,25 @@ final class Gant {
   }
   private Gant ( ) { }
   private Class compileBuildFile ( final String metaClassType ) {
-    def buildClassOpening = ''
-    def buildClassName = ''
-    final javaIdentifierRegexAsString = /\b\p{javaJavaIdentifierStart}(?:\p{javaJavaIdentifierPart})*\b/
-    final javaQualifiedNameRegexAsString = /\b${javaIdentifierRegexAsString}(?:[.\/]${javaIdentifierRegexAsString})*\b/
-    buildFileText.eachMatch ( /(?:(?:public|final))*[ \t\n]*class[ \t\n]*(${javaIdentifierRegexAsString})[ \t\n]*(?:extends[ \t\n]*${javaQualifiedNameRegexAsString})*[ \t\n]*\{/ ) { classOpening , className ->
-      buildClassOpening = classOpening
-      buildClassName = className
+    try {
+      def buildClassOpening = ''
+      def buildClassName = ''
+      final javaIdentifierRegexAsString = /\b\p{javaJavaIdentifierStart}(?:\p{javaJavaIdentifierPart})*\b/
+      final javaQualifiedNameRegexAsString = /\b${javaIdentifierRegexAsString}(?:[.\/]${javaIdentifierRegexAsString})*\b/
+      buildFileText.eachMatch ( /(?:(?:public|final))*[ \t\n]*class[ \t\n]*(${javaIdentifierRegexAsString})[ \t\n]*(?:extends[ \t\n]*${javaQualifiedNameRegexAsString})*[ \t\n]*\{/ ) { classOpening , className ->
+        buildClassOpening = classOpening
+        buildClassName = className
+      }
+      assert buildClassOpening != ''
+      assert buildClassName != ''
+      buildFileText = "import org.codehaus.groovy.gant.infrastructure.GantBuilder; import org.apache.tools.ant.Task;" +
+       buildFileText.replace ( buildClassOpening , buildClassOpening +
+                               "private final ant = GantBuilder.createInstance ( \"${metaClassType}\" ) ; { this.setMetaClass ( new org.codehaus.groovy.gant.infrastructure.${metaClassType}MetaClass ( ${buildClassName} ) ) }" )
+      def buildClassClass = ( new GroovyShell ( ) ).evaluate ( buildFileText + '; return ' + buildClassName + '.class'  )
+      assert buildClassClass != null
+      return buildClassClass
     }
-    assert buildClassOpening != ''
-    assert buildClassName != ''
-    buildFileText = "import org.codehaus.groovy.gant.infrastructure.GantBuilder; import org.apache.tools.ant.Task;" +
-     buildFileText.replace ( buildClassOpening , buildClassOpening +
-                             "private final ant = GantBuilder.createInstance ( \"${metaClassType}\" ) ; { this.setMetaClass ( new org.codehaus.groovy.gant.infrastructure.${metaClassType}MetaClass ( ${buildClassName} ) ) }" )
-    def buildClassClass = ( new GroovyShell ( ) ).evaluate ( buildFileText + '; return ' + buildClassName + '.class'  )
-    assert buildClassClass != null
-    return buildClassClass
+    catch ( MultipleCompilationErrorsException mcee ) { println ( mcee.message ) ; System.exit ( 1 ) }
   }
   private targetList ( targets ) {
     def documentation = new TreeMap ( )
