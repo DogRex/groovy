@@ -24,7 +24,7 @@ import groovy.util.GroovyTestCase ;
  *  A Gant test case: Adds the required input stream manipulation features to avoid replication of code.
  *
  *  @author Russel Winder
- *  @version $LastChangedRevision$ $LastChangedDate$
+ *  @version $Revision$ $Date$
  */
 public class GantTestCase extends GroovyTestCase {
   protected ByteArrayOutputStream output ;

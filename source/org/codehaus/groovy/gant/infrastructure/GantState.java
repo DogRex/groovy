@@ -24,7 +24,7 @@ package org.codehaus.groovy.gant.infrastructure ;
  *  should be in the <code>Gant</code> class but cannot be.
  *
  *  @author Russel Winder
- *  @version $LastChangedRevision$ $LastChangedDate$
+ *  @version $Revision$ $Date$
  */
 class GantState {
   public final static int SILENT = 0 , QUIET = 1 , NORMAL = 2 , VERBOSE = 3 ;

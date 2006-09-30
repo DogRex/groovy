@@ -71,7 +71,7 @@ import org.codehaus.groovy.control.MultipleCompilationErrorsException
  *  builds, but hopefully you get the idea.</p>
  *
  *  @author Russel Winder <russel@russel.org.uk>
- *  @version $LastChangedRevision$ $LastChangedDate$
+ *  @version $Revision$ $Date$
  */
 final class Gant {
   private buildFileName = 'build.gant'

@@ -26,7 +26,7 @@ import org.apache.tools.ant.Task
  *  specifications when the clean or clobber methods are called.
  *
  *  @author Russel Winder
- *  @version $LastChangedRevision$ $LastChangedDate$
+ *  @version $Revision$ $Date$
  */
 final class Clean {
   private final cleanPatternList = []

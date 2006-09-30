@@ -14,7 +14,7 @@
 //  library; if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 //  Boston, MA 02110-1301 USA
 
-package org.codehaus.groovy.gant.targets
+package org.codehaus.groovy.gant.tools
 
 import org.codehaus.groovy.gant.infrastructure.GantState
 
@@ -25,7 +25,7 @@ import org.codehaus.groovy.gant.infrastructure.GantState
  *  <p>Requires Java SE 5 as it used <code>ProcessBuilder</code>.</p>
  *
  *  @author Russel Winder
- *  @version $LastChangedRevision$ $LastChangedDate$
+ *  @version $Revision$ $Date$
  */
 final class Subdirectories {
   private void runSubprocess ( String directory , String command ) {

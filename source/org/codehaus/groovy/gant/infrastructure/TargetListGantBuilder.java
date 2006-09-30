@@ -21,7 +21,7 @@ package org.codehaus.groovy.gant.infrastructure ;
  *  to be used when creating target lists so as to avoid any actions actually happening.
  *
  *  @author Russel Winder <russel@russel.org.uk>
- *  @version $LastChangedRevision$ $LastChangedDate$
+ *  @version $Revision$ $Date$
  */
 final class TargetListGantBuilder extends GantBuilder {
   public Object invokeMethod ( final String name , final Object arguments ) { return null ; }

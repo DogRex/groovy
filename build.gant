@@ -26,6 +26,7 @@ class build {
   private final sourceDirectory = 'source'
   private final testsDirectory = 'tests'  
   private final groovyHome = System.getenv ( 'GROOVY_HOME' ) ; { assert groovyHome != '' }
+  private final jarsDirectory = 'jarfiles'
   private final buildDirectory = 'build'
   private final buildClassesDirectory = buildDirectory + '/classes' 
   private final buildTestsDirectory = buildDirectory + '/tests' 
@@ -89,6 +90,9 @@ class build {
     ant.copy ( todir : groovyHome ) {
       ant.fileset ( dir : sourceDirectory , includes : 'bin/gant*' )
       ant.fileset ( dir : buildDirectory , includes : 'lib/gant*.jar' )
+    }
+    ant.copy ( todir : groovyHome + '/lib' ) {
+       ant.fileset ( dir : jarsDirectory , includes : 'ivy*.jar' )
     }
     ant.chmod ( perm : 'a+x' ) {
       ant.fileset ( dir : groovyHome + '/bin' , includes : 'gant*' )

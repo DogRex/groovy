@@ -24,7 +24,7 @@ import groovy.lang.GroovyObjectSupport ;
  *  e.g. <code>org.codehaus.groovy.gant.target.Clean</code>.
  *
  *  @author Russel Winder <russel@russel.org.uk>
- *  @version $LastChangedRevision$ $LastChangedDate$
+ *  @version $Revision$ $Date$
  */
 public abstract class GantBuilder extends GroovyObjectSupport {
   public static String targetList = "TargetList" ;
