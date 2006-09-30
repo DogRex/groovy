@@ -18,6 +18,8 @@ package org.codehaus.groovy.gant.tools
 
 import org.codehaus.groovy.gant.infrastructure.GantBuilder
 
+import org.apache.tools.ant.Task
+
 /**
  *  A class to provide support for using Ivy.
  *
@@ -28,4 +30,9 @@ final class Ivy {
   private final ant = GantBuilder.instance ; {
     ant.taskdef ( resource : 'fr/jayasoft/ivy/ant/antlib.xml' )
   }
+  Task ivy_configure ( theMap ) { ant.configure ( theMap ) }
+  Task ivy_resolve ( theMap ) { ant.resolve ( theMap ) }
+  Task ivy_retrieve ( theMap ) { ant.retrieve ( theMap ) }
+  Task ivy_publish ( theMap ) { ant.publish ( theMap ) }
+  Task ivy_cachepath ( theMap ) { ant.cachepath ( theMap ) }
 }
