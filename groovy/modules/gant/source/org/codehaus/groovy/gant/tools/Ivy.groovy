@@ -14,41 +14,18 @@
 //  library; if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 //  Boston, MA 02110-1301 USA
 
-package org.codehaus.groovy.gant.tests
+package org.codehaus.groovy.gant.tools
 
-import org.codehaus.groovy.gant.infrastructure.Gant
+import org.codehaus.groovy.gant.infrastructure.GantBuilder
 
 /**
- *  A test to ensure that using standard Groovy functions works.
+ *  A class to provide support for using Ivy.
  *
  *  @author Russel Winder
  *  @version $Revision$ $Date$
  */
-final class CallPrint_Test extends GantTestCase {
-  void testSystemOutPrintln ( ) {
-    System.setIn ( new StringBufferInputStream ( '''
-class build {
-  Task systemOutPrintln ( ) {
-    description ( "Do something." )
-    System.out.println ( "Hello World" )
-  }
-}
-''' ) )
-    Gant.main ( [ '-f' , '-' , 'systemOutPrintln' ] as String[] )
-    assertEquals ( '''Hello World
-''' , output.toString ( ) ) 
-  }
-  void testPrintln ( ) {
-    System.setIn ( new StringBufferInputStream ( '''
-class build {
-  Task testPrintln ( ) {
-    description ( "Do something." )
-    println ( "Hello World" )
-  }
-}
-''' ) )
-    Gant.main ( [ '-f' , '-' , 'testPrintln' ] as String[] )
-    assertEquals ( '''Hello World
-''' , output.toString ( ) ) 
+final class Ivy {
+  private final ant = GantBuilder.instance ; {
+    ant.taskdef ( resource : 'fr/jayasoft/ivy/ant/antlib.xml' )
   }
 }

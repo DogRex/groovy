@@ -32,6 +32,7 @@ Version : $LastChangedRevision$ $LastChangedDate$
   <property name="sourceDirectory" value="source"/>
   <property name="testsDirectory" value="tests"/>
   <property name="groovyHome" value="${env.GROOVY_HOME}"/>
+  <property name="jarsDirectory" value="jarfiles"/>
 
   <property name="buildDirectory" value="build"/>
   <property name="buildClassesDirectory" value="${buildDirectory}/classes"/>
@@ -92,6 +93,9 @@ Version : $LastChangedRevision$ $LastChangedDate$
     <copy todir="${groovyHome}">
       <fileset dir="${sourceDirectory}" includes="bin/gant*"/>
       <fileset dir="${buildDirectory}" includes="lib/gant*.jar"/>
+    </copy>
+    <copy todir="${groovyHome}/lib">
+      <fileset dir="${jarsDirectory}" includes="ivy*.jar"/>
     </copy>
     <chmod perm="a+x">
       <fileset dir="${groovyHome}/bin" includes="gant*"/>

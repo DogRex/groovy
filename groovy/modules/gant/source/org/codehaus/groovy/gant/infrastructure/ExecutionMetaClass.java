@@ -40,7 +40,7 @@ import groovy.lang.MissingMethodException ;
  *  delegates cannot delegate!</p>
  *
  *  @author Russel Winder
- *  @version $LastChangedRevision$ $LastChangedDate$
+ *  @version $Revision$ $Date$
  */
 public final class ExecutionMetaClass extends DelegatingMetaClass {
   private final static ArrayList delegates = new ArrayList ( ) ;

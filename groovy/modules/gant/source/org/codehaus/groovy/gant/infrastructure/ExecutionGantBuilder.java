@@ -27,7 +27,7 @@ import groovy.util.AntBuilder ;
  *  to provide dry-run capability and to deal with all the verbosity issues.
  *
  *  @author Russel Winder <russel@russel.org.uk>
- *  @version $LastChangedRevision$ $LastChangedDate$
+ *  @version $Revision$ $Date$
  */
 final class ExecutionGantBuilder extends GantBuilder {
   private final static AntBuilder ant = new AntBuilder ( ) ;

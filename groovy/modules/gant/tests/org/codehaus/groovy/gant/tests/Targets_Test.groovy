@@ -22,7 +22,7 @@ import org.codehaus.groovy.gant.infrastructure.Gant
  *  A test to ensure that the target listing works. 
  *
  *  @author Russel Winder
- *  @version $LastChangedRevision$ $LastChangedDate$
+ *  @version $Revision$ $Date$
  */
 final class Targets_Test extends GantTestCase {
   void testSomething ( ) {

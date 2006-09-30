@@ -56,7 +56,7 @@ import org.apache.tools.ant.Task ;
  *  the implementation of the algorithm within this one class and so easier to maintain.</p>
  *
  *  @author Russel Winder
- *  @version $LastChangedRevision$ $LastChangedDate$
+ *  @version $Revision$ $Date$
  */
 public final class TargetListMetaClass extends DelegatingMetaClass {
   private final ArrayList delegates = new ArrayList ( ) ;
