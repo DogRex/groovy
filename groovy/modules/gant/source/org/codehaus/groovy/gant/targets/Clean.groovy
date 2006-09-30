@@ -35,16 +35,18 @@ final class Clean {
   private final clobberDirectoryList = []
   private final ant = GantBuilder.instance
   private performPatternAction ( List l ) {
-    ant.delete ( quiet : 'false' ) {
-      ant.fileset (
-                   dir : '.' ,
-                   includes : l.inject ( '' ) { accumulator , item -> accumulator += ',' + item } ,
-                   defaultexcludes : 'no' )
+    if ( l.size ( ) > 0 ) {
+      ant.delete ( quiet : 'false' ) {
+        ant.fileset (
+                     dir : '.' ,
+                     includes : l.inject ( '' ) { accumulator , item -> accumulator += ',' + item } ,
+                     defaultexcludes : 'no' )
+      }
     }
   }
   private performDirectoryAction ( List l ) {
     l.each { item ->
-      ant.delete ( dir : item , quiet : 'true' )
+      ant.delete ( dir : item , quiet : 'false' )
     }
   }
   void addCleanPattern ( final String s ) { cleanPatternList += [ s ] }
