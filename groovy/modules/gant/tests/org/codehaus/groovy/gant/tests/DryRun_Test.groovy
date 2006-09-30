@@ -42,7 +42,7 @@ class build {
     
   void testMissingDefault ( ) {
     Gant.main ( [ '-n' ,  '-f' ,  '-'  ] as String[] )
-    assertEquals ( 'Default target not set.\n' , output.toString ( ) )
+    assertEquals ( 'Target default does not exist.\n' , output.toString ( ) )
   }
   void testMissingNamedTarget ( ) {
     Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'blah'] as String[] )

@@ -89,8 +89,12 @@ final class Gant {
       final javaIdentifierRegexAsString = /\b\p{javaJavaIdentifierStart}(?:\p{javaJavaIdentifierPart})*\b/
       final javaQualifiedNameRegexAsString = /\b${javaIdentifierRegexAsString}(?:[.\/]${javaIdentifierRegexAsString})*\b/
       buildFileText.eachMatch ( /(?:(?:public|final))*[ \t\n]*class[ \t\n]*(${javaIdentifierRegexAsString})[ \t\n]*(?:extends[ \t\n]*${javaQualifiedNameRegexAsString})*[ \t\n]*\{/ ) { classOpening , className ->
-        buildClassOpening = classOpening
-        buildClassName = className
+        //  There has to be a better way of doing this.  Assume that the first instance of the class
+        //  declaration is the one we wnat and that any later ones are not an issue.
+        if ( buildClassOpening == '' ) {
+          buildClassOpening = classOpening
+          buildClassName = className
+        }
       }
       assert buildClassOpening != ''
       assert buildClassName != ''
@@ -102,25 +106,31 @@ final class Gant {
       return buildClassClass
     }
     catch ( MultipleCompilationErrorsException mcee ) { println ( mcee.message ) ; System.exit ( 1 ) }
+    catch ( MissingPropertyException mpe ) { println ( mpe.message ) ; System.exit ( 1 ) ; }
   }
   private targetList ( targets ) {
     def documentation = new TreeMap ( )
     def buildObject = compileBuildFile ( GantBuilder.targetList ).newInstance ( )
     for ( p in ( (Map) buildObject.retrieveAllDescriptions ( ) ).entrySet ( ) ) { println ( 'gant ' + p.getKey ( ) + '  --  ' + p.getValue ( ) ) }
   }
+  private printDispatchExceptionMessage ( target , method , message ) {
+    println ( ( target == method ) ? "Target ${method} does not exist." : "Could not execute method ${method}.\n${message}" )
+  }
   private dispatch ( targets ) {
     def buildObject = compileBuildFile ( GantBuilder.execution ).newInstance ( )
-    if ( targets.size ( ) > 0 ) { targets.each { target ->
-        try { buildObject.invokeMethod ( target , null ) }
-        catch ( MissingMethodException mme ) {
-          println ( ( mme.method == target ) ? "Target ${mme.method} does not exist." : "Could not execute method ${mme.method}.\n${mme.message}" )
+    try {
+      if ( targets.size ( ) > 0 ) {
+        targets.each { target ->
+          try { buildObject.invokeMethod ( target , null ) }
+          catch ( MissingMethodException mme ) { printDispatchExceptionMessage ( target , mme.method , mme.message ) }
         }
       }
+      else {
+        try { buildObject.'default' ( ) }
+        catch ( MissingMethodException mme ) { printDispatchExceptionMessage ( 'default' , mme.method , mme.message ) }
+      }
     }
-    else {
-      try { buildObject.'default' ( ) }
-      catch ( MissingMethodException mme ) { println (  ( mme.method == 'default' ) ? 'Default target not set.' : "Could not execute method ${mme.method}.\n${mme.message}" ) }
-    }
+    catch ( Exception e ) { println ( e.message ) }
   }
   private process ( args ) {
     def cli = new CliBuilder ( usage : 'gant [option]* [target]*' , writer : new PrintWriter ( System.out ) )
