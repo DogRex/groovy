@@ -17,8 +17,8 @@
 package org.codehaus.groovy.gant.infrastructure ;
 
 /**
- *  An instance of this class is effectively just a Proxy for an <code>AntBuilder</code> object
- *  to be used when creating target lists so as to avoid any actions actually happening.
+ *  An instance of this class is effectively just a Proxy for an <code>AntBuilder</code> object to be used
+ *  when creating target lists so as to avoid any actions actually happening.
  *
  *  @author Russel Winder <russel@russel.org.uk>
  *  @version $Revision$ $Date$

@@ -33,7 +33,7 @@ class build {
   private final buildLibDirectory = buildDirectory + '/lib'
   private final buildReportsDirectory = buildDirectory + '/reports'                                                              
   def build ( ) {
-    include ( org.codehaus.groovy.gant.targets.Clean )
+    includeTargets ( org.codehaus.groovy.gant.targets.Clean )
     addCleanPattern ( '**/*~' )
     addCleanDirectory ( buildDirectory )
     ant.path ( id : 'groovyJarSet' ) { ant.fileset ( dir : groovyHome + '/lib' , includes : '*.jar' ) }

@@ -19,9 +19,10 @@ package org.codehaus.groovy.gant.infrastructure ;
 import groovy.lang.GroovyObjectSupport ;
 
 /**
- *  A class to provide access to the <code>GantBuilder</code> object that actual does all the
- *  Ant work.  Needed for building tools,
- *  e.g. <code>org.codehaus.groovy.gant.target.Clean</code>.
+ *  A class to provide access to the <code>GantBuilder</code> object that actually does all the Ant work.
+ *  Needed for building tools, e.g. <code>org.codehaus.groovy.gant.targets.Clean</code>.  Also provides the
+ *  factory method for creating approrpiate instances so has to know the names of all possible concrete
+ *  subclasses.
  *
  *  @author Russel Winder <russel@russel.org.uk>
  *  @version $Revision$ $Date$

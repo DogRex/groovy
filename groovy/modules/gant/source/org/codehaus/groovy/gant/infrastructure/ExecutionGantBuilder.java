@@ -23,8 +23,8 @@ import groovy.lang.Closure ;
 import groovy.util.AntBuilder ;
 
 /**
- *  An instance of this class is effectively just a Proxy for an <code>AntBuilder</code> object
- *  to provide dry-run capability and to deal with all the verbosity issues.
+ *  An instance of this class is effectively just a Proxy for an <code>AntBuilder</code> object to provide
+ *  dry-run capability and to deal with all the verbosity issues.
  *
  *  @author Russel Winder <russel@russel.org.uk>
  *  @version $Revision$ $Date$

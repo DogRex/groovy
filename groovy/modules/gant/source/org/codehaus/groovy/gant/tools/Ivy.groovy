@@ -14,7 +14,7 @@
 //  library; if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 //  Boston, MA 02110-1301 USA
 
-package org.codehaus.groovy.gant.targets
+package org.codehaus.groovy.gant.tools
 
 import org.codehaus.groovy.gant.infrastructure.GantBuilder
 
@@ -30,9 +30,9 @@ final class Ivy {
   private final ant = GantBuilder.instance ; {
     ant.taskdef ( resource : 'fr/jayasoft/ivy/ant/antlib.xml' )
   }
-  Task ivy_configure ( theMap ) { ant.configure ( theMap ) }
-  Task ivy_resolve ( theMap ) { ant.resolve ( theMap ) }
-  Task ivy_retrieve ( theMap ) { ant.retrieve ( theMap ) }
-  Task ivy_publish ( theMap ) { ant.publish ( theMap ) }
-  Task ivy_cachepath ( theMap ) { ant.cachepath ( theMap ) }
+  Task configure ( theMap ) { ant.configure ( theMap ) }
+  Task resolve ( theMap ) { ant.resolve ( theMap ) }
+  Task retrieve ( theMap ) { ant.retrieve ( theMap ) }
+  Task publish ( theMap ) { ant.publish ( theMap ) }
+  Task cachepath ( theMap ) { ant.cachepath ( theMap ) }
 }

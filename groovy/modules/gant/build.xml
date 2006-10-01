@@ -85,6 +85,7 @@ Version : $LastChangedRevision$ $LastChangedDate$
         <pathelement location="${buildTestsDirectory}"/>
         <pathelement location="${buildClassesDirectory}"/>
         <path refid="groovyJarSet"/>
+        <fileset dir="${jarsDirectory}" includes="ivy*.jar"/>
       </classpath>
     </junit>
   </target>

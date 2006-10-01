@@ -28,7 +28,7 @@ import org.codehaus.groovy.gant.infrastructure.GantState
  *  @version $Revision$ $Date$
  */
 final class Subdirectories {
-  private void runSubprocess ( String directory , String command ) {
+  void runSubprocess ( String command , File directory ) {
     if ( GantState.verbosity > GantState.NORMAL ) { System.out.println "\n============ ${directory} ================" }
     //  If we allowed ourselves Java SE 5.0 then we could use ProcessBuilder but we restrict ourselves to Java 1.4.
     //def process = ( new ProcessBuilder ( [ 'sh' , '-c' , command ] )).directory ( directory ).start ( )
@@ -36,7 +36,7 @@ final class Subdirectories {
     if ( GantState.verbosity > GantState.QUIET ) { process.in.eachLine { line -> println line } }
   }
   void forAllSubdirectoriesRun ( String command ) {
-    ( new File ( '.' ) ).eachDir { directory -> runSubprocess ( directory , command ) }
+    ( new File ( '.' ) ).eachDir { directory -> runSubprocess ( command , directory ) }
   }
   void forAllSubdirectoriesAnt ( String target ) { forAllSubdirectoriesRun ( 'ant ' + target ) }
   void forAllSubdirectoriesGant ( String target ) { forAllSubdirectoriesRun ( 'gant ' + target ) }  
