@@ -45,7 +45,7 @@ gant somethingElse  --  Do something else.
   void testSomethingAndClean ( ) {
     System.setIn ( new StringBufferInputStream ( '''
 class build {
-  build ( ) { include ( org.codehaus.groovy.gant.targets.Clean ) }
+  build ( ) { includeTargets ( org.codehaus.groovy.gant.targets.Clean ) }
   Task something ( ) {
     description ( "Do something." )
   }

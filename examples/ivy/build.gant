@@ -3,15 +3,17 @@ class build {
   final sourceDirectory = 'source'
   final exampleDirectory = sourceDirectory + '/example' 
   public build ( ) {
-    include ( org.codehaus.groovy.gant.targets.Clean )
+    includeTargets ( org.codehaus.groovy.gant.targets.Clean )
     addCleanDirectory ( buildDirectory ) 
-    include ( org.codehaus.groovy.gant.targets.Ivy )
+    addCleanPattern ( '**/*~' )
   }
   Task run ( ) {
+    description ( 'Rund the Ivy "Hello" test.' )
     def classPathRef = 'classpath'
     ant.mkdir ( dir : buildDirectory )
     ant.path ( id : classPathRef )
-    ivy_cachepath ( organisation : 'apache' , module : 'commons-lang' , revision : '2.1' ,  pathid : classPathRef , inline : 'true' )
+    includeTool ( org.codehaus.groovy.gant.tools.Ivy )
+    Ivy.cachepath ( organisation : 'apache' , module : 'commons-lang' , revision : '2.1' ,  pathid : classPathRef , inline : 'true' )
     ant.javac ( srcdir : sourceDirectory , destdir : buildDirectory , debug : 'true' , classpathref : classPathRef)
     ant.java ( classname : 'example.Hello' , classpathref : classPathRef ) {
       ant.classpath { pathelement ( location : buildDirectory ) }

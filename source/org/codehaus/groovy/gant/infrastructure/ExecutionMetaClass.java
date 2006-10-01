@@ -17,6 +17,7 @@
 package org.codehaus.groovy.gant.infrastructure ;
 
 import java.util.ArrayList ;
+import java.util.HashMap ;
 import java.util.Iterator ;
 
 import groovy.lang.GroovyObject ;
@@ -25,25 +26,31 @@ import groovy.lang.MetaClassRegistry ;
 import groovy.lang.MissingMethodException ;
 
 /**
- *  This class is the custom metaclass used for supporting execution of build descriptions in
- *  Gant.
+ *  This class is the custom metaclass used for supporting execution of build descriptions in Gant.
  *
- *  <p>This metaclass is really only here to deal with <code>include</code> and
- *  <code>description</code>method calls and the handling of the delegates specified in
- *  <code>include</code> calls, all others are passed to the superclass.</p>
+ *  <p>This metaclass is really only here to deal with <code>includeTargets</code>, <cide>import</code>, and
+ *  <code>description</code>method calls and the handling of the target delegates specified in
+ *  <code>includeTargets</code> calls and the tools specified in <code>import</code> calls, all others are passed
+ *  to the superclass.</p>
  *
- *  <p>A separate instance of this class is used as the metaclass for each delegate as well
- *  there being a distinct instance for the user's build class metaclass.  This is needed as any
- *  and all of these classes can have tasks with descriptions.  Static data is used as a shared
- *  state between all instances.  In particular, the list of delegates and the boolean that
- *  determines whether the user build class or a delegate is currently being searched &ndash;
- *  delegates cannot delegate!</p>
+ *  <p>The includeTargets mechanism is for target names so included classes are flattened with the build class so
+ *  that all the methods appear in the class.  The import mechanism is for tools not targets.  Tools are not
+ *  flattened except that only the last component of the fully qualified name is used as the properties
+ *  mechanism is employed to access the tool objects.  Targets are accessed by direct lookup in
+ *  <code>invokeMethod</code> whilst tools use the <code>getProperty</code> method for access.</p>
+ *
+ *  <p>A separate instance of this class is used as the metaclass for each delegate as well there being a
+ *  distinct instance for the user's build class metaclass.  This is needed as any and all of these classes
+ *  can have tasks with descriptions.  Static data is used as a shared state between all instances.  In
+ *  particular, the list of delegates and the boolean that determines whether the user build class or a
+ *  delegate is currently being searched &ndash; delegates cannot delegate!</p>
  *
  *  @author Russel Winder
  *  @version $Revision$ $Date$
  */
 public final class ExecutionMetaClass extends DelegatingMetaClass {
   private final static ArrayList delegates = new ArrayList ( ) ;
+  private final static HashMap imports = new HashMap ( ) ;
   private static boolean isDelegated = false ;
   public ExecutionMetaClass ( final Class theClass ) {
     //  NB getIntance is the name of the method !
@@ -51,18 +58,22 @@ public final class ExecutionMetaClass extends DelegatingMetaClass {
   }
   public Object invokeMethod ( final Object object , final String methodName , final Object[] arguments ) {
     Object returnObject = null ;
-    if ( methodName.equals ( "include" ) ) {
+    if ( methodName.equals ( "includeTargets" ) || methodName.equals ( "includeTool" ) ) {
       for ( int i = 0 ; i < arguments.length ; ++i ) {
-        final Class delegateClass = (Class) arguments[i] ;
+        final Class theClass = (Class) arguments[i] ;
         try {
-          final GroovyObject delegate = (GroovyObject) delegateClass.newInstance ( ) ;
-          delegate.setMetaClass ( new ExecutionMetaClass ( delegateClass ) ) ;
-          delegates.add ( delegate ) ;
+          final GroovyObject theObject = (GroovyObject) theClass.newInstance ( ) ;
+          theObject.setMetaClass ( new ExecutionMetaClass ( theClass ) ) ;
+          if ( methodName.equals ( "includeTargets" ) ) { delegates.add ( theObject ) ; }
+          else {
+            final String theClassName = theObject.getClass ( ).getName ( ) ;
+            imports.put ( theClassName.substring ( theClassName.lastIndexOf ( '.' ) + 1 ) , theObject ) ;
+          }
         }
         catch ( final InstantiationException ie ) { throw new RuntimeException ( "InstantiationException" ) ; }  
         catch ( final IllegalAccessException iae ) { throw new RuntimeException ( "IllegalAccessException" ) ; }  
       }
-    }
+    }        
     else if ( methodName.equals ( "description" ) ) { }
     else {
       try { returnObject = super.invokeMethod ( object , methodName , arguments ) ; }
@@ -85,5 +96,8 @@ public final class ExecutionMetaClass extends DelegatingMetaClass {
       }
     }
     return returnObject ;
+  }
+  public Object getProperty ( final Object object , final String property ) {
+    return imports.containsKey ( property ) ? imports.get ( property ) : super.getProperty ( object , property ) ;
   }
 }

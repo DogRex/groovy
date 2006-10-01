@@ -16,8 +16,6 @@
 
 package org.codehaus.groovy.gant.tests
 
-import groovy.lang.MissingMethodException
-
 import org.codehaus.groovy.gant.infrastructure.Gant
 
 /**
@@ -26,17 +24,17 @@ import org.codehaus.groovy.gant.infrastructure.Gant
  *  @author Russel Winder
  *  @version $Revision$ $Date$
  */
-final class DelegateMetaClassLookup_Test extends GantTestCase {
+final class ToolMetaClassLookup_Test extends GantTestCase {
   void setUp ( ) {
     super.setUp ( )
     System.setIn ( new StringBufferInputStream ( '''
 class build {
   def build ( ) {
-    include ( org.codehaus.groovy.gant.targets.Clean )
-    addCleanPattern ( "**/*~" )
+    includeTool ( org.codehaus.groovy.gant.tools.Subdirectories )
   }
   Task something ( ) {
     description ( "Do something." )
+    Subdirectories.runSubprocess ( "echo yes" , new File ( "source" ) )
     ant.echo ( message : "Did something." )
   }
   public Task "default" ( ) {
@@ -45,22 +43,10 @@ class build {
   }
 }
 ''' ) )  }
-    
-  //  It seems that the same org.codehaus.groovy.gant.targets.Clean instance is used for all
-  //  tests in this class whuich is a bit sad becaus it means that there is an accumulatiopn of
-  //  **/*~ patterns, 1 for each test method as addCleanPattern gets executed for each test.  So
-  //  it is crucial to know when testClean is run to know what the output will be.  Put it first
-  //  in the hope it will be run first.
 
-  void testClean ( ) {
-    Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'clean'] as String[] )
-    assertEquals ( """   [delete] quiet : 'false'
-  [fileset] defaultexcludes : 'no' , includes : ',**/*~' , dir : '.'
-""" , output.toString ( ) ) 
-  }
   void testDefault ( ) {
     Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'something'] as String[] )
-    assertEquals ( "     [echo] message : 'Did something.'\n" , output.toString ( ) ) 
+    assertEquals ( "yes\n     [echo] message : 'Did something.'\n" , output.toString ( ) ) 
   }
   void testBlah ( ) {
     Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'blah'] as String[] )
@@ -68,6 +54,6 @@ class build {
   }
   void testSomething ( ) {
     Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'something'] as String[] )
-    assertEquals ( "     [echo] message : 'Did something.'\n" , output.toString ( ) ) 
+    assertEquals ( "yes\n     [echo] message : 'Did something.'\n" , output.toString ( ) ) 
   }
 }
