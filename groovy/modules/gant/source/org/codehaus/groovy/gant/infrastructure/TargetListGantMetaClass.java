@@ -24,8 +24,6 @@ import java.util.TreeMap ;
 import java.lang.reflect.Method ;
 
 import groovy.lang.GroovyObject ;
-import groovy.lang.DelegatingMetaClass ;
-import groovy.lang.MetaClassRegistry ;
 
 import org.apache.tools.ant.Task ;
 
@@ -56,16 +54,13 @@ import org.apache.tools.ant.Task ;
  *  @author Russel Winder
  *  @version $Revision$ $Date$
  */
-public final class TargetListMetaClass extends DelegatingMetaClass {
+public final class TargetListGantMetaClass extends GantMetaClass {
   private final ArrayList delegates = new ArrayList ( ) ;
   private final Map documentation = new TreeMap ( ) ;
   private String temporaryMethodName ;
   private boolean findingTargets = false ;
   private class TerminateExecutionException extends RuntimeException { }
-  public TargetListMetaClass ( final Class theClass ) {
-    //  NB getIntance is the name of the method !
-    super ( MetaClassRegistry.getIntance ( 0 ).getMetaClass ( theClass ) ) ;
-  }
+  public TargetListGantMetaClass ( final Class theClass ) { super ( theClass ) ; }
   private void getTargetsOf ( final Object object ) {
     final Method[] methods = object.getClass ( ).getMethods ( ) ;
     for ( int i = 0 ; i < methods.length ; ++i ) {
@@ -80,20 +75,18 @@ public final class TargetListMetaClass extends DelegatingMetaClass {
       }
     }
   }
+  protected void installClass ( final String methodName , final Class theClass ) {
+    try {
+      final GroovyObject theObject = (GroovyObject ) theClass.newInstance ( ) ;
+      theObject.setMetaClass ( this ) ; // Yes it is unusual to use a metaclass for the wrong class but...
+      if ( methodName.equals ( "includeTargets" ) ) { delegates.add ( theObject ) ; }
+    }
+    catch ( final InstantiationException ie ) { throw new RuntimeException ( "InstantiationException" ) ; }  
+    catch ( final IllegalAccessException ie ) { throw new RuntimeException ( "IllegalAccessException" ) ; }
+  }
   public Object invokeMethod ( final Object object , final String methodName , final Object[] arguments ) {
     Object returnObject = null ;
-    if ( methodName.equals ( "includeTargets" ) ) {
-      for ( int i = 0 ; i < arguments.length ; ++i ) {
-        final Class theClass = (Class) arguments[i] ;
-        try {
-          final GroovyObject theObject = (GroovyObject ) theClass.newInstance ( ) ;
-          theObject.setMetaClass ( this ) ; // Yes it is unusual to use a metaclass for the wrong class but...
-          if ( methodName.equals ( "includeTargets" ) ) { delegates.add ( theObject ) ; }
-        }
-        catch ( final InstantiationException ie ) { throw new RuntimeException ( "InstantiationException" ) ; }  
-        catch ( final IllegalAccessException ie ) { throw new RuntimeException ( "IllegalAccessException" ) ; }
-      }
-    }
+    if ( methodName.equals ( "includeTargets" ) ) { processInclude ( methodName , arguments ) ; }
     else if ( methodName.equals ( "description" ) ) {
       String description = "<No description>" ;
        if ( arguments.length > 0 ) { description = (String) arguments[0] ; }

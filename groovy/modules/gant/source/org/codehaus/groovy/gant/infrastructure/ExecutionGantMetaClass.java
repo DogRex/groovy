@@ -21,8 +21,6 @@ import java.util.HashMap ;
 import java.util.Iterator ;
 
 import groovy.lang.GroovyObject ;
-import groovy.lang.DelegatingMetaClass ;
-import groovy.lang.MetaClassRegistry ;
 import groovy.lang.MissingMethodException ;
 
 /**
@@ -48,32 +46,27 @@ import groovy.lang.MissingMethodException ;
  *  @author Russel Winder
  *  @version $Revision$ $Date$
  */
-public final class ExecutionMetaClass extends DelegatingMetaClass {
+public final class ExecutionGantMetaClass extends GantMetaClass {
   private final static ArrayList delegates = new ArrayList ( ) ;
   private final static HashMap imports = new HashMap ( ) ;
   private static boolean isDelegated = false ;
-  public ExecutionMetaClass ( final Class theClass ) {
-    //  NB getIntance is the name of the method !
-    super ( MetaClassRegistry.getIntance ( 0 ).getMetaClass ( theClass ) ) ;
+  public ExecutionGantMetaClass ( final Class theClass ) { super ( theClass ) ; }
+  protected void installClass ( final String methodName , final Class theClass ) {
+    try {
+      final GroovyObject theObject = (GroovyObject) theClass.newInstance ( ) ;
+      theObject.setMetaClass ( new ExecutionGantMetaClass ( theClass ) ) ;
+      if ( methodName.equals ( "includeTargets" ) ) { delegates.add ( theObject ) ; }
+      else {
+        final String theClassName = theObject.getClass ( ).getName ( ) ;
+        imports.put ( theClassName.substring ( theClassName.lastIndexOf ( '.' ) + 1 ) , theObject ) ;
+      }
+    }
+    catch ( final InstantiationException ie ) { throw new RuntimeException ( "InstantiationException" ) ; }  
+    catch ( final IllegalAccessException iae ) { throw new RuntimeException ( "IllegalAccessException" ) ; }  
   }
   public Object invokeMethod ( final Object object , final String methodName , final Object[] arguments ) {
     Object returnObject = null ;
-    if ( methodName.equals ( "includeTargets" ) || methodName.equals ( "includeTool" ) ) {
-      for ( int i = 0 ; i < arguments.length ; ++i ) {
-        final Class theClass = (Class) arguments[i] ;
-        try {
-          final GroovyObject theObject = (GroovyObject) theClass.newInstance ( ) ;
-          theObject.setMetaClass ( new ExecutionMetaClass ( theClass ) ) ;
-          if ( methodName.equals ( "includeTargets" ) ) { delegates.add ( theObject ) ; }
-          else {
-            final String theClassName = theObject.getClass ( ).getName ( ) ;
-            imports.put ( theClassName.substring ( theClassName.lastIndexOf ( '.' ) + 1 ) , theObject ) ;
-          }
-        }
-        catch ( final InstantiationException ie ) { throw new RuntimeException ( "InstantiationException" ) ; }  
-        catch ( final IllegalAccessException iae ) { throw new RuntimeException ( "IllegalAccessException" ) ; }  
-      }
-    }        
+    if ( methodName.equals ( "includeTargets" ) || methodName.equals ( "includeTool" ) ) { processInclude ( methodName , arguments ) ; }
     else if ( methodName.equals ( "description" ) ) { }
     else {
       try { returnObject = super.invokeMethod ( object , methodName , arguments ) ; }
