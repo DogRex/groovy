@@ -30,9 +30,10 @@ final class Ivy {
   private final ant = GantBuilder.instance ; {
     ant.taskdef ( resource : 'fr/jayasoft/ivy/ant/antlib.xml' )
   }
+  Task cachepath ( theMap ) { ant.cachepath ( theMap ) }
   Task configure ( theMap ) { ant.configure ( theMap ) }
+  Task publish ( theMap ) { ant.publish ( theMap ) }
+  Task report ( theMap ) { ant.report ( theMap ) }
   Task resolve ( theMap ) { ant.resolve ( theMap ) }
   Task retrieve ( theMap ) { ant.retrieve ( theMap ) }
-  Task publish ( theMap ) { ant.publish ( theMap ) }
-  Task cachepath ( theMap ) { ant.cachepath ( theMap ) }
 }
