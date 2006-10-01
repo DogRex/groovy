@@ -18,17 +18,6 @@
 
 package org.codehaus.groovy.intellij.language.editor;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import junitx.framework.Assert;
-import junitx.framework.ListAssert;
-import junitx.framework.ObjectAssert;
-
-import org.intellij.openapi.testing.MockApplicationManager;
-
 import com.intellij.ide.highlighter.JavaFileHighlighter;
 import com.intellij.openapi.editor.colors.ColorKey;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
@@ -37,14 +26,20 @@ import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.options.colors.AttributesDescriptor;
-import com.intellij.openapi.options.colors.ColorDescriptor;
 import com.intellij.openapi.options.colors.pages.JavaColorSettingsPage;
-
-import org.jmock.Mock;
-
+import junitx.framework.Assert;
+import junitx.framework.ListAssert;
+import junitx.framework.ObjectAssert;
 import org.codehaus.groovy.intellij.GroovySupportLoader;
 import org.codehaus.groovy.intellij.GroovyjTestCase;
 import org.codehaus.groovy.intellij.Stubs;
+import org.intellij.openapi.testing.MockApplicationManager;
+import org.jmock.Mock;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class GroovyColourSettingsPageTest extends GroovyjTestCase {
 
@@ -89,18 +84,6 @@ public class GroovyColourSettingsPageTest extends GroovyjTestCase {
             ListAssert.assertContains("attribute descriptor attributes #" + i,
                     groovyAttributeDescriptorAttributes,
                     javaAttributesDescriptors[i].getKey().getDefaultAttributes());
-        }
-    }
-
-    public void testUsesColourDescriptorsEquivalentToTheOnesDefinedOnTheJavaColourSettingsPage() {
-        ColorDescriptor[] groovyColourDescriptors = groovyColourSettingsPage.getColorDescriptors();
-        ColorDescriptor[] javaColourDescriptors = javaColourSettingsPage.getColorDescriptors();
-
-        assertEquals("number of colour descriptors", javaColourDescriptors.length, groovyColourDescriptors.length);
-
-        for (int i = 0; i < javaColourDescriptors.length; i++) {
-            ColorDescriptor colourDescriptor = javaColourDescriptors[i];
-            assertSame("key for colour descriptor #" + i, colourDescriptor.getKey(), groovyColourDescriptors[i].getKey());
         }
     }
 

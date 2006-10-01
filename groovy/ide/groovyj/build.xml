@@ -55,7 +55,7 @@
         <property name="clover.reports" value="${build.dir}/clover-reports"/>
         <property name="coverage.criteria" value="90%"/>
 
-        <property name="idea.since-build" value="5706"/>
+        <property name="idea.since-build" value="5755"/>
 
         <path id="clover.classpath">
             <pathelement location="${clover.lib.dir}/clover.jar"/>
@@ -250,6 +250,8 @@
                dir="${basedir}" includeantruntime="true" newenvironment="false">
 
             <jvmarg value="-Xbootclasspath/p:${idea.home}/lib/boot.jar"/>
+            <jvmarg value="-Didea.home.path=${idea.home}"/>
+
             <classpath refid="test.classpath"/>
             <formatter type="brief" usefile="false"/>
 
@@ -341,7 +343,7 @@
             <fileset dir="${src.etc.dir}" excludes="styles/**/*, ${binary.extensions}, **/*.xcf"/>
             <filterset>
                 <filter token="PROJECT.IDEA.SINCE-BUILD" value="${idea.since-build}"/>
-                <filter token="PROJECT.IDEA.UNTIL-BUILD" value="5800"/>
+                <filter token="PROJECT.IDEA.UNTIL-BUILD" value="5850"/>
                 <filter token="PROJECT.VERSION" value="${project.version} 6.0 (Demetra)"/>
             </filterset>
             <filterset refid="project.variables"/>
