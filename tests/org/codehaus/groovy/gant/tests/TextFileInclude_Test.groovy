@@ -35,7 +35,8 @@ class build {
 """
   def buildFileTargets = buildFileTool.replace ( 'Tool' , 'Targets' ).replace ( 'Blah.flob' , 'flob' )
   TestFileInclude_Test ( ) {
-    ( new File ( includeFileName ) ).write('''import org.apache.tools.ant.Task
+    ( new File ( includeFileName ) ).write('''
+import org.apache.tools.ant.Task
 class Blah {
   Task flob ( ) { println ( 'flobbed.' ) ; null }
 }
@@ -43,37 +44,37 @@ class Blah {
   }
   void testDefaultTools ( ) {
     System.setIn ( new StringBufferInputStream ( buildFileTool ) )
-    Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'something'] as String[] )
+    Gant.main ( [ '-f' ,  '-'  , 'something'] as String[] )
     assertEquals ( 'flobbed.\n' , output.toString ( ) ) 
   }
   void testFlobTools ( ) {
     System.setIn ( new StringBufferInputStream ( buildFileTool ) )
-    Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'flob'] as String[] )
+    Gant.main ( [ '-f' ,  '-'  , 'flob'] as String[] )
     assertEquals ( 'Target flob does not exist.\n' , output.toString ( ) ) 
   }
   void testSomethingTools ( ) {
     System.setIn ( new StringBufferInputStream ( buildFileTool ) )
-    Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'something'] as String[] )
+    Gant.main ( [ '-f' ,  '-'  , 'something'] as String[] )
     assertEquals ( 'flobbed.\n' , output.toString ( ) ) 
   }
   void testDefaultTargets ( ) {
     System.setIn ( new StringBufferInputStream ( buildFileTargets ) )
-    Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'something'] as String[] )
+    Gant.main ( [ '-f' ,  '-'  , 'something'] as String[] )
     assertEquals ( 'flobbed.\n' , output.toString ( ) ) 
   }
   void testFlobTargets ( ) {
     System.setIn ( new StringBufferInputStream ( buildFileTargets ) )
-    Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'flob'] as String[] )
+    Gant.main ( [  '-f' ,  '-'  , 'flob'] as String[] )
     assertEquals ( 'flobbed.\n' , output.toString ( ) ) 
   }
   void testSomethingTargets ( ) {
     System.setIn ( new StringBufferInputStream ( buildFileTargets ) )
-    Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'something'] as String[] )
+    Gant.main ( [  '-f' ,  '-'  , 'something'] as String[] )
     assertEquals ( 'flobbed.\n' , output.toString ( ) ) 
   }
   void testNoFile ( ) {
     System.setIn ( new StringBufferInputStream ( buildFileTool.replace ( 'Blah' , 'Burble' ) ) )
-    try { Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'flob'] as String[] ) }
+    try { Gant.main ( [ '-f' ,  '-'  , 'flob'] as String[] ) }
     catch ( RuntimeException re ) { return }
     fail ( 'Should have got a RuntimeException but didn\'t.' )
   }
