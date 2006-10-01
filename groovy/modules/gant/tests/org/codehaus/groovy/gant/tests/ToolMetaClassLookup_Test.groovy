@@ -35,7 +35,6 @@ class build {
   Task something ( ) {
     description ( "Do something." )
     Subdirectories.runSubprocess ( "echo yes" , new File ( "source" ) )
-    ant.echo ( message : "Did something." )
   }
   public Task "default" ( ) {
     description ( "Default is something." )
@@ -45,15 +44,15 @@ class build {
 ''' ) )  }
 
   void testDefault ( ) {
-    Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'something'] as String[] )
-    assertEquals ( "yes\n     [echo] message : 'Did something.'\n" , output.toString ( ) ) 
+    Gant.main ( [ '-f' ,  '-'  ] as String[] )
+    assertEquals ( 'yes\n' , output.toString ( ) ) 
   }
   void testBlah ( ) {
-    Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'blah'] as String[] )
+    Gant.main ( [ '-f' ,  '-'  , 'blah'] as String[] )
     assertEquals ( 'Target blah does not exist.\n' , output.toString ( ) ) 
   }
   void testSomething ( ) {
-    Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'something'] as String[] )
-    assertEquals ( "yes\n     [echo] message : 'Did something.'\n" , output.toString ( ) ) 
+    Gant.main ( [ '-f' ,  '-'  , 'something'] as String[] )
+    assertEquals ( 'yes\n' , output.toString ( ) ) 
   }
 }

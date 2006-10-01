@@ -51,21 +51,22 @@ class build {
   //  in the hope it will be run first.
 
   void testClean ( ) {
-    Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'clean'] as String[] )
+    //  Have to do this dry run or the result is indeterminate.
+    Gant.main ( [ '-n' , '-f' ,  '-'  , 'clean' ] as String[] )
     assertEquals ( """   [delete] quiet : 'false'
   [fileset] defaultexcludes : 'no' , includes : ',**/*~' , dir : '.'
 """ , output.toString ( ) ) 
   }
   void testDefault ( ) {
-    Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'something'] as String[] )
+    Gant.main ( [ '-f' ,  '-'  ] as String[] )
     assertEquals ( "     [echo] message : 'Did something.'\n" , output.toString ( ) ) 
   }
   void testBlah ( ) {
-    Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'blah'] as String[] )
+    Gant.main ( [ '-f' ,  '-'  , 'blah' ] as String[] )
     assertEquals ( 'Target blah does not exist.\n' , output.toString ( ) ) 
   }
   void testSomething ( ) {
-    Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'something'] as String[] )
+    Gant.main ( [ '-f' ,  '-'  , 'something' ] as String[] )
     assertEquals ( "     [echo] message : 'Did something.'\n" , output.toString ( ) ) 
   }
 }
