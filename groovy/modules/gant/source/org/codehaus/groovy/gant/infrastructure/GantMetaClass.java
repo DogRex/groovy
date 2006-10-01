@@ -41,6 +41,7 @@ abstract class GantMetaClass extends DelegatingMetaClass {
     final File file = new File ( path ) ;
     if ( file.canRead ( ) && file.isFile ( ) ) {
       final StringBuffer buffer = new StringBuffer ( ) ;
+      buffer.append ( "import org.apache.tools.ant.Task ; " ) ;
       try {
         final BufferedReader reader = new BufferedReader ( new FileReader ( file ) ) ;
         while ( true ) {
