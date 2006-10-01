@@ -100,7 +100,7 @@ final class Gant {
       assert buildClassName != ''
       buildFileText = "import org.codehaus.groovy.gant.infrastructure.GantBuilder; import org.apache.tools.ant.Task;" +
        buildFileText.replace ( buildClassOpening , buildClassOpening +
-                               "private final ant = GantBuilder.createInstance ( \"${metaClassType}\" ) ; { this.setMetaClass ( new org.codehaus.groovy.gant.infrastructure.${metaClassType}MetaClass ( ${buildClassName} ) ) }" )
+                               "private final ant = GantBuilder.createInstance ( \"${metaClassType}\" ) ; { this.setMetaClass ( new org.codehaus.groovy.gant.infrastructure.${metaClassType}GantMetaClass ( ${buildClassName} ) ) }" )
       def buildClassClass = ( new GroovyShell ( ) ).evaluate ( buildFileText + '; return ' + buildClassName + '.class'  )
       assert buildClassClass != null
       return buildClassClass
