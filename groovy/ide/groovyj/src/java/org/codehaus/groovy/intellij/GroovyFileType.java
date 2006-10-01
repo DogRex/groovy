@@ -19,7 +19,6 @@
 package org.codehaus.groovy.intellij;
 
 import com.intellij.openapi.fileTypes.LanguageFileType;
-import com.intellij.openapi.vfs.VirtualFile;
 import org.codehaus.groovy.intellij.language.GroovyLanguage;
 import org.jetbrains.annotations.NotNull;
 
@@ -48,10 +47,6 @@ public class GroovyFileType extends LanguageFileType {
 
     public Icon getIcon() {
         return Icons.SMALLEST;
-    }
-
-    public String getCharset(VirtualFile file) {
-        return file.getCharset().name();
     }
 
     public boolean isJVMDebuggingSupported() {

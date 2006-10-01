@@ -58,12 +58,6 @@ public class GroovyFileTypeTest extends GroovyjTestCase {
         assertEquals("is JVM debugging supported", true, fileType.isJVMDebuggingSupported());
     }
 
-    public void testReturnsTheCharacterSetOfAGivenFileAsItsCharacterSet() {
-        String expectedCharacterSetName = "UTF-8";
-        VirtualFile file = virtualFile().withCharset(expectedCharacterSetName).build();
-        assertSame("character set", expectedCharacterSetName, fileType.getCharset(file));
-    }
-
     public void testDoesNotCreateABuilderForTheStructuralTreeViewForAFileOutsideOfTheCurrentProject() {
         Mock mockPsiManager = mock(PsiManager.class);
 
