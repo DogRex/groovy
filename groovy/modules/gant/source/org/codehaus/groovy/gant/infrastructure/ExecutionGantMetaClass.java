@@ -68,6 +68,14 @@ public final class ExecutionGantMetaClass extends GantMetaClass {
     Object returnObject = null ;
     if ( methodName.equals ( "includeTargets" ) || methodName.equals ( "includeTool" ) ) { processInclude ( methodName , arguments ) ; }
     else if ( methodName.equals ( "description" ) ) { }
+    else if ( methodName.equals ( "message" ) ) {
+      String keyword = "[" + (String) arguments[0] + "]" ;
+      final Object message = arguments[1] ;
+      final int length = keyword.length ( ) ;
+      final int width = 11 ;
+      if ( length < width ) { keyword = "           ".substring ( 0 , width - length ) + keyword ; }
+      System.out.println ( keyword + " " + message ) ;
+    }
     else {
       try { returnObject = super.invokeMethod ( object , methodName , arguments ) ; }
       catch ( final MissingMethodException mme_a ) {

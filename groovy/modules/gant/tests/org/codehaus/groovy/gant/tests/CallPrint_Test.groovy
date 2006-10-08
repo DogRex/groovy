@@ -51,4 +51,16 @@ class build {
     assertEquals ( '''Hello World
 ''' , output.toString ( ) ) 
   }
+  void testMessage ( ) {
+    System.setIn ( new StringBufferInputStream ( '''
+class build {
+  Task testMessage ( ) {
+    description ( "Do something." )
+    message ( 'message' , 'A message.' )
+  }
+}
+''' ) )
+    Gant.main ( [ '-f' , '-' , 'testMessage' ] as String[] )
+    assertEquals ( '  [message] A message.\n' , output.toString ( ) ) 
+  }
 }

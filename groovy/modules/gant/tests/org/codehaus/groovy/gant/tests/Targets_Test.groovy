@@ -28,12 +28,8 @@ final class Targets_Test extends GantTestCase {
   void testSomething ( ) {
     System.setIn ( new StringBufferInputStream ( '''
 class build {
-  Task something ( ) {
-    description ( "Do something." )
-  }
-  Task somethingElse ( ) {
-    description ( "Do something else." )
-  }
+  Task something ( ) { description ( "Do something." ) }
+  Task somethingElse ( ) { description ( "Do something else." ) }
 }
 ''' ) )
     Gant.main ( [ '-T' ,  '-f' ,  '-' ] as String[] )
@@ -41,17 +37,12 @@ class build {
 gant somethingElse  --  Do something else.
 ''' , output.toString ( ) ) 
   }
-  
   void testSomethingAndClean ( ) {
     System.setIn ( new StringBufferInputStream ( '''
 class build {
   build ( ) { includeTargets ( org.codehaus.groovy.gant.targets.Clean ) }
-  Task something ( ) {
-    description ( "Do something." )
-  }
-  Task somethingElse ( ) {
-    description ( "Do something else." )
-  }
+  Task something ( ) { description ( "Do something." ) }
+  Task somethingElse ( ) { description ( "Do something else." ) }
 }
 ''' ) )
     Gant.main ( [ '-T' ,  '-f' ,  '-' ] as String[] )
@@ -61,4 +52,18 @@ gant something  --  Do something.
 gant somethingElse  --  Do something else.
 ''' , output.toString ( ) ) 
   }
+  void testGStrings ( ) {
+    System.setIn ( new StringBufferInputStream ( '''
+class build {
+  def theWord = 'The Word'
+  Task something ( ) { description ( "Do ${theWord}." ) }
+  Task somethingElse ( ) { description ( "Do ${theWord}." ) }
+}
+''' ) )
+    Gant.main ( [ '-T' ,  '-f' ,  '-' ] as String[] )
+    assertEquals ( '''gant something  --  Do The Word.
+gant somethingElse  --  Do The Word.
+''' , output.toString ( ) ) 
+  }
+  
 }

@@ -88,8 +88,9 @@ public final class TargetListGantMetaClass extends GantMetaClass {
     Object returnObject = null ;
     if ( methodName.equals ( "includeTargets" ) ) { processInclude ( methodName , arguments ) ; }
     else if ( methodName.equals ( "description" ) ) {
-      String description = "<No description>" ;
-       if ( arguments.length > 0 ) { description = (String) arguments[0] ; }
+      //  The parameter to the method call can be of any type, not just String or GString.
+      Object description = "<No description>" ;
+       if ( arguments.length > 0 ) { description = arguments[0] ; }
       documentation.put ( temporaryMethodName , description ) ;
       throw new TerminateExecutionException ( ) ;
     }
