@@ -50,6 +50,7 @@ public final class ExecutionGantMetaClass extends GantMetaClass {
   private final static ArrayList delegates = new ArrayList ( ) ;
   private final static HashMap imports = new HashMap ( ) ;
   private static boolean isDelegated = false ;
+  private final static ArrayList methodsInvoked = new ArrayList ( ) ;
   public ExecutionGantMetaClass ( final Class theClass ) { super ( theClass ) ; }
   protected void installClass ( final String methodName , final Class theClass ) {
     try {
@@ -68,6 +69,12 @@ public final class ExecutionGantMetaClass extends GantMetaClass {
     Object returnObject = null ;
     if ( methodName.equals ( "includeTargets" ) || methodName.equals ( "includeTool" ) ) { processInclude ( methodName , arguments ) ; }
     else if ( methodName.equals ( "description" ) ) { }
+    else if ( methodName.equals ( "depends" ) ) {
+      for ( int i = 0 ; i < arguments.length ; ++i ) {
+        final String dependentMethod = (String) arguments[i] ;
+        if ( ! methodsInvoked.contains ( dependentMethod ) ) { invokeMethod ( object , dependentMethod , null ) ; }
+      }
+    }
     else if ( methodName.equals ( "message" ) ) {
       String keyword = "[" + (String) arguments[0] + "]" ;
       final Object message = arguments[1] ;
@@ -77,7 +84,10 @@ public final class ExecutionGantMetaClass extends GantMetaClass {
       System.out.println ( keyword + " " + message ) ;
     }
     else {
-      try { returnObject = super.invokeMethod ( object , methodName , arguments ) ; }
+      try {
+        returnObject = super.invokeMethod ( object , methodName , arguments ) ;
+        methodsInvoked.add ( methodName ) ;
+      }
       catch ( final MissingMethodException mme_a ) {
         if ( ! isDelegated ) {
           isDelegated = true ;
@@ -87,6 +97,7 @@ public final class ExecutionGantMetaClass extends GantMetaClass {
             try {
               returnObject = delegate.invokeMethod ( methodName , arguments ) ;
               isDelegated = false ;
+              methodsInvoked.add ( methodName ) ;
               return returnObject ;
             }
             catch ( final MissingMethodException mme_b ) { }

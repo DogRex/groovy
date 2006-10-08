@@ -19,7 +19,7 @@ package org.codehaus.groovy.gant.tests
 import org.codehaus.groovy.gant.infrastructure.Gant
 
 /**
- *  A test to ensure that the target listing works. 
+ *  A test to ensure that the targets method lookup works. 
  *
  *  @author Russel Winder
  *  @version $Revision$ $Date$
