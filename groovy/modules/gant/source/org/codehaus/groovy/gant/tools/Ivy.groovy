@@ -17,18 +17,23 @@
 package org.codehaus.groovy.gant.tools
 
 /**
- *  A class to provide support for using Ivy.
+ *  A class to provide support for using Ivy.  Assumes the ivy jar files are in $GROOVY_HOME.
  *
  *  @author Russel Winder
  *  @version $Revision$ $Date$
  */
 final class Ivy {
   private final Binding binding ;
-  Ivy ( final Binding binding ) { this.binding = binding ; }
-  void task_cachepath ( map ) { binding.Ant.cachepath ( map ) }
-  void task_configure ( map ) { binding.Ant.configure ( map ) }
-  void task_publish ( map ) { binding.Ant.publish ( map ) }
-  void task_report ( map ) { binding.Ant.report ( map ) }
-  void task_resolve ( map ) { binding.Ant.resolve ( map ) }
-  void task_retrieve ( map ) { binding.Ant.retrieve ( map ) }
+  private final classpath = 'ivy.class.path'
+  Ivy ( final Binding binding ) {
+    this.binding = binding ;
+    binding.Ant.path ( id : classpath ) { fileset ( dir : System.getenv ( ).GROOVY_HOME , includes : 'ivy*.jar' ) }
+    binding.Ant.taskdef ( resource : 'fr/jayasoft/ivy/ant/antlib.xml' , classpathref : classpath )
+  }
+  void cachepath ( map ) { binding.Ant.cachepath ( map ) }
+  void configure ( map ) { binding.Ant.configure ( map ) }
+  void publish ( map ) { binding.Ant.publish ( map ) }
+  void report ( map ) { binding.Ant.report ( map ) }
+  void resolve ( map ) { binding.Ant.resolve ( map ) }
+  void retrieve ( map ) { binding.Ant.retrieve ( map ) }
 }

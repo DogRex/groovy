@@ -1,12 +1,19 @@
-final buildDirectory = 'build'
-final sourceDirectory = 'source'
-final exampleDirectory = sourceDirectory + '/example' 
+/*
+ *  There seems to be a bug in the lexical scoping of closures. So if we make things variables then we get
+ *  failure.  If we put things in the binding everything works.
+ */
+
+/*final*/ buildDirectory = 'build'
+/*final*/ sourceDirectory = 'source'
+/*final*/ exampleDirectory = sourceDirectory + '/example' 
 
 includeTargets << org.codehaus.groovy.gant.targets.Clean
 cleanDirectory << buildDirectory
 cleanPattern <<  '**/*~'
 
-task ( run : 'Run the Ivy "Hello" test.' ) {
+ //  Cannot have a target called run as it creates an infinite mutual recursion. :-(
+
+task ( runX : 'Run the Ivy "Hello" test.' ) {
   def classPathRef = 'classpath'
   Ant.mkdir ( dir : buildDirectory )
   Ant.path ( id : classPathRef )
@@ -20,4 +27,4 @@ task ( run : 'Run the Ivy "Hello" test.' ) {
 
 task ( cleanCache : 'Clean the Ivy cache.' ) { Ant.delete ( dir : System.getenv ( ).HOME + '/.ivy/cache' ) }
 
-task ( 'default' : 'The default task in run.' ) { run ( ) }
+task ( 'default' : 'The default task in run.' ) { runX ( ) }
