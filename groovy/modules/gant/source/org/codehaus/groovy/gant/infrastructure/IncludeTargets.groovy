@@ -24,14 +24,15 @@ package org.codehaus.groovy.gant.infrastructure
  *  @version $Revision$ $Date$
  */
 class IncludeTargets extends AbstractInclude {
-  IncludeTargets ( binding , groovyShell ) { super ( binding , groovyShell ) }
+  IncludeTargets ( binding ) { super ( binding ) }
   def leftShift ( Class theClass ) {
-    throw new RuntimeException ( 'Implement << in IncludeTargets for type Class.' ) 
+    def className = theClass.name
+    def index = className.lastIndexOf ( '.' ) + 1
+    binding.setVariable ( className[index..-1] , createInstance ( theClass ) )
     this
   }
-  def leftShift ( File f ) { groovyShell.evaluate ( f ) ; this }
-  def leftShift ( GString s ) { groovyShell.evaluate ( s ) ; this }
-  def leftShift ( String s ) { groovyShell.evaluate ( s ) ; this }
+  def leftShift ( File f ) { binding.groovyShell.evaluate ( f ) ; this }
+  def leftShift ( String s ) { binding.groovyShell.evaluate ( s ) ; this }
   def leftShift ( List l ) { l.each { item -> this << item } ; this }
   def leftShift ( Object o ) {
     throw new RuntimeException ( 'Ignoring includeTargets of type ' + o.class.name )

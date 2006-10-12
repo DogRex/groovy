@@ -24,12 +24,8 @@ package org.codehaus.groovy.gant.infrastructure
  */
 abstract class AbstractInclude {
   protected binding
-  protected groovyShell
   protected createInstance ( Class theClass ) {
-    theClass.getConstructor ( Map ).newInstance ( [ [ Ant : binding.getVariable ( 'Ant' ) ] ] as Object[] )
+    theClass.getConstructor ( Binding ).newInstance ( [ binding ] as Object[] )
   }  
-  protected AbstractInclude ( binding , groovyShell ) {
-    this.binding = binding
-    this.groovyShell = groovyShell
-  }
+  protected AbstractInclude ( binding ) { this.binding = binding }
 }

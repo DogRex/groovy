@@ -2,9 +2,9 @@ final buildDirectory = 'build'
 final sourceDirectory = 'source'
 final exampleDirectory = sourceDirectory + '/example' 
 
-includeTargets << 'clean'
-clean.directory << buildDirectory
-clean.pattern <<  '**/*~'
+includeTargets << org.codehaus.groovy.gant.targets.Clean
+cleanDirectory << buildDirectory
+cleanPattern <<  '**/*~'
 
 task ( run : 'Run the Ivy "Hello" test.' ) {
   def classPathRef = 'classpath'

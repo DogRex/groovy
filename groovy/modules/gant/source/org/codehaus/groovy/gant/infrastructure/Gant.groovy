@@ -19,29 +19,30 @@ package org.codehaus.groovy.gant.infrastructure
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
 
 /**
- *  This class provides infrastructure and an executable command for using Groovy + AntBuilder
- *  as a build tool in a way similar to Rake and SCons.  However, where Rake and SCons are
- *  dependency programming systems based on Ruby and Python respectively, Gant is simply a way
- *  of scripting Ant tasks; the Ant tasks do all the dependency management.
+ *  This class provides infrastructure and an executable command for using Groovy + AntBuilder as a build
+ *  tool in a way similar to Rake and SCons.  However, where Rake and SCons are dependency programming
+ *  systems based on Ruby and Python respectively, Gant is simply a way of scripting Ant tasks; the Ant
+ *  tasks do all the dependency management.
  *
- *  <p>A Gant build specification file (default name build.gant) is assumed to contain one or
- *  more classes where the first is the main class whose public nullary functions returning a
- *  <code>Task</code> are the targets -- in the Ant sense.  Dependencies between targets are
- *  handled as function calls within functions. Execution of Ant tasks is by calling methods on
- *  the object called `ant', which is predefined as an <code>GantBuilder</code> instance.</p>
+ *  <p>A Gant build specification file (default name build.gant) is assumed to contain one or more classes
+ *  where the first is the main class whose public nullary functions returning a <code>Task</code> are the
+ *  targets -- in the Ant sense.  Dependencies between targets are handled as function calls within
+ *  functions. Execution of Ant tasks is by calling methods on the object called `ant', which is predefined
+ *  as an <code>GantBuilder</code> instance.</p>
  *
- *  <p>On execution of the gant command, the Gant build specification will be injected with a
- *  number of features.  An object called `ant' is automatically created so methods can use this
- *  object to get access to the Ant tasks without having to create an object explicitly.  A
- *  method called `description' is also injected.  If there is a call to this function (which
- *  takes a single String parameter) is the first statement in a method then it becomes the `one
- *  liner' documentation for the task.  This is used by the `gant -T' / `gant --targets' command
- *  to present a list of all the documented targets.</p>
+ *  <p>On execution of the gant command, the Gant build specification will be injected with a number of
+ *  features.  An object called `ant' is automatically created so methods can use this object to get access
+ *  to the Ant tasks without having to create an object explicitly.  A method called `description' is also
+ *  injected.  If there is a call to this function (which takes a single String parameter) is the first
+ *  statement in a method then it becomes the `one liner' documentation for the task.  This is used by the
+ *  `gant -T' / `gant --targets' command to present a list of all the documented targets.</p>
  *
+ *  <p>NB In the following example some extra spaces have had to be introduced because some of the patterns
+ *  look like comment ends:-(</p>
+ * 
  *  <p>A trivial example build specification is:</p>
  *
  *  <pre>
- *        
  *      task ( 'default' : 'The default target.' ) {
  *        clean ( )
  *        otherStuff ( )
@@ -50,18 +51,31 @@ import org.codehaus.groovy.control.MultipleCompilationErrorsException
  *        clean ( )
  *      }
  *      task ( clean : 'Clean the directory and subdirectories' ) {
- *        ant.delete ( dir : 'build' , quiet : 'true' )
- *        ant.delete ( quiet : 'true' ) { fileset ( dir : '.' , includes : '** /*~'  , defaultexcludes : 'no' ) }
+ *        Ant.delete ( dir : 'build' , quiet : 'true' )
+ *        Ant.delete ( quiet : 'true' ) { fileset ( dir : '.' , includes : '** /*~'  , defaultexcludes : 'false' ) }
  *      }
- *
  * </pre>
  *
- *  <p><em>Note that there is an space between the two asterisks and the solidus in the fileset
- *  line that should notbe there, we have to have it in the source because asterisk followed by
- *  solidus is end of comment in Groovy</em></p>
+ *  <p>or, using some a ready made targets class:</p>
  *
- *  <p>Clearly this does not show the true power of using Groovy instead of XML for specifying
- *  builds, but hopefully you get the idea.</p>
+ *  <pre>
+ *      includeTargets << org.codehaus.groovy.gant.targets.Clean
+ *      cleanPattern << [ '** / *~' , '** / *.bak' ]
+ *      cleanDirectory << 'build'
+ *      task ( 'default' : 'The default target.' ) {
+ *        clean ( )
+ *        otherStuff ( )
+ *      }
+ *      task ( otherStuff : 'Other stuff' ) {
+ *        clean ( )
+ *      }
+ *
+ *  <p><em>Note that there is an space between the two asterisks and the solidus in the fileset line that
+ *  should notbe there, we have to have it in the source because asterisk followed by solidus is end of
+ *  comment in Groovy</em></p>
+ *
+ *  <p>Clearly this does not show the true power of using Groovy instead of XML for specifying builds, but
+ *  hopefully you get the idea.</p>
  *
  *  @author Russel Winder <russel@russel.org.uk>
  *  @version $Revision$ $Date$
@@ -91,8 +105,9 @@ final class Gant {
   private Gant ( ) {
     binding.setVariable ( 'gantLib' , gantLib )
     binding.setVariable ( 'Ant' , new GantBuilder ( ) )
-    binding.setVariable ( 'includeTargets' , new IncludeTargets ( binding , groovyShell ) )
-    binding.setVariable ( 'includeTool' ,  new IncludeTool ( binding , groovyShell ) )
+    binding.setVariable ( 'groovyShell' , groovyShell )
+    binding.setVariable ( 'includeTargets' , new IncludeTargets ( binding ) )
+    binding.setVariable ( 'includeTool' ,  new IncludeTool ( binding ) )
     binding.setVariable ( 'task' , task )
     binding.setVariable ( 'message' , message )
  }

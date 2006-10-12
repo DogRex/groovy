@@ -26,8 +26,8 @@ import org.codehaus.groovy.gant.infrastructure.GantState
  *  @version $Revision$ $Date$
  */
 final class Subdirectories {
-  private final Map environment ;
-  Subdirectories ( final Map environment ) { this.environment = environment ; }
+  private final Binding binding ;
+  Subdirectories ( final Binding binding ) { this.binding = binding ; }
   void runSubprocess ( final String command , final File directory ) {
     if ( GantState.verbosity > GantState.NORMAL ) { println "\n============ ${directory} ================" }
     //  If we allowed ourselves Java SE 5.0 then we could use ProcessBuilder but we restrict ourselves to Java 1.4.
