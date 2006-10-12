@@ -16,8 +16,6 @@
 
 package org.codehaus.groovy.gant.targets
 
-import org.codehaus.groovy.gant.infrastructure.GantBuilder
-
 /**
  *  A class to provide clean and clobber actions for Gant build scripts.  Maintains separate lists of
  *  Ant pattern specifications and directory names for clean and for clobber.  The lists are used as the
@@ -27,32 +25,35 @@ import org.codehaus.groovy.gant.infrastructure.GantBuilder
  *  @version $Revision$ $Date$
  */
 final class Clean {
-  def cleanPattern = []
-  def cleanDirectory = []
-  def clobberPattern = []
-  def clobberDirectory = []
+  private Binding binding 
+  private cleanPatternList = []
+  private cleanDirectoryList = []
+  private clobberPatternList = []
+  private clobberDirectoryList = []
   private performPatternAction ( List l ) {
     if ( l.size ( ) > 0 ) {
-      environment.Ant.delete ( quiet : 'false' ) {
-        fileset ( dir : '.' , includes : l.join ( ',' ) , defaultexcludes : 'no' )
+      binding.Ant.delete ( quiet : 'false' ) {
+        fileset ( dir : '.' , includes : l.flatten ( ).join ( ',' ) , defaultexcludes : 'false' )
       }
     }
   }
   private performDirectoryAction ( List l ) {
-    l.each { item -> environment.Ant.delete ( dir : item , quiet : 'false' )
-    }
+    l.flatten ( ).each { item -> binding.Ant.delete ( dir : item , quiet : 'false' ) }
   }
-  private Map environment 
-  Clean ( Map environment ) {
-    this.environment = environment
-    environment.task ( clean : 'Action the cleaning.' ) {
+  Clean ( Binding binding ) {
+    this.binding = binding
+    binding.task.call ( clean : 'Action the cleaning.' ) {
       performPatternAction ( cleanPatternList )
       performDirectoryAction ( cleanDirectoryList )
-    }
-    environment.task ( clobber : 'Action the clobbering.  Does the cleaning first.' ) {
+      }
+    binding.setVariable ( 'cleanPattern' , cleanPatternList )
+    binding.setVariable ( 'cleanDirectory' , cleanDirectoryList )
+    binding.task.call ( clobber : 'Action the clobbering.  Do the cleaning first.' ) {
       depends ( clean )
       performPatternAction ( clobberPatternList )
       performDirectoryAction ( clobberDirectoryList )
-    }
+      }
+    binding.setVariable ( 'clobberPattern' , clobberPatternList )
+    binding.setVariable ( 'clobberDirectory' , clobberDirectoryList )
   }
 }

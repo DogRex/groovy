@@ -17,7 +17,7 @@
 //  Author : Russel Winder
 //  $Revision$ $Date$
 
-final version = new File ( 'VERSION.txt' ).text
+final version = new File ( 'VERSION.txt' ).text.trim ( )
 final sourceDirectory = 'source'
 final testsDirectory = 'tests'  
 final groovyHome = System.getenv ( 'GROOVY_HOME' )

@@ -26,7 +26,7 @@ package org.codehaus.groovy.gant.infrastructure
  *  @version $Revision$ $Date$
  */
 class IncludeTool extends AbstractInclude {
-  IncludeTool ( binding , groovyShell ) { super ( binding , groovyShell ) }
+  IncludeTool ( binding ) { super ( binding  ) }
   def leftShift ( Class theClass ) {
     def className = theClass.name
     def index = className.lastIndexOf ( '.' ) + 1
@@ -36,16 +36,21 @@ class IncludeTool extends AbstractInclude {
   def leftShift ( File file ) {
     def className = file.name
     className = className[ 0 ..< className.lastIndexOf ( '.' ) ]
-    def theClass = groovyShell.evaluate ( file.text + " ; return ${className}" )
+    def theClass = binding.groovyShell.evaluate ( file.text + " ; return ${className}" )
     binding.setVariable ( className , createInstance ( theClass ) )
     this
   }
-  def leftShift ( GString s ) {
-    throw new RuntimeException ( 'Implement << in IncludeTools for type GString.' ) 
-    this
-  }
-  def leftShift ( String s ) {
-    throw new RuntimeException ( 'Implement << in IncludeTools for type String.' ) 
+  def leftShift ( String script ) {
+    def className = ''
+    final javaIdentifierRegexAsString = /\b\p{javaJavaIdentifierStart}(?:\p{javaJavaIdentifierPart})*\b/
+    final javaQualifiedNameRegexAsString = /\b${javaIdentifierRegexAsString}(?:[.\/]${javaIdentifierRegexAsString})*\b/
+    script.eachMatch ( /(?:(?:public|final))*[ \t\n]*class[ \t\n]*(${javaIdentifierRegexAsString})[ \t\n]*(?:extends[ \t\n]*${javaQualifiedNameRegexAsString})*[ \t\n]*\{/ ) { opening , name ->
+      //  There has to be a better way of doing this.  Assume that the first instance of the class
+      //  declaration is the one we wnat and that any later ones are not an issue.
+      if ( className == '' ) { className = name }
+    }
+    def theClass = binding.groovyShell.evaluate ( script + " ; return ${className}" )
+    binding.setVariable ( className , createInstance ( theClass ) )
     this
   }
   def leftShift ( List l ) { l.each { item -> this << item } ; this }

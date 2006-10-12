@@ -17,7 +17,8 @@
 //  Author :  Russel Winder
 // $Revision$ $Date$
  
-includeTargets << '../source/org/codehaus/groovy/gant/targets/clean.gant'
+//includeTargets << new File ( '../source/org/codehaus/groovy/gant/targets/clean.gant' )
+includeTargets << org.codehaus.groovy.gant.targets.Clean
 cleanPattern << [ '**/*~' ,  '**/*.bak' ]
 cleanDirectory << 'build'
 

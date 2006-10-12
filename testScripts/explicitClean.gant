@@ -31,5 +31,5 @@ task ( otherStuff : 'Other stuff.' ) {
 task ( clean : 'Clean the directory and subdirectories.' ) {
   println ( 'Clean' )
   Ant.delete ( dir : 'build' , quiet : 'true' )
-  Ant.delete ( quiet : 'true' ) { fileset ( dir : '.' , includes : '**/*~,**/*.bak' , defaultexcludes : 'no' ) }
+  Ant.delete ( quiet : 'true' ) { fileset ( dir : '.' , includes : '**/*~,**/*.bak' , defaultexcludes : 'false' ) }
 }

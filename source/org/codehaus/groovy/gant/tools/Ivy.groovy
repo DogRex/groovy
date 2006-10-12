@@ -23,12 +23,12 @@ package org.codehaus.groovy.gant.tools
  *  @version $Revision$ $Date$
  */
 final class Ivy {
-  private final Map environment ;
-  Ivy ( final Map environment ) { this.environment = environment ; }
-  void task_cachepath ( theMap ) { environment.Ant.cachepath ( theMap ) }
-  void task_configure ( theMap ) { environment.Ant.configure ( theMap ) }
-  void task_publish ( theMap ) { environment.Ant.publish ( theMap ) }
-  void task_report ( theMap ) { environment.Ant.report ( theMap ) }
-  void task_resolve ( theMap ) { environment.Ant.resolve ( theMap ) }
-  void task_retrieve ( theMap ) { environment.Ant.retrieve ( theMap ) }
+  private final Binding binding ;
+  Ivy ( final Binding binding ) { this.binding = binding ; }
+  void task_cachepath ( map ) { binding.Ant.cachepath ( map ) }
+  void task_configure ( map ) { binding.Ant.configure ( map ) }
+  void task_publish ( map ) { binding.Ant.publish ( map ) }
+  void task_report ( map ) { binding.Ant.report ( map ) }
+  void task_resolve ( map ) { binding.Ant.resolve ( map ) }
+  void task_retrieve ( map ) { binding.Ant.retrieve ( map ) }
 }
