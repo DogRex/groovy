@@ -16,57 +16,55 @@
 
 package org.codehaus.groovy.gant.infrastructure ;
 
-import java.io.BufferedReader ;
-import java.io.File ;
-import java.io.FileNotFoundException ;
-import java.io.FileReader ;
-import java.io.IOException ;
+import java.util.HashSet ;
+import java.util.Iterator ;
 
+import groovy.lang.Binding ;
+import groovy.lang.Closure ;
 import groovy.lang.DelegatingMetaClass ;
-import groovy.lang.GroovyShell ;
 import groovy.lang.MetaClassRegistry ;
+import groovy.lang.MissingPropertyException ;
 
 /**
- *  This abstract class is a code sharing class for subclasses.
+ *  This class is the custom metaclass used for supporting execution of build descriptions in Gant.
+ *
+ *  <p>This metaclass is only here to deal with <code>depends</code> method calls.  To process these
+ *  properly, all closures from the binding called during execution of the Gant specification must be logged
+ *  so that when a depends happens the full closure call hiistory is available.</p>
  *
  *  @author Russel Winder
  *  @version $Revision$ $Date$
  */
-abstract class GantMetaClass extends DelegatingMetaClass {
-  protected GantMetaClass ( final Class theClass ) {
+class GantMetaClass extends DelegatingMetaClass {
+  private final static HashSet methodsInvoked = new HashSet ( ) ;
+  private final Binding binding ;
+  protected GantMetaClass ( final Class theClass , final Binding binding ) {
     //  NB getIntance is the name of the method !
     super ( MetaClassRegistry.getIntance ( 0 ).getMetaClass ( theClass ) ) ;
+    this.binding = binding ;
   }
-  protected Class readAndCompile ( final String path ) {
-    final File file = new File ( path ) ;
-    if ( file.canRead ( ) && file.isFile ( ) ) {
-      final StringBuffer buffer = new StringBuffer ( ) ;
-      buffer.append ( "import org.apache.tools.ant.Task ; " ) ;
-      try {
-        final BufferedReader reader = new BufferedReader ( new FileReader ( file ) ) ;
-        while ( true ) {
-          final String line = reader.readLine ( ) ;
-          if ( line == null ) { break ; }
-          buffer.append ( line + "\n" ) ;
+  public Object invokeMethod ( final Object object , final String methodName , final Object[] arguments ) {
+    Object returnObject = null ;
+    if ( methodName.equals ( "depends" ) ) {
+      for ( int i = 0 ; i < arguments.length ; ++i ) {
+        if ( arguments[i] instanceof Closure ) {
+          final Closure closure = ( Closure) arguments[i] ;
+          if ( ! methodsInvoked.contains ( closure ) ) {
+            methodsInvoked.add ( closure ) ;         
+            returnObject = closure.call ( ) ;
+          }
         }
-      }
-      catch ( final FileNotFoundException fnfe ) { throw new RuntimeException ( "Could not find file " + path ) ; }
-      catch ( final IOException ioe ) { throw new RuntimeException ( "Could not read the file file " + path ) ; }
-      if ( buffer.length ( ) > 0 ) {
-        String className = file.getName ( ) ;
-        className = className.substring ( 0 , className.lastIndexOf ( '.' ) ) ;
-        return (Class) ( ( new GroovyShell ( ) ).evaluate ( buffer.toString ( ) + "; return " + className + ".class"  ) ) ;
+        else { throw new RuntimeException ( "depends called with non-Closure argument." ) ; }
       }
     }
-    throw new RuntimeException ( path + " is not a readable plain file." ) ;
-  }
-  protected abstract void installClass ( String methodName , Class theClass ) ;
-  protected void processInclude ( final String methodName , final Object[] arguments ) {
-    for ( int i = 0 ; i < arguments.length ; ++i ) {
-      final Object theArgument = arguments[i] ;
-      if ( theArgument instanceof Class ) { installClass ( methodName , (Class) theArgument ) ; }
-      else if ( theArgument instanceof String ) { installClass ( methodName , readAndCompile ( (String) theArgument ) ) ; }
-      else { throw new RuntimeException ( theArgument + "is not of type Class or String." ) ; }
+    else {
+      returnObject = super.invokeMethod ( object , methodName , arguments ) ;
+      try {
+        final Closure closure = (Closure) binding.getVariable ( methodName ) ;
+        if ( closure != null ) { methodsInvoked.add ( closure ) ; }
+      }
+      catch ( final MissingPropertyException mpe ) { }      
     }
+    return returnObject ;
   }
 }

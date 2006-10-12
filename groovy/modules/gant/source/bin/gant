@@ -8,6 +8,7 @@
 
 #  Use -cp or -classpath just as in java to use a custom classpath
 
-. `dirname "$0"`/startGroovy
+DIRNAME=`dirname "$0"`
+. "$DIRNAME/startGroovy"
 
 startGroovy org.codehaus.groovy.gant.infrastructure.Gant "$@"

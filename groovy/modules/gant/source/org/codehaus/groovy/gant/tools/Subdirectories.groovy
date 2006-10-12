@@ -22,22 +22,22 @@ import org.codehaus.groovy.gant.infrastructure.GantState
  *  A class providing methods for executing processes in all subdirectories of the working directory
  *  for use in Gant scripts.  This is not really a target but a target support method.
  *
- *  <p>Requires Java SE 5 as it used <code>ProcessBuilder</code>.</p>
- *
  *  @author Russel Winder
  *  @version $Revision$ $Date$
  */
 final class Subdirectories {
-  void runSubprocess ( String command , File directory ) {
-    if ( GantState.verbosity > GantState.NORMAL ) { System.out.println "\n============ ${directory} ================" }
+  private final Map environment ;
+  Subdirectories ( final Map environment ) { this.environment = environment ; }
+  void runSubprocess ( final String command , final File directory ) {
+    if ( GantState.verbosity > GantState.NORMAL ) { println "\n============ ${directory} ================" }
     //  If we allowed ourselves Java SE 5.0 then we could use ProcessBuilder but we restrict ourselves to Java 1.4.
     //def process = ( new ProcessBuilder ( [ 'sh' , '-c' , command ] )).directory ( directory ).start ( )
     def process = command.execute ( null , directory )
-    if ( GantState.verbosity > GantState.QUIET ) { process.in.eachLine { line -> println line } }
+    if ( GantState.verbosity > GantState.QUIET ) { process.in.eachLine { line -> println ( line ) } }
   }
-  void forAllSubdirectoriesRun ( String command ) {
+  void forAllSubdirectoriesRun ( final String command ) {
     ( new File ( '.' ) ).eachDir { directory -> runSubprocess ( command , directory ) }
   }
-  void forAllSubdirectoriesAnt ( String target ) { forAllSubdirectoriesRun ( 'ant ' + target ) }
-  void forAllSubdirectoriesGant ( String target ) { forAllSubdirectoriesRun ( 'gant ' + target ) }  
+  void forAllSubdirectoriesAnt ( final String target ) { forAllSubdirectoriesRun ( 'ant ' + target ) }
+  void forAllSubdirectoriesGant ( final String target ) { forAllSubdirectoriesRun ( 'gant ' + target ) }  
 }

@@ -28,20 +28,10 @@ final class TargetMetaClassLookup_Test extends GantTestCase {
   void setUp ( ) {
     super.setUp ( )
     System.setIn ( new StringBufferInputStream ( '''
-class build {
-  def build ( ) {
-    includeTargets ( org.codehaus.groovy.gant.targets.Clean )
-    addCleanPattern ( "**/*~" )
-  }
-  Task something ( ) {
-    description ( "Do something." )
-    ant.echo ( message : "Did something." )
-  }
-  public Task "default" ( ) {
-    description ( "Default is something." )
-    something ( )
-  }
-}
+includeTargets << new File ( 'source/org/codehaus/groovy/gant/targets/clean.gant' )
+cleanPattern << "**/*~"
+task ( something : "Do something." ) { Ant.echo ( message : "Did something." ) }
+task ( "default" : "Default is something." ) { something ( ) }
 ''' ) )  }
     
   //  It seems that the same org.codehaus.groovy.gant.targets.Clean instance is used for all
@@ -53,9 +43,9 @@ class build {
   void testClean ( ) {
     //  Have to do this dry run or the result is indeterminate.
     Gant.main ( [ '-n' , '-f' ,  '-'  , 'clean' ] as String[] )
-    assertEquals ( """   [delete] quiet : 'false'
-  [fileset] defaultexcludes : 'no' , includes : ',**/*~' , dir : '.'
-""" , output.toString ( ) ) 
+    assertEquals ( '''   [delete] quiet : 'false'
+  [fileset] defaultexcludes : 'no' , includes : '**/*~' , dir : '.'
+''' , output.toString ( ) )
   }
   void testDefault ( ) {
     Gant.main ( [ '-f' ,  '-'  ] as String[] )

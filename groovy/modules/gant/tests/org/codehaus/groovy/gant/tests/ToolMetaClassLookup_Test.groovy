@@ -28,19 +28,9 @@ final class ToolMetaClassLookup_Test extends GantTestCase {
   void setUp ( ) {
     super.setUp ( )
     System.setIn ( new StringBufferInputStream ( '''
-class build {
-  def build ( ) {
-    includeTool ( org.codehaus.groovy.gant.tools.Subdirectories )
-  }
-  Task something ( ) {
-    description ( "Do something." )
-    Subdirectories.runSubprocess ( "echo yes" , new File ( "source" ) )
-  }
-  public Task "default" ( ) {
-    description ( "Default is something." )
-    something ( )
-  }
-}
+includeTool << org.codehaus.groovy.gant.tools.Subdirectories
+task ( something : 'Do something.' ) { Subdirectories.runSubprocess ( "echo yes" , new File ( "source" ) ) }
+task ( "default" : "Default is something." ) { something ( ) }
 ''' ) )  }
 
   void testDefault ( ) {

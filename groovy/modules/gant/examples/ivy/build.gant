@@ -1,24 +1,23 @@
-class build {
-  final buildDirectory = 'build'
-  final sourceDirectory = 'source'
-  final exampleDirectory = sourceDirectory + '/example' 
-  public build ( ) {
-    includeTargets ( org.codehaus.groovy.gant.targets.Clean )
-    addCleanDirectory ( buildDirectory ) 
-    addCleanPattern ( '**/*~' )
+final buildDirectory = 'build'
+final sourceDirectory = 'source'
+final exampleDirectory = sourceDirectory + '/example' 
+
+includeTargets << 'clean'
+clean.directory << buildDirectory
+clean.pattern <<  '**/*~'
+
+task ( run : 'Run the Ivy "Hello" test.' ) {
+  def classPathRef = 'classpath'
+  Ant.mkdir ( dir : buildDirectory )
+  Ant.path ( id : classPathRef )
+  includeTool << org.codehaus.groovy.gant.tools.Ivy
+  Ivy.cachepath ( organisation : 'apache' , module : 'commons-lang' , revision : '2.1' ,  pathid : classPathRef , inline : 'true' )
+  Ant.javac ( srcdir : sourceDirectory , destdir : buildDirectory , debug : 'true' , classpathref : classPathRef )
+  Ant.java ( classname : 'example.Hello' , classpathref : classPathRef ) {
+    classpath { pathelement ( location : buildDirectory ) }
   }
-  Task run ( ) {
-    description ( 'Rund the Ivy "Hello" test.' )
-    def classPathRef = 'classpath'
-    ant.mkdir ( dir : buildDirectory )
-    ant.path ( id : classPathRef )
-    includeTool ( org.codehaus.groovy.gant.tools.Ivy )
-    Ivy.cachepath ( organisation : 'apache' , module : 'commons-lang' , revision : '2.1' ,  pathid : classPathRef , inline : 'true' )
-    ant.javac ( srcdir : sourceDirectory , destdir : buildDirectory , debug : 'true' , classpathref : classPathRef)
-    ant.java ( classname : 'example.Hello' , classpathref : classPathRef ) {
-      ant.classpath { pathelement ( location : buildDirectory ) }
-    }
-  }
-  Task cleanCache ( ) { ant.delete ( dir : System.getenv ( ).HOME + '/.ivy/cache' ) }
-  public Task 'default' ( ) { run ( ) }
 }
+
+task ( cleanCache : 'Clean the Ivy cache.' ) { Ant.delete ( dir : System.getenv ( ).HOME + '/.ivy/cache' ) }
+
+task ( 'default' : 'The default task in run.' ) { run ( ) }

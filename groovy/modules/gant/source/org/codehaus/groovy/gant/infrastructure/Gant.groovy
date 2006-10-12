@@ -42,24 +42,17 @@ import org.codehaus.groovy.control.MultipleCompilationErrorsException
  *
  *  <pre>
  *        
- *        class build {
- *          public Task 'default' ( ) { // Parse fails if public removed.  Why?
- *            description ( 'The default target.' )
- *            clean ( )
- *            otherStuff ( )
- *          }
- *          Task otherStuff ( ) {
- *            description ('Other stuff' )
- *            clean ( )
- *          }
- *          Task clean ( ) {
- *            description ( 'Clean the directory and subdirectories' )
- *            ant.delete ( dir : 'build' , quiet : 'true' )
- *            ant.delete ( quiet : 'true' ) {
- *              ant.fileset ( dir : '.' , includes : '** /*~'  , defaultexcludes : 'no' )
- *            }
- *          }
- *        }
+ *      task ( 'default' : 'The default target.' ) {
+ *        clean ( )
+ *        otherStuff ( )
+ *      }
+ *      task ( otherStuff : 'Other stuff' ) {
+ *        clean ( )
+ *      }
+ *      task ( clean : 'Clean the directory and subdirectories' ) {
+ *        ant.delete ( dir : 'build' , quiet : 'true' )
+ *        ant.delete ( quiet : 'true' ) { fileset ( dir : '.' , includes : '** /*~'  , defaultexcludes : 'no' ) }
+ *      }
  *
  * </pre>
  *
@@ -75,59 +68,53 @@ import org.codehaus.groovy.control.MultipleCompilationErrorsException
  */
 final class Gant {
   private buildFileName = 'build.gant'
-  private buildFileText = ''
+  private final Map taskDescriptions = new TreeMap ( ) 
+  private final binding = new Binding ( )
+  private final groovyShell = new GroovyShell ( binding )
+  private final task = { map , closure ->
+    def taskName = map.keySet ( ).iterator ( ).next ( )
+    def taskDescription = map.get ( taskName )
+    if ( taskDescription ) { taskDescriptions.put ( taskName , taskDescription ) }
+    closure.metaClass = new GantMetaClass ( closure.class , binding )                            
+    binding.setVariable ( taskName , closure )
+  }
+  private final message = { tag , message ->
+    def padding = 9 - tag.length ( )
+    if ( padding < 0 ) { padding = 0 }
+    println ( "           ".substring ( 0 , padding ) + '[' + tag + '] ' + message )
+  }
   private List gantLib ; {
     def item = System.getenv ( ).GANTLIB ;
     if ( item == null ) { gantLib = [] }
     else { gantLib = Arrays.asList ( item.split ( System.properties.'path.separator' ) ) }
   }
-  private Gant ( ) { }
-  private Class compileBuildFile ( final String metaClassType ) {
-    try {
-      def buildClassOpening = ''
-      def buildClassName = ''
-      final javaIdentifierRegexAsString = /\b\p{javaJavaIdentifierStart}(?:\p{javaJavaIdentifierPart})*\b/
-      final javaQualifiedNameRegexAsString = /\b${javaIdentifierRegexAsString}(?:[.\/]${javaIdentifierRegexAsString})*\b/
-      buildFileText.eachMatch ( /(?:(?:public|final))*[ \t\n]*class[ \t\n]*(${javaIdentifierRegexAsString})[ \t\n]*(?:extends[ \t\n]*${javaQualifiedNameRegexAsString})*[ \t\n]*\{/ ) { classOpening , className ->
-        //  There has to be a better way of doing this.  Assume that the first instance of the class
-        //  declaration is the one we wnat and that any later ones are not an issue.
-        if ( buildClassOpening == '' ) {
-          buildClassOpening = classOpening
-          buildClassName = className
-        }
-      }
-      assert buildClassOpening != ''
-      assert buildClassName != ''
-      buildFileText = "import org.codehaus.groovy.gant.infrastructure.GantBuilder; import org.apache.tools.ant.Task;" +
-       buildFileText.replace ( buildClassOpening , buildClassOpening +
-                               "private final ant = GantBuilder.createInstance ( \"${metaClassType}\" ) ; { this.setMetaClass ( new org.codehaus.groovy.gant.infrastructure.${metaClassType}GantMetaClass ( ${buildClassName} ) ) }" )
-      def buildClassClass = ( new GroovyShell ( ) ).evaluate ( buildFileText + '; return ' + buildClassName + '.class'  )
-      assert buildClassClass != null
-      return buildClassClass
-    }
-    catch ( MultipleCompilationErrorsException mcee ) { println ( mcee.message ) ; System.exit ( 1 ) }
-    catch ( MissingPropertyException mpe ) { println ( mpe.message ) ; System.exit ( 1 ) ; }
-  }
+  private Gant ( ) {
+    binding.setVariable ( 'gantLib' , gantLib )
+    binding.setVariable ( 'Ant' , new GantBuilder ( ) )
+    binding.setVariable ( 'includeTargets' , new IncludeTargets ( binding , groovyShell ) )
+    binding.setVariable ( 'includeTool' ,  new IncludeTool ( binding , groovyShell ) )
+    binding.setVariable ( 'task' , task )
+    binding.setVariable ( 'message' , message )
+ }
   private targetList ( targets ) {
-    def documentation = new TreeMap ( )
-    def buildObject = compileBuildFile ( GantBuilder.targetList ).newInstance ( )
-    for ( p in ( (Map) buildObject.retrieveAllDescriptions ( ) ).entrySet ( ) ) { println ( 'gant ' + p.getKey ( ) + '  --  ' + p.getValue ( ) ) }
+    for ( p in taskDescriptions.entrySet ( ) ) { println ( 'gant ' + p.key + '  --  ' + p.value ) }
   }
   private printDispatchExceptionMessage ( target , method , message ) {
     println ( ( target == method ) ? "Target ${method} does not exist." : "Could not execute method ${method}.\n${message}" )
   }
   private dispatch ( targets ) {
-    def buildObject = compileBuildFile ( GantBuilder.execution ).newInstance ( )
+    def metaClassRegistry = MetaClassRegistry.getIntance ( 0 )
+    //metaClassRegistry.setMetaClass ( Closure , new GantMetaClass ( Closure ) )
     try {
       if ( targets.size ( ) > 0 ) {
         targets.each { target ->
-          try { buildObject.invokeMethod ( target , null ) }
-          catch ( MissingMethodException mme ) { printDispatchExceptionMessage ( target , mme.method , mme.message ) }
+          try { binding.getVariable ( target ).run ( ) }
+          catch ( MissingPropertyException mme ) { printDispatchExceptionMessage ( target , mme.property , mme.message ) }
         }
       }
       else {
-        try { buildObject.'default' ( ) }
-        catch ( MissingMethodException mme ) { printDispatchExceptionMessage ( 'default' , mme.method , mme.message ) }
+        try { binding.getVariable ( 'default' ).run ( ) }
+        catch ( MissingPropertyException mme ) { printDispatchExceptionMessage ( 'default' , mme.property , mme.message ) }
       }
     }
     catch ( Exception e ) { println ( e.message ) }
@@ -161,7 +148,7 @@ final class Gant {
     if ( options.q ) { GantState.verbosity = GantState.QUIET }
     if ( options.s ) { GantState.verbosity = GantState.SILENT }
     if ( options.v ) { GantState.verbosity = GantState.VERBOSE }
-    if ( options.V ) { println 'Gant version 0.1.0' ; return }
+    if ( options.V ) { println 'Gant version 0.2.0' ; return }
     def targets = options.arguments ( )
     //  We need to deal with unknown options, which should have been unprocessed by CliBuilder.
     //  We know though that unexpected single charactere options get absorbed by Commons CLI.
@@ -175,7 +162,11 @@ final class Gant {
       }
     }
     if ( gotUnknownOptions ) { cli.usage ( ) ; return ; }
-    if ( buildFileName == '-' ) { buildFileText = System.in.text }
+    def buildFileText = ''
+    if ( buildFileName == '-' ) {
+      buildFileText = System.in.text
+      buildFileName = "standard_input"
+    }
     else {
       def file = new File ( buildFileName ) 
       if ( ! file.isFile ( ) ) {
@@ -184,7 +175,7 @@ final class Gant {
       }
       buildFileText =  ( new File ( buildFileName ) ).text
     }
-    assert buildFileText != ''
+    groovyShell.evaluate ( buildFileText , buildFileName )
     invokeMethod ( function , targets )
   }
   public static main ( args ) { ( new Gant ( ) ).process ( args ) }

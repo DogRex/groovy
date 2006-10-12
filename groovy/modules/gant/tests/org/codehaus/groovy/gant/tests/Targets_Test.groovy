@@ -25,40 +25,31 @@ import org.codehaus.groovy.gant.infrastructure.Gant
  *  @version $Revision$ $Date$
  */
 final class Targets_Test extends GantTestCase {
+  final coreScript = '''
+task ( something : "Do something." ) { }
+task ( somethingElse : "Do something else." ) { }
+'''
   void testSomething ( ) {
-    System.setIn ( new StringBufferInputStream ( '''
-class build {
-  Task something ( ) { description ( "Do something." ) }
-  Task somethingElse ( ) { description ( "Do something else." ) }
-}
-''' ) )
+    System.setIn ( new StringBufferInputStream ( coreScript ) )
     Gant.main ( [ '-T' ,  '-f' ,  '-' ] as String[] )
     assertEquals ( '''gant something  --  Do something.
 gant somethingElse  --  Do something else.
 ''' , output.toString ( ) ) 
   }
   void testSomethingAndClean ( ) {
-    System.setIn ( new StringBufferInputStream ( '''
-class build {
-  build ( ) { includeTargets ( org.codehaus.groovy.gant.targets.Clean ) }
-  Task something ( ) { description ( "Do something." ) }
-  Task somethingElse ( ) { description ( "Do something else." ) }
-}
-''' ) )
+    System.setIn ( new StringBufferInputStream ( 'includeTargets << new File ( "source/org/codehaus/groovy/gant/targets/clean.gant" )\n' + coreScript ) )
     Gant.main ( [ '-T' ,  '-f' ,  '-' ] as String[] )
     assertEquals ( '''gant clean  --  Action the cleaning.
-gant clobber  --  Action the clobbering.  Does the cleaning first.
+gant clobber  --  Action the clobbering.  Do the cleaning first.
 gant something  --  Do something.
 gant somethingElse  --  Do something else.
 ''' , output.toString ( ) ) 
   }
   void testGStrings ( ) {
     System.setIn ( new StringBufferInputStream ( '''
-class build {
-  def theWord = 'The Word'
-  Task something ( ) { description ( "Do ${theWord}." ) }
-  Task somethingElse ( ) { description ( "Do ${theWord}." ) }
-}
+def theWord = 'The Word'
+task ( something : "Do ${theWord}." ) { }
+task ( somethingElse : "Do ${theWord}." ) { }
 ''' ) )
     Gant.main ( [ '-T' ,  '-f' ,  '-' ] as String[] )
     assertEquals ( '''gant something  --  Do The Word.

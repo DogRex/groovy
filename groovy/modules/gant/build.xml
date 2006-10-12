@@ -19,13 +19,13 @@ library; if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fi
 Boston, MA 02110-1301 USA
 
 Author : Russel Winder
-Version : $LastChangedRevision$ $LastChangedDate$
+Version : $Revision$ $Date$
 
 -->
 
 <project name="Gant" default="test" basedir=".">
 
-  <property name="version" value="0.1.0-SNAPSHOT"/>
+  <property name="version" value="0.2.0-SNAPSHOT"/>
 
   <property environment="env"/>
 
