@@ -28,16 +28,8 @@ final class DryRun_Test extends GantTestCase {
   void setUp ( ) {
     super.setUp ( )
     System.setIn ( new StringBufferInputStream ( '''
-class build {
-  Task something ( ) {
-    description ( "Do something." )
-    ant.echo ( message : "Did something." )
-  }
-  Task somethingElse ( ) {
-    description ( "Do something else." )
-    ant.echo ( message : "Did something else." )
-  }
-}
+task ( something : "Do something." ) { Ant.echo ( message : "Did something." ) }
+task ( somethingElse : "Do something else." ) { Ant.echo ( message : "Did something else." ) }
 ''' ) )  }
     
   void testMissingDefault ( ) {

@@ -14,15 +14,22 @@
 //  library; if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 //  Boston, MA 02110-1301 USA
 
-package org.codehaus.groovy.gant.infrastructure ;
+package org.codehaus.groovy.gant.infrastructure
 
 /**
- *  An instance of this class is effectively just a Proxy for an <code>AntBuilder</code> object to be used
- *  when creating target lists so as to avoid any actions actually happening.
+ *  This class is for code sharing between classes doing include activity.
  *
- *  @author Russel Winder <russel@russel.org.uk>
+ *  @author Russel Winder
  *  @version $Revision$ $Date$
  */
-final class TargetListGantBuilder extends GantBuilder {
-  public Object invokeMethod ( final String name , final Object arguments ) { return null ; }
+abstract class AbstractInclude {
+  protected binding
+  protected groovyShell
+  protected createInstance ( Class theClass ) {
+    theClass.getConstructor ( Map ).newInstance ( [ [ Ant : binding.getVariable ( 'Ant' ) ] ] as Object[] )
+  }  
+  protected AbstractInclude ( binding , groovyShell ) {
+    this.binding = binding
+    this.groovyShell = groovyShell
+  }
 }

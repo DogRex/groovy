@@ -14,21 +14,27 @@
 //  library; if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 //  Boston, MA 02110-1301 USA
 
-package org.codehaus.groovy.gant.tools
+package org.codehaus.groovy.gant.infrastructure
 
 /**
- *  A class to provide support for using Ivy.
+ *  An instance of this class is provided to each Gant script for including targets.  Targets can be
+ *  provided by Gant (sub)scripts or Groovy or Java classes.
  *
  *  @author Russel Winder
  *  @version $Revision$ $Date$
  */
-final class Ivy {
-  private final Map environment ;
-  Ivy ( final Map environment ) { this.environment = environment ; }
-  void task_cachepath ( theMap ) { environment.Ant.cachepath ( theMap ) }
-  void task_configure ( theMap ) { environment.Ant.configure ( theMap ) }
-  void task_publish ( theMap ) { environment.Ant.publish ( theMap ) }
-  void task_report ( theMap ) { environment.Ant.report ( theMap ) }
-  void task_resolve ( theMap ) { environment.Ant.resolve ( theMap ) }
-  void task_retrieve ( theMap ) { environment.Ant.retrieve ( theMap ) }
+class IncludeTargets extends AbstractInclude {
+  IncludeTargets ( binding , groovyShell ) { super ( binding , groovyShell ) }
+  def leftShift ( Class theClass ) {
+    throw new RuntimeException ( 'Implement << in IncludeTargets for type Class.' ) 
+    this
+  }
+  def leftShift ( File f ) { groovyShell.evaluate ( f ) ; this }
+  def leftShift ( GString s ) { groovyShell.evaluate ( s ) ; this }
+  def leftShift ( String s ) { groovyShell.evaluate ( s ) ; this }
+  def leftShift ( List l ) { l.each { item -> this << item } ; this }
+  def leftShift ( Object o ) {
+    throw new RuntimeException ( 'Ignoring includeTargets of type ' + o.class.name )
+    this
+  }
 }

@@ -27,12 +27,7 @@ import org.codehaus.groovy.gant.infrastructure.Gant
 final class CallPrint_Test extends GantTestCase {
   void testSystemOutPrintln ( ) {
     System.setIn ( new StringBufferInputStream ( '''
-class build {
-  Task systemOutPrintln ( ) {
-    description ( "Do something." )
-    System.out.println ( "Hello World" )
-  }
-}
+task ( systemOutPrintln : "Do something." ) { System.out.println ( "Hello World" ) }
 ''' ) )
     Gant.main ( [ '-f' , '-' , 'systemOutPrintln' ] as String[] )
     assertEquals ( '''Hello World
@@ -40,12 +35,7 @@ class build {
   }
   void testPrintln ( ) {
     System.setIn ( new StringBufferInputStream ( '''
-class build {
-  Task testPrintln ( ) {
-    description ( "Do something." )
-    println ( "Hello World" )
-  }
-}
+task ( testPrintln : "Do something." ) { println ( "Hello World" ) }
 ''' ) )
     Gant.main ( [ '-f' , '-' , 'testPrintln' ] as String[] )
     assertEquals ( '''Hello World
@@ -53,12 +43,7 @@ class build {
   }
   void testMessage ( ) {
     System.setIn ( new StringBufferInputStream ( '''
-class build {
-  Task testMessage ( ) {
-    description ( "Do something." )
-    message ( 'message' , 'A message.' )
-  }
-}
+task ( testMessage : "Do something." ) { message ( 'message' , 'A message.' ) }
 ''' ) )
     Gant.main ( [ '-f' , '-' , 'testMessage' ] as String[] )
     assertEquals ( '  [message] A message.\n' , output.toString ( ) ) 

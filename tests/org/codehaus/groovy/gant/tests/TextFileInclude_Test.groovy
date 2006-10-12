@@ -24,58 +24,67 @@ import org.codehaus.groovy.gant.infrastructure.Gant
  *  @author Russel Winder
  *  @version $Revision: 4087 $ $Date: 2006-10-01 10:15:08 +0100 (Sun, 01 Oct 2006) $
  */
-final class TestFileInclude_Test extends GantTestCase {
-  def includeFileName = '/tmp/Blah.gant'
-  def buildFileTool =  """
-class build {
-  def build ( ) { includeTool (  '${includeFileName}' ) }
-  Task something ( ) { Blah.flob ( ) }
-  public Task 'default' ( ) { something ( ) }
+final class TextFileInclude_Test extends GantTestCase {
+  def toolClassName = 'Blah'
+  def toolFilePath = "/tmp/${toolClassName}.groovy"
+  def toolClassText =  """
+class ${toolClassName} {
+  def ${toolClassName} ( Map environment ) { }
+  def flob ( ) { println ( 'flobbed.' ) }
 }
 """
-  def buildFileTargets = buildFileTool.replace ( 'Tool' , 'Targets' ).replace ( 'Blah.flob' , 'flob' )
-  TestFileInclude_Test ( ) {
-    ( new File ( includeFileName ) ).write('''
-import org.apache.tools.ant.Task
-class Blah {
-  Task flob ( ) { println ( 'flobbed.' ) ; null }
-}
-''' )
+  def toolBuildScript =  """
+includeTool <<  new File ( '${toolFilePath}' )
+task ( something : '' ) { ${toolClassName}.flob ( ) }
+task ( 'default' : '' ) { something ( ) }
+"""
+  def targetsFilePath = '/tmp/targets.gant'
+  def targetsScriptText =  '''
+task ( flob : '' ) { println ( 'flobbed.' ) }
+''' 
+  def targetsBuildScript =  """
+includeTargets <<  new File ( '${targetsFilePath}' )
+task ( something : '' ) { flob ( ) }
+task ( 'default' : '' ) { something ( ) }
+"""
+  TextFileInclude_Test ( ) {
+    ( new File ( "${toolFilePath}" ) ).write( toolClassText )
+    ( new File ( "${targetsFilePath}" ) ).write( targetsScriptText )
   }
   void testDefaultTools ( ) {
-    System.setIn ( new StringBufferInputStream ( buildFileTool ) )
+    System.setIn ( new StringBufferInputStream ( toolBuildScript ) )
     Gant.main ( [ '-f' ,  '-'  , 'something'] as String[] )
     assertEquals ( 'flobbed.\n' , output.toString ( ) ) 
   }
   void testFlobTools ( ) {
-    System.setIn ( new StringBufferInputStream ( buildFileTool ) )
+    System.setIn ( new StringBufferInputStream ( toolBuildScript ) )
     Gant.main ( [ '-f' ,  '-'  , 'flob'] as String[] )
     assertEquals ( 'Target flob does not exist.\n' , output.toString ( ) ) 
   }
   void testSomethingTools ( ) {
-    System.setIn ( new StringBufferInputStream ( buildFileTool ) )
+    System.setIn ( new StringBufferInputStream ( toolBuildScript ) )
     Gant.main ( [ '-f' ,  '-'  , 'something'] as String[] )
     assertEquals ( 'flobbed.\n' , output.toString ( ) ) 
   }
   void testDefaultTargets ( ) {
-    System.setIn ( new StringBufferInputStream ( buildFileTargets ) )
+    System.setIn ( new StringBufferInputStream ( targetsBuildScript ) )
     Gant.main ( [ '-f' ,  '-'  , 'something'] as String[] )
     assertEquals ( 'flobbed.\n' , output.toString ( ) ) 
   }
   void testFlobTargets ( ) {
-    System.setIn ( new StringBufferInputStream ( buildFileTargets ) )
+    System.setIn ( new StringBufferInputStream ( targetsBuildScript ) )
     Gant.main ( [  '-f' ,  '-'  , 'flob'] as String[] )
     assertEquals ( 'flobbed.\n' , output.toString ( ) ) 
   }
   void testSomethingTargets ( ) {
-    System.setIn ( new StringBufferInputStream ( buildFileTargets ) )
+    System.setIn ( new StringBufferInputStream ( targetsBuildScript ) )
     Gant.main ( [  '-f' ,  '-'  , 'something'] as String[] )
     assertEquals ( 'flobbed.\n' , output.toString ( ) ) 
   }
   void testNoFile ( ) {
-    System.setIn ( new StringBufferInputStream ( buildFileTool.replace ( 'Blah' , 'Burble' ) ) )
+    System.setIn ( new StringBufferInputStream ( toolBuildScript.replace ( 'Blah' , 'Burble' ) ) )
     try { Gant.main ( [ '-f' ,  '-'  , 'flob'] as String[] ) }
-    catch ( RuntimeException re ) { return }
-    fail ( 'Should have got a RuntimeException but didn\'t.' )
+    catch ( FileNotFoundException fnfe ) { return }
+    fail ( 'Should have got a FileNotFoundException but didn\'t.' )
   }
 }

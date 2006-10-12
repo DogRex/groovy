@@ -25,22 +25,14 @@ import org.codehaus.groovy.gant.infrastructure.Gant
  *  @author Russel Winder
  *  @version $Revision: 4090 $ $Date: 2006-10-01 16:38:57 +0100 (Sun, 01 Oct 2006) $
  */
-
-//  There is a pitfall here.  Because the ExecutionGantMetaClass uses static data values and because there
-//  is only a signle ExecutionGantMetaClass for all the tests in a given test class we have to be carefule
-//  using the depends that we do not have cros test method data coupling.  To avoid separate classes just
-//  ensure that different mathod namers are used in each test.
-
 final class Depends_Test extends GantTestCase {
   void testNone ( ) {
     System.setIn ( new StringBufferInputStream ( '''
-class build {
-  Task noneDoit ( ) { println ( 'done.' ) }
-  Task noneDoA ( ) { noneDoit ( ) }
-  Task noneDoB ( ) { noneDoit ( ) }
-  Task noneDoC ( ) { noneDoit ( ) }
-  Task noneDoAll ( ) { noneDoA ( ) ; noneDoB ( ) ; noneDoC ( ) }
-}
+task ( noneDoit : '' ) { println ( 'done.' ) }
+task ( noneDoA : '' ) { noneDoit ( ) }
+task ( noneDoB : '' ) { noneDoit ( ) }
+task ( noneDoC : '' ) { noneDoit ( ) }
+task ( noneDoAll : '' ) { noneDoA ( ) ; noneDoB ( ) ; noneDoC ( ) }
 ''' ) )
     Gant.main ( [ '-f' , '-' , 'noneDoAll' ] as String[] )
     assertEquals ( '''done.
@@ -50,30 +42,40 @@ done.
   }
   void testMixed ( ) {
     System.setIn ( new StringBufferInputStream ( '''
-class build {
-  Task mixedDoit ( ) { println ( 'done.' ) }
-  Task mixedDoA ( ) { depends ( 'mixedDoit' ) }
-  Task mixedDoB ( ) { mixedDoit ( ) }
-  Task mixedDoC ( ) { depends ( 'mixedDoit' ) }
-  Task mixedDoAll ( ) { mixedDoA ( ) ; mixedDoB ( ) ; mixedDoC ( ) }
-}
+task ( mixedDoit : '' ) { println ( 'done.' ) }
+task ( mixedDoA : '' ) { depends ( mixedDoit ) }
+task ( mixedDoB : '' ) { mixedDoit ( ) }
+task ( mixedDoC : '' ) { depends ( mixedDoit ) }
+task ( mixedDoAll : '' ) { mixedDoA ( ) ; mixedDoB ( ) ; mixedDoC ( ) }
 ''' ) )
     Gant.main ( [ '-f' , '-' , 'mixedDoAll' ] as String[] )
+
+    System.err.println ( "testMixed: `" + output + "'" )
+
     assertEquals ( '''done.
 done.
 ''' , output.toString ( ) ) 
   }
   void testAll ( ) {
     System.setIn ( new StringBufferInputStream ( '''
-class build {
-  Task allDoit ( ) { println ( 'done.' ) }
-  Task allDoA ( ) { depends ( 'allDoit' ) }
-  Task allDoB ( ) { depends ( 'allDoit' ) }
-  Task allDoC ( ) { depends ( 'allDoit' ) }
-  Task allDoAll ( ) { allDoA ( ) ; allDoB ( ) ; allDoC ( ) }
-}
+task ( allDoit : '' ) { println ( 'done.' ) }
+task ( allDoA : '' ) { depends ( allDoit ) }
+task ( allDoB : '' ) { depends ( allDoit ) }
+task ( allDoC : '' ) { depends ( allDoit ) }
+task ( allDoAll : '' ) { allDoA ( ) ; allDoB ( ) ; allDoC ( ) }
 ''' ) )
     Gant.main ( [ '-f' , '-' , 'allDoAll' ] as String[] )
+
+    System.err.println ( "testAll: `" + output + "'" )
+
     assertEquals ( 'done.\n' , output.toString ( ) ) 
   }
+  void testNotClosure ( ) {
+    System.setIn ( new StringBufferInputStream ( '''
+task ( notClosure : '' ) { depends ( 'notClosure' ) }
+''' ) )
+    Gant.main ( [ '-f' , '-' , 'notClosure' ] as String[] )
+    assertEquals ( 'depends called with non-Closure argument.\n' , output.toString ( ) )
+  }
+
 }

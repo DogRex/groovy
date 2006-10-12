@@ -16,29 +16,44 @@
 
 package org.codehaus.groovy.gant.infrastructure ;
 
+import java.util.Iterator ;
+import java.util.Map ;
+
+import groovy.lang.Closure ;
 import groovy.lang.GroovyObjectSupport ;
+import groovy.util.AntBuilder ;
 
 /**
- *  A class to provide access to the <code>GantBuilder</code> object that actually does all the Ant work.
- *  Needed for building tools, e.g. <code>org.codehaus.groovy.gant.targets.Clean</code>.  Also provides the
- *  factory method for creating approrpiate instances so has to know the names of all possible concrete
- *  subclasses.
+ *  An instance of this class is effectively just a Proxy for an <code>AntBuilder</code> object to provide
+ *  dry-run capability and to deal with all the verbosity issues.
  *
  *  @author Russel Winder <russel@russel.org.uk>
  *  @version $Revision$ $Date$
  */
-public abstract class GantBuilder extends GroovyObjectSupport {
-  public static String targetList = "TargetList" ;
-  public static String execution = "Execution" ;
-  private static GantBuilder builder = null ;
-  public static GantBuilder createInstance ( final String type ) {
-    if ( builder == null ) {
-      if ( type.equals ( targetList ) ) { builder = new TargetListGantBuilder ( ) ; }
-      else if ( type.equals ( execution ) ) { builder = new ExecutionGantBuilder ( ) ; }
-      else { throw new RuntimeException ( "Unknown GantBuilder type `" + type + "'" ) ; }
+public class GantBuilder extends GroovyObjectSupport {
+  private final AntBuilder ant = new AntBuilder ( ) ;
+  public Object invokeMethod ( final String name , final Object arguments ) {
+    if ( GantState.dryRun ) {
+      if ( GantState.verbosity > GantState.SILENT ) {
+        int padding = 9 - name.length ( ) ;
+        if ( padding < 0 ) { padding = 0 ; }
+        System.out.print ( "         ".substring ( 0 , padding ) + "[" + name + "] ") ;
+        final Object[] args = (Object[]) arguments ;
+        if ( args[0] instanceof Map ) {
+          final Iterator i = ( (Map) args[0] ).entrySet ( ).iterator ( ) ;
+          while ( i.hasNext ( ) ) {
+            final Map.Entry e = (Map.Entry) i.next ( ) ;
+            System.out.print ( e.getKey ( ) + " : '" + e.getValue ( ) + "'" ) ;
+            if ( i.hasNext ( ) ) { System.out.print ( " , " ) ; }
+          }
+          System.out.println ( ) ;
+          if ( args.length == 2 ) { ( (Closure) args[1] ).call ( ) ; }
+        }
+        else if ( args[0] instanceof Closure ) { System.out.println ( ) ; ( (Closure) args[0] ).call ( ) ; }
+        else { throw new RuntimeException ( "Unexpected type of parameter to method " + name ) ; }
+      }
+      return null ;
     }
-    return builder ;
+    return ant.invokeMethod ( name , arguments ) ;
   }
-  public static GantBuilder getInstance ( ) { return builder ; }
-  public abstract Object invokeMethod ( final String name , final Object arguments ) ;
 }
