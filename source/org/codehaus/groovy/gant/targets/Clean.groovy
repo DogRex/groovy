@@ -49,7 +49,7 @@ final class Clean {
     binding.setVariable ( 'cleanPattern' , cleanPatternList )
     binding.setVariable ( 'cleanDirectory' , cleanDirectoryList )
     binding.task.call ( clobber : 'Action the clobbering.  Do the cleaning first.' ) {
-      depends ( clean )
+      depends ( binding.clean )
       performPatternAction ( clobberPatternList )
       performDirectoryAction ( clobberDirectoryList )
       }
