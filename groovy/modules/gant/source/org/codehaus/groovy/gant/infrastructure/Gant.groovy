@@ -97,14 +97,25 @@ final class Gant {
     if ( padding < 0 ) { padding = 0 }
     println ( "           ".substring ( 0 , padding ) + '[' + tag + '] ' + message )
   }
+  private def ant = new GantBuilder ( )  
   private List gantLib ; {
+    /*
+     *  This is what we want to do:
+
     def item = System.getenv ( ).GANTLIB ;
+
+     *  but it causes hassles in JDK versions prior to 1.5.  To quote Graeme Rocher "This method was
+     *  deprecated in Java 1.2,1.3,1.4 but then undeprecated in Java 5".  Alex Shneyderman proposed the
+     *  alternate based on calling Ant.
+     */
+    //ant.property ( environment : 'environment' )
+    def item = ant.project.properties.'environment.GANTLIB'
     if ( item == null ) { gantLib = [] }
     else { gantLib = Arrays.asList ( item.split ( System.properties.'path.separator' ) ) }
   }
   private Gant ( ) {
     binding.setVariable ( 'gantLib' , gantLib )
-    binding.setVariable ( 'Ant' , new GantBuilder ( ) )
+    binding.setVariable ( 'Ant' , ant )
     binding.setVariable ( 'groovyShell' , groovyShell )
     binding.setVariable ( 'includeTargets' , new IncludeTargets ( binding ) )
     binding.setVariable ( 'includeTool' ,  new IncludeTool ( binding ) )

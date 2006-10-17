@@ -30,7 +30,7 @@ final class Clean {
   private cleanDirectoryList = []
   private clobberPatternList = []
   private clobberDirectoryList = []
-  private performPatternAction ( List l ) {
+   private performPatternAction ( List l ) {
     if ( l.size ( ) > 0 ) {
       binding.Ant.delete ( quiet : 'false' ) {
         fileset ( dir : '.' , includes : l.flatten ( ).join ( ',' ) , defaultexcludes : 'false' )

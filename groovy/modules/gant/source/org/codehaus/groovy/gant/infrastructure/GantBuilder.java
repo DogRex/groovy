@@ -23,15 +23,16 @@ import groovy.lang.Closure ;
 import groovy.lang.GroovyObjectSupport ;
 import groovy.util.AntBuilder ;
 
+import org.apache.tools.ant.Project;
+
 /**
- *  An instance of this class is effectively just a Proxy for an <code>AntBuilder</code> object to provide
- *  dry-run capability and to deal with all the verbosity issues.
+ *  This class is a sub-class of <code>AntBuilder</code> to provide dry-run capability and to deal with all
+ *  the verbosity issues.
  *
  *  @author Russel Winder <russel@russel.org.uk>
  *  @version $Revision$ $Date$
  */
-public class GantBuilder extends GroovyObjectSupport {
-  private final AntBuilder ant = new AntBuilder ( ) ;
+public class GantBuilder extends AntBuilder {
   public Object invokeMethod ( final String name , final Object arguments ) {
     if ( GantState.dryRun ) {
       if ( GantState.verbosity > GantState.SILENT ) {
@@ -54,6 +55,6 @@ public class GantBuilder extends GroovyObjectSupport {
       }
       return null ;
     }
-    return ant.invokeMethod ( name , arguments ) ;
+    return super.invokeMethod ( name , arguments ) ;
   }
 }

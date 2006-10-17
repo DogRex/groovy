@@ -27,7 +27,16 @@ final class Ivy {
   private final classpath = 'ivy.class.path'
   Ivy ( final Binding binding ) {
     this.binding = binding ;
+    /*
+     *  This is what we want to do:
+
     binding.Ant.path ( id : classpath ) { fileset ( dir : System.getenv ( ).GROOVY_HOME , includes : 'ivy*.jar' ) }
+
+    *  but it causes hassles in JDK versions prior to 1.5.  To quote Graeme Rocher "This method was
+    *  deprecated in Java 1.2,1.3,1.4 but then undeprecated in Java 5".  Alex Shneyderman proposed the
+    *  alternate based on calling Ant.
+    */
+    binding.Ant.path ( id : classpath ) { fileset ( dir : ant.project.properties.'environment.GROOVY_HOME' , includes : 'ivy*.jar' ) }
     binding.Ant.taskdef ( resource : 'fr/jayasoft/ivy/ant/antlib.xml' , classpathref : classpath )
   }
   void cachepath ( map ) { binding.Ant.cachepath ( map ) }
