@@ -38,14 +38,14 @@ task ( somethingElse : "Do something else." ) { Ant.echo ( message : "Did someth
   }
   void testMissingNamedTarget ( ) {
     Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'blah'] as String[] )
-    assertEquals ( 'Target blah does not exist.\n' , output.toString ( ) ) 
+    assertEquals ( " [property] environment : 'environment'\nTarget blah does not exist.\n" , output.toString ( ) ) 
   }
   void testSomething ( ) {
     Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'something'] as String[] )
-    assertEquals ( "     [echo] message : 'Did something.'\n" , output.toString ( ) ) 
+    assertEquals ( " [property] environment : 'environment'\n     [echo] message : 'Did something.'\n" , output.toString ( ) ) 
   }
   void testSomethingElse ( ) {
     Gant.main ( [ '-n' ,  '-f' ,  '-'  , 'somethingElse'] as String[] )
-    assertEquals ( "     [echo] message : 'Did something else.'\n" , output.toString ( ) ) 
+    assertEquals ( " [property] environment : 'environment'\n     [echo] message : 'Did something else.'\n" , output.toString ( ) ) 
   }
 }
