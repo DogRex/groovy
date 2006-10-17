@@ -49,14 +49,14 @@ task ( "default" : "Default is something." ) { something ( ) }
   }
   void testDefault ( ) {
     Gant.main ( [ '-f' ,  '-'  ] as String[] )
-    assertEquals ( "     [echo] message : 'Did something.'\n" , output.toString ( ) ) 
+    assertEquals ( " [property] environment : 'environment'\n     [echo] message : 'Did something.'\n" , output.toString ( ) ) 
   }
   void testBlah ( ) {
     Gant.main ( [ '-f' ,  '-'  , 'blah' ] as String[] )
-    assertEquals ( 'Target blah does not exist.\n' , output.toString ( ) ) 
+    assertEquals ( " [property] environment : 'environment'\nTarget blah does not exist.\n" , output.toString ( ) ) 
   }
   void testSomething ( ) {
     Gant.main ( [ '-f' ,  '-'  , 'something' ] as String[] )
-    assertEquals ( "     [echo] message : 'Did something.'\n" , output.toString ( ) ) 
+    assertEquals ( " [property] environment : 'environment'\n     [echo] message : 'Did something.'\n" , output.toString ( ) ) 
   }
 }
