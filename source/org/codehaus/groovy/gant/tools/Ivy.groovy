@@ -32,11 +32,10 @@ final class Ivy {
 
     binding.Ant.path ( id : classpath ) { fileset ( dir : System.getenv ( ).GROOVY_HOME , includes : 'ivy*.jar' ) }
 
-    *  but it causes hassles in JDK versions prior to 1.5.  To quote Graeme Rocher "This method was
-    *  deprecated in Java 1.2,1.3,1.4 but then undeprecated in Java 5".  Alex Shneyderman proposed the
-    *  alternate based on calling Ant.
+    *  but this causes real hassles when using JDK versions prior to 1.5.  But we know that groovy.home is a
+    *  property in the AntBuilder so just use that.
     */
-    binding.Ant.path ( id : classpath ) { fileset ( dir : ant.project.properties.'environment.GROOVY_HOME' , includes : 'ivy*.jar' ) }
+    binding.Ant.path ( id : classpath ) { fileset ( dir : binding.Ant.project.properties.'groovy.home' , includes : 'ivy*.jar' ) }
     binding.Ant.taskdef ( resource : 'fr/jayasoft/ivy/ant/antlib.xml' , classpathref : classpath )
   }
   void cachepath ( map ) { binding.Ant.cachepath ( map ) }
