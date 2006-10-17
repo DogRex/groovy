@@ -1,19 +1,36 @@
-/*
- *  There seems to be a bug in the lexical scoping of closures. So if we make things variables then we get
- *  failure.  If we put things in the binding everything works.
- */
+//  Gant -- A Groovy build tool based on scripting Ant tasks
+//
+//  Copyright (C) 2006 Russel Winder <russel@russel.org.uk>
+//
+//  This library is free software; you can redistribute it and/or modify it under the terms of
+//  the GNU Lesser General Public License as published by the Free Software Foundation; either
+//  version 2.1 of the License, or (at your option) any later version.
+//
+//  This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+//  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+//  See the GNU Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public License along with this
+//  library; if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
+//  Boston, MA 02110-1301 USA
 
-/*final*/ buildDirectory = 'build'
-/*final*/ sourceDirectory = 'source'
-/*final*/ exampleDirectory = sourceDirectory + '/example' 
+//  Must be in the binding not be local variables so they are available to the closures.
+
+buildDirectory = 'build'
+sourceDirectory = 'source'
+exampleDirectory = sourceDirectory + '/example' 
+
+ //  The standard cleaning tool.
 
 includeTargets << org.codehaus.groovy.gant.targets.Clean
 cleanDirectory << buildDirectory
-cleanPattern <<  '**/*~'
 
- //  Cannot have a target called run as it creates an infinite mutual recursion. :-(
+cleanPattern << '**/*~'
+cleanPattern << '**/*.bak'
 
-task ( runX : 'Run the Ivy "Hello" test.' ) {
+//  Cannot have a target called run as it creates an infinite mutual recursion. :-(
+
+task ( runTest : 'Run the Ivy "Hello" test.' ) {
   def classPathRef = 'classpath'
   Ant.mkdir ( dir : buildDirectory )
   Ant.path ( id : classPathRef )
@@ -27,4 +44,4 @@ task ( runX : 'Run the Ivy "Hello" test.' ) {
 
 task ( cleanCache : 'Clean the Ivy cache.' ) { Ant.delete ( dir : System.getenv ( ).HOME + '/.ivy/cache' ) }
 
-task ( 'default' : 'The default task in run.' ) { runX ( ) }
+task ( 'default' : 'The default task in run.' ) { runTest ( ) }
