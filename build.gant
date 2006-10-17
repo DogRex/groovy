@@ -88,7 +88,7 @@ task ( install : "Compile everything and install it to ${groovyHome}" ) {
     fileset ( dir : buildDirectory , includes : 'lib/gant*.jar' )
   }
   Ant.copy ( todir : groovyHome + '/lib' ) { fileset ( dir : jarsDirectory , includes : 'ivy*.jar' ) }
-  Ant.chmod ( perms : 'a+x' ) { fileset ( dir : groovyHome + '/bin' , includes : 'gant*' ) }
+  Ant.chmod ( perm : 'a+x' ) { fileset ( dir : groovyHome + '/bin' , includes : 'gant*' ) }
 }
 
 task ( 'default' : 'The default target, currently test.' ) { test ( ) }
