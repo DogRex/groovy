@@ -52,7 +52,7 @@ import org.codehaus.groovy.control.MultipleCompilationErrorsException
  *      }
  *      task ( clean : 'Clean the directory and subdirectories' ) {
  *        Ant.delete ( dir : 'build' , quiet : 'true' )
- *        Ant.delete ( quiet : 'true' ) { fileset ( dir : '.' , includes : '** /*~'  , defaultexcludes : 'false' ) }
+ *        Ant.delete ( quiet : 'true' ) { fileset ( dir : '.' , includes : '** /*~,** /*.bak'  , defaultexcludes : 'false' ) }
  *      }
  * </pre>
  *
@@ -74,9 +74,6 @@ import org.codehaus.groovy.control.MultipleCompilationErrorsException
  *  should notbe there, we have to have it in the source because asterisk followed by solidus is end of
  *  comment in Groovy</em></p>
  *
- *  <p>Clearly this does not show the true power of using Groovy instead of XML for specifying builds, but
- *  hopefully you get the idea.</p>
- *
  *  @author Russel Winder <russel@russel.org.uk>
  *  @version $Revision$ $Date$
  */
@@ -97,7 +94,7 @@ final class Gant {
     if ( padding < 0 ) { padding = 0 }
     println ( "           ".substring ( 0 , padding ) + '[' + tag + '] ' + message )
   }
-  private def ant = new GantBuilder ( )  
+  private def ant = new GantBuilder ( )
   private List gantLib ; {
     /*
      *  This is what we want to do:
@@ -108,7 +105,7 @@ final class Gant {
      *  deprecated in Java 1.2,1.3,1.4 but then undeprecated in Java 5".  Alex Shneyderman proposed the
      *  alternate based on calling Ant.
      */
-    //ant.property ( environment : 'environment' )
+    ant.property ( environment : 'environment' )
     def item = ant.project.properties.'environment.GANTLIB'
     if ( item == null ) { gantLib = [] }
     else { gantLib = Arrays.asList ( item.split ( System.properties.'path.separator' ) ) }
