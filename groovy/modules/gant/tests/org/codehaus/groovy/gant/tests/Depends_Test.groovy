@@ -49,9 +49,6 @@ task ( mixedDoC : '' ) { depends ( mixedDoit ) }
 task ( mixedDoAll : '' ) { mixedDoA ( ) ; mixedDoB ( ) ; mixedDoC ( ) }
 ''' ) )
     Gant.main ( [ '-f' , '-' , 'mixedDoAll' ] as String[] )
-
-    System.err.println ( "testMixed: `" + output + "'" )
-
     assertEquals ( '''done.
 done.
 ''' , output.toString ( ) ) 
@@ -65,9 +62,28 @@ task ( allDoC : '' ) { depends ( allDoit ) }
 task ( allDoAll : '' ) { allDoA ( ) ; allDoB ( ) ; allDoC ( ) }
 ''' ) )
     Gant.main ( [ '-f' , '-' , 'allDoAll' ] as String[] )
-
-    System.err.println ( "testAll: `" + output + "'" )
-
+    assertEquals ( 'done.\n' , output.toString ( ) ) 
+  }
+  void testMultiple ( ) {
+    System.setIn ( new StringBufferInputStream ( '''
+task ( multipleDoit : '' ) { println ( 'done.' ) }
+task ( multipleDoA : '' ) { depends ( multipleDoit ) }
+task ( multipleDoB : '' ) { depends ( multipleDoit ) }
+task ( multipleDoC : '' ) { depends ( multipleDoit ) }
+task ( multipleDoAll : '' ) { depends ( multipleDoA , multipleDoB , multipleDoC ) }
+''' ) )
+    Gant.main ( [ '-f' , '-' , 'multipleDoAll' ] as String[] )
+    assertEquals ( 'done.\n' , output.toString ( ) ) 
+  }
+  void testList ( ) {
+    System.setIn ( new StringBufferInputStream ( '''
+task ( listDoit : '' ) { println ( 'done.' ) }
+task ( listDoA : '' ) { depends ( listDoit ) }
+task ( listDoB : '' ) { depends ( listDoit ) }
+task ( listDoC : '' ) { depends ( listDoit ) }
+task ( listDoAll : '' ) { depends ( [ listDoA , listDoB , listDoC ] ) }
+''' ) )
+    Gant.main ( [ '-f' , '-' , 'listDoAll' ] as String[] )
     assertEquals ( 'done.\n' , output.toString ( ) ) 
   }
   void testNotClosure ( ) {
@@ -75,7 +91,13 @@ task ( allDoAll : '' ) { allDoA ( ) ; allDoB ( ) ; allDoC ( ) }
 task ( notClosure : '' ) { depends ( 'notClosure' ) }
 ''' ) )
     Gant.main ( [ '-f' , '-' , 'notClosure' ] as String[] )
-    assertEquals ( 'depends called with non-Closure argument.\n' , output.toString ( ) )
+    assertEquals ( 'depends called with an argument that is not a Closure or List of Closures.\n' , output.toString ( ) )
   }
-
+  void testNotListClosure ( ) {
+    System.setIn ( new StringBufferInputStream ( '''
+task ( notListClosure : '' ) { depends ( [ 'notClosure' ] ) }
+''' ) )
+    Gant.main ( [ '-f' , '-' , 'notListClosure' ] as String[] )
+    assertEquals ( 'depends called with List argument that contains an item that is not a Closure.\n' , output.toString ( ) )
+  }
 }

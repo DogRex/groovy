@@ -18,6 +18,7 @@ package org.codehaus.groovy.gant.infrastructure ;
 
 import java.util.HashSet ;
 import java.util.Iterator ;
+import java.util.List ;
 
 import groovy.lang.Binding ;
 import groovy.lang.Closure ;
@@ -43,18 +44,27 @@ class GantMetaClass extends DelegatingMetaClass {
     super ( MetaClassRegistry.getIntance ( 0 ).getMetaClass ( theClass ) ) ;
     this.binding = binding ;
   }
+  private Object processClosure ( final Closure closure ) {
+    if ( ! methodsInvoked.contains ( closure ) ) {
+      methodsInvoked.add ( closure ) ;         
+      return closure.call ( ) ;
+    }
+    return null ;
+  }
   public Object invokeMethod ( final Object object , final String methodName , final Object[] arguments ) {
     Object returnObject = null ;
     if ( methodName.equals ( "depends" ) ) {
       for ( int i = 0 ; i < arguments.length ; ++i ) {
-        if ( arguments[i] instanceof Closure ) {
-          final Closure closure = ( Closure) arguments[i] ;
-          if ( ! methodsInvoked.contains ( closure ) ) {
-            methodsInvoked.add ( closure ) ;         
-            returnObject = closure.call ( ) ;
+        if ( arguments[i] instanceof Closure ) { returnObject = processClosure ( (Closure) arguments[i] ) ; }
+        else if ( arguments[i] instanceof List ) {
+          Iterator iterator = ( (List) arguments[i] ).iterator ( ) ;
+          while ( iterator.hasNext ( ) ) {
+            Object item = iterator.next ( ) ;
+            if ( item instanceof Closure ) { returnObject = processClosure ( (Closure) item ) ; }
+            else { throw new RuntimeException ( "depends called with List argument that contains an item that is not a Closure." ) ; }
           }
         }
-        else { throw new RuntimeException ( "depends called with non-Closure argument." ) ; }
+        else { throw new RuntimeException ( "depends called with an argument that is not a Closure or List of Closures." ) ; }
       }
     }
     else {
