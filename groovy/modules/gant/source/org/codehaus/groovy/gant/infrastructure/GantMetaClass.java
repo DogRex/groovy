@@ -61,10 +61,10 @@ class GantMetaClass extends DelegatingMetaClass {
           while ( iterator.hasNext ( ) ) {
             Object item = iterator.next ( ) ;
             if ( item instanceof Closure ) { returnObject = processClosure ( (Closure) item ) ; }
-            else { throw new RuntimeException ( "depends called with List argument that contains an item that is not a Closure." ) ; }
+            else { throw new RuntimeException ( "depends called with List argument that contains an item (" + item + ") that is not a Closure." ) ; }
           }
         }
-        else { throw new RuntimeException ( "depends called with an argument that is not a Closure or List of Closures." ) ; }
+        else { throw new RuntimeException ( "depends called with an argument (" + arguments[i] + ") that is not a Closure or List of Closures." ) ; }
       }
     }
     else {
