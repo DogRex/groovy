@@ -79,6 +79,7 @@ import org.codehaus.groovy.control.MultipleCompilationErrorsException
  */
 final class Gant {
   private buildFileName = 'build.gant'
+  private buildClassName = buildFileName.replace ( '.' , '_' ) 
   private final Map taskDescriptions = new TreeMap ( ) 
   private final binding = new Binding ( )
   private final groovyShell = new GroovyShell ( binding )
@@ -163,7 +164,7 @@ final class Gant {
     // behaviour is most bizarre!
     if ( options == null ) { println ( 'Error in processing command line options.' ) ; return }
     def function = 'dispatch'
-    if ( options.f ) { buildFileName = options.f }
+    if ( options.f ) { buildFileName = options.f ; buildClassName = buildFileName.replace ( '.' , '_' ) }
     if ( options.h ) { cli.usage ( ) ; return }
     if ( options.l ) { gantLib = options.l.split ( System.properties.'path.separator' ) }
     if ( options.n ) { GantState.dryRun = true }
@@ -188,7 +189,7 @@ final class Gant {
     def buildFileText = ''
     if ( buildFileName == '-' ) {
       buildFileText = System.in.text
-      buildFileName = "standard_input"
+      buildClassName = "standard_input"
     }
     else {
       def file = new File ( buildFileName ) 
@@ -198,7 +199,7 @@ final class Gant {
       }
       buildFileText =  ( new File ( buildFileName ) ).text
     }
-    groovyShell.evaluate ( buildFileText , buildFileName )
+    groovyShell.evaluate ( buildFileText , buildClassName )
     invokeMethod ( function , targets )
   }
   public static main ( args ) { ( new Gant ( ) ).process ( args ) }
