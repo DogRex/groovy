@@ -344,7 +344,7 @@
             <filterset>
                 <filter token="PROJECT.IDEA.SINCE-BUILD" value="${idea.since-build}"/>
                 <filter token="PROJECT.IDEA.UNTIL-BUILD" value="6100"/>
-                <filter token="PROJECT.VERSION" value="${project.version}"/>
+                <filter token="PROJECT.VERSION" value="${project.version} (Demetra)"/>
             </filterset>
             <filterset refid="project.variables"/>
             <filterset refid="timestamp.variables"/>
