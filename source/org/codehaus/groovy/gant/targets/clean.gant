@@ -30,7 +30,10 @@ task ( clean : 'Action the cleaning.' ) {
 clobberPattern = []
 clobberDirectory = []
 task ( clobber : 'Action the clobbering.  Do the cleaning first.' ) {
-  depends ( clean )
+  //  This file causes the creation of a class clean and classes are found before entries in the binding so
+  //  the symbol clean is associated with the class not the task.  So we have to disambiguate by being
+  //  explicit.
+  depends ( binding.clean )
   if ( cleanPattern.size ( ) > 0 ) {
     Ant.delete ( quiet : 'false' ) { Ant.fileset ( dir : '.' , includes : clobberPattern.flatten ( ).join ( ',' ) , defaultexcludes : 'no' ) }
   }
