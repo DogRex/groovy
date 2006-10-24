@@ -21,7 +21,9 @@
 cleanPattern = []
 cleanDirectory = []
 task ( clean : 'Action the cleaning.' ) {
-  Ant.delete ( quiet : 'false' ) { Ant.fileset ( dir : '.' , includes : cleanPattern.flatten ( ).join ( ',' ) , defaultexcludes : 'no' ) }
+  if ( cleanPattern.size ( ) > 0 ) {
+    Ant.delete ( quiet : 'false' ) { Ant.fileset ( dir : '.' , includes : cleanPattern.flatten ( ).join ( ',' ) , defaultexcludes : 'no' ) }
+  }
   cleanDirectory.flatten ( ).each { d -> Ant.delete ( dir : d ) }
 }
 
@@ -29,6 +31,8 @@ clobberPattern = []
 clobberDirectory = []
 task ( clobber : 'Action the clobbering.  Do the cleaning first.' ) {
   depends ( clean )
-  Ant.delete ( quiet : 'false' ) { Ant.fileset ( dir : '.' , includes : clobberPattern.flatten ( ).join ( ',' ) , defaultexcludes : 'no' ) }
+  if ( cleanPattern.size ( ) > 0 ) {
+    Ant.delete ( quiet : 'false' ) { Ant.fileset ( dir : '.' , includes : clobberPattern.flatten ( ).join ( ',' ) , defaultexcludes : 'no' ) }
+  }
   clobberDirectory.flatten ( ).each { d -> Ant.delete ( dir : d ) }
 }
