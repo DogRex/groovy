@@ -172,7 +172,7 @@ final class Gant {
     if ( options.q ) { GantState.verbosity = GantState.QUIET }
     if ( options.s ) { GantState.verbosity = GantState.SILENT }
     if ( options.v ) { GantState.verbosity = GantState.VERBOSE }
-    if ( options.V ) { println 'Gant version 0.2.0' ; return }
+    if ( options.V ) { println 'Gant version 0.2.1-SNAPSHOT' ; return }
     def targets = options.arguments ( )
     //  We need to deal with unknown options, which should have been unprocessed by CliBuilder.
     //  We know though that unexpected single charactere options get absorbed by Commons CLI.

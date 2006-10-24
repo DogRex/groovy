@@ -109,10 +109,12 @@ task ( 'package' : 'Create the distribution.' ) {
   Ant.zip ( destfile : "${archiveRoot}.zip" ) {
     zipfileset ( dir : buildDirectory , includes : 'lib/gant*.jar' , prefix : prefix )
     zipfileset ( dir : sourceDirectory , includes : 'bin/gant*,bin/install.groovy' , prefix : prefix )
+    zipfileset ( dir : '.' , includes : 'README*' , prefix : prefix )
   }
   Ant.tar ( destfile :  "${archiveRoot}.tgz" , compression : 'gzip' ) {
     tarfileset ( dir : buildDirectory , includes : 'lib/gant*.jar' , prefix : prefix )
     tarfileset ( dir : sourceDirectory , includes : 'bin/gant*,bin/install.groovy' , prefix : prefix , mode : '755' )
+    tarfileset ( dir : '.' , includes : 'README*' , prefix : prefix )
   }
   archiveRoot = "${buildDirectory}/gant_src-${version}"
   Ant.zip ( destfile : "${archiveRoot}.zip" ) {
