@@ -6,35 +6,17 @@ In an include statement, if the class name cannot be found then you get a weird 
           at groovy.lang.MetaClassImpl.getProperty(MetaClassImpl.java:734)
 
 
-println and print used in a Gant script cause internal MissingMethodException.  Must be a lookup
-problem.
-
 Need to trap all exception that might sensibly happen due to reasonable errors in Gant scripts
 so that sensible error messages can be issued.
 
-It is irritating to have to have null at the end of a target method if the last real statement
-is an ant call.  Is there a way of making Target a synonym for void?
+If there are compilation errors in the Gant file then sometimes the proper error message is not reported,
+just an exception stack trace.  Using groovy on the Gant file generally shows the errors but Gant should
+have done the right thing in the first place.
 
-If there are compilation errors in the Gant file then currently an exception occurs and the line
-numbers are wrong.  Need to trap the exception and recalculate the line number to give the right
-information to the user.  We add a line at the start and 3 lines at the beginning of the class
-before compilation.
-
-Need to create a test suite.
-
-Get the GANTLIB stuff finished so it actually works.  The bits in the Gant source are probably
-wrong, this almost certainly needs doing in the shell scripts so that the CLASSPATH is right
-before Java starts.  This probably means startingGroovy needs amendment.
-
-If the constructor of a build class is not public then we get a:
-
-Caused by: java.lang.IllegalAccessException: Class gjdk.java.lang.Class_GroovyReflector can not access a member of class build with modifiers "private"
-        at sun.reflect.Reflection.ensureMemberAccess(Reflection.java:65)
-        at java.lang.Class.newInstance0(Class.java:344)
-        at java.lang.Class.newInstance(Class.java:303)
-        at gjdk.java.lang.Class_GroovyReflector.invoke(Unknown Source)
-
-which isn't exactly a good error message for the user.
+Get the GANTLIB stuff finished so it actually works.
 
 The way in which versions are specified is wrong.  There are three copies of the string and
 there should only be one.
+
+$Revision$
+$Date$

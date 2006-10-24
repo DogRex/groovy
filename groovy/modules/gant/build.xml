@@ -21,17 +21,20 @@ Boston, MA 02110-1301 USA
 Author : Russel Winder
 Version : $Revision$ $Date$
 
+This Ant script provides the bootstrap capability to install Gant for the first time for those people
+installing from a Subversion checkout.
+
 -->
 
-<project name="Gant" default="test" basedir=".">
+<project name="Gant Boostrap Installer" default="test" basedir=".">
 
   <property name="version" value="0.2.0-SNAPSHOT"/>
 
-  <property environment="env"/>
+  <property environment="environment"/>
 
   <property name="sourceDirectory" value="source"/>
   <property name="testsDirectory" value="tests"/>
-  <property name="groovyHome" value="${env.GROOVY_HOME}"/>
+  <property name="groovyHome" value="${environment.GROOVY_HOME}"/>
   <property name="jarsDirectory" value="jarfiles"/>
 
   <property name="buildDirectory" value="build"/>
