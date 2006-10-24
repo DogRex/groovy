@@ -15,19 +15,28 @@
 //  Boston, MA 02110-1301 USA
 
 //  Author : Russel Winder
-//  $Revision$ $Date$
+//  $Revision$
+//  $Date$
 
-final version = new File ( 'VERSION.txt' ).text.trim ( )
-final sourceDirectory = 'source'
-final testsDirectory = 'tests'  
-final groovyHome = System.getenv ( 'GROOVY_HOME' )
+version = new File ( 'VERSION.txt' ).text.trim ( )
+sourceDirectory = 'source'
+testsDirectory = 'tests'  
+ groovyHome = System.getenv ( ).'GROOVY_HOME'
 assert groovyHome != ''
-final jarsDirectory = 'jarfiles'
-final buildDirectory = 'build'
-final buildClassesDirectory = buildDirectory + '/classes' 
-final buildTestsDirectory = buildDirectory + '/tests' 
-final buildLibDirectory = buildDirectory + '/lib'
-final buildReportsDirectory = buildDirectory + '/reports'
+jarsDirectory = 'jarfiles'
+buildDirectory = 'build'
+buildClassesDirectory = buildDirectory + '/classes' 
+buildTestsDirectory = buildDirectory + '/tests' 
+buildLibDirectory = buildDirectory + '/lib'
+buildReportsDirectory = buildDirectory + '/reports'
+
+distribution_topLevelFiles = [
+                              'build.gant' , 'VERSION.txt' ,
+                              '.classpath' , '.project' ,
+                              'lgpl.txt' , 'licence.txt' ,
+                              'README_Distribution.txt' , 'README_Install.txt'
+                              ]
+distribution_directories = [ 'documentation' , 'examples' , '.settings' , sourceDirectory , testsDirectory ]
 
 includeTargets << new File ( 'source/org/codehaus/groovy/gant/targets/clean.gant' )
 cleanPattern <<  '**/*~' 
@@ -90,5 +99,21 @@ task ( install : "Compile everything and install it to ${groovyHome}" ) {
   Ant.copy ( todir : groovyHome + '/lib' ) { fileset ( dir : jarsDirectory , includes : 'ivy*.jar' ) }
   Ant.chmod ( perm : 'a+x' ) { fileset ( dir : groovyHome + '/bin' , includes : 'gant*' ) }
 }
+
+task ( 'package' : 'Create the distribution.' ) {
+  depends ( compile ) 
+  def prefix = "gant-${version}"
+  def archiveRoot = "${buildDirectory}/gant-${version}"
+  Ant.zip ( destfile : "${archiveRoot}.zip" ) {
+    zipfileset ( dir : buildDirectory , includes : 'lib/gant*.jar' , prefix : prefix )
+    zipfileset ( dir : '.' , includes : distribution_topLevelFiles.join ( ',' ) , prefix : prefix )
+    distribution_directories.each { directory -> zipfileset ( dir : directory , prefix : "${prefix}/${directory}" ) }
+  }
+  Ant.tar ( destfile :  "${archiveRoot}.tgz" , compression : 'gzip' ) {
+    tarfileset ( dir : buildDirectory , includes : 'lib/gant*.jar' , prefix : prefix )
+    tarfileset ( dir : '.' , includes : distribution_topLevelFiles.join ( ',' ) , prefix : prefix )
+    distribution_directories.each { directory -> tarfileset ( dir : directory , prefix : "${prefix}/${directory}" ) }
+  }
+} 
 
 task ( 'default' : 'The default target, currently test.' ) { test ( ) }
