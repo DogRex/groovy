@@ -28,7 +28,7 @@ installing from a Subversion checkout.
 
 <project name="Gant Boostrap Installer" default="test" basedir=".">
 
-  <property name="version" value="0.2.0"/>
+  <property name="version" value="0.2.1-SNAPSHOT"/>
 
   <property environment="environment"/>
 
