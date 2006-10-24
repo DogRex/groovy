@@ -34,7 +34,7 @@ task ( clobber : 'Action the clobbering.  Do the cleaning first.' ) {
   //  the symbol clean is associated with the class not the task.  So we have to disambiguate by being
   //  explicit.
   depends ( binding.clean )
-  if ( cleanPattern.size ( ) > 0 ) {
+  if ( clobberPattern.size ( ) > 0 ) {
     Ant.delete ( quiet : 'false' ) { Ant.fileset ( dir : '.' , includes : clobberPattern.flatten ( ).join ( ',' ) , defaultexcludes : 'no' ) }
   }
   clobberDirectory.flatten ( ).each { d -> Ant.delete ( dir : d ) }
