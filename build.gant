@@ -19,7 +19,7 @@
 //  $Date$
 
 groovyHome = System.getenv ( ).'GROOVY_HOME'
-assert groovyHome != ''
+ assert ( groovyHome != null ) && ( groovyHome != '' )
 
 version = new File ( 'VERSION.txt' ).text.trim ( )
 
