@@ -127,8 +127,6 @@ final class Gant {
     println ( ( target == method ) ? "Target ${method} does not exist." : "Could not execute method ${method}.\n${message}" )
   }
   private dispatch ( targets ) {
-    def metaClassRegistry = MetaClassRegistry.getIntance ( 0 )
-    //metaClassRegistry.setMetaClass ( Closure , new GantMetaClass ( Closure ) )
     try {
       if ( targets.size ( ) > 0 ) {
         targets.each { target ->
@@ -156,12 +154,11 @@ final class Gant {
     cli.T ( longOpt : 'targets' , 'Print out a list of the possible targets.' )
     cli.V ( longOpt : 'version' , 'Print lots of extra information.' )
     def options = cli.parse ( args )
-    // options is supposed to be null if there has been any error.  CliBuilder is supposed to
-    // have dealt with all ParseExceptions (by printing a usage message) but this is patently
-    // not the case and especially so for unexpected single character options which just seem to
-    // dissappear.  Experiment indicates that Commons CLI is at fault here, see GROOVY-1455.
-    // Then there is the problem with multicharacter options with a single hyphen -- the
-    // behaviour is most bizarre!
+    // options is supposed to be null if there has been any error.  CliBuilder is supposed to have dealt
+    // with all ParseExceptions (by printing a usage message) but this is patently not the case and
+    // especially so for unexpected single character options which just seem to cause chaos.  Experiment
+    // indicates that Commons CLI is at fault here, see GROOVY-1455.  Then there is the problem with
+    // unprocessed options with a single hyphen -- the behaviour is most bizarre!
     if ( options == null ) { println ( 'Error in processing command line options.' ) ; return }
     def function = 'dispatch'
     if ( options.f ) { buildFileName = options.f ; buildClassName = buildFileName.replace ( '.' , '_' ) }
@@ -173,11 +170,14 @@ final class Gant {
     if ( options.s ) { GantState.verbosity = GantState.SILENT }
     if ( options.v ) { GantState.verbosity = GantState.VERBOSE }
     if ( options.V ) { println 'Gant version 0.2.1-SNAPSHOT' ; return }
-    def targets = options.arguments ( )
-    //  We need to deal with unknown options, which should have been unprocessed by CliBuilder.
-    //  We know though that unexpected single charactere options get absorbed by Commons CLI.
-    //  There is also a serious problem with multicharacter options with a single minus, they
-    //  behave very strangely indeed.
+    //  options.arguments( ) is expected to return a single element list with a string of the unprocessed
+    //  command line entries.  Unprocessed -- options are passed through as expected but unprocessed single
+    //  - options cause chaos.  The unprocessed option string is passed without the - sign and a whole slew
+    //  of extra entries appear int he list.  Oh well.
+    def arguments = options.arguments ( )
+    def targets = arguments.size ( ) == 0 ? [] : Arrays.asList ( arguments[0].split ( ' ' ) )
+    //  We need to deal with unknown options, which should have been unprocessed by CliBuilder.  We have to
+    //  suffer that single - options are problematic.
     def gotUnknownOptions = false ;
     targets.each { target ->
       if ( target[0] == '-' ) {
