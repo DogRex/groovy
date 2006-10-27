@@ -19,7 +19,11 @@
 //  $Date$
 
 groovyHome = System.getenv ( ).'GROOVY_HOME'
- assert ( groovyHome != null ) && ( groovyHome != '' )
+
+if ( ( groovyHome == null ) || ( groovyHome == '' ) ) {
+  println ( 'Must set environment variable GROOVY_HOME to compile Gant.' )
+  return
+}
 
 version = new File ( 'VERSION.txt' ).text.trim ( )
 
