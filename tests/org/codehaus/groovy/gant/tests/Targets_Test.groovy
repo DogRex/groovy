@@ -56,5 +56,16 @@ task ( somethingElse : "Do ${theWord}." ) { }
 gant somethingElse  --  Do The Word.
 ''' , output.toString ( ) ) 
   }
-  
+  void testDefaultSomething ( ) {
+    System.setIn ( new StringBufferInputStream ( '''
+task ( something : "Do something." ) { }
+task ( somethingElse : "Do something else." ) { }
+task ( 'default' : 'Default is something.' ) { something ( ) }
+''' ) )
+    Gant.main ( [ '-T' ,  '-f' ,  '-' ] as String[] )
+    assertEquals ( '''gant -- Default is something.
+gant something  --  Do something.
+gant somethingElse  --  Do something else.
+''' , output.toString ( ) ) 
+  }  
 }

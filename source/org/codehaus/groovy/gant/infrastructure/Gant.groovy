@@ -121,7 +121,9 @@ final class Gant {
     binding.setVariable ( 'message' , message )
  }
   private targetList ( targets ) {
-    for ( p in taskDescriptions.entrySet ( ) ) { println ( 'gant ' + p.key + '  --  ' + p.value ) }
+    def message = taskDescriptions['default']
+    if ( message != null ) { println ( 'gant -- ' + message) }
+    for ( p in taskDescriptions.entrySet ( ) ) { if ( p.key != 'default' ) { println ( 'gant ' + p.key + '  --  ' + p.value ) } }
   }
   private printDispatchExceptionMessage ( target , method , message ) {
     println ( ( target == method ) ? "Target ${method} does not exist." : "Could not execute method ${method}.\n${message}" )
