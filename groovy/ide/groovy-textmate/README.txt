@@ -24,5 +24,7 @@ Some useful tips:
 - typing ":" and hitting TAB creates key/value hash pair   
 - Use ^ H to access JavaDoc help given you have them installed
 - Use ^ ENTER to create new methods
+- Use Apple + Run to execute the current file
+- Select some text and use ALT + APPLE + Run to execute the snippet
 
 Remember after you have hit TAB you can often TAG through the code the template generates to modify each changeable value.
