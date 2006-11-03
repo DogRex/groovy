@@ -5,17 +5,31 @@
 	<key>beforeRunningCommand</key>
 	<string>nop</string>
 	<key>command</key>
-	<string>JAVADOC=${TM_JAVADOC:-"/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Home/docs/index.html"}
-if [[ -f $JAVADOC ]]
-   then echo "&lt;meta http-equiv=\"refresh\" content=\"0; tm-file://$JAVADOC\"&gt;"
-   else echo "&lt;p&gt;Couldn't find Java documentation.&lt;p&gt;You may need to set &lt;tt&gt;TM_JAVADOC&lt;/tt&gt; to the location of the root documentation file."
-fi</string>
+	<string>#!/usr/bin/env ruby -w
+
+require "#{ENV["TM_SUPPORT_PATH"]}/lib/exit_codes"
+
+JAVADOC = "/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Home/docs/api/"
+
+term = STDIN.read.strip
+term_path = term
+while term_path =~ /\./
+	term_path = term_path.sub(/\./, "/")
+end 
+file_name = "#{JAVADOC}/index.html"
+file_name = "#{JAVADOC}/#{term_path}.html" unless term_path.empty?
+
+puts("#{term} not found.") unless File.file?(file_name)
+puts("&lt;meta http-equiv=\"refresh\" content=\"0; tm-file://#{file_name}\"&gt;") if File.file?(file_name)
+</string>
+	<key>fallbackInput</key>
+	<string>word</string>
 	<key>input</key>
-	<string>none</string>
+	<string>selection</string>
 	<key>keyEquivalent</key>
 	<string>^h</string>
 	<key>name</key>
-	<string>Documentation</string>
+	<string>JavaDoc</string>
 	<key>output</key>
 	<string>showAsHTML</string>
 	<key>scope</key>
