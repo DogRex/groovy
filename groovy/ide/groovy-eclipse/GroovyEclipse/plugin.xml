@@ -3,7 +3,7 @@
 <plugin
    id="org.codehaus.groovy.eclipse"
    name="Groovy Plug-in"
-   version="1.0.0.20060915"
+   version="1.0.0.20061107"
    provider-name="codehaus "
    class="org.codehaus.groovy.eclipse.GroovyPlugin">
 
@@ -39,6 +39,8 @@
       <import plugin="org.eclipse.core.runtime"/>
       <import plugin="org.eclipse.ui.views"/>
       <import plugin="org.eclipse.core.filebuffers"/>
+      <import plugin="org.eclipse.ui.console"/>
+      <import plugin="org.eclipse.ui.ide"/>
    </requires>
    <extension-point id="hyperlinkDetectors" name="Groovy Hyperlink Detectors" schema="schema/hyperlinkDetector.exsd"/>
 
@@ -375,4 +377,15 @@
                menubarPath="org.codehaus.groovy.eclipse.editor.menu.source/editGroup"/>
       </editorContribution>
    </extension>
+   <extension point="org.eclipse.debug.ui.consoleLineTrackers">
+		<consoleLineTracker
+			class="org.codehaus.groovy.eclipse.launchers.GroovyConsoleLineTracker"
+			processType="java"
+			id="org.codehaus.groovy.eclipse.launchers.GroovyConsoleLineTracker"/>
+		<consoleLineTracker
+			class="org.codehaus.groovy.eclipse.launchers.GroovyConsoleLineTracker"
+			processType="groovy"
+			id="org.codehaus.groovy.eclipse.launchers.GroovyConsoleLineTracker"/>
+	</extension>
+   
 </plugin>

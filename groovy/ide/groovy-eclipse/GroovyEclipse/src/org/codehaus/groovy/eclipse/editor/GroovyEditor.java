@@ -19,7 +19,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 public class GroovyEditor extends AbstractDecoratedTextEditor{
     private ColorManager colorManager;
-
+    public static final String EDITOR_ID = "org.codehaus.groovy.eclipse.editor.GroovyEditor";
     protected GroovyPairMatcher pairMatcher = new GroovyPairMatcher();
 
     public GroovyEditor() {

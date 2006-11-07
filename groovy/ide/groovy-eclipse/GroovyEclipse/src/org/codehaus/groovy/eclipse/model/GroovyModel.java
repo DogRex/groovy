@@ -16,9 +16,12 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.debug.ui.console.FileLink;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 
@@ -176,5 +179,24 @@ public class GroovyModel {
 	 */
 	public GroovyProject getProject(IProject project) {
 		return getGroovyProject(JavaCore.create(project));
+	}
+	public IFile getIFileForSrcFile(String srcFileName){
+		IFile f = null;
+		for (Iterator iter = projects.values().iterator(); iter.hasNext();) {
+			GroovyProject groovyProject = (GroovyProject) iter.next();
+			IPath[] srcDirList = groovyProject.getSourceDirectories();
+			for(int i=0; i < srcDirList.length;i ++){
+				IPath srcPath = srcDirList[i];
+				String absPath = srcPath.makeAbsolute() + "/" + srcFileName;
+				IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocation(new Path(absPath));
+				if (files.length > 0 && files[0].exists()){
+					f = files[0];
+					System.out.println("file found:"+absPath);
+				}else {	// files outside of the workspace
+					System.out.println("file not found="+absPath);
+				}
+			}
+		}
+		return f;
 	}
 }

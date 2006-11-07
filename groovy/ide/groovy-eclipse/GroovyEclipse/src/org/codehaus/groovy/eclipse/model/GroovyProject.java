@@ -801,7 +801,7 @@ public class GroovyProject {
         }
         return ( IFile[] )invalidList.toArray( new IFile[ 0 ] );
     }
-    private IPath[] getSourceDirectories()
+    public IPath[] getSourceDirectories()
     {
         final List list = new ArrayList();
         try

@@ -1,10 +1,15 @@
 package org.codehaus.groovy.eclipse;
+import java.io.File;
+import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.eclipse.editor.GroovyEditor;
 import org.codehaus.groovy.eclipse.editor.GroovyPartitionScanner;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.codehaus.groovy.eclipse.ui.GroovyDialogProvider;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -13,6 +18,7 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
@@ -21,7 +27,15 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.rules.IPartitionTokenScanner;
 import org.eclipse.osgi.util.ManifestElement;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IStartup;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -272,5 +286,115 @@ implements IStartup
     {
         return super.getPreferenceStore();
     }
+    public static IEditorPart doOpenEditor(IFile f, boolean activate) {
+    	if (f == null)
+    		return null;
+    	
+    	try {
+    		FileEditorInput file = new FileEditorInput(f);
+    		return openEditorInput(file);
+    		
+    	} catch (Exception e) {
+    		trace("Unexpected error opening path " + f.toString() + "-" + e.getMessage());
+    		return null;
+    	}
+    }
+    
+    /**
+     * Utility function that opens an editor on a given path.
+     * 
+     * @return part that is the editor
+     */
+    public static IEditorPart doOpenEditor(IPath path, boolean activate) {
+        if (path == null)
+            return null;
+
+        try {
+    		IEditorInput file = createEditorInput(path);
+	        return openEditorInput(file);
+            
+        } catch (Exception e) {
+            trace("Unexpected error opening path " + path.toString() + " - " + e.getMessage());
+            return null;
+        }
+    }
+    
+    
+	private static IEditorPart openEditorInput(IEditorInput file) throws PartInitException {
+		final IWorkbench workbench = plugin.getWorkbench();
+		if(workbench == null){
+			throw new RuntimeException("workbench cannot be null");
+		}
+
+		IWorkbenchWindow activeWorkbenchWindow = workbench.getActiveWorkbenchWindow();
+		if(activeWorkbenchWindow == null){
+			throw new RuntimeException("activeWorkbenchWindow cannot be null (we have to be in a ui thread for this to work)");
+		}
+		
+		IWorkbenchPage wp = activeWorkbenchWindow.getActivePage();
+      
+		// File is inside the workspace
+		return IDE.openEditor(wp, file, GroovyEditor.EDITOR_ID);
+	}
+//  =====================
+//  ===================== ALL BELOW IS COPIED FROM org.eclipse.ui.internal.editors.text.OpenExternalFileAction
+//  =====================
+
+    public static IEditorInput createEditorInput(IPath path) {
+        return createEditorInput(path, true);
+    }
+    /**
+     * @param path
+     * @return
+     */
+    private static IEditorInput createEditorInput(IPath path, boolean askIfDoesNotExist) {
+        IEditorInput edInput = null;
+        IWorkspace w = ResourcesPlugin.getWorkspace();      
+
+        //let's start with the 'easy' way
+    	IFile fileForLocation = w.getRoot().getFileForLocation(path);
+    	//if(fileForLocation != null){
+    		return new FileEditorInput(fileForLocation);
+    	//}
+
+        /*
+        
+        IFile files[] = w.getRoot().findFilesForLocation(path);
+        if (files == null  || files.length == 0 || !files[0].exists()){
+            //it is probably an external file
+            File systemFile = path.toFile();
+            if(systemFile.exists()){
+                edInput = createEditorInput(systemFile);
+            }
+//            else if(askIfDoesNotExist){
+//                //this is the last resort... First we'll try to check for a 'good' match,
+//                //and if there's more than one we'll ask it to the user
+//                List likelyFiles = getLikelyFiles(path, w);
+//                IFile iFile = selectWorkspaceFile(likelyFiles.toArray(new IFile[0]));
+//                if(iFile != null){
+//                    return new FileEditorInput(iFile);
+//                }
+//                
+//                //ok, ask the user for any file in the computer
+//                IEditorInput input = selectFilesystemFileForPath(path);
+//                if(input != null){
+//                    return input;
+//                }
+//            }
+        }else{ //file exists
+            edInput = doFileEditorInput(selectWorkspaceFile(files));
+        }
+        return edInput;
+        */
+    }
+
+    private static IEditorInput doFileEditorInput(IFile file) {
+        if(file == null){
+            return null;
+        }
+        return new FileEditorInput(file);
+    }
+
+    
     
 }
