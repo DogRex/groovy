@@ -15,6 +15,12 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.console.IHyperlink;
 
+/**
+ * 
+ * @author Scott Hickey
+ * 	TODO: The hardcode ".groovy" in this file is not a good long term solution.
+ *
+ */
 public class GroovyConsoleLineTracker implements IConsoleLineTracker {
 
 	private IConsole console; 
@@ -51,44 +57,38 @@ public class GroovyConsoleLineTracker implements IConsoleLineTracker {
 		int lineOffset = line.getOffset();
 		int lineLength = line.getLength();
 		try {
-			String text = console.getDocument().get(lineOffset, lineLength);
-			GroovyPlugin.trace(text);
-			Matcher m = linePattern.matcher(text);
-			String className = new String();
+			String consoleLine = console.getDocument().get(lineOffset, lineLength);
+			GroovyPlugin.trace(consoleLine);
+			Matcher m = linePattern.matcher(consoleLine);
 			String groovyFileName = null;
-			String groovyFilePath = null;
-			int startIndexAt = 0;
-			int endIndexAt = 0;
-			String groovyFile = null;
 			int lineNumber = 0;
-			int fileStart = -1;
+			int openParenIndexAt = -1;
+			int closeParenIndexAt = -1;
 			// match
 			if (m.matches()) {
-				className = m.group(0);
-				if (className.indexOf(".groovy") >= 0 && className.indexOf("(")>= 0 ) {
-					startIndexAt = className.indexOf("(");
-					endIndexAt = className.indexOf(".groovy");
-					groovyFileName = className.substring(
-							startIndexAt + 1, endIndexAt);
-					groovyFilePath = className.substring(3, className
-							.indexOf(groovyFileName)).trim().replace('.','/');
-					groovyFile = groovyFilePath + groovyFileName + ".groovy";
-					int colonIndex = className.indexOf(":");
-					if (colonIndex > 0) { // get the line number in groovy class
-						lineNumber = Integer.parseInt(className.substring(
-								colonIndex + 1, className.length() - 1));
+				consoleLine = m.group(0);
+				openParenIndexAt = consoleLine.indexOf("(");
+				if (openParenIndexAt >= 0) {
+					String groovyClassName = consoleLine.substring(openParenIndexAt + 1, consoleLine.indexOf(".groovy"));
+					String groovyFilePath = consoleLine.substring(3, consoleLine.indexOf(groovyClassName)).trim().replace('.','/');
+					groovyFileName = groovyFilePath + groovyClassName + ".groovy";
+					int colonIndex = consoleLine.indexOf(":");
+					// get the line number in groovy class
+					if (colonIndex > 0) { 
+						closeParenIndexAt = consoleLine.indexOf(")");  
+						lineNumber = Integer.parseInt(consoleLine.substring(colonIndex + 1, closeParenIndexAt -1));
 					}
-					GroovyPlugin.trace("groovyFile=" + groovyFile + " lineNumber:" + lineNumber);
+					GroovyPlugin.trace("groovyFile=" + groovyFileName + " lineNumber:" + lineNumber);
 				}
-			}
-			// hyperlink if we found something
-			if (groovyFile != null) {
-				GroovyModel model = GroovyModel.getModel();
-				IFile f = model.getIFileForSrcFile(groovyFile);
-                IHyperlink link = null;
-                if (f !=null) link = new FileLink(f, null, -1, -1, lineNumber);
-				if (link != null)
-					console.addLink(link, lineOffset + startIndexAt + 1, lineLength - fileStart -1);
+				// hyperlink if we found something
+				if (groovyFileName != null) {
+					GroovyModel model = GroovyModel.getModel();
+					IFile f = model.getIFileForSrcFile(groovyFileName);
+	                IHyperlink link = null;
+	                if (f !=null) link = new FileLink(f, null, -1, -1, lineNumber);
+					if (link != null)
+						console.addLink(link, lineOffset + openParenIndexAt + 1, closeParenIndexAt - openParenIndexAt -1);
+				}
 			}
 		} catch (BadLocationException e) {
 			GroovyPlugin.trace("unexpected error:" +  e.getMessage());
