@@ -76,7 +76,7 @@ public class GroovyConsoleLineTracker implements IConsoleLineTracker {
 					// get the line number in groovy class
 					if (colonIndex > 0) { 
 						closeParenIndexAt = consoleLine.indexOf(")");  
-						lineNumber = Integer.parseInt(consoleLine.substring(colonIndex + 1, closeParenIndexAt -1));
+						lineNumber = Integer.parseInt(consoleLine.substring(colonIndex + 1, closeParenIndexAt));
 					}
 					GroovyPlugin.trace("groovyFile=" + groovyFileName + " lineNumber:" + lineNumber);
 				}
