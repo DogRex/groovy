@@ -12,7 +12,7 @@
 //  implied. See the License for the specific language governing permissions and limitations under the
 //  License.
 
-package org.codehaus.groovy.gant.infrastructure
+package org.codehaus.groovy.gant
 
 /**
  *  An instance of this class is provided to each Gant script for including targets.  Targets can be

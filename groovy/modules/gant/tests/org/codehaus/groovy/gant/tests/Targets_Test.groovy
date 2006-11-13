@@ -14,7 +14,7 @@
 
 package org.codehaus.groovy.gant.tests
 
-import org.codehaus.groovy.gant.infrastructure.Gant
+import gant.Gant
 
 /**
  *  A test to ensure that the target listing works. 
@@ -35,7 +35,7 @@ gant somethingElse  --  Do something else.
 ''' , output.toString ( ) ) 
   }
   void testSomethingAndClean ( ) {
-    System.setIn ( new StringBufferInputStream ( 'includeTargets << new File ( "source/org/codehaus/groovy/gant/targets/clean.gant" )\n' + coreScript ) )
+    System.setIn ( new StringBufferInputStream ( 'includeTargets << new File ( "source/gant/targets/clean.gant" )\n' + coreScript ) )
     Gant.main ( [ '-T' ,  '-f' ,  '-' ] as String[] )
     assertEquals ( '''gant clean  --  Action the cleaning.
 gant clobber  --  Action the clobbering.  Do the cleaning first.

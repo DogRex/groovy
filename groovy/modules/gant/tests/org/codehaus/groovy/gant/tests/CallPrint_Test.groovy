@@ -15,7 +15,7 @@
 
 package org.codehaus.groovy.gant.tests
 
-import org.codehaus.groovy.gant.infrastructure.Gant
+import gant.Gant
 
 /**
  *  A test to ensure that using standard Groovy functions works.

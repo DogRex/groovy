@@ -14,7 +14,7 @@
 
 package org.codehaus.groovy.gant.tests
 
-import org.codehaus.groovy.gant.infrastructure.Gant
+import gant.Gant
 
 /**
  *  A test for the depends processing, i.e. make sure the depends calls the method when appropriate and not

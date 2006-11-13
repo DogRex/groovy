@@ -11,4 +11,4 @@
 DIRNAME=`dirname "$0"`
 . "$DIRNAME/startGroovy"
 
-startGroovy org.codehaus.groovy.gant.infrastructure.Gant "$@"
+startGroovy gant.Gant "$@"

@@ -14,7 +14,7 @@
 
 package org.codehaus.groovy.gant.tests
 
-import org.codehaus.groovy.gant.infrastructure.Gant
+import gant.Gant
 
 /**
  *  A test to ensure that the target listing works. 
@@ -26,7 +26,7 @@ final class ToolMetaClassLookup_Test extends GantTestCase {
   void setUp ( ) {
     super.setUp ( )
     System.setIn ( new StringBufferInputStream ( '''
-includeTool << org.codehaus.groovy.gant.tools.Subdirectories
+includeTool << gant.tools.Subdirectories
 task ( something : 'Do something.' ) { Subdirectories.runSubprocess ( "echo yes" , new File ( "source" ) ) }
 task ( "default" : "Default is something." ) { something ( ) }
 ''' ) )  }
