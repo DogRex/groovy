@@ -12,9 +12,9 @@
 //  implied. See the License for the specific language governing permissions and limitations under the
 //  License.
 
-package org.codehaus.groovy.gant.tools
+package gant.tools
 
-import org.codehaus.groovy.gant.infrastructure.GantState
+import org.codehaus.groovy.gant.GantState
 
 /**
  *  A class providing methods for executing processes in all subdirectories of the working directory

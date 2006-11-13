@@ -12,7 +12,7 @@
 //  implied. See the License for the specific language governing permissions and limitations under the
 //  License.
 
-package org.codehaus.groovy.gant.infrastructure ;
+package org.codehaus.groovy.gant ;
 
 import java.util.HashSet ;
 import java.util.Iterator ;
@@ -37,7 +37,7 @@ import groovy.lang.MissingPropertyException ;
 class GantMetaClass extends DelegatingMetaClass {
   private final static HashSet methodsInvoked = new HashSet ( ) ;
   private final Binding binding ;
-  protected GantMetaClass ( final Class theClass , final Binding binding ) {
+  public GantMetaClass ( final Class theClass , final Binding binding ) {
     //  NB getIntance is the name of the method !
     super ( MetaClassRegistry.getIntance ( 0 ).getMetaClass ( theClass ) ) ;
     this.binding = binding ;

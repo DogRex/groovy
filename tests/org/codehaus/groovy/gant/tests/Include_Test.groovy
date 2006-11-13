@@ -14,7 +14,7 @@
 
 package org.codehaus.groovy.gant.tests
 
-import org.codehaus.groovy.gant.infrastructure.Gant
+import gant.Gant
 
 //  Commented out tests are ones that it is not certain should be supported.
 

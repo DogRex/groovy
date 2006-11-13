@@ -12,7 +12,7 @@
 //  implied. See the License for the specific language governing permissions and limitations under the
 //  License.
 
-package org.codehaus.groovy.gant.tools
+package gant.tools
 
 /**
  *  A class to provide support for using Ivy.  Assumes the ivy jar files are in $GROOVY_HOME.

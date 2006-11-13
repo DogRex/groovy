@@ -12,9 +12,15 @@
 //  implied. See the License for the specific language governing permissions and limitations under the
 //  License.
 
-package org.codehaus.groovy.gant.infrastructure
+package gant
 
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
+
+import org.codehaus.groovy.gant.GantBuilder
+import org.codehaus.groovy.gant.GantMetaClass
+import org.codehaus.groovy.gant.GantState
+import org.codehaus.groovy.gant.IncludeTargets
+import org.codehaus.groovy.gant.IncludeTool
 
 /**
  *  This class provides infrastructure and an executable command for using Groovy + AntBuilder as a build
@@ -169,7 +175,7 @@ final class Gant {
     if ( options.q ) { GantState.verbosity = GantState.QUIET }
     if ( options.s ) { GantState.verbosity = GantState.SILENT }
     if ( options.v ) { GantState.verbosity = GantState.VERBOSE }
-    if ( options.V ) { println 'Gant version 0.2.1-SNAPSHOT' ; return }
+    if ( options.V ) { println 'Gant version 0.2.2-SNAPSHOT' ; return }
     //  options.arguments( ) is expected to return a single element list with a string of the unprocessed
     //  command line entries.  Unprocessed -- options are passed through as expected but unprocessed single
     //  - options cause chaos.  The unprocessed option string is passed without the - sign and a whole slew

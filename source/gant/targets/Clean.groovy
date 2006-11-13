@@ -12,7 +12,7 @@
 //  implied. See the License for the specific language governing permissions and limitations under the
 //  License.
 
-package org.codehaus.groovy.gant.targets
+package gant.targets
 
 /**
  *  A class to provide clean and clobber actions for Gant build scripts.  Maintains separate lists of

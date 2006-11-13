@@ -14,7 +14,7 @@
 
 package org.codehaus.groovy.gant.tests
 
-import org.codehaus.groovy.gant.infrastructure.Gant
+import gant.Gant
 
 /**
  *  A test to ensure that the targets method lookup works. 
@@ -26,17 +26,16 @@ final class TargetMetaClassLookup_Test extends GantTestCase {
   void setUp ( ) {
     super.setUp ( )
     System.setIn ( new StringBufferInputStream ( '''
-includeTargets << new File ( 'source/org/codehaus/groovy/gant/targets/clean.gant' )
+includeTargets << new File ( 'source/gant/targets/clean.gant' )
 cleanPattern << "**/*~"
 task ( something : "Do something." ) { Ant.echo ( message : "Did something." ) }
 task ( "default" : "Default is something." ) { something ( ) }
 ''' ) )  }
     
-  //  It seems that the same org.codehaus.groovy.gant.targets.Clean instance is used for all
-  //  tests in this class whuich is a bit sad becaus it means that there is an accumulatiopn of
-  //  **/*~ patterns, 1 for each test method as addCleanPattern gets executed for each test.  So
-  //  it is crucial to know when testClean is run to know what the output will be.  Put it first
-  //  in the hope it will be run first.
+  //  It seems that the same gant.targets.Clean instance is used for all tests in this class whuich is a bit
+  //  sad becaus it means that there is an accumulatiopn of **/*~ patterns, 1 for each test method as
+  //  addCleanPattern gets executed for each test.  So it is crucial to know when testClean is run to know
+  //  what the output will be.  Put it first in the hope it will be run first.
 
   void testClean ( ) {
     //  Have to do this dry run or the result is indeterminate.
