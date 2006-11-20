@@ -380,6 +380,10 @@
     </configuration>
   </component>
   <component name="RAILS_PROJECT_VIEW_PANE" />
+  <component name="RUBY_DOC_SETTINGS">
+    <RUBY_DOC NAME="DEFAULTS" VALUE="TRUE" />
+    <RUBY_DOC NAME="NUMBER" VALUE="0" />
+  </component>
   <component name="RmicSettings">
     <option name="IS_EANABLED" value="false" />
     <option name="DEBUGGING_INFO" value="true" />
@@ -418,6 +422,8 @@
   <component name="com.yanaware.intellij.ideaspring.PluginConfigurable">
     <option name="autoscrolling" value="false" />
     <option name="autoscrollingFromSource" value="false" />
+    <option name="groupByConfigFiles" value="false" />
+    <option name="sortedAlphabetically" value="false" />
   </component>
   <component name="copyright">
     <Base>
