@@ -83,7 +83,7 @@ import org.codehaus.groovy.gant.IncludeTool
  */
 final class Gant {
   private buildFileName = 'build.gant'
-  private buildClassName = buildFileName.replace ( '.' , '_' ) 
+  private buildClassName = buildFileName.replaceAll ( '\\.' , '_' ) 
   private final Map taskDescriptions = new TreeMap ( ) 
   private final binding = new Binding ( )
   private final groovyShell = new GroovyShell ( binding )
@@ -167,7 +167,7 @@ final class Gant {
     // unprocessed options with a single hyphen -- the behaviour is most bizarre!
     if ( options == null ) { println ( 'Error in processing command line options.' ) ; return }
     def function = 'dispatch'
-    if ( options.f ) { buildFileName = options.f ; buildClassName = buildFileName.replace ( '.' , '_' ) }
+    if ( options.f ) { buildFileName = options.f ; buildClassName = buildFileName.replaceAll ( '\\.' , '_' ) }
     if ( options.h ) { cli.usage ( ) ; return }
     if ( options.l ) { gantLib = options.l.split ( System.properties.'path.separator' ) }
     if ( options.n ) { GantState.dryRun = true }
