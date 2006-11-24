@@ -92,12 +92,12 @@ public class FindASTNode extends ClassCodeVisitorSupport {
 			// expression to be consistent with other property expressions.
 			if (expr.getLastLineNumber() == expr.getLineNumber()) {
 				expr.setLastLineNumber(expr.getLineNumber()
-						+ expr.getProperty().length());
+						+ expr.getPropertyAsString().length());
 			}
 
 			if (expr.getLastColumnNumber() == expr.getColumnNumber()) {
 				expr.setLastColumnNumber(expr.getColumnNumber()
-						+ expr.getProperty().length());
+						+ expr.getPropertyAsString().length());
 			}
 
 			if (identifier.equals(expr.getProperty())) {

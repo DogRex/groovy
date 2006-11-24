@@ -47,7 +47,7 @@ public class MethodCallExpressionProcessor implements
 	private IDeclarationProposal[] createMethodCallProposal(String category,
 			IDeclarationSearchInfo info, ClassNode classNode,
 			MethodCallExpression expr) {
-		List nodes = classNode.getMethods(expr.getMethod());
+		List nodes = classNode.getMethods(expr.getMethodAsString());
 		List results = new ArrayList();
 		EditorPartFacade facade = new EditorPartFacade(info.getEditor());
 		for (Iterator iter = nodes.iterator(); iter.hasNext();) {

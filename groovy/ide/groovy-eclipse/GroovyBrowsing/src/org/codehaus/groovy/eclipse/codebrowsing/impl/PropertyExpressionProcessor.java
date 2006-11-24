@@ -27,7 +27,7 @@ public class PropertyExpressionProcessor implements
 				return DeclarationProposal.NONE;
 
 			FieldNode fieldNode = info.getClassNode().getField(
-					expr.getProperty());
+					expr.getPropertyAsString());
 			if (fieldNode == null)
 				return DeclarationProposal.NONE;
 
