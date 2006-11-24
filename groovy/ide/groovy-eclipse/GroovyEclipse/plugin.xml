@@ -3,7 +3,7 @@
 <plugin
    id="org.codehaus.groovy.eclipse"
    name="Groovy Plug-in"
-   version="1.0.0.20061107"
+   version="1.0.0.20061124"
    provider-name="codehaus "
    class="org.codehaus.groovy.eclipse.GroovyPlugin">
 
@@ -16,7 +16,7 @@
       <library name="lib/commons-lang-2.1.jar">
          <export name="*"/>
       </library>
-      <library name="lib/groovy-all-1.0-JSR-06.jar">
+      <library name="lib/groovy-all-1.0-RC-01-SNAPSHOT.jar">
          <export name="*"/>
       </library>
     </runtime>
