@@ -7,7 +7,7 @@
 package org.codehaus.groovy.eclipse.editor.contentoutline;
 
 import org.codehaus.groovy.eclipse.GroovyPlugin;
-import org.codehaus.groovy.eclipse.model.GroovyBuildListner;
+import org.codehaus.groovy.eclipse.model.GroovyBuildListener;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
@@ -29,7 +29,7 @@ import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
  * To change the template for this generated type comment go to Window -
  * Preferences - Java - Code Generation - Code and Comments
  */
-public class GroovyContentOutline extends ContentOutlinePage implements GroovyBuildListner {
+public class GroovyContentOutline extends ContentOutlinePage implements GroovyBuildListener {
 	private IFile file;
 
 	/**

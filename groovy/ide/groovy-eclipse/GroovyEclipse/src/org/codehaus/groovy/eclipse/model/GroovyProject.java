@@ -679,14 +679,14 @@ public class GroovyProject {
 	/**
 	 * @param listener
 	 */
-	public void addBuildListener(GroovyBuildListner listener) {
+	public void addBuildListener(GroovyBuildListener listener) {
 		listeners.add(listener);
 	}
 
 	/**
 	 * @param listener
 	 */
-	public void removeBuildListener(GroovyBuildListner listener) {
+	public void removeBuildListener(GroovyBuildListener listener) {
 		listeners.remove(listener);
 	}
 
@@ -694,7 +694,7 @@ public class GroovyProject {
 		private IFile file;
 		public void run() {
 			for (Iterator iter = listeners.iterator(); iter.hasNext();) {
-				GroovyBuildListner buildListner = (GroovyBuildListner) iter.next();
+				GroovyBuildListener buildListner = (GroovyBuildListener) iter.next();
 				buildListner.fileBuilt(file);
 			}
 		}

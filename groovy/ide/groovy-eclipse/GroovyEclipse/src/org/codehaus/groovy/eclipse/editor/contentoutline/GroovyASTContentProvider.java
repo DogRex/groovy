@@ -12,7 +12,7 @@ import java.util.List;
 
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ModuleNode;
-import org.codehaus.groovy.eclipse.model.GroovyBuildListner;
+import org.codehaus.groovy.eclipse.model.GroovyBuildListener;
 import org.codehaus.groovy.eclipse.model.GroovyModel;
 import org.codehaus.groovy.eclipse.model.GroovyProject;
 import org.eclipse.core.resources.IFile;
@@ -26,14 +26,14 @@ import org.eclipse.jface.viewers.Viewer;
  * Preferences - Java - Code Generation - Code and Comments
  */
 public class GroovyASTContentProvider implements ITreeContentProvider {
-	private GroovyBuildListner listner;
+	private GroovyBuildListener listner;
 	private IFile file;
 
 
 	/**
 	 * @param outline
 	 */
-	public GroovyASTContentProvider(GroovyBuildListner listner) {
+	public GroovyASTContentProvider(GroovyBuildListener listner) {
 		this.listner = listner;
 	}
 
