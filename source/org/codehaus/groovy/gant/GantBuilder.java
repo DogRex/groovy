@@ -18,10 +18,7 @@ import java.util.Iterator ;
 import java.util.Map ;
 
 import groovy.lang.Closure ;
-import groovy.lang.GroovyObjectSupport ;
 import groovy.util.AntBuilder ;
-
-import org.apache.tools.ant.Project;
 
 /**
  *  This class is a sub-class of <code>AntBuilder</code> to provide dry-run capability and to deal with all
