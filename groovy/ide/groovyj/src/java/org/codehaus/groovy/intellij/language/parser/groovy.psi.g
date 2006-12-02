@@ -284,10 +284,6 @@ tokens {
     private final List<Map<String, Object>> warningList = new ArrayList<Map<String, Object>>();
     public List<Map<String, Object>> getWarningList() { return warningList; }
 
-    boolean compatibilityMode = true;  // for now
-    public boolean isCompatibilityMode() { return compatibilityMode; }
-    public void setCompatibilityMode(boolean z) { compatibilityMode = z; }
-
     private TokenStreamHiddenTokenFilter filter;
     private GroovyPsiBuilder builder;
     private GroovyLexer lexer;
@@ -1578,8 +1574,6 @@ parameterModifiersOpt
 closureParametersOpt[boolean addImplicit]
     :   (parameterDeclarationList nls CLOSURE_OP)=>
         parameterDeclarationList nls! CLOSURE_OP! nls!
-    |   {compatibilityMode}? (oldClosureParametersStart)=>
-        oldClosureParameters
     |   {addImplicit}?
         implicitParameters
     |
@@ -1589,33 +1583,7 @@ closureParametersOpt[boolean addImplicit]
 /** Lookahead to check whether a block begins with explicit closure arguments. */
 closureParametersStart!
     :
-        {compatibilityMode}? (oldClosureParametersStart)=>
-        oldClosureParametersStart
-    |
         parameterDeclarationList nls CLOSURE_OP
-    ;
-
-/** Provisional definition of old-style closure params based on BOR '|'.
- *  Going away soon, perhaps... */
-oldClosureParameters  {Token first = LT(1);}
-    :   LOR! nls!  // '||' operator is a null param list
-        {#oldClosureParameters = #(create(PARAMETERS,"PARAMETERS",first,LT(1)));}
-    |   (BOR nls BOR)=>
-        BOR! nls! BOR! nls!
-        {#oldClosureParameters = #(create(PARAMETERS,"PARAMETERS",first,LT(1)));}
-    |   ((BOR nls)? LPAREN parameterDeclarationList RPAREN nls BOR)=>
-        (BOR! nls!)? LPAREN! parameterDeclarationList RPAREN! nls! BOR! nls!
-    |   ((BOR nls)? simpleParameterDeclarationList nls BOR)=>
-        (BOR! nls!)? simpleParameterDeclarationList nls! BOR! nls!
-    ;
-
-/** Lookahead for oldClosureParameters. */
-oldClosureParametersStart!
-    :   BOR
-    |   LOR // for empty parameter declaration
-    |   LPAREN balancedTokens RPAREN nls BOR
-    //| (IDENT nls (BOR | COMMA))=>
-    |   simpleParameterDeclarationList BOR
     ;
 
 /** Simple names, as in {x|...}, are completely equivalent to {(def x)|...}.  Build the right AST. */
@@ -2523,15 +2491,23 @@ additiveExpression[int lc_stmt]
 
 // multiplication/division/modulo (level 4)
 multiplicativeExpression[int lc_stmt]
-    :    ( INC^ nls!  powerExpression[0] ((STAR^ | DIV^ | MOD^ )  nls!  powerExpression[0])* )
-    |    ( DEC^ nls!  powerExpression[0] ((STAR^ | DIV^ | MOD^ )  nls!  powerExpression[0])* )
-    |    ( MINUS^ {#MINUS.setType(UNARY_MINUS);} nls!   powerExpression[0] ((STAR^ | DIV^ | MOD^ )  nls!  powerExpression[0])* )
-    |    ( PLUS^ {#PLUS.setType(UNARY_PLUS);} nls!   powerExpression[0] ((STAR^ | DIV^ | MOD^ )  nls!  powerExpression[0])* )
-    |    (  powerExpression[lc_stmt] ((STAR^ | DIV^ | MOD^ )  nls!  powerExpression[0])* )
+    :    ( INC^ nls!  powerExpressionNotPlusMinus[0] ((STAR^ | DIV^ | MOD^ )  nls!  powerExpression[0])* )
+    |    ( DEC^ nls!  powerExpressionNotPlusMinus[0] ((STAR^ | DIV^ | MOD^ )  nls!  powerExpression[0])* )
+    |    ( MINUS^ {#MINUS.setType(UNARY_MINUS);} nls!   powerExpressionNotPlusMinus[0] ((STAR^ | DIV^ | MOD^ )  nls!  powerExpression[0])* )
+    |    ( PLUS^ {#PLUS.setType(UNARY_PLUS);} nls!   powerExpressionNotPlusMinus[0] ((STAR^ | DIV^ | MOD^ )  nls!  powerExpression[0])* )
+    |    (  powerExpressionNotPlusMinus[lc_stmt] ((STAR^ | DIV^ | MOD^ )  nls!  powerExpression[0])* )
     ;
 
 // math power operator (**) (level 3)
 powerExpression[int lc_stmt]
+    :   unaryExpression[lc_stmt] (STAR_STAR^ nls! unaryExpression[0])*
+    ;
+    
+// math power operator (**) (level 3) 
+// (without ++(prefix)/--(prefix)/+(unary)/-(unary))
+// The different rules are needed to avoid ambigous selection
+// of alternatives. 
+powerExpressionNotPlusMinus[int lc_stmt]
     :   unaryExpressionNotPlusMinus[lc_stmt] (STAR_STAR^ nls! unaryExpression[0])*
     ;
 
@@ -3907,7 +3883,7 @@ options {
 // Note: Please don't use physical tabs.  Logical tabs for indent are width 4.
 // Here's a little hint for you, Emacs:
 // Local Variables:
-// mode: java
 // tab-width: 4
+// mode: antlr-mode
 // indent-tabs-mode: nil
 // End:
