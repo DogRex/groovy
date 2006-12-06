@@ -605,7 +605,7 @@ public class GroovyProject {
 	 * @param e
 	 */
 	private void handleCompilationError(List fileList, Exception e) {
-		GroovyPlugin.trace("compilation error : " + e.getMessage());
+		//GroovyPlugin.trace("compilation error : " + e.getMessage());
 		IFile file = (IFile)(fileList.get(0));
 		try {
 			ResourcesPlugin.getWorkspace().run(new AddErrorMarker(fileList, e), null);
