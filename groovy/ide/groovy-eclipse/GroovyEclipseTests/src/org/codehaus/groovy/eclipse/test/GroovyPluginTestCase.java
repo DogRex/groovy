@@ -29,7 +29,7 @@ public class GroovyPluginTestCase extends EclipseTestCase {
 	static{
 		groovyRuntimeJars.add("commons-io-1.2.jar");
         groovyRuntimeJars.add("commons-lang-2.1.jar");
-		groovyRuntimeJars.add("groovy-all-1.0-JSR-06.jar");
+		groovyRuntimeJars.add("groovy-all-1.0-RC-01.jar");
 	};
 	public void testNatureAddAndRemove() throws CoreException {
 		IProject project = testProject.getProject();
