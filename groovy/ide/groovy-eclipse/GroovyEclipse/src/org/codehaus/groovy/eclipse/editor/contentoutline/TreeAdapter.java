@@ -167,7 +167,7 @@ class ClassAdapter extends TreeAdapter {
 			}
 			public void visitMethod(MethodNode node) {
 				//TODO - get clinit to be marked as syntetic
-				if(!"<clinit>".equals(node.getName()))
+				if(!"<clinit>".equals(node.getName()) && node.getLineNumber() > 0 )
 					add(new MethodAdapter(node, ClassAdapter.this), node);
 			}
 			public void visitField(FieldNode node) {
