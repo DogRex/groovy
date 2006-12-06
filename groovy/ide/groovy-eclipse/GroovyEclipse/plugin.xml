@@ -16,7 +16,7 @@
       <library name="lib/commons-lang-2.1.jar">
          <export name="*"/>
       </library>
-      <library name="lib/groovy-all-1.0-RC-01-SNAPSHOT.jar">
+      <library name="lib/groovy-all-1.0-RC-01.jar">
          <export name="*"/>
       </library>
     </runtime>
@@ -41,6 +41,7 @@
       <import plugin="org.eclipse.core.filebuffers"/>
       <import plugin="org.eclipse.ui.console"/>
       <import plugin="org.eclipse.ui.ide"/>
+      <import plugin="org.eclipse.jdt.junit"/>
    </requires>
    <extension-point id="hyperlinkDetectors" name="Groovy Hyperlink Detectors" schema="schema/hyperlinkDetector.exsd"/>
 
@@ -130,6 +131,25 @@
          <perspective
                id="org.eclipse.debug.ui.DebugPerspective">
          </perspective>
+      </shortcut>
+      <shortcut
+            class="org.codehaus.groovy.eclipse.launchers.GroovyTestLaunchShortcut"
+            icon="icons/julaunch.gif"
+            id="GroovyTest"
+            label="JUnit Test"
+            modes="run, debug">
+         <contextualLaunch>
+            <enablement>
+                 <with variable="selection">
+                 	<count value="1"/>
+           		 		<iterate>
+           		 			<or>
+               		    		<test property="org.eclipse.debug.ui.matchesPattern" value="*.groovy"/>
+                			</or>
+           		 		</iterate>
+				</with>
+            </enablement>
+         </contextualLaunch>
       </shortcut>
    </extension>
    <extension
