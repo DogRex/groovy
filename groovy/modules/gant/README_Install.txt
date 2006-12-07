@@ -18,7 +18,7 @@ Distribution
 Untar the tarball or unzip the zipfile.  This creates a directory with
 all the files.  cd into the directory and issue the command:
 
-    groovy source/bin/install.groovy
+    groovy bin/install.groovy
 
 assuming the command groovy is in your path.  If it is not then you
 will have to give the path to the groovy executable.

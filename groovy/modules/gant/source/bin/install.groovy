@@ -28,7 +28,7 @@ ant.property ( environment : theEnvironment )
 def groovyHome = ant.project.properties.'groovy.home'
 
 ant.copy ( todir : groovyHome ) {
-  fileset ( dir : 'source' , includes : 'bin/gant*' )
+  fileset ( dir : '.' , includes : 'bin/gant*' )
   fileset ( dir : '.' , includes : 'lib/gant*.jar' )
 }
 ant.chmod ( perm : 'a+x' ) {
