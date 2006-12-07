@@ -175,7 +175,7 @@ final class Gant {
     if ( options.q ) { GantState.verbosity = GantState.QUIET }
     if ( options.s ) { GantState.verbosity = GantState.SILENT }
     if ( options.v ) { GantState.verbosity = GantState.VERBOSE }
-    if ( options.V ) { println 'Gant version 0.2.2' ; return }
+    if ( options.V ) { println 'Gant version 0.2.3-SNAPSHOT' ; return }
     //  options.arguments( ) is expected to return a single element list with a string of the unprocessed
     //  command line entries.  Unprocessed -- options are passed through as expected but unprocessed single
     //  - options cause chaos.  The unprocessed option string is passed without the - sign and a whole slew
