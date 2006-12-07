@@ -92,7 +92,7 @@ installing from a Subversion checkout.
     </junit>
   </target>
 
-  <target name="install" depends="compile" description="Compile everything and then install to ${groovyHome}.">
+  <target name="install" depends="compile" description="Compile everything and then install to $GROOVY_HOME.">
     <copy todir="${groovyHome}">
       <fileset dir="${sourceDirectory}" includes="bin/gant*"/>
       <fileset dir="${buildDirectory}" includes="lib/gant*.jar"/>
@@ -103,6 +103,13 @@ installing from a Subversion checkout.
     <chmod perm="a+x">
       <fileset dir="${groovyHome}/bin" includes="gant*"/>
     </chmod>
+  </target>
+
+  <target name="uninstall" description="Uninstall Gant from $GROOVY_HOME.">
+    <delete quiet="true">
+      <fileset dir="${groovyHome}/bin" includes="gant*"/>
+      <fileset dir="${groovyHome}/lib" includes="gant*.jar"/>  
+    </delete>
   </target>
 
   <target name="clean" description="Clean everything up.">

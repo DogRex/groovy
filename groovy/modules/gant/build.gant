@@ -104,6 +104,13 @@ task ( install : "Compile everything and install it to ${groovyHome}" ) {
   Ant.chmod ( perm : 'a+x' ) { fileset ( dir : groovyHome + '/bin' , includes : 'gant*' ) }
 }
 
+task ( uninstall : "Uninstall Gant from ${groovyHome}." ) {
+  Ant.delete ( quiet : 'true' ) {
+    fileset ( dir : groovyHome + '/bin' , includes : 'gant*' )
+    fileset ( dir : groovyHome + '/lib' , includes : 'gant*.jar' )
+  }
+}
+
 task ( 'package' : 'Create the distribution.' ) {
   depends ( compile ) 
   def prefix = "gant-${version}"
