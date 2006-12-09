@@ -1,6 +1,4 @@
 package org.codehaus.groovy.eclipse;
-import java.io.File;
-import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
@@ -348,44 +346,9 @@ implements IStartup
      * @return
      */
     private static IEditorInput createEditorInput(IPath path, boolean askIfDoesNotExist) {
-        IEditorInput edInput = null;
-        IWorkspace w = ResourcesPlugin.getWorkspace();      
-
-        //let's start with the 'easy' way
+    	IWorkspace w = ResourcesPlugin.getWorkspace();      
     	IFile fileForLocation = w.getRoot().getFileForLocation(path);
-    	//if(fileForLocation != null){
-    		return new FileEditorInput(fileForLocation);
-    	//}
-
-        /*
-        
-        IFile files[] = w.getRoot().findFilesForLocation(path);
-        if (files == null  || files.length == 0 || !files[0].exists()){
-            //it is probably an external file
-            File systemFile = path.toFile();
-            if(systemFile.exists()){
-                edInput = createEditorInput(systemFile);
-            }
-//            else if(askIfDoesNotExist){
-//                //this is the last resort... First we'll try to check for a 'good' match,
-//                //and if there's more than one we'll ask it to the user
-//                List likelyFiles = getLikelyFiles(path, w);
-//                IFile iFile = selectWorkspaceFile(likelyFiles.toArray(new IFile[0]));
-//                if(iFile != null){
-//                    return new FileEditorInput(iFile);
-//                }
-//                
-//                //ok, ask the user for any file in the computer
-//                IEditorInput input = selectFilesystemFileForPath(path);
-//                if(input != null){
-//                    return input;
-//                }
-//            }
-        }else{ //file exists
-            edInput = doFileEditorInput(selectWorkspaceFile(files));
-        }
-        return edInput;
-        */
+    	return new FileEditorInput(fileForLocation);
     }
 
     private static IEditorInput doFileEditorInput(IFile file) {

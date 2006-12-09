@@ -1,21 +1,17 @@
 package org.codehaus.groovy.eclipse.actions;
 
-import java.io.File;
-
+import org.codehaus.groovy.eclipse.GroovyPlugin;
+import org.codehaus.groovy.eclipse.editor.GroovyEditor;
+import org.codehaus.groovy.eclipse.model.ItemPointer;
+import org.codehaus.groovy.eclipse.model.Location;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.codehaus.groovy.eclipse.GroovyPlugin;
-import org.codehaus.groovy.eclipse.model.ItemPointer;
-import org.codehaus.groovy.eclipse.model.Location;
-import org.codehaus.groovy.eclipse.editor.GroovyEditor;
 
 /*
 import org.python.pydev.core.REF;
@@ -42,8 +38,7 @@ public class GroovyOpenAction extends Action {
             textEdit.getSelectionProvider().setSelection(sel);
         } catch (BadLocationException e1) {
         	if(textEdit instanceof GroovyEditor){
-        		GroovyEditor p = (GroovyEditor) textEdit;
-        		GroovyPlugin.trace("Error setting selection:"+start+" - "+end+" - "+ /*p.getEditorFile(),*/ e1.getMessage());
+        		GroovyPlugin.trace("Error setting selection:"+start+" - "+end+" - "+  e1.getMessage());
         		
         	}else{
         		GroovyPlugin.trace("Error setting selection:"+start+" - "+end + e1.getMessage());

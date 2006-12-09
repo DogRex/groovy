@@ -1,14 +1,9 @@
 package org.codehaus.groovy.eclipse.model;
 
-import java.io.File;
-
-// import org.python.pydev.editor.codecompletion.revisited.visitors.Definition;
-// import org.python.pydev.parser.jython.SimpleNode;
-
 /**
- * Pointer points to a python resource inside a file system. 
+ * Pointer points to a resource inside a file system. 
  * 
- * You can create one of these, and use PyOpenAction to open the 
+ * You can create one of these, and use OpenAction to open the 
  * right editor.
  */
 public class ItemPointer {
@@ -16,7 +11,6 @@ public class ItemPointer {
 	public Object file;	// IFile or File object
 	public Location start; // (first character)
 	public Location end;   // (last character)
-//    public Definition definition; //the definition that originated this ItemPointer (it might be null).
 	
 	public ItemPointer(Object file) {
 		this(file, new Location(), new Location());
@@ -37,11 +31,6 @@ public class ItemPointer {
 		this.end = end;
 	}
     
-//    public ItemPointer(File file2, Location location, Location location2, Definition definition) {
-//        this(file2, location, location2);
-//        this.definition = definition;
-//    }
-
     public String toString() {
         StringBuffer buffer = new StringBuffer("ItemPointer [");
         buffer.append(file);
