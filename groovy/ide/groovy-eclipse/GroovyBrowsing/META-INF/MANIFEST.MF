@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Groovy Code Browsing
 Bundle-SymbolicName: org.codehaus.groovy.eclipse.codebrowsing; singleton:=true
-Bundle-Version: 1.0.20061124
+Bundle-Version: 1.0.20061210
 Bundle-Activator: org.codehaus.groovy.eclipse.codebrowsing.GroovyBrowsingPlugin
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.ui,

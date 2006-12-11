@@ -12,5 +12,6 @@
    <feature url="features/org.codehaus.groovy.eclipse.feature_1.0.0.20060915.jar" id="org.codehaus.groovy.eclipse.feature" version="1.0.0.20060915">
       <category name="Groovy"/>
    </feature>
+   <feature url="features/org.codehaus.groovy.eclipse.feature_1.0.0.20061210.jar" id="org.codehaus.groovy.eclipse.feature" version="1.0.0.20061210"/>
    <category-def name="Groovy" label="Groovy"/>
 </site>
