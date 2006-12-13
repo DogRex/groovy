@@ -43,6 +43,7 @@
       <import plugin="org.eclipse.ui.ide"/>
    </requires>
    <extension-point id="hyperlinkDetectors" name="Groovy Hyperlink Detectors" schema="schema/hyperlinkDetector.exsd"/>
+   <extension-point id="contentAssistProcessors" name="Groovy Code Completion Processors" schema="schema/contentAssistProcessors.exsd"/>
 
    <extension
          id="groovyNature"
