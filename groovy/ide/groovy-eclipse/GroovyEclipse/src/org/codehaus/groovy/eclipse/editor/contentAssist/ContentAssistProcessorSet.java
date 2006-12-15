@@ -2,6 +2,8 @@ package org.codehaus.groovy.eclipse.editor.contentAssist;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -63,6 +65,11 @@ public class ContentAssistProcessorSet implements IContentAssistProcessor {
 				proposals.addAll(Arrays.asList(p));
 			}
 		}
+		Collections.sort(proposals, new Comparator() {
+			public int compare(Object a, Object b) {
+				return ((ICompletionProposal)a).getDisplayString().compareTo(((ICompletionProposal)b).getDisplayString());
+			}
+		});
 		return (ICompletionProposal[]) proposals.toArray(new ICompletionProposal[proposals.size()]);
 	}
 
