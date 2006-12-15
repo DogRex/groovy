@@ -1,0 +1,58 @@
+# -*- mode: ruby encoding: UTF-8 -*-
+
+#  Groovy -- A native launcher for Groovy
+#
+#  Copyright © 2006 Russel Winder
+#
+#  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
+#  compliance with the License. You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software distributed under the License is
+#  distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+#  implied. See the License for the specific language governing permissions and limitations under the
+#  License.
+#
+#  Author : Russel Winder <russel@russel.org.uk>
+#  $Revision$
+#  $Date$
+
+import 'clean'
+
+Linux   = 'linux'
+Solaris = 'solaris'
+Cygwin  = 'cygwin'
+MSYS    = 'msys'
+Windows = 'windows'
+
+Environment = {}
+
+Environment[ 'Name' ]           = 'groovy'
+Environment[ 'BuildDirectory' ] = 'build'
+
+#  Environmnet variable is probably not defined on standard windows, assume a value of nil.
+
+Architecture = ENV[ 'OSTYPE' ]
+
+Environment[ 'Architecture' ] = case Architecture
+                                when /solaris/ then Solaris
+                                when /linux/ then Linux
+                                when /cygwin/ then Cygwin
+                                when /msys/ then MSYS  
+                                else
+                                  if ENV[ 'WINDIR' ] != nil
+                                    Environment[ 'Name' ] += '.exe' 
+                                    Windows
+                                  else raise "Unrecognized architecture -- #{Architecture}"
+                                  end
+                                end
+                                
+desc 'Clean everything.'
+gen Clean , :clean
+var[ :clean ].include( [ Environment[ 'BuildDirectory' ] , '**/*~' ] )
+
+subdirs [ 'source' ]
+
+task :default => 'source/default'
+task :debug   => 'source/debug'
