@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Default Groovy Methods Completion
+Bundle-SymbolicName: org.codehaus.groovy.eclipse.codeassist.dgm;singleton:=true
+Bundle-Version: 1.0.20061201
+Bundle-ClassPath: org.codehaus.groovy.eclipse.completion.dgm/,
+ bin-groovy/
+Bundle-Activator: org.codehaus.groovy.eclipse.codeassist.dgm.Activator
+Bundle-Localization: plugin
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.jface.text,
+ org.eclipse.ui,
+ org.codehaus.groovy.eclipse,
+ org.codehaus.groovy.eclipse.codeassist
+Eclipse-LazyStart: true
