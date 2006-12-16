@@ -1,7 +1,0 @@
-<FindBugsFilter>
-    <Match class="org.codehaus.groovy.intellij.language.parser.GroovyLexer"/>
-    <Match class="org.codehaus.groovy.intellij.language.parser.GroovyRecognizer"/>
-    <Match class="org.codehaus.groovy.intellij.language.parser.GroovyRecognizerTree"/>
-    <Match class="org.codehaus.groovy.intellij.language.parser.GroovyRecognizerTreeTokenTypes"/>
-    <Match class="org.codehaus.groovy.intellij.language.parser.GroovyTokenTypes"/>
-</FindBugsFilter>
