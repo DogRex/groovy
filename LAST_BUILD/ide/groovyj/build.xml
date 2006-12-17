@@ -1,0 +1,408 @@
+<project name="GroovyJ" default="build" basedir=".">
+
+    <target name="check.java.version">
+        <echo taskname="java.version" message="${java.version}"/>
+        <condition property="java.version.ok">
+            <contains string="${java.version}" substring="1.5"/>
+        </condition>
+    </target>
+
+    <target name="java.version.pass" depends="check.java.version" unless="java.version.ok">
+        <fail>This build script requires JDK 1.5 or later.</fail>
+    </target>
+
+    <target name="check.ant.version">
+        <echo taskname="ant.version" message="${ant.version}"/>
+        <condition property="ant.version.ok">
+            <and>
+                <contains string="${ant.version}" substring="1.6."/>
+                <not>
+                    <contains string="${ant.version}" substring="1.6.0"/>
+                </not>
+                <not>
+                    <contains string="${ant.version}" substring="1.6.1"/>
+                </not>
+            </and>
+        </condition>
+    </target>
+
+    <target name="ant.version.pass" depends="check.ant.version" unless="ant.version.ok">
+        <fail>This build script requires Ant 1.6.2 or later.</fail>
+    </target>
+
+    <target name="initialise" depends="java.version.pass, ant.version.pass">
+        <property file="project.properties"/>
+        <property name="distfile.name" value="${project.name}-${project.version}"/>
+        <property name="binary.extensions" value="**/*.png, **/*.jpg, **/*.jpeg, **/*.gif"/>
+
+        <property name="src.etc.dir" value="src/etc"/>
+        <property name="src.java.dir" value="src/java"/>
+        <property name="src.test.dir" value="src/test"/>
+
+        <property name="lib.compile.dir" value="lib/compile"/>
+        <property name="lib.runtime.dir" value="lib/runtime"/>
+
+        <property name="build.dir" value="build"/>
+        <property name="classes.dir" value="${build.dir}/classes"/>
+        <property name="dist.dir" value="${build.dir}/dist"/>
+
+        <property name="test.classes.dir" value="${build.dir}/test-classes"/>
+        <property name="test.results.dir" value="${build.dir}/test-results"/>
+        <property name="test.reports.dir" value="${build.dir}/test-reports"/>
+
+        <property name="clover.dir" value="clover"/>
+        <property name="clover.lib.dir" value="${user.home}/.ant/lib"/>
+        <property name="clover.reports" value="${build.dir}/clover-reports"/>
+        <property name="coverage.criteria" value="90%"/>
+
+        <property name="idea.since-build" value="5755"/>
+
+        <path id="clover.classpath">
+            <pathelement location="${clover.lib.dir}/clover.jar"/>
+        </path>
+
+        <condition property="clover.available">
+            <and>
+                <available file="${clover.lib.dir}/clover.jar" type="file"/>
+                <available file="${clover.lib.dir}/clover.license" type="file"/>
+            </and>
+        </condition>
+
+        <path id="compile.classpath">
+            <pathelement location="${classes.dir}"/>
+            <fileset dir="${lib.compile.dir}">
+                <include name="**/*.jar"/>
+            </fileset>
+            <fileset dir="${idea.home}">
+                <include name="lib/*.jar"/>
+            </fileset>
+        </path>
+
+        <path id="test.classpath">
+            <pathelement location="${test.classes.dir}"/>
+            <path refid="clover.classpath"/>
+            <path refid="compile.classpath"/>
+        </path>
+
+        <filterset id="project.variables">
+            <filter token="PROJECT.NAME" value="${project.name}"/>
+            <filter token="PROJECT.HOMEPAGE" value="${project.homepage}"/>
+            <filter token="PROJECT.TITLE" value="${project.title}"/>
+            <filter token="PROJECT.DESCRIPTION" value="${project.description}"/>
+            <filter token="PROJECT.CHANGE-NOTES" value="${project.change-notes}"/>
+            <filter token="PROJECT.VENDOR" value="${project.vendor}"/>
+            <filter token="PROJECT.VENDOR.EMAIL" value="${project.vendor.email}"/>
+            <filter token="PROJECT.VENDOR.HOMEPAGE" value="${project.vendor.homepage}"/>
+        </filterset>
+
+        <tstamp>
+            <format property="TODAY" pattern="d-MMMM-yyyy" locale="en"/>
+            <format property="DAY" pattern="d" locale="en"/>
+            <format property="MONTH" pattern="MM" locale="en"/>
+            <format property="YEAR" pattern="yyyy" locale="en"/>
+        </tstamp>
+
+        <filterset id="timestamp.variables">
+            <filter token="TIMESTAMP" value="${TODAY}"/>
+            <filter token="DAY" value="${DAY}"/>
+            <filter token="MONTH" value="${MONTH}"/>
+            <filter token="YEAR" value="${YEAR}"/>
+        </filterset>
+    </target>
+
+    <target name="check.idea.available" depends="initialise" >
+        <condition property="idea.available">
+            <and>
+                <available classname="com.intellij.execution.configurations.LocatableConfiguration"
+                           classpathref="compile.classpath"/>
+
+                <available classname="com.intellij.ide.plugins.IdeaPluginDescriptor"
+                           classpathref="compile.classpath"/>
+
+                <available classname="com.intellij.lang.Language"
+                           classpathref="compile.classpath"/>
+
+                <available classname="com.intellij.lexer.LexerBase"
+                           classpathref="compile.classpath"/>
+
+                <available classname="com.intellij.formatting.FormattingModelBuilder"
+                           classpathref="compile.classpath"/>
+
+                <available classname="com.intellij.openapi.editor.colors.CodeInsightColors"
+                           classpathref="compile.classpath"/>
+
+                <available classname="com.intellij.psi.tree.IFileElementType"
+                           classpathref="compile.classpath"/>
+
+                <available classname="org.picocontainer.defaults.DefaultPicoContainer"
+                           classpathref="compile.classpath"/>
+
+                <available classname="gnu.trove.TIntObjectHashMap"
+                           classpathref="compile.classpath"/>
+
+                <available classname="org.apache.commons.collections.MultiHashMap"
+                           classpathref="compile.classpath"/>
+
+                <available classname="com.intellij.testFramework.LightVirtualFile"
+                           classpathref="compile.classpath"/>
+
+                <available classname="com.intellij.openapi.util.UserDataHolderBase"
+                           classpathref="compile.classpath"/>
+
+                <not>
+                    <available classname="com.intellij.codeFormatting.PseudoTextBuilder"
+                               classpathref="compile.classpath"/>
+                </not>
+
+                <not>
+                    <available classname="com.intellij.testFramework.MockVirtualFile"
+                               classpathref="compile.classpath"/>
+                </not>
+            </and>
+        </condition>
+    </target>
+
+    <target name="idea.available" depends="check.idea.available" unless="idea.available">
+        <fail>
+            IntelliJ IDEA 6.0 (Demetra build #${idea.since-build} or greater) is not available.
+            Please set the 'idea.home' system property to the path to your IntelliJ IDEA 6.0 installation.
+        </fail>
+    </target>
+
+    <target name="clean" depends="initialise" description="Deletes all artifacts from a previous build">
+        <delete dir="${build.dir}" failonerror="false"/>
+    </target>
+
+    <target name="antlr.clean" depends="initialise">
+        <delete verbose="true" failonerror="true">
+            <fileset dir="${src.java.dir}/org/codehaus/groovy/intellij/language/parser"
+                     includes="groovy.g, groovy.patched.g, treeGrammar.g, Groovy*.txt, GroovyRecognizerTree.g,
+                        GroovyRecognizerTree.patched.g, GroovyPsiRecognizer.java, GroovyPsiLexer.java"/>
+        </delete>
+    </target>
+
+    <target name="antlr" depends="idea.available">
+        <copy file="../../groovy-core/src/main/org/codehaus/groovy/antlr/groovy.g"
+              todir="${src.java.dir}/org/codehaus/groovy/intellij/language/parser"/>
+
+        <exec executable="patch" dir="${src.java.dir}/org/codehaus/groovy/intellij/language/parser" taskname="patch">
+            <arg value="groovy.g"/>
+            <arg value="-o"/>
+            <arg value="groovy.patched.g"/>
+            <arg value="tree.construction.patch"/>
+        </exec>
+
+        <java classname="antlr.Tool" dir="${src.java.dir}/org/codehaus/groovy/intellij/language/parser"
+              fork="yes" taskname="antlrTreeExtensions">
+            <arg value="-tree"/>
+            <arg value="groovy.patched.g"/>
+            <classpath>
+                <pathelement location="tools/antlr-2.8.beta4.jar"/>
+            </classpath>
+        </java>
+
+        <exec executable="patch" dir="${src.java.dir}/org/codehaus/groovy/intellij/language/parser" taskname="patch">
+            <arg value="GroovyRecognizerTree.g"/>
+            <arg value="-o"/>
+            <arg value="GroovyRecognizerTree.patched.g"/>
+            <arg value="tree.fixes.patch"/>
+        </exec>
+
+        <antlr target="${src.java.dir}/org/codehaus/groovy/intellij/language/parser/GroovyRecognizerTree.patched.g" fork="yes">
+            <classpath refid="compile.classpath"/>
+        </antlr>
+    </target>
+
+    <target name="tree.walker" depends="idea.available">
+        <antlr target="${src.java.dir}/org/codehaus/groovy/intellij/language/parser/groovy.tree.g" fork="yes">
+            <classpath refid="compile.classpath"/>
+        </antlr>
+    </target>
+
+    <target name="antlr.psi" depends="idea.available">
+        <antlr target="${src.java.dir}/org/codehaus/groovy/intellij/language/parser/groovy.psi.g" fork="yes">
+            <classpath refid="compile.classpath"/>
+        </antlr>
+    </target>
+
+    <target name="compile.plugin" depends="antlr.psi">
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${src.java.dir}" destdir="${classes.dir}" debug="on" source="1.5" target="1.5">
+            <classpath refid="compile.classpath"/>
+        </javac>
+        <copy todir="${classes.dir}" overwrite="true" preservelastmodified="true">
+            <fileset dir="${src.etc.dir}" includes="${binary.extensions}"/>
+        </copy>
+    </target>
+
+    <target name="compile.tests" depends="compile.plugin">
+        <mkdir dir="${test.classes.dir}"/>
+        <javac srcdir="${src.test.dir}" destdir="${test.classes.dir}" debug="on" source="1.5" target="1.5">
+            <classpath refid="test.classpath"/>
+        </javac>
+    </target>
+
+    <target name="run.tests" depends="compile.tests">
+        <mkdir dir="${test.results.dir}"/>
+
+        <junit fork="true" forkmode="once" errorProperty="tests.failed" failureProperty="tests.failed"
+               haltonfailure="false" haltonerror="false" showoutput="true" printsummary="withOutAndErr"
+               dir="${basedir}" includeantruntime="true" newenvironment="false">
+
+            <jvmarg value="-Xbootclasspath/p:${idea.home}/lib/boot.jar"/>
+            <jvmarg value="-Didea.home.path=${idea.home}"/>
+
+            <classpath refid="test.classpath"/>
+            <formatter type="brief" usefile="false"/>
+
+            <batchtest todir="${test.results.dir}">
+                <fileset dir="${test.classes.dir}">
+                    <include name="**/*Test.class"/>
+                    <include name="**/Create*TestCase.class"/>
+                </fileset>
+                <formatter type="xml"/>
+            </batchtest>
+        </junit>
+    </target>
+
+    <target name="test.reports" depends="run.tests">
+        <mkdir dir="${test.reports.dir}"/>
+
+        <junitreport todir="${test.results.dir}">
+            <fileset dir="${test.results.dir}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="${test.reports.dir}"/>
+        </junitreport>
+
+        <fail message="Tests failed! Check test reports." if="tests.failed"/>
+    </target>
+
+    <target name="with.clover" depends="initialise" if="clover.available">
+        <taskdef resource="clovertasks"/>
+
+        <mkdir dir="${clover.dir}"/>
+        <delete failonerror="true">
+            <fileset dir="${clover.dir}" includes="clover.db*"/>
+        </delete>
+
+        <clover-setup enabled="true" initString="${clover.dir}/clover.db">
+            <fileset dir="${src.java.dir}" includes="**/*.java" excludes="**/language/GroovyPsiBuilder.java, **/language/parser/*.java"/>
+        </clover-setup>
+    </target>
+
+    <target name="without.clover" depends="initialise" if="clover.available">
+        <taskdef resource="clovertasks"/>
+        <clover-setup enabled="false"/>
+    </target>
+
+    <target name="coverage.reports" depends="with.clover" if="clover.available">
+        <!-- generate a history point for the current coverage -->
+        <clover-historypoint historyDir="${clover.dir}/history"/>
+
+        <clover-report>
+            <!-- generate a current report -->
+            <current alwaysReport="true" outfile="${clover.reports}" title="Clover Report for GroovyJ">
+                <format type="html"/>
+            </current>
+
+            <!-- generate a historical report -->
+            <historical outfile="${clover.reports}" historyDir="${clover.dir}/history">
+                <format type="html"/>
+            </historical>
+        </clover-report>
+    </target>
+
+    <target name="clover.check" depends="with.clover" if="clover.available">
+        <clover-check target="${coverage.criteria}" failureProperty="clover.check.failed"/>
+    </target>
+
+    <target name="coverage.check" depends="clover.check" if="clover.check.failed">
+        <fail message="Coverage criteria not met! Check coverage reports."/>
+    </target>
+
+    <target name="find.bugs" depends="compile.plugin" description="Runs FindBugs on the project's codebase">
+        <property name="findbugs.home" value="tools/findbugs"/>
+
+        <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask"/>
+
+        <findbugs home="${findbugs.home}" debug="false" workHard="true" jvmargs="-Xmx256M"
+                  excludeFilter="${findbugs.home}/excludeFilter.xml"
+                  output="xml:withMessages" outputFile="${build.dir}/findbugs-report.xml">
+
+            <auxClasspath refid="compile.classpath"/>
+            <sourcePath path="${src.java.dir}"/>
+            <class location="${classes.dir}"/>
+        </findbugs>
+
+        <style in="${build.dir}/findbugs-report.xml" out="${build.dir}/findbugs-report.html" style="${findbugs.home}/plain.xsl"/>
+    </target>
+
+    <target name="jar" depends="compile.plugin" description="Creates an archive of the plug-in as a jar file">
+        <copy todir="${classes.dir}" overwrite="true" preservelastmodified="true">
+            <fileset dir="${src.etc.dir}" excludes="styles/**/*, ${binary.extensions}, **/*.xcf"/>
+            <filterset>
+                <filter token="PROJECT.IDEA.SINCE-BUILD" value="${idea.since-build}"/>
+                <filter token="PROJECT.IDEA.UNTIL-BUILD" value="6200"/>
+                <filter token="PROJECT.VERSION" value="${project.version} (Demetra)"/>
+            </filterset>
+            <filterset refid="project.variables"/>
+            <filterset refid="timestamp.variables"/>
+        </copy>
+
+        <mkdir dir="${dist.dir}"/>
+
+        <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${lib.compile.dir}/jarjar-0.6.jar"/>
+        <jarjar jarfile="${dist.dir}/${distfile.name}.jar" compress="true" update="true">
+            <fileset dir="${classes.dir}">
+                <exclude name="**/GroovyFile.class"/>
+                <exclude name="**/GroovyRunConfiguration.class"/>
+                <exclude name="**/GroovySettingsEditor.class"/>
+            </fileset>
+            <rule pattern="antlr.**" result="groovyjarjarantlr.@1"/>
+        </jarjar>
+
+        <jar jarfile="${dist.dir}/${distfile.name}.jar" compress="true" update="true">
+            <fileset dir="${classes.dir}">
+                <include name="**/GroovyFile.class"/>
+                <include name="**/GroovyRunConfiguration.class"/>
+                <include name="**/GroovySettingsEditor.class"/>
+            </fileset>
+        </jar>
+    </target>
+
+    <target name="zip" depends="initialise" description="Packages up the plug-in as a deployable zip file">
+        <delete failonerror="true">
+            <fileset dir="${classes.dir}" includes="**/*.class"/>
+        </delete>
+
+        <antcall inheritall="true" target="jar"/>
+
+        <zip compress="true" update="true" destfile="${dist.dir}/${distfile.name}.zip">
+            <zipfileset prefix="${project.name}/lib" file="${dist.dir}/${distfile.name}.jar"/>
+            <zipfileset prefix="${project.name}/lib" dir="${lib.runtime.dir}"/>
+        </zip>
+
+        <delete file="${dist.dir}/${distfile.name}.jar"/>
+    </target>
+
+    <target name="build" description="Creates all installable plug-in distributions"
+            depends="clean, antlr.clean, with.clover, test.reports, coverage.reports, coverage.check, without.clover, zip, find.bugs">
+        <buildnumber/>
+    </target>
+
+    <target name="deploy" depends="zip" if="plugins.dir"
+            description="Deploys the plug-in into an IntelliJ IDEA installation">
+        <delete dir="${plugins.dir}/${project.name}" failonerror="true"/>
+        <unzip src="${dist.dir}/${distfile.name}-idea.zip" dest="${plugins.dir}"/>
+    </target>
+
+    <target name="allow.interactive.plugin.dev" depends="initialise" if="plugins.dir"
+            description="small helper to delete jars from the plugin lib dir that are deployed through
+                         the internal plugin devkit but are in the way when running the plugin (ClassCastException)">
+        <delete quiet="true">
+            <fileset dir="${plugins.dir}/${project.name}/lib" includes="idea.jar, openapi.jar" />
+        </delete>
+    </target>
+
+</project>
