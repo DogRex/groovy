@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin
+   id="org.codehaus.groovy.eclipse.ui"
+   name="Groovy Plug-in"
+   version="1.0.0"
+   provider-name="GroovyProvider"
+   class="org.codehaus.groovy.eclipse.ui.GroovyPlugin">
+
+   <runtime>
+      <library name="groovy-eclipse.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/groovy.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/asm.jar"/>
+      <library name="lib/commons-logging.jar"/>
+   </runtime>
+   <requires>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.ui"/>
+	  <import plugin="org.eclipse.jface.text"/>
+   </requires>
+
+
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            name="Groovy Editor"
+            icon="icons/sample.gif"
+            extensions="groovy"
+            class="org.codehaus.groovy.eclipse.ui.editors.GroovyEditor"
+            id="org.codehaus.groovy.eclipse.ui.editors.GroovyEditor">
+            <!--
+              contributorClass="org.codehaus.groovy.eclipse.ui.editors.GroovyActionContributor"
+            -->
+      </editor>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            objectClass="org.eclipse.core.resources.IFile"
+            nameFilter="*"
+            id="org.codehaus.groovy.eclipse.ui.contribution1">
+         <menu
+               label="Groovy"
+               path="additions"
+               id="org.codehaus.groovy.eclipse.ui.menu1">
+            <separator
+                  name="group1">
+            </separator>
+         </menu>
+         <action
+               label="Evaluate"
+               class="org.codehaus.groovy.eclipse.ui.actions.EvaluateGroovy"
+               menubarPath="org.codehaus.groovy.eclipse.ui.menu1/group1"
+               enablesFor="1"
+               id="org.codehaus.groovy.eclipse.ui.evaluateAction">
+         </action>
+      </objectContribution>
+	 <viewerContribution
+            targetID="#GroovyEditorContext"
+            id="org.codehaus.groovy.eclipse.ui.groovyEditorActions">
+         <action
+               label="Execute as Groovy"
+               icon="icons/full/ctool16/run_sbook.gif"
+               helpContextId="execute_groovy_context"
+               class="org.codehaus.groovy.eclipse.ui.actions.EvaluateGroovy"
+               menubarPath="additions"
+               enablesFor="+"
+               id="org.codehaus.groovy.eclipse.ui.executeGroovyText">
+            <selection
+                  class="org.eclipse.jface.text.ITextSelection">
+            </selection>
+         </action>
+     </viewerContribution>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            name="Evaluate Groovy"
+            description="Evaluate the current text selection as a Groovy script"
+            category="org.codehaus.groovy.eclipse.ui"
+            id="org.codehaus.groovy.eclipse.ui.actions.evaluateGroovy">
+      </command>
+      <keyBinding
+            string="Ctrl+G"
+            scope="org.eclipse.ui.globalScope"
+            command="org.codehaus.groovy.eclipse.ui.actions.EvaluateGroovy"
+            configuration="org.eclipse.ui.defaultAcceleratorConfiguration">
+      </keyBinding>
+   </extension>
+</plugin>
