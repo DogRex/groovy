@@ -3,7 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Code Assist Core
 Bundle-SymbolicName: org.codehaus.groovy.eclipse.codeassist
 Bundle-Version: 1.0.20061213
-Bundle-ClassPath: org.codehaus.groovy.eclipse.codeassist/
+Bundle-ClassPath: org.codehaus.groovy.eclipse.codeassist/,
+ bin-groovy/
 Bundle-Activator: org.codehaus.groovy.eclipse.codeassist.Activator
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.core.resources,
