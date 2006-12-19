@@ -127,7 +127,7 @@ public class ASTView extends ViewPart { // implements ISelectionListener {
 		viewer.setLabelProvider(new ViewLabelProvider());
 		viewer.setSorter(null);
 		viewer.setInput(null);
-//		makeActions();
+		makeActions();
 //		hookContextMenu();
 		hookDoubleClickAction();
 		hookGroovy();
@@ -274,7 +274,7 @@ public class ASTView extends ViewPart { // implements ISelectionListener {
 //		drillDownAdapter.addNavigationActions(manager);
 //	}
 
-//	private void makeActions() {
+	private void makeActions() {
 //		action1 = new Action() {
 //			public void run() {
 //				showMessage("Action 1 executed");
@@ -294,36 +294,36 @@ public class ASTView extends ViewPart { // implements ISelectionListener {
 //		action2.setToolTipText("Action 2 tooltip");
 //		action2.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(
 //				ISharedImages.IMG_OBJS_INFO_TSK));
-//		doubleClickAction = new Action() {
-//			public void run() {
-//				ISelection selection = viewer.getSelection();
-//				Object obj = ((IStructuredSelection) selection).getFirstElement();
-//				if (obj == null) {
-//					return;
-//				}
-//				if (((ITreeNode) obj).getValue() instanceof ASTNode) {
-//					Object value = ((ITreeNode) obj).getValue();
-//					if (!(value instanceof ASTNode)) {
-//						return;
-//					}
-//
-//					ASTNode node = (ASTNode) value;
-//					if (node.getLineNumber() != -1) {
-//						EditorPartFacade facade = new EditorPartFacade(editor);
-//						try {
-//							int offset0 = facade.getOffset(node.getLineNumber() - 1, node.getColumnNumber() - 1);
-//							int offset1 = facade
-//									.getOffset(node.getLastLineNumber() - 1, node.getLastColumnNumber() - 1);
-//							// editor.setHighlightRange(offset0, offset1 -
-//							// offset0, true);
-//							facade.select(offset0, offset1 - offset0);
-//						} catch (BadLocationException e) {
-//						}
-//					}
-//				}
-//			}
-//		};
-//	}
+		doubleClickAction = new Action() {
+			public void run() {
+				ISelection selection = viewer.getSelection();
+				Object obj = ((IStructuredSelection) selection).getFirstElement();
+				if (obj == null) {
+					return;
+				}
+				if (((ITreeNode) obj).getValue() instanceof ASTNode) {
+					Object value = ((ITreeNode) obj).getValue();
+					if (!(value instanceof ASTNode)) {
+						return;
+					}
+
+					ASTNode node = (ASTNode) value;
+					if (node.getLineNumber() != -1) {
+						EditorPartFacade facade = new EditorPartFacade(editor);
+						try {
+							int offset0 = facade.getOffset(node.getLineNumber() - 1, node.getColumnNumber() - 1);
+							int offset1 = facade
+									.getOffset(node.getLastLineNumber() - 1, node.getLastColumnNumber() - 1);
+							// editor.setHighlightRange(offset0, offset1 -
+							// offset0, true);
+							facade.select(offset0, offset1 - offset0);
+						} catch (BadLocationException e) {
+						}
+					}
+				}
+			}
+		};
+	}
 
 	private void hookDoubleClickAction() {
 		viewer.addDoubleClickListener(new IDoubleClickListener() {
