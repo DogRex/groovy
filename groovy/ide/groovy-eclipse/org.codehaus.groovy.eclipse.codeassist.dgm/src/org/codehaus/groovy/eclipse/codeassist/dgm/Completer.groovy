@@ -1,9 +1,10 @@
 package org.codehaus.groovy.eclipse.codeassist.dgm
 
+import org.codehaus.groovy.eclipse.codeassist.FindInSource
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
-
 import org.eclipse.jface.text.contentassist.CompletionProposal
 import org.eclipse.jface.text.contentassist.ICompletionProposal
+import org.eclipse.jface.text.ITextViewer
 
 import org.eclipse.swt.graphics.Image;
 
@@ -12,10 +13,12 @@ class Completer {
 
 	private static displayStrings = []
 	private static replaceStrings = []
+	private static firstArgClasses = []
 	                         
 	static {
 		def methods = DefaultGroovyMethods.methods
 		methods = methods.findAll { java.lang.reflect.Modifier.isStatic(it.modifiers) }
+		firstArgClasses = methods.collect { it.parameterTypes[0] }
 
 		// Operator mappings.
 		def operatorMap = ['minus(':'-', 'div(':'/', 'plus(':'+', 'multiply(':'*', 'putAt(':'[]', 'getAt(':'[]', 'leftShift(':'<<', 'mod(':'%', 'negate(':'-',
@@ -46,17 +49,19 @@ class Completer {
 	/**
  	 * DGM completions. They are returned without considering type, so all completions for a prefix are shown. 
  	 */
-	static ICompletionProposal[] getDGMCompletions(String prefix, int offset) {
- 		prefix = prefix.toLowerCase()
+	static ICompletionProposal[] getDGMCompletions(String leftExpression, String rightText, ITextViewer viewer, int offset) {
+ 		rightText = rightText.toLowerCase()
  		
- 		def length = prefix.length()
+ 		def length = rightText.length()
  		offset -= length
  		
  		def proposals = []
+ 		          
+		def cls = FindInSource.variableType(leftExpression, viewer, offset)
+		if (!cls) { cls = Object }
  		                 
 		replaceStrings.eachWithIndex { replaceString, ix ->
-			println "$prefix : $replaceString"
-			if (replaceString.toLowerCase().startsWith(prefix)) {
+			if (replaceString.toLowerCase().startsWith(rightText) && firstArgClasses[ix].isAssignableFrom(cls)) {
 				proposals << new CompletionProposal(replaceString, offset, length, replaceString.lastIndexOf(')'), icon, displayStrings[ix], null, null)
 			}
 		}
