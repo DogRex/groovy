@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<filetype binary="false" default_extension="groovy" extensions="groovy" description="Groovy Script" name="Groovy Script Files">
+    <highlighting>
+        <options>
+            <option name="LINE_COMMENT" value="//"/>
+            <option name="COMMENT_START" value="/*"/>
+            <option name="COMMENT_END" value="*/"/>
+            <option name="HEX_PREFIX" value="0x"/>
+            <option name="NUM_POSTFIXES" value=""/>
+        </options>
+        <keywords ignore_case="false">
+            <keyword name="abstract"/>
+            <keyword name="as"/>
+            <keyword name="assert"/>
+            <keyword name="boolean"/>
+            <keyword name="break"/>
+            <keyword name="byte"/>
+            <keyword name="case"/>
+            <keyword name="catch"/>
+            <keyword name="char"/>
+            <keyword name="class"/>
+            <keyword name="continue"/>
+            <keyword name="default"/>
+            <keyword name="do"/>
+            <keyword name="double"/>
+            <keyword name="else"/>
+            <keyword name="extends"/>
+            <keyword name="final"/>
+            <keyword name="finally"/>
+            <keyword name="for"/>
+            <keyword name="get"/>
+            <keyword name="if"/>
+            <keyword name="implements"/>
+            <keyword name="import"/>
+            <keyword name="in"/>
+            <keyword name="instanceof"/>
+            <keyword name="int"/>
+            <keyword name="interface"/>
+            <keyword name="it"/>
+            <keyword name="long"/>
+            <keyword name="mixin"/>
+            <keyword name="native"/>
+            <keyword name="new"/>
+            <keyword name="package"/>
+            <keyword name="private"/>
+            <keyword name="property"/>
+            <keyword name="protected"/>
+            <keyword name="public"/>
+            <keyword name="return"/>
+            <keyword name="set"/>
+            <keyword name="short"/>
+            <keyword name="static"/>
+            <keyword name="super"/>
+            <keyword name="switch"/>
+            <keyword name="synchronized"/>
+            <keyword name="this"/>
+            <keyword name="throw"/>
+            <keyword name="transient"/>
+            <keyword name="true"/>
+            <keyword name="try"/>
+            <keyword name="void"/>
+            <keyword name="volative"/>
+            <keyword name="while"/>
+        </keywords>
+        <keywords2>
+            <keyword name="abs"/>
+            <keyword name="accept"/>
+            <keyword name="allProperties"/>
+            <keyword name="and"/>
+            <keyword name="any"/>
+            <keyword name="append"/>
+            <keyword name="asImmutable"/>
+            <keyword name="asList"/>
+            <keyword name="asSynchronized"/>
+            <keyword name="asWritable"/>
+            <keyword name="center"/>
+            <keyword name="collect"/>
+            <keyword name="compareTo"/>
+            <keyword name="contains"/>
+            <keyword name="count"/>
+            <keyword name="decodeBase64"/>
+            <keyword name="div"/>
+            <keyword name="dump"/>
+            <keyword name="each"/>
+            <keyword name="eachByte"/>
+            <keyword name="eachFile"/>
+            <keyword name="eachFileRecurse"/>
+            <keyword name="eachLine"/>
+            <keyword name="eachMatch"/>
+            <keyword name="eachProperty"/>
+            <keyword name="eachPropertyName"/>
+            <keyword name="eachWithIndex"/>
+            <keyword name="encodeBase64"/>
+            <keyword name="every"/>
+            <keyword name="execute"/>
+            <keyword name="filterLine"/>
+            <keyword name="find"/>
+            <keyword name="findAll"/>
+            <keyword name="findIndexOf"/>
+            <keyword name="flatten"/>
+            <keyword name="get"/>
+            <keyword name="getAt"/>
+            <keyword name="getErr"/>
+            <keyword name="getIn"/>
+            <keyword name="getLastMatcher"/>
+            <keyword name="getOut"/>
+            <keyword name="getText"/>
+            <keyword name="grep"/>
+            <keyword name="inject"/>
+            <keyword name="inspect"/>
+            <keyword name="intdiv"/>
+            <keyword name="intersect"/>
+            <keyword name="invokeMethod"/>
+            <keyword name="isCase"/>
+            <keyword name="join"/>
+            <keyword name="leftShift"/>
+            <keyword name="max"/>
+            <keyword name="min"/>
+            <keyword name="minus"/>
+            <keyword name="mod"/>
+            <keyword name="multiply"/>
+            <keyword name="negate"/>
+            <keyword name="newInputStream"/>
+            <keyword name="newOutputStream"/>
+            <keyword name="newPrintWriter"/>
+            <keyword name="newReader"/>
+            <keyword name="newWriter"/>
+            <keyword name="next"/>
+            <keyword name="or"/>
+            <keyword name="padLeft"/>
+            <keyword name="padRight"/>
+            <keyword name="plus"/>
+            <keyword name="pop"/>
+            <keyword name="power"/>
+            <keyword name="previous"/>
+            <keyword name="print"/>
+            <keyword name="println"/>
+            <keyword name="putAt"/>
+            <keyword name="readBytes"/>
+            <keyword name="readLine"/>
+            <keyword name="readLines"/>
+            <keyword name="reverse"/>
+            <keyword name="reverseEach"/>
+            <keyword name="rightShift"/>
+            <keyword name="rightShiftUnsigned"/>
+            <keyword name="round"/>
+            <keyword name="size"/>
+            <keyword name="sort"/>
+            <keyword name="splitEachLine"/>
+            <keyword name="start"/>
+            <keyword name="startDaemon"/>
+            <keyword name="step"/>
+            <keyword name="subMap"/>
+            <keyword name="times"/>
+            <keyword name="toCharacter"/>
+            <keyword name="toDouble"/>
+            <keyword name="toFloat"/>
+            <keyword name="toInteger"/>
+            <keyword name="toList"/>
+            <keyword name="toLong"/>
+            <keyword name="toURL"/>
+            <keyword name="tokenize"/>
+            <keyword name="transformChar"/>
+            <keyword name="transformLine"/>
+            <keyword name="upto"/>
+            <keyword name="use"/>
+            <keyword name="waitForOrKill"/>
+            <keyword name="withInputStream"/>
+            <keyword name="withOutputStream"/>
+            <keyword name="withPrintWriter"/>
+            <keyword name="withReader"/>
+            <keyword name="withStream"/>
+            <keyword name="withStreams"/>
+            <keyword name="withWriter"/>
+            <keyword name="withWriterAppend"/>
+            <keyword name="write"/>
+            <keyword name="writeLine"/>
+        </keywords2>
+        <keywords3/>
+        <keywords4/>
+    </highlighting>
+</filetype>
