@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="16px"
+   height="16px"
+   id="svg1872"
+   sodipodi:version="0.32"
+   inkscape:version="0.44"
+   sodipodi:docbase="/Users/emp/Documents/workspace/GroovyDGMCompletion/src/org/codehaus/groovy/eclipse/codeassist/dgm"
+   sodipodi:docname="icon.svg"
+   inkscape:export-filename="/Users/emp/Documents/workspace/GroovyDGMCompletion/src/org/codehaus/groovy/eclipse/codeassist/dgm/icon.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <defs
+     id="defs1874" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1"
+     inkscape:cx="8"
+     inkscape:cy="8"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     inkscape:grid-bbox="true"
+     inkscape:document-units="px"
+     inkscape:window-width="823"
+     inkscape:window-height="577"
+     inkscape:window-x="459"
+     inkscape:window-y="22" />
+  <metadata
+     id="metadata1877">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer1"
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer">
+    <path
+       sodipodi:type="arc"
+       style="fill:lime;fill-opacity:1;stroke:black;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path1896"
+       sodipodi:cx="7.9788361"
+       sodipodi:cy="8.0423279"
+       sodipodi:rx="6.9629631"
+       sodipodi:ry="6.9417992"
+       d="M 14.941799 8.0423279 A 6.9629631 6.9417992 0 1 1  1.015873,8.0423279 A 6.9629631 6.9417992 0 1 1  14.941799 8.0423279 z"
+       transform="translate(7.671964e-2,-6.084662e-2)" />
+    <text
+       xml:space="preserve"
+       style="font-size:10.91466522px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:navy;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Hiragino Kaku Gothic Std W8"
+       x="3.1659498"
+       y="12.2103"
+       id="text1892"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan1894"
+         x="3.1659498"
+         y="12.2103">G</tspan></text>
+  </g>
+</svg>
