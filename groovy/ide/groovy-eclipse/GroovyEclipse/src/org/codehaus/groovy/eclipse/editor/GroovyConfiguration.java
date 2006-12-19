@@ -126,13 +126,9 @@ public class GroovyConfiguration extends SourceViewerConfiguration {
 	
     public IContentAssistant getContentAssistant( final ISourceViewer sourceViewer )
     {
-//        final ContentAssistant assistant = new ContentAssistant();
-//        assistant.setContentAssistProcessor( new GroovyContentAssistProcessor(), IDocument.DEFAULT_CONTENT_TYPE );
-//        assistant.setInformationControlCreator( getInformationControlCreator( sourceViewer ) );
-//        return assistant;
     	GroovyContentAssistant assistant = new GroovyContentAssistant();
-    	assistant.setInformationControlCreator(getInformationControlCreator(sourceViewer));
-    	return assistant;
+		assistant.setInformationControlCreator(getInformationControlCreator(sourceViewer));
+		return assistant;
     }
     public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
         return new MarkerHover();
