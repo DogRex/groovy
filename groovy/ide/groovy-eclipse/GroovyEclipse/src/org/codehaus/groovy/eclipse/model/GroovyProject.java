@@ -1,6 +1,6 @@
 /*
  * Created on 21-Jan-2004
- * 
+ *
  * To change the template for this generated file go to Window - Preferences -
  * Java - Code Generation - Code and Comments
  */
@@ -41,6 +41,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -65,7 +66,7 @@ import org.eclipse.ui.preferences.ScopedPreferenceStore;
 /**
  * The main groovy project class used to configure the project settings, and do
  * the compiling.
- * 
+ *
  * @author MelamedZ
  * @author Hein Meling
  */
@@ -75,7 +76,7 @@ public class GroovyProject {
     private final IPersistentPreferenceStore preferenceStore;
 
 	private final GroovyProjectModel model = new GroovyProjectModel( this );
-	
+
 	private CompilerConfiguration compilerConfiguration = new CompilerConfiguration();
 
 	public static final String GROOVY_ERROR_MARKER = "org.codehaus.groovy.eclipse.groovyFailure";
@@ -84,10 +85,10 @@ public class GroovyProject {
 
 	// TODO: We need to keep track if a full build has occurred without errors or not.
 	// If it hasn't, methods that do things like return all runnable classes with a main
-	// won't work correctly unless a full build occurrs to create Module Nodes for all the 
+	// won't work correctly unless a full build occurrs to create Module Nodes for all the
 	// source files in the project.
 	// private boolean hasFullBuildHappened = false;
-	
+
 	// True if we are waiting for the user to respond to question to add groovy
 	// support to project
 	private volatile boolean pendingResponse = false;
@@ -123,10 +124,10 @@ public class GroovyProject {
 
 	/**
 	 * Construct new groovy project.
-	 * 
+	 *
 	 * @param javaProject
 	 */
-	public GroovyProject( final IJavaProject javaProject ) 
+	public GroovyProject( final IJavaProject javaProject )
     {
 		this.javaProject = javaProject;
         preferenceStore = new ScopedPreferenceStore( new ProjectScope( javaProject.getProject() ), "org.codehaus.groovy.eclipse.preferences" );
@@ -155,9 +156,9 @@ public class GroovyProject {
     }
 	/**
 	 *  Overloaded method used by builders to compile groovy files that
-	 *  defaults to the variable for generating .class files to 
+	 *  defaults to the variable for generating .class files to
 	 *  what's set in the Groovy prefs page
-	 *  
+	 *
 	 * @param monitor
 	 * @param kind
 	 */
@@ -167,25 +168,25 @@ public class GroovyProject {
 		buildGroovyContent(monitor, kind, changeSet, generateClassFiles);
 	}
 	/**
-	 * Used by builders to compile Groovy source 
-	 * 
+	 * Used by builders to compile Groovy source
+	 *
 	 * @param monitor
 	 * @param kind
 	 * @param changeSet
 	 * @param generateClassFiles
 	 */
-	public void buildGroovyContent( final IProgressMonitor progressMonitor, 
-                                    final int kind, 
-                                    final ChangeSet changeSet, 
-                                    final boolean generateClassFiles ) 
+	public void buildGroovyContent( final IProgressMonitor progressMonitor,
+                                    final int kind,
+                                    final ChangeSet changeSet,
+                                    final boolean generateClassFiles )
     {
         final IProgressMonitor monitor = progressMonitor != null ? progressMonitor : new NullProgressMonitor();
-		try 
+		try
         {
 			setClassPath( javaProject );
 			setOutputDirectory( javaProject );
 			compileGroovyFiles( monitor );
-			if( kind == IncrementalProjectBuilder.FULL_BUILD ) 
+			if( kind == IncrementalProjectBuilder.FULL_BUILD )
             {
 				trace("beginning FULL BUILD - GroovyProject.buildGroovyContent()");
                 // Removing all .class files that we are aware of.
@@ -198,14 +199,14 @@ public class GroovyProject {
                 }
 				// get a list of all the groovy files in the project
 				model.clear();
-			} 
-            else 
+			}
+            else
             {
 				trace("beginning INCREMENTAL BUILD - GroovyProject.buildGroovyContent()");
                 // Removing .class files associated with changeSet.filesToRemove
                 removeClassFiles( changeSet.filesToRemove(), true );
 			}
-			for( final Iterator it = changeSet.getFilesToBuild().iterator(); it.hasNext();) 
+			for( final Iterator it = changeSet.getFilesToBuild().iterator(); it.hasNext();)
 				deleteErrorMarkers( ( IFile )it.next() );
 			trace("filesToBuild:" + changeSet);
 			compileGroovyFiles( changeSet, generateClassFiles );
@@ -225,7 +226,7 @@ public class GroovyProject {
      * code files that have been removed.  It extracts the package name by querying the
      * scriptPathModuleNodeMap attribute and then looks in the java project default output location
      * for files that have the class names given by the scriptPathModuleNodeMap attribute.
-     * 
+     *
      * @param files
 	 */
 	private void removeClassFiles( final IFile[] files,
@@ -281,7 +282,7 @@ public class GroovyProject {
             GroovyPlugin.getPlugin().logException( "Error getting java output location for " + javaProject.getElementName(), e );
         }
     }
-    private void removeClassFiles( final String className, 
+    private void removeClassFiles( final String className,
                                    final File[] directoryFiles,
                                    final boolean refreshOutput )
     {
@@ -315,26 +316,26 @@ public class GroovyProject {
     /**
 	 * Invokes the Groovy compiler and updates the map that
 	 * contains the AST information for the compiled classes.
-	 * 
+	 *
 	 * TODO: Rename this method to something that reflects what it really does
-	 * 
+	 *
 	 * @param fileNames
 	 * @param generateClassFiles
 	 */
-	private void compileGroovyFiles( final ChangeSet changeSet, 
-                                     final boolean generateClassFiles ) 
+	private void compileGroovyFiles( final ChangeSet changeSet,
+                                     final boolean generateClassFiles )
     {
 		final CompilationUnit compilationUnit = createCompilationUnit( "" );
 		compilationUnit.addSources( changeSet.fileNamesToBuild() );
-		try 
+		try
         {
 			// call the compiler
 			compilationUnit.compile( generateClassFiles ? Phases.ALL : Phases.CANONICALIZATION );
 			// update project info that maps source files to compiled class info
 			final CompileUnit compileUnit = compilationUnit.getAST();
 			model.updateClassNameModuleNodeMap( compileUnit.getModules() );
-		} 
-        catch( final Exception e ) 
+		}
+        catch( final Exception e )
         {
 			handleCompilationError( changeSet.getFilesToBuild(), e);
 		}
@@ -342,7 +343,7 @@ public class GroovyProject {
 
 	/**
 	 * passes the eclipse monitor to the Groovy compiler progress callback
-	 * 
+	 *
 	 * @param monitor
 	 */
 	private void compileGroovyFiles(IProgressMonitor monitor) {
@@ -364,14 +365,14 @@ public class GroovyProject {
 	 * yet to be created during the current working session.
 	 * @param file
 	 */
-	public void compileGroovyFile( final IFile file ) 
+	public void compileGroovyFile( final IFile file )
     {
 		compileGroovyFile( file, false );
 	}
 	/**
-	 * Recompile a source file and specify the creation of a .class file. 
+	 * Recompile a source file and specify the creation of a .class file.
 	 */
-	public void compileGroovyFile( final IFile file, 
+	public void compileGroovyFile( final IFile file,
                                    final boolean generateClassFiles )
     {
         final ChangeSet changeSet = new ChangeSet().addFileToBuild( file );
@@ -379,9 +380,9 @@ public class GroovyProject {
 	}
 
 	/**
-	 * sets Eclipse project output directory to the 
+	 * sets Eclipse project output directory to the
 	 * instance compilerConfiguration
-	 * 
+	 *
 	 * @param javaProject
 	 * @throws JavaModelException
 	 */
@@ -417,7 +418,7 @@ public class GroovyProject {
             GroovyPlugin.getPlugin().logException( "Trying to save the preference store of project: " + javaProject.getProject().getName() + ". " + e.getMessage(), e );
         }
         */
-        
+
         return outputPath;
     }
 	/**
@@ -426,15 +427,19 @@ public class GroovyProject {
 	 * @return
 	 * @throws JavaModelException
 	 */
-	private static String getOutputPath( final IJavaProject project ) 
-    throws JavaModelException 
+	private static String getOutputPath( final IJavaProject project )
+    throws JavaModelException
     {
+        if( project == null || !project.exists() || project.getProject().getLocation() == null )
+            return null;
 		final String outputPath = project.getProject().getLocation().toString() + "/" + getProjectOutputPath( project );
 		return outputPath;
 	}
-    private static String getOutputOSPath( final IJavaProject project ) 
-    throws JavaModelException 
+    private static String getOutputOSPath( final IJavaProject project )
+    throws JavaModelException
     {
+        if( project == null || !project.exists() || project.getProject().getLocation() == null )
+            return null;
         final String outputPath = project.getProject().getLocation().toOSString() + File.separator + getProjectOutputPath( project ).replace(  '/', File.separatorChar );
         return outputPath;
     }
@@ -444,8 +449,8 @@ public class GroovyProject {
      *  - delete the old folder
      *  - add the new folder to the Project classpath
      *  - rebuild the project
-     * 
-     * 
+     *
+     *
      * @param oldPath
      * @param newPath
      */
@@ -455,7 +460,7 @@ public class GroovyProject {
     	GroovyPlugin.trace("in GroovyProject.setOutputPath() - attempting to change output path from " + oldPath + " to " + newPath);
         final IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
         final IProject project = javaProject.getProject();
-        
+
         // if the old equals the new and it already exists, nothing to do
         if( StringUtils.equals( newPath, oldPath ) && StringUtils.isNotBlank( newPath ) )
         {
@@ -463,40 +468,58 @@ public class GroovyProject {
             if( folder.exists() )
                 return;
         }
-        new WorkspaceJob( "Updating Groovy output location for project: " + javaProject.getProject().getName() )
+        final IWorkspaceRunnable runnable = new IWorkspaceRunnable()
         {
-            public IStatus runInWorkspace( final IProgressMonitor monitor ) 
+            public void run( final IProgressMonitor monitor )
             throws CoreException
             {
+//              if the old equals the new and it already exists, nothing to do
+                if( StringUtils.equals( newPath, oldPath ) && StringUtils.isNotBlank( newPath ) )
+                {
+                    final IFolder folder = root.getFolder( new Path( project.getFullPath() + "/" + newPath ) );
+                    if( folder.exists() )
+                        return;
+                }
                 final String savedWorkspacePath = project.getFullPath() + "/" + oldPath;
                 final IFolder savedFolder = StringUtils.isNotBlank( oldPath ) ? root.getFolder( new Path( savedWorkspacePath ) ) : null;
-                // delete the old Groovy output folder 
+                // delete the old Groovy output folder
                 if( savedFolder != null && savedFolder.exists() && !javaProject.getOutputLocation().equals( savedFolder.getFullPath() ) )
                 {
                     GroovyRuntime.removeLibrary( javaProject, savedFolder.getFullPath() );
                     savedFolder.delete( true, monitor );
                 }
                 // user folder typed in
-                if (StringUtils.isNotBlank( newPath )){
-                	final IFolder folder =  project.getFolder( newPath ); //: project.getFolder( javaProject.getOutputLocation() );
-                	System.out.println("new output folder equals:" + folder); 
-                	if( !javaProject.getOutputLocation().equals( folder.getFullPath() ) && !folder.exists() )
-                    folder.create( true, false, null );
-                	if( !javaProject.getOutputLocation().equals( folder.getFullPath() ) )
-                    GroovyRuntime.addLibrary( javaProject, folder.getFullPath() );
+                if( StringUtils.isNotBlank( newPath ) )
+                {
+                    final IFolder folder = project.getFolder( newPath );
+                    System.out.println( "new output folder equals:" + folder );
+                    if( !javaProject.getOutputLocation().equals( folder.getFullPath() ) && !folder.exists() )
+                        folder.create( true, false, null );
+                    if( !javaProject.getOutputLocation().equals( folder.getFullPath() ) )
+                        GroovyRuntime.addLibrary( javaProject, folder.getFullPath() );
                 }
                 project.build( IncrementalProjectBuilder.FULL_BUILD, monitor );
                 final GroovyProject gProject = GroovyModel.getModel().getProject( project );
                 gProject.rebuildAll( monitor );
+                return;
+            }
+        };
+        new WorkspaceJob( "Updating Groovy output location for project: " + project.getName() )
+        {
+            public IStatus runInWorkspace( final IProgressMonitor monitor )
+            throws CoreException
+            {
+                ResourcesPlugin.getWorkspace().run( runnable, monitor );
                 return Status.OK_STATUS;
             }
+
         }.schedule();
     }
 	/**
-	 *  Sets the classpath on the project's compiler configuration 
+	 *  Sets the classpath on the project's compiler configuration
 	 *  instance variable, this.compilerConfiguration
 	 * @param javaProject
-	 * @throws CoreException 
+	 * @throws CoreException
 	 */
 	private void setClassPath(IJavaProject javaProject) throws CoreException {
 		StringBuffer classPath = new StringBuffer();
@@ -512,10 +535,12 @@ public class GroovyProject {
 		compilerConfiguration.setClasspath(classPath.toString());
 	}
 	public static Set getClasspath( final IJavaProject project,
-                                    final List visited ) 
+                                    final List visited )
     throws CoreException
     {
         final Set set = new LinkedHashSet();
+        if( project == null || !project.exists() )
+            return set;
         if( visited.contains( project ) )
             return set;
         visited.add( project );
@@ -529,28 +554,45 @@ public class GroovyProject {
             else
                 set.add( fragRoot.getPath().toString() );
         }
-        IWorkspaceRoot root = project.getProject().getWorkspace().getRoot();
-        IClasspathEntry[] cpEntries = project.getResolvedClasspath(false);
-        for (int i = 0; i < cpEntries.length; i++) {
-            IClasspathEntry entry = cpEntries[i];
-            IResource resource = root.findMember(entry.getPath());
-            if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
-                if (resource != null) {
+        final IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+        final IClasspathEntry[] cpEntries = project.getResolvedClasspath( false );
+        for( int i = 0; i < cpEntries.length; i++ )
+        {
+            IClasspathEntry entry = cpEntries[ i ];
+            IResource resource = root.findMember( entry.getPath() );
+            if( entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY )
+            {
+                if( resource != null )
+                {
                     set.add( resource.getLocation().toString() );
-                } else {
+                }
+                else
+                {
                     set.add( entry.getPath().toString() );
                 }
-            } else if (entry.getEntryKind() == IClasspathEntry.CPE_PROJECT) {
-                IJavaProject referencedProject = JavaCore.create((IProject) resource);
-                set.addAll( getClasspath( referencedProject, visited ) );
+            }
+            else if( entry.getEntryKind() == IClasspathEntry.CPE_PROJECT )
+            {
+                final IJavaProject referencedProject = JavaCore.create( ( IProject )resource );
+                if( referencedProject != null && referencedProject.getProject().exists() )
+                    set.addAll( getClasspath( referencedProject, visited ) );
             }
             else if( entry.getEntryKind() == IClasspathEntry.CPE_SOURCE )
             {
                 if( entry.getOutputLocation() != null )
                     set.add( root.getFolder( entry.getOutputLocation() ).getRawLocation().toString() );
-                else{
-                	IPath projectOutputLocation = project.getOutputLocation();
-                    set.add( root.findMember(projectOutputLocation).getLocation().toString() );
+                else
+                {
+                    if( project.exists() )
+                    {
+                        final IPath projectOutputLocation = project.getOutputLocation();
+                        final IResource member = root.findMember( projectOutputLocation );
+                        if( member != null && member.exists() )
+                        {
+                            final IPath location = member.getLocation();
+                            set.add( location.toString() );
+                        }
+                    }
                 }
             }
         }
@@ -600,7 +642,7 @@ public class GroovyProject {
 	/**
 	 * Processing the exception that is thrown when there are compiler
 	 * errors and creates errors markers for the files that have errors.
-	 * 
+	 *
 	 * @param file - list of IFiles to compile for a full build
 	 * @param e
 	 */
@@ -613,19 +655,19 @@ public class GroovyProject {
 			GroovyPlugin.getPlugin().logException("error compiling " + file.getName(), ce);
 		}
 	}
-	
+
 	/**
-	 * Runs a Groovy file. This is invoked when right clicking on a 
+	 * Runs a Groovy file. This is invoked when right clicking on a
 	 * file in package explorer, navigator or the open file in an
 	 * editor and selecting Run->Groovy
-	 * 
+	 *
 	 * @param file
 	 * @param args
 	 * @throws CoreException
 	 */
-	public void runGroovyMain( final IFile file, 
-                               final String[] args ) 
-    throws CoreException 
+	public void runGroovyMain( final IFile file,
+                               final String[] args )
+    throws CoreException
     {
 		List classNodeList = model.getClassesForFile( file );
 		if (classNodeList == null || classNodeList.size() == 0 ) {
@@ -640,21 +682,21 @@ public class GroovyProject {
 	/**
 	 * Inspects the class to run and modifies the class and arguments
 	 * that are run if it is Junit test case
-	 * 
+	 *
 	 */
-	private void runGroovyMain( final ClassNode classNode, 
-                                String[] args ) 
-    throws CoreException 
+	private void runGroovyMain( final ClassNode classNode,
+                                String[] args )
+    throws CoreException
     {
 		String className = "";
-		if( GroovyProjectModel.hasRunnableMain( classNode ) ) 
+		if( GroovyProjectModel.hasRunnableMain( classNode ) )
 			className = classNode.getName();
-		else if( GroovyProjectModel.isTestCaseClass( classNode ) ) 
+		else if( GroovyProjectModel.isTestCaseClass( classNode ) )
         {
 			className = "junit.textui.TestRunner";
 			args = new String[] { classNode.getName() };
-		} 
-        else 
+		}
+        else
         {
 			GroovyPlugin.getPlugin().getDialogProvider().errorRunningGroovy(
 					new Exception("This script or class could not be run.\nIt should either:\n- have a main method,\n" +
@@ -664,15 +706,15 @@ public class GroovyProject {
 		runGroovyMain( className, args );
 	}
 	/**
-	 * 
+	 *
 	 * Run Groovy class
-	 * 
+	 *
 	 * @param className
 	 * @param args
 	 */
-	public GroovyRunner runGroovyMain( final String className, 
-                                       final String[] args ) 
-    throws CoreException 
+	public GroovyRunner runGroovyMain( final String className,
+                                       final String[] args )
+    throws CoreException
     {
         return new GroovyRunner().run( className, args, javaProject );
 	}
@@ -743,10 +785,10 @@ public class GroovyProject {
     /**
      * This method looks for any scripts ( ModuleNodes ) that declare themselves
      * to be in a package where their location in the source folder hierarchy
-     * says otherwise.  So if you have a Script that has a class A where the 
+     * says otherwise.  So if you have a Script that has a class A where the
      * fully qualified type name for A is pack1.A, then the script had better
      * been in a source folder under the subdirectory pack1.
-     * 
+     *
      *  This is to resolve JIRA Issue: GROOVY-1361
      */
     private IFile[] checkForInvalidPackageDeclarations()
@@ -825,7 +867,7 @@ public class GroovyProject {
         }
         return ( IPath[] )list.toArray( new IPath[ 0 ] );
     }
-    private void removeDuplicateMarker( final ModuleNode module, 
+    private void removeDuplicateMarker( final ModuleNode module,
                                         final IFile scriptFile,
                                         final String prefix )
     {
@@ -882,28 +924,29 @@ public class GroovyProject {
 	 * This is used by the GroovyBuilder when invoking a full build.
 	 * It is also required when we want to fully populate the
 	 * ModuleNode map.
-	 * 
+	 *
 	 * @return
 	 */
-	public ChangeSet filesForFullBuild() 
+	public ChangeSet filesForFullBuild()
     {
 		final FullGroovyBuilder visitor = new FullGroovyBuilder( javaProject );
-		try 
+		try
         {
-			javaProject.getProject().accept( visitor );
-		} 
-        catch( final CoreException e ) 
+            if( javaProject.getProject().exists() )
+                javaProject.getProject().accept( visitor );
+		}
+        catch( final CoreException e )
         {
             GroovyPlugin.getPlugin().logException( "Error traversing project: " + javaProject.getProject().getName() + ". " + e, e );
 		}
 		return visitor.getChangeSet();
 	}
-	
+
 	/**
 	 * This functionality should probably be in the GroovyBuilder
 	 * since it is the only place (that I know about) that provides
 	 * an IResourceDelta object.
-	 * 
+	 *
 	 * @param delta
 	 * @param monitor
 	 * @return
