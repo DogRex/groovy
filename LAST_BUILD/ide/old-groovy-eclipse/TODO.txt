@@ -1,4 +1,0 @@
-* do build task to deploy release? update thingy too?
-
-* enable toolbar again
-* enable inspect result
