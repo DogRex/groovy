@@ -77,7 +77,7 @@ implements IWorkbenchPreferencePage
     				PreferenceConstants.GROOVY_EDITOR_HIGHLIGHT_GROOVYKEYWORDS_COLOR,
     				"&Groovy keyword color", getFieldEditorParent()));
     		// Groovy compiler project output preference
-    		addField( new StringFieldEditor( PreferenceConstants.GROOVY_COMPILER_OUTPUT_PATH, 
+    		addField( new StringFieldEditor( PreferenceConstants.GROOVY_COMPILER_DEFAULT_OUTPUT_PATH, 
                                              "&Default Groovy compiler output location", 
                                              getFieldEditorParent() ) );
             // Generate Class File Pref

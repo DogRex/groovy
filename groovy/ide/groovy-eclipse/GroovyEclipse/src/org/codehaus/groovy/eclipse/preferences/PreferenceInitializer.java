@@ -19,7 +19,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 	public void initializeDefaultPreferences() {
 		IPreferenceStore store = GroovyPlugin.getDefault().getPreferenceStore();
 		store.setDefault(PreferenceConstants.GROOVY_GENERATE_CLASS_FILES, true);
-        store.setDefault( PreferenceConstants.GROOVY_COMPILER_OUTPUT_PATH, "bin-groovy" );
+        store.setDefault( PreferenceConstants.GROOVY_COMPILER_DEFAULT_OUTPUT_PATH, "bin-groovy" );
 		store.setDefault(PreferenceConstants.GROOVY_LOG_TRACE_MESSAGES_ENABLED, false);
 		
 		// GJDK Prefs

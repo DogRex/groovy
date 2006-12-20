@@ -51,7 +51,7 @@ public class GroovyRuntime
             // Get a handle to the Groovy output folder if Project folder isn't the project output location
             // and create it if it doesn't exit
             if (!javaProject.getOutputLocation().equals(javaProject.getPath())) {
-            	groovyOutputFolder = project.getFolder( GroovyPlugin.getPlugin().getPreferenceStore().getString( PreferenceConstants.GROOVY_COMPILER_OUTPUT_PATH ) );
+            	groovyOutputFolder = project.getFolder( GroovyPlugin.getPlugin().getPreferenceStore().getString( PreferenceConstants.GROOVY_COMPILER_DEFAULT_OUTPUT_PATH ) );
             	if( !groovyOutputFolder.exists() ) {
             		groovyOutputFolder.create( false, true, null );
             	}

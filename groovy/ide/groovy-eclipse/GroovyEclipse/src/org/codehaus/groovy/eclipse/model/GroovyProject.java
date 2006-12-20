@@ -493,10 +493,10 @@ public class GroovyProject {
                 {
                     final IFolder folder = project.getFolder( newPath );
                     System.out.println( "new output folder equals:" + folder );
-                    if( !javaProject.getOutputLocation().equals( folder.getFullPath() ) && !folder.exists() )
-                        folder.create( true, false, null );
-                    if( !javaProject.getOutputLocation().equals( folder.getFullPath() ) )
-                        GroovyRuntime.addLibrary( javaProject, folder.getFullPath() );
+                    if( !javaProject.getOutputLocation().equals( folder.getFullPath() ) && !folder.exists() ) {
+                    	folder.create( true, false, null );
+                	}
+               		GroovyRuntime.addLibrary( javaProject, folder.getFullPath() );	
                 }
                 project.build( IncrementalProjectBuilder.FULL_BUILD, monitor );
                 final GroovyProject gProject = GroovyModel.getModel().getProject( project );
