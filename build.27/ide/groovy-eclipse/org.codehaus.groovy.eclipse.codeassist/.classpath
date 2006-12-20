@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="src-test"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="lib" path="/GroovyEclipse/lib/commons-io-1.2.jar" sourcepath="/GroovyEclipse/lib/commons-io-1.2-src-ide.zip"/>
+	<classpathentry kind="lib" path="/GroovyEclipse/lib/commons-lang-2.1.jar" sourcepath="/GroovyEclipse/lib/commons-lang-2.1-src.zip"/>
+	<classpathentry kind="lib" path="/GroovyEclipse/lib/groovy-all-1.0-RC-01.jar" sourcepath="/groovy-core-main"/>
+	<classpathentry exported="true" kind="lib" path="bin-groovy"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.junit"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
