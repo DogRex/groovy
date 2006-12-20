@@ -23,9 +23,7 @@
    
    <requires>
       <import plugin="org.eclipse.core.resources"/>
-      <import plugin="org.eclipse.jface"/>
       <import plugin="org.eclipse.ui"/>
-      <import plugin="org.eclipse.text"/>
       <import plugin="org.eclipse.jface.text"/>
       <import plugin="org.eclipse.ui.workbench.texteditor"/>
       <import plugin="org.eclipse.ui.editors"/>
@@ -132,6 +130,33 @@
          <perspective
                id="org.eclipse.debug.ui.DebugPerspective">
          </perspective>
+      </shortcut>
+      <shortcut
+            class="org.codehaus.groovy.eclipse.launchers.GroovyConsoleShortcut"
+            icon="icons/run_groovy_class.gif"
+            id="org.codehaus.groovy.eclipse.debug.ui.groovyConsoleShortcut"
+            label="Groovy Console"
+            modes="run, debug">
+         <contextualLaunch>
+            <enablement>
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                     <or>
+                        <test
+                              property="org.eclipse.debug.ui.matchesPattern"
+                              value="*.groovy"/>
+                        <test
+                              property="org.eclipse.debug.ui.matchesPattern"
+                              value="*.java"/>
+                     </or>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+         <perspective id="org.eclipse.jdt.ui.JavaPerspective"/>
+         <perspective id="org.eclipse.jdt.ui.JavaBrowsingPerspective"/>
+         <perspective id="org.eclipse.debug.ui.DebugPerspective"/>
       </shortcut>
       <shortcut
             class="org.codehaus.groovy.eclipse.launchers.GroovyTestLaunchShortcut"
@@ -283,10 +308,33 @@
 		</objectContribution>
    		<objectContribution id="org.codehaus.groovy.eclipse.addnature.javaproject"
    			objectClass="org.eclipse.jdt.core.IJavaProject">
-	   		<action id="org.codehaus.groovy.eclipse.addnature.action"
-	   			label="Add Groovy Nature"
-	   			enablesFor="1"
-	   			class="org.codehaus.groovy.eclipse.actions.AddGroovyNatureAction">
+        <menu
+              id="groovy"
+              label="Groovy"
+              path="additions">
+           <separator name="defaultGroup"/>
+           <separator name="nature"/>
+        </menu>
+      <action
+            class="org.codehaus.groovy.eclipse.actions.RunGroovyConsoleWorkbench"
+            icon="icons/run_groovy_class.gif"
+            id="org.codehaus.groovy.eclipse.groovyconsole.action"
+            label="Run Groovy Console"
+            menubarPath="groovy/defaultGroup"
+            tooltip="Open a Groovy Console for this project"/>
+      <action
+            class="org.codehaus.groovy.eclipse.actions.RunGroovyShellWorkbench"
+            icon="icons/run_groovy_class.gif"
+            id="org.codehaus.groovy.eclipse.groovyconsole.action"
+            label="Run Groovy Shell"
+            menubarPath="groovy/defaultGroup"
+            tooltip="Open a Groovy Shell for this project"/>
+	   		<action
+            class="org.codehaus.groovy.eclipse.actions.AddGroovyNatureAction"
+            enablesFor="1"
+            id="org.codehaus.groovy.eclipse.addnature.action"
+            label="Add Groovy Nature"
+            menubarPath="groovy/nature">
 	   		</action>
 		</objectContribution>
 	</extension>
@@ -324,6 +372,11 @@
             description="Run Groovy File"
             id="org.codehaus.groovy.eclipse.command.RunGroovy"
             name="Run Groovy"/>
+      <command
+            categoryId="org.codehaus.groovy.eclipse.editor.category.rundebug"
+            description="Open a GroovyConsole for the current project"
+            id="org.codehaus.groovy.eclipse.command.RunGroovyConsole"
+            name="Groovy Console"/>
    </extension>
    <extension
          point="org.eclipse.ui.contexts">
