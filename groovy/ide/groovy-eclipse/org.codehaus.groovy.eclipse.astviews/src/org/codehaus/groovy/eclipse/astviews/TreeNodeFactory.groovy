@@ -17,19 +17,14 @@ class TreeNodeFactory {
 	]	
 	
 	static ITreeNode createTreeNode(ITreeNode parent, Object value, String displayName) {
-		def name = MapTo.names(value)
-		if (!name) {
-			name = displayName
-		}
-		
 		if (value instanceof ASTNode || forceDefaultNode.contains(value.class)) {
-			return new DefaultTreeNode(parent:parent, value:value, displayName:name)
+			return new DefaultTreeNode(parent:parent, value:value, displayName:displayName)
 		} else if (value instanceof Object[] || value instanceof List) {
-			return new CollectionTreeNode(parent:parent, value:value, displayName:name)
+			return new CollectionTreeNode(parent:parent, value:value, displayName:displayName)
 		} else if (value instanceof Map) {
-			return new MapTreeNode(parent:parent, value:value, displayName:name)
+			return new MapTreeNode(parent:parent, value:value, displayName:displayName)
 		} else {
-			return new AtomTreeNode(parent:parent, value:value, displayName:name)
+			return new AtomTreeNode(parent:parent, value:value, displayName:displayName)
 		}
 	}
 }
@@ -56,6 +51,19 @@ abstract class TreeNode implements ITreeNode {
 	Boolean leaf
 	ITreeNode[] children = null
 	
+	void setDisplayName(String name) {
+		def mappedName = MapTo.names(value)
+		if (mappedName) { name = "$name - $mappedName" }
+		displayName = name
+		
+		try {
+			def a=10
+		} catch (Exception e) {
+			
+		}
+		a = 20
+	}
+	
 	ITreeNode[] getChildren() {
 		if (children == null) {
 			children = loadChildren()
@@ -79,7 +87,7 @@ abstract class TreeNode implements ITreeNode {
 	abstract ITreeNode[] loadChildren()
 }
 
-class DefaultTreeNode extends TreeNode {
+class DefaultTreeNode extends TreeNode {	
 	ITreeNode[] loadChildren() {
 		def methods = value.class.getMethods()
 		methods = methods?.findAll { it.name.startsWith('get') && it.getParameterTypes().length == 0 }
@@ -135,6 +143,9 @@ class AtomTreeNode implements ITreeNode {
 	ITreeNode[] getChildren() { return NO_CHILDREN }
 	
 	void setDisplayName(String name) {
+		def mappedName = MapTo.names(value)
+		if (mappedName) { name = "$name - $mappedName" }
+		
 		if (value instanceof String) {
 			displayName = "$name : '${StringUtil.toString(value)}'".toString()
 		} else {
