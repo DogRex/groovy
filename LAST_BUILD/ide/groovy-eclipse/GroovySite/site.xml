@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <description url="http://dist.codehaus.org/groovy/distributions/update">
+      Groovy Distribution Directory
+   </description>
+   <feature url="features/org.codehaus.groovy.eclipse.feature_1.0.0.jar" id="org.codehaus.groovy.eclipse.feature" version="1.0.0"/>
+   <feature url="features/org.codehaus.groovy.eclipse.feature_1.0.0.20060711.jar" id="org.codehaus.groovy.eclipse.feature" version="1.0.0.20060711"/>
+   <feature url="features/org.codehaus.groovy.eclipse.feature_1.0.0.20060724.jar" id="org.codehaus.groovy.eclipse.feature" version="1.0.0.20060724"/>
+   <feature url="features/org.codehaus.groovy.eclipse.feature_1.0.0.20060905.jar" id="org.codehaus.groovy.eclipse.feature" version="1.0.0.20060905">
+      <category name="Groovy"/>
+   </feature>
+   <feature url="features/org.codehaus.groovy.eclipse.feature_1.0.0.20060915.jar" id="org.codehaus.groovy.eclipse.feature" version="1.0.0.20060915">
+      <category name="Groovy"/>
+   </feature>
+   <feature url="features/org.codehaus.groovy.eclipse.feature_1.0.0.20061210.jar" id="org.codehaus.groovy.eclipse.feature" version="1.0.0.20061210"/>
+   <feature url="features/org.codehaus.groovy.eclipse.feature_1.0.0.20061211.jar" id="org.codehaus.groovy.eclipse.feature" version="1.0.0.20061211"/>
+   <category-def name="Groovy" label="Groovy"/>
+</site>
