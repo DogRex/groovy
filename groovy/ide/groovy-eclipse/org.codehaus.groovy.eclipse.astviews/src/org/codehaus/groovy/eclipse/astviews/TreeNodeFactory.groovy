@@ -55,13 +55,6 @@ abstract class TreeNode implements ITreeNode {
 		def mappedName = MapTo.names(value)
 		if (mappedName) { name = "$name - $mappedName" }
 		displayName = name
-		
-		try {
-			def a=10
-		} catch (Exception e) {
-			
-		}
-		a = 20
 	}
 	
 	ITreeNode[] getChildren() {
