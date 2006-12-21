@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE idea-plugin PUBLIC "-//IntelliJ Technology Network//DTD Plugin Manager 0.1//EN" "http://plugins.intellij.net/plugin.dtd">
+
+<idea-plugin url="@PROJECT.HOMEPAGE@" version="2">
+
+    <name>@PROJECT.TITLE@</name>
+    <description>@PROJECT.DESCRIPTION@</description>
+    <version>@PROJECT.VERSION@</version>
+    <vendor logo="/icons/groovy_16x16.png" url="@PROJECT.VENDOR.HOMEPAGE@" email="@PROJECT.VENDOR.EMAIL@">@PROJECT.VENDOR@</vendor>
+    <change-notes>@PROJECT.CHANGE-NOTES@</change-notes>
+    <idea-version since-build="@PROJECT.IDEA.SINCE-BUILD@" until-build="@PROJECT.IDEA.UNTIL-BUILD@"/>
+
+    <project-components>
+        <component>
+            <implementation-class>org.codehaus.groovy.intellij.GroovyJProjectComponent</implementation-class>
+            <option name="workspace" value="true"/>
+        </component>
+    </project-components>
+
+    <application-components>
+        <component>
+            <implementation-class>org.codehaus.groovy.intellij.EditorAPIFactory</implementation-class>
+        </component>
+        <component>
+            <implementation-class>org.codehaus.groovy.intellij.configuration.GroovyConfigurationType
+            </implementation-class>
+        </component>
+        <component>
+            <implementation-class>org.codehaus.groovy.intellij.GroovySupportLoader</implementation-class>
+        </component>
+    </application-components>
+
+</idea-plugin>
