@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin
+   id="org.codehaus.groovy.eclipse"
+   name="Groovy Plug-in"
+   version="1.0.0.20061211"
+   provider-name="codehaus "
+   class="org.codehaus.groovy.eclipse.GroovyPlugin">
+
+   <runtime>
+      <library name="groovy-eclipse.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/commons-io-1.2.jar">
+      </library>
+      <library name="lib/commons-lang-2.1.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/groovy-all-1.0-RC-01.jar">
+         <export name="*"/>
+      </library>
+    </runtime>
+   
+   <requires>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.jface.text"/>
+      <import plugin="org.eclipse.ui.workbench.texteditor"/>
+      <import plugin="org.eclipse.ui.editors"/>
+      <import plugin="org.eclipse.jdt.core"/>
+      <import plugin="org.eclipse.jdt.ui"/>
+      <import plugin="org.eclipse.debug.core"/>
+      <import plugin="org.eclipse.debug.ui"/>
+      <import plugin="org.eclipse.jdt.debug"/>
+      <import plugin="org.eclipse.jdt.launching"/>
+      <import plugin="org.eclipse.jdt.debug.ui"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.ui.views"/>
+      <import plugin="org.eclipse.core.filebuffers"/>
+      <import plugin="org.eclipse.ui.console"/>
+      <import plugin="org.eclipse.ui.ide"/>
+      <import plugin="org.eclipse.jdt.junit"/>
+   </requires>
+   <extension-point id="hyperlinkDetectors" name="Groovy Hyperlink Detectors" schema="schema/hyperlinkDetector.exsd"/>
+   <extension-point id="contentAssistProcessors" name="Groovy Code Completion Processors" schema="schema/contentAssistProcessors.exsd"/>
+
+   <extension
+         id="groovyNature"
+         name="Groovy Nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="org.codehaus.groovy.eclipse.builder.GroovyNature">
+         </run>
+      </runtime>
+      <builder
+            id="org.codehaus.groovy.eclipse.builder.GroovyBuilder">
+      </builder>
+   </extension>
+   <extension
+         id="groovyBuilder"
+         name="Groovy Builder"
+         point="org.eclipse.core.resources.builders">
+      <builder>
+         <run
+               class="org.codehaus.groovy.eclipse.builder.GroovyBuilder">
+         </run>
+      </builder>
+   </extension>
+   <extension
+         id="org.codehaus.groovy.eclipse.groovy.launcher"
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            name="Groovy"
+            delegate="org.codehaus.groovy.eclipse.launchers.GroovyLaunchConfigurationDelegate"
+            modes="run,debug"
+            id="org.codehaus.groovy.eclipse.groovyLaunchConfigurationType">
+         <fileExtension
+               default="true"
+               extension="groovy">
+         </fileExtension>
+      </launchConfigurationType>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            icon="icons/run_groovy_class.gif"
+            configTypeID="org.codehaus.groovy.eclipse.groovyLaunchConfigurationType"
+            id="org.codehaus.groovy.eclipse.launchConfigurationTypeImage1.groovyClass">
+      </launchConfigurationTypeImage>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            type="org.codehaus.groovy.eclipse.groovyLaunchConfigurationType"
+            class="org.codehaus.groovy.eclipse.launchers.GroovyLaunchConfigurationTabGroup"
+            id="org.codehaus.groovy.eclipse.GroovyLaunchConfigurationType.tabGroup">
+      </launchConfigurationTabGroup>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            label="Groovy"
+            icon="icons/run_groovy_class.gif"
+            class="org.codehaus.groovy.eclipse.launchers.GroovyLaunchShortcut"
+            modes="run, debug"
+            id="org.codehaus.groovy.eclipse.debug.ui.groovyShortcut">
+         <contextualLaunch>
+           <enablement>
+              <with variable="selection">
+                 <count value="1"/>
+           		 <iterate>
+           		 	<or>
+               		    <test property="org.eclipse.debug.ui.matchesPattern" value="*.groovy"/>
+                		</or>
+           		 </iterate>
+              </with>
+           </enablement>
+        </contextualLaunch>
+            
+         <perspective
+               id="org.eclipse.jdt.ui.JavaPerspective">
+         </perspective>
+         <perspective
+               id="org.eclipse.jdt.ui.JavaHierarchyPerspective">
+         </perspective>
+         <perspective
+               id="org.eclipse.jdt.ui.JavaBrowsingPerspective">
+         </perspective>
+         <perspective
+               id="org.eclipse.debug.ui.DebugPerspective">
+         </perspective>
+      </shortcut>
+      <shortcut
+            class="org.codehaus.groovy.eclipse.launchers.GroovyConsoleShortcut"
+            icon="icons/run_groovy_class.gif"
+            id="org.codehaus.groovy.eclipse.debug.ui.groovyConsoleShortcut"
+            label="Groovy Console"
+            modes="run, debug">
+         <contextualLaunch>
+            <enablement>
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                     <or>
+                        <test
+                              property="org.eclipse.debug.ui.matchesPattern"
+                              value="*.groovy"/>
+                        <test
+                              property="org.eclipse.debug.ui.matchesPattern"
+                              value="*.java"/>
+                     </or>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+         <perspective id="org.eclipse.jdt.ui.JavaPerspective"/>
+         <perspective id="org.eclipse.jdt.ui.JavaBrowsingPerspective"/>
+         <perspective id="org.eclipse.debug.ui.DebugPerspective"/>
+      </shortcut>
+      <shortcut
+            class="org.codehaus.groovy.eclipse.launchers.GroovyTestLaunchShortcut"
+            icon="icons/julaunch.gif"
+            id="GroovyTest"
+            label="JUnit Test"
+            modes="run, debug">
+         <contextualLaunch>
+            <enablement>
+                 <with variable="selection">
+                 	<count value="1"/>
+           		 		<iterate>
+           		 			<or>
+               		    		<test property="org.eclipse.debug.ui.matchesPattern" value="*.groovy"/>
+                			</or>
+           		 		</iterate>
+				</with>
+            </enablement>
+         </contextualLaunch>
+      </shortcut>
+   </extension>
+   <extension
+         id="groovyFailure"
+         name="GroovyFailureMarker"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker"/>
+      <super type="org.eclipse.core.resources.textmarker"/>
+      <persistent value="true" />
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            name="Groovy Editor"
+            extensions="groovy"
+            icon="icons/groovy_file.gif"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            class="org.codehaus.groovy.eclipse.editor.GroovyEditor"
+            id="org.codehaus.groovy.eclipse.editor.GroovyEditor">
+      </editor>
+   </extension>
+   <extension
+         id="org.codehaus.groovy.eclipse.editor.GroovyDocumentSetupParticipant"
+         name="GroovyDocumentSetupParticipant"
+         point="org.eclipse.core.filebuffers.documentSetup">
+      <participant
+            extensions="groovy"
+            class="org.codehaus.groovy.eclipse.editor.GroovyDocumentSetupParticipant">
+      </participant>
+   </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            name="Groovy"
+            id="org.codehaus.groovy.eclipse">
+      </category>
+      <wizard
+            name="Groovy Class"
+            icon="icons/groovy_file.gif"
+            category="org.codehaus.groovy.eclipse"
+            class="org.codehaus.groovy.eclipse.wizards.NewClassWizard"
+            preferredPerspectives="org.eclipse.jdt.ui.JavaPerspective"
+            id="org.codehaus.groovy.eclipse.wizards.newClassWizard">
+         <description>
+            Create a new Groovy Class
+         </description>
+      </wizard>
+      <wizard
+            name="Groovy Unit Test"
+            icon="icons/groovy_file.gif"
+            category="org.codehaus.groovy.eclipse"
+            class="org.codehaus.groovy.eclipse.wizards.NewTestWizard"
+            preferredPerspectives="org.eclipse.jdt.ui.JavaPerspective"
+            id="org.codehaus.groovy.eclipse.wizards.newTestWizard">
+         <description>
+            Create a new Groovy Test Class
+         </description>
+      </wizard>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editorActions">
+      <editorContribution
+            targetID="org.codehaus.groovy.eclipse.editor.GroovyEditor"
+            id="org.codehaus.groovy.eclipse.BreakpointRulerActions">
+         <action
+               label="Toggle Groovy Breakpoint"
+               definitionId="org.codehaus.groovy.eclipse.actions.ToggleGroovyBreakpointAction"
+               class="org.codehaus.groovy.eclipse.actions.ToggleGroovyBreakpointRulerActionDelegate"
+               actionID="RulerDoubleClick"
+               id="org.codehaus.groovy.eclipse.actions.ToggleGroovyBreakpointAction">
+         </action>
+         <action
+               class="org.codehaus.groovy.eclipse.actions.RunGroovy"
+               definitionId="org.codehaus.groovy.eclipse.command.RunGroovy"
+               id="org.codehaus.groovy.eclipse.actions.RunGroovy"
+               label="Run Groovy"
+               />
+      </editorContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.ide.markerImageProviders">
+      <imageprovider
+            markertype="org.eclipse.jdt.debug.javaStratumLineBreakpointMarker"
+            icon="icons/brkp_obj.gif"
+            id="org.codehaus.groovy.eclipse.breakpointMarkerProvider">
+      </imageprovider>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.sourceLocators">
+      <sourceLocator
+            name="Groovy Source Locator"
+            class="org.codehaus.groovy.eclipse.launchers.GroovySourceLocator"
+            id="org.codehaus.groovy.eclipse.editor.groovySourceLocator">
+      </sourceLocator>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.codehaus.groovy.eclipse.preferences.GroovyPreferencePage"
+            id="org.codehaus.groovy.eclipse.preferences"
+            name="Groovy Preferences"/>
+   </extension>
+   <extension id="org.codehaus.groovy.properties"
+		      name="Groovy Properties"
+	          point="org.eclipse.ui.propertyPages">
+	  <page objectClass="org.eclipse.core.resources.IProject"
+	        adaptable="true"
+	        name="Groovy Project Properties" 
+	        class="org.codehaus.groovy.eclipse.preferences.GroovyPreferencePage"
+	        id="org.codehaus.groovy.eclipse.propertyPage.project">
+      <filter
+            name="projectNature"
+            value="org.codehaus.groovy.eclipse.groovyNature"/>
+	  </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer class="org.codehaus.groovy.eclipse.preferences.PreferenceInitializer"/>
+   </extension>
+   
+   <extension point="org.eclipse.ui.popupMenus">
+   		<objectContribution id="org.codehaus.groovy.eclipse.addnature.project"
+   			objectClass="org.eclipse.core.resources.IProject">
+	   		<action id="org.codehaus.groovy.eclipse.addnature.action"
+	   			label="Add Groovy Nature"
+	   			enablesFor="1"
+	   			class="org.codehaus.groovy.eclipse.actions.AddGroovyNatureAction">
+	   		</action>
+		</objectContribution>
+   		<objectContribution id="org.codehaus.groovy.eclipse.addnature.javaproject"
+   			objectClass="org.eclipse.jdt.core.IJavaProject">
+        <menu
+              id="groovy"
+              label="Groovy"
+              path="additions">
+           <separator name="defaultGroup"/>
+           <separator name="nature"/>
+        </menu>
+      <action
+            class="org.codehaus.groovy.eclipse.actions.RunGroovyConsoleWorkbench"
+            icon="icons/run_groovy_class.gif"
+            id="org.codehaus.groovy.eclipse.groovyconsole.action"
+            label="Run Groovy Console"
+            menubarPath="groovy/defaultGroup"
+            tooltip="Open a Groovy Console for this project"/>
+      <action
+            class="org.codehaus.groovy.eclipse.actions.RunGroovyShellWorkbench"
+            icon="icons/run_groovy_class.gif"
+            id="org.codehaus.groovy.eclipse.groovyconsole.action"
+            label="Run Groovy Shell"
+            menubarPath="groovy/defaultGroup"
+            tooltip="Open a Groovy Shell for this project"/>
+	   		<action
+            class="org.codehaus.groovy.eclipse.actions.AddGroovyNatureAction"
+            enablesFor="1"
+            id="org.codehaus.groovy.eclipse.addnature.action"
+            label="Add Groovy Nature"
+            menubarPath="groovy/nature">
+	   		</action>
+		</objectContribution>
+	</extension>
+   <extension
+         point="org.eclipse.ui.startup">
+      <startup/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            description="Groovy source code editor category"
+            id="org.codehaus.groovy.eclipse.editor.category.source"
+            name="Groovy - Editor"/>
+      <category
+            description="Groovy run and debug category"
+            id="org.codehaus.groovy.eclipse.editor.category.rundebug"
+            name="Groovy - Run/Debug"/>
+      <command
+            categoryId="org.codehaus.groovy.eclipse.editor.category.source"
+            description="Toggle line comments at the current location/selection"
+            id="org.codehaus.groovy.eclipse.editor.command.ToggleComment"
+            name="Toggle Comment"/>
+      <command
+            categoryId="org.codehaus.groovy.eclipse.editor.category.source"
+            description="Add a block comment to the current selection"
+            id="org.codehaus.groovy.eclipse.editor.command.BlockComment"
+            name="Block Comment"/>
+      <command
+            categoryId="org.codehaus.groovy.eclipse.editor.category.source"
+            description="Remove block comments from the current selection"
+            id="org.codehaus.groovy.eclipse.editor.command.BlockUncomment"
+            name="Block Uncomment"/>
+      <command
+            categoryId="org.codehaus.groovy.eclipse.editor.category.rundebug"
+            description="Run Groovy File"
+            id="org.codehaus.groovy.eclipse.command.RunGroovy"
+            name="Run Groovy"/>
+      <command
+            categoryId="org.codehaus.groovy.eclipse.editor.category.rundebug"
+            description="Open a GroovyConsole for the current project"
+            id="org.codehaus.groovy.eclipse.command.RunGroovyConsole"
+            name="Groovy Console"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.contexts">
+      <context
+            id="org.codehaus.groovy.eclipse.editor.GroovyEditorScope"
+            name="Editing Groovy Source"
+            parentId="org.eclipse.ui.textEditorScope"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="org.codehaus.groovy.eclipse.editor.command.ToggleComment"
+            contextId="org.codehaus.groovy.eclipse.editor.GroovyEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+/"/>
+      <key
+            commandId="org.codehaus.groovy.eclipse.editor.command.ToggleComment"
+            contextId="org.codehaus.groovy.eclipse.editor.GroovyEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+7"/>
+      <key
+            commandId="org.codehaus.groovy.eclipse.editor.command.BlockComment"
+            contextId="org.codehaus.groovy.eclipse.editor.GroovyEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+/"/>
+      <key
+            commandId="org.codehaus.groovy.eclipse.editor.command.BlockUncomment"
+            contextId="org.codehaus.groovy.eclipse.editor.GroovyEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+\"/>
+      <key
+            commandId="org.codehaus.groovy.eclipse.command.RunGroovy"
+            contextId="org.codehaus.groovy.eclipse.editor.GroovyEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M2+M3+X G"/>
+      <key
+            commandId="org.codehaus.groovy.eclipse.command.RunGroovy"
+            contextId="org.codehaus.groovy.eclipse.editor.GroovyEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M2+M3+D G"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editorActions">
+      <editorContribution
+            id="org.codehaus.groovy.eclipse.editor.action.editorContribution"
+            targetID="org.codehaus.groovy.eclipse.editor.GroovyEditor">
+         <menu
+               id="org.codehaus.groovy.eclipse.editor.menu.source"
+               label="&amp;Source"
+               path="edit">
+            <separator name="editGroup"/>
+         </menu>
+         <action
+               class="org.codehaus.groovy.eclipse.editor.actions.ToggleComment"
+               definitionId="org.codehaus.groovy.eclipse.editor.command.ToggleComment"
+               id="org.codehaus.groovy.eclipse.editor.action.ToggleComment"
+               label="&amp;Toggle Comment"
+               menubarPath="org.codehaus.groovy.eclipse.editor.menu.source/editGroup"/>
+         <action
+               class="org.codehaus.groovy.eclipse.editor.actions.BlockComment"
+               definitionId="org.codehaus.groovy.eclipse.editor.command.BlockComment"
+               enablesFor="+"
+               id="org.codehaus.groovy.eclipse.editor.action.BlockComment"
+               label="Block &amp;Comment"
+               menubarPath="org.codehaus.groovy.eclipse.editor.menu.source/editGroup"/>
+         <action
+               class="org.codehaus.groovy.eclipse.editor.actions.BlockUncomment"
+               definitionId="org.codehaus.groovy.eclipse.editor.command.BlockUncomment"
+               enablesFor="+"
+               id="org.codehaus.groovy.eclipse.editor.action.BlockUncomment"
+               label="Block &amp;Uncomment"
+               menubarPath="org.codehaus.groovy.eclipse.editor.menu.source/editGroup"/>
+      </editorContribution>
+   </extension>
+   <extension point="org.eclipse.debug.ui.consoleLineTrackers">
+		<consoleLineTracker
+			class="org.codehaus.groovy.eclipse.launchers.GroovyConsoleLineTracker"
+			processType="java"
+			id="org.codehaus.groovy.eclipse.launchers.GroovyConsoleLineTracker"/>
+		<consoleLineTracker
+			class="org.codehaus.groovy.eclipse.launchers.GroovyConsoleLineTracker"
+			processType="groovy"
+			id="org.codehaus.groovy.eclipse.launchers.GroovyConsoleLineTracker"/>
+	</extension>
+   
+</plugin>
