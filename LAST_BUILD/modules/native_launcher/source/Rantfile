@@ -1,0 +1,173 @@
+# -*- mode: ruby encoding: UTF-8 -*-
+
+#  Groovy -- A native launcher for Groovy
+#
+#  Copyright © 2006 Russel Winder
+#
+#  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
+#  compliance with the License. You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software distributed under the License is
+#  distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+#  implied. See the License for the specific language governing permissions and limitations under the
+#  License.
+#
+#  Author : Russel Winder <russel@russel.org.uk>
+#  $Revision$
+#  $Date$
+
+import 'c/dependencies'
+
+BuildDirectory = '../' + Environment[ 'BuildDirectory' ] + '/' + rant.current_subdir
+Program = BuildDirectory + '/' + Environment[ 'Name' ]
+Source = sys[ '*.c' ]
+
+$javaHome = ENV[ 'JAVA_HOME' ]
+if $javaHome == nil || $javaHome == ''
+  if Environment[ 'Architecture' ] == MacOSX
+    putativeDirectory = '/System/Library/Frameworks/JavaVM.framework'
+    if File.directory?( putativeDirectory ) then $javaHome = putativeDirectory end
+  else
+    raise "JAVA_HOME not defined."
+  end
+end
+
+if Environment[ 'Architecture' ] == Cygwin
+  $javaHome = ( `cygpath --unix "#{$javaHome}"` ).strip( )
+end
+
+# Assume a default of GCC since most of the systems we are checking use this.
+
+$gcc = 'gcc'
+$cppFlags = "-I'#{$javaHome}/include/#{Environment[ 'Architecture' ]}' -I'#{$javaHome}/include'"
+$cFlags   = '-O3 -W -Wall -Wundef -Wcast-align -Wno-unused-parameter -Wshadow -Wredundant-decls'
+$libs     = '-ldl'
+
+def compileCommand( target , sources ) ; "#{$gcc} #{$cppFlags} #{$cFlags} -c -o #{target} #{sources}" end
+def linkCommand( target , sources ) ; "#{$gcc} #{$cFlags} -o #{target} #{sources} #{$libs}" end
+
+case Environment[ 'Architecture' ]
+  when Linux
+  when Solaris
+  when MacOSX
+    $cppFlags = "-I \"#{$javaHome}/Headers\""
+  when Cygwin
+#  use gcc -mwindows to link your program
+# into a GUI application instead of a command-line application. (cygwin manual page 59)
+# myapp.res : myapp.rc resource.h
+#windres $< -O coff -o $@
+# windres groovy.rc -O coff ../build/source/groovy.coff
+# use .coff file extension to avoid confusion w/ real .res files (different format)
+# If you are writing a GUI program, you should either compile with -mwindows as explained above, or add the string "-Wl,--subsystem,windows" to the GCC command line.
+# linking: see http://cygwin.com/faq/faq.programming.html#faq.programming.win32-api
+#    $gcc  = 'gcc'
+    $libs = ''
+    $cFlags += ' -mno-cygwin'
+    $cppFlags = "-I #{$javaHome}/include/win32 -I #{$javaHome}/include"
+    def compileCommand( target , sources ) ; "#{$gcc} #{$cppFlags} #{$cFlags} -c -o #{target} #{sources}" end
+    def linkCommand( target , sources )
+      windowsApp = ( target =~ /w\.exe$/ )
+      "#{$gcc} #{'-mwindows' if windowsApp} #{$cFlags} -o #{target} #{sources} #{$libs}" 
+    end
+  when MSYS
+    $javaHome = $javaHome.sub( 'Program/' , 'Program' )
+    $cppFlags = "-I'#{$javaHome}/include/win32' -I'#{$javaHome}/include'"
+  when Windows
+  
+    $gcc = 'cl'
+
+    # -Wall produces screenfulls of useless warnings about win header files unless the following warnings are omitted:
+    # c4255 == 'function' : no function prototype given: converting '()' to '(void)'
+    # c4668 == 'symbol' is not defined as a preprocessor macro, replacing with '0' for 'directives'
+    # c4820 == padding added into a struct 
+    # This one is disabled as there's a lot of this done intentionally (and there seems to be no way to tell cl that it's intentional):
+    # c4706 == assignment in conditional expression
+    # this one's disabled as it does not seem very interesting:
+    # c4711 == function 'function' selected for inline expansion
+
+    # the -MD option is important - it is required when using JNI. 
+    # See e.g. http://java.sun.com/docs/books/jni/html/start.html#27008 and
+    #          http://java.sun.com/docs/books/jni/html/invoke.html#28755
+
+    # the -O1 is there just to reduce the size of the executable - it is not mandatory
+
+    $cppFlags = "-nologo -c -MD -I #{$javaHome}\\include -I #{$javaHome}\\include\\win32"
+
+    def compileCommand( target , sources)
+      "#{$gcc} #{$debug ? '-Zi' : '-O1'} -Wall -wd4255 -wd4668 -wd4706 -wd4711 -wd4820 -Fo#{target} #{$cppFlags} #{sources}"
+    end
+
+    def linkCommand( target , sources )
+      windowsApp = ( target !~ /w\.exe$/ )    
+      "link #{'-debug ' if $debug}-nologo #{windowsApp ? '-subsystem:windows -entry:mainCRTStartup' : '-subsystem:console'} -out:#{target} #{sources}"
+    end
+
+    # links "windows app", i.e. an app that has no console. Thus we have groovy.exe and groovyw.exe, just like there is java.exe and javaw.exe
+#    def linkWCommand( target, sources )
+#      target = target.gsub(/\.exe$/, 'w.exe')
+#      "link #{'-debug ' if $debug}-nologo -subsystem:windows -entry:mainCRTStartup -out:#{target} #{sources}"
+#    end
+    
+end 
+
+default_tasks = [ :initialize , Program ]
+
+res_file = nil
+if [Windows, Cygwin].include? Environment[ 'Architecture' ]
+
+  $win = ( Environment[ 'Architecture' ] == Windows ) 
+  res_file = "../build/source/groovy.#{$win ? 'res' : 'coff'}"
+  file res_file => ['groovy.rc'] do |t|
+    sys.sh( $win ? "rc -fo #{t.name} #{t.prerequisites}" : "windres #{t.prerequisites} -O coff #{t.name} " )
+  end
+  default_tasks.insert(1, res_file)
+  
+  ProgramW = Program.gsub(/\.exe$/, 'w.exe')
+  
+  default_tasks << ProgramW 
+  
+  file ProgramW => Source.map { | source | object( source ) } << res_file do | target | 
+    sys.sh( linkCommand( target.name , target.prerequisites ) )
+  end
+
+end
+
+task :default => default_tasks
+
+task :initialize do
+  if ! File.directory?( BuildDirectory ) then sys.mkdir_p( BuildDirectory ) end
+  DependenciesFile = BuildDirectory + '/dependencies'
+  gen C::Dependencies , DependenciesFile , :search => 'source'
+  gen Action do source DependenciesFile end
+end
+
+def object( source ) ; BuildDirectory + '/' + source.sub( '.c' , '.o' ) end
+
+task :set_debug do
+  $debug = true
+end
+
+task :debug => [:set_debug] + default_tasks 
+
+reqs = Source.map { | source | object( source ) }
+reqs << res_file if [ Windows, Cygwin ].include? Environment[ 'Architecture' ]
+
+file Program => reqs do | target |
+  sys.sh( linkCommand( target.name , target.prerequisites ) )
+#if [ Windows, Cygwin ].include? Environment[ 'Architecture' ]
+#  name = target.name.gsub(/\.exe$/, "w.exe")
+#  sys.sh( linkCommand( name , target.prerequisites ) )
+#end
+end
+
+
+
+Source.each { | source |
+  file object( source ) => source do | target | 
+    sys.sh( compileCommand( target.name , target.prerequisites ) ) 
+  end
+}
+
+
